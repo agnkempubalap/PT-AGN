@@ -62,6 +62,7 @@ input, select, button {
 </select>
 <button onclick="absen()">Hadir</button>
 <ul id="listAbsen"></ul>
+<button onclick="resetAbsen()">Reset Absen</button>
 </div>
 </div>
 
@@ -73,7 +74,7 @@ input, select, button {
 <h3>Kempu</h3>
 <input id="kempu" placeholder="Jumlah">
 <button onclick="hitungKempu()">Hitung</button>
-<input id="hasilKempu" placeholder="Total" readonly>
+<input id="hasilKempu" readonly>
 </div>
 
 <div class="card">
@@ -91,7 +92,7 @@ input, select, button {
 </div>
 
 <div class="card">
-<h3>Pasang Pangkalan</h3>
+<h3>Pangkalan</h3>
 <input id="pangkalan" placeholder="Jumlah Orang">
 <button onclick="hitungPangkalan()">Hitung</button>
 <input id="hasilPangkalan" readonly>
@@ -103,11 +104,28 @@ input, select, button {
 <div id="stok" class="page">
 <h2>Stok Gudang</h2>
 <div class="card">
-<input placeholder="Nama Barang">
-<input placeholder="Stok Awal">
-<input placeholder="Masuk">
-<input placeholder="Keluar">
-<button>Simpan</button>
+<input id="namaBarang" placeholder="Nama Barang">
+<input id="stokMasuk" placeholder="Jumlah">
+<button onclick="tambahStok()">Tambah</button>
+
+<ul id="listStok"></ul>
+<button onclick="resetStok()">Reset Stok</button>
+</div>
+</div>
+
+<!-- KASIR -->
+<div id="kasir" class="page">
+<h2>Kasir</h2>
+<div class="card">
+<input id="barang" placeholder="Nama Barang">
+<input id="harga" placeholder="Harga">
+<input id="qty" placeholder="Jumlah">
+<button onclick="tambahKasir()">Tambah</button>
+
+<ul id="listKasir"></ul>
+
+<h3>Total: <span id="totalKasir">0</span></h3>
+<button onclick="resetKasir()">Reset</button>
 </div>
 </div>
 
@@ -116,83 +134,34 @@ input, select, button {
 <h2>Gaji</h2>
 <div class="card">
 <button onclick="totalGaji()">Hitung Total Gaji</button>
-<input id="totalGaji" placeholder="Total Gaji" readonly>
+<input id="totalGaji" readonly>
+<button onclick="resetGaji()">Reset Gaji</button>
 </div>
 </div>
 
-<!-- NAVBAR -->
+<!-- NAV -->
 <div class="nav">
 <button onclick="show('dashboard')">Home</button>
 <button onclick="show('absensi')">Absensi</button>
 <button onclick="show('kerja')">Kerja</button>
 <button onclick="show('stok')">Stok</button>
+<button onclick="show('kasir')">Kasir</button>
 <button onclick="show('gaji')">Gaji</button>
 </div>
-</script>
 
 <script>
+// NAV
 function show(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
 
-function absen(){
-  let nama = document.getElementById('nama').value;
-  let li = document.createElement('li');
-  li.innerText = nama + " hadir";
-  document.getElementById('listAbsen').appendChild(li);
-}
-
-let total = 0;
-
-function hitungKempu(){
-  let j = document.getElementById('kempu').value;
-  let hasil = j * 100000;
-  total += hasil;
-  document.getElementById('hasilKempu').value = hasil;
-}
-
-function hitungJerigen(){
-  let j = document.getElementById('jerigen').value;
-  let hasil = j * 1000;
-  total += hasil;
-  document.getElementById('hasilJerigen').value = hasil;
-}
-
-function hitungBongkar(){
-  let j = document.getElementById('bongkar').value;
-  let hasil = (j/25) * 100000;
-  total += hasil;
-  document.getElementById('hasilBongkar').value = hasil;
-}
-
-function hitungPangkalan(){
-  let j = document.getElementById('pangkalan').value;
-  let hasil = j * 500000;
-  total += hasil;
-  document.getElementById('hasilPangkalan').value = hasil;
-}
-
-function totalGaji(){
-  document.getElementById('totalGaji').value = total;
-}
-</script>
-
-<script>
-let total = localStorage.getItem("total") || 0;
-
-function show(id){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
-
+// ================= ABSEN =================
 function absen(){
   let nama = document.getElementById('nama').value;
   let data = JSON.parse(localStorage.getItem("absen") || "[]");
-
   data.push(nama + " hadir");
   localStorage.setItem("absen", JSON.stringify(data));
-
   tampilAbsen();
 }
 
@@ -207,6 +176,14 @@ function tampilAbsen(){
   });
 }
 
+function resetAbsen(){
+  localStorage.removeItem("absen");
+  tampilAbsen();
+}
+
+// ================= GAJI =================
+let total = localStorage.getItem("total") || 0;
+
 function hitungKempu(){
   let j = document.getElementById('kempu').value;
   let hasil = j * 100000;
@@ -240,13 +217,90 @@ function hitungPangkalan(){
 }
 
 function totalGaji(){
-  document.getElementById('totalGaji').value = localStorage.getItem("total");
+  document.getElementById('totalGaji').value = localStorage.getItem("total") || 0;
 }
 
+function resetGaji(){
+  localStorage.removeItem("total");
+  total = 0;
+  document.getElementById('totalGaji').value = 0;
+}
+
+// ================= STOK =================
+function tambahStok(){
+  let nama = document.getElementById('namaBarang').value;
+  let jumlah = document.getElementById('stokMasuk').value;
+
+  let data = JSON.parse(localStorage.getItem("stok") || "[]");
+  data.push(nama + " : " + jumlah);
+  localStorage.setItem("stok", JSON.stringify(data));
+
+  tampilStok();
+}
+
+function tampilStok(){
+  let data = JSON.parse(localStorage.getItem("stok") || "[]");
+  let list = document.getElementById('listStok');
+  list.innerHTML = "";
+  data.forEach(i=>{
+    let li = document.createElement('li');
+    li.innerText = i;
+    list.appendChild(li);
+  });
+}
+
+function resetStok(){
+  localStorage.removeItem("stok");
+  tampilStok();
+}
+
+// ================= KASIR =================
+function tambahKasir(){
+  let barang = document.getElementById('barang').value;
+  let harga = document.getElementById('harga').value;
+  let qty = document.getElementById('qty').value;
+
+  let totalItem = harga * qty;
+
+  let data = JSON.parse(localStorage.getItem("kasir") || "[]");
+  data.push(barang + " x" + qty + " = " + totalItem);
+  localStorage.setItem("kasir", JSON.stringify(data));
+
+  let totalKasir = Number(localStorage.getItem("totalKasir") || 0);
+  totalKasir += totalItem;
+  localStorage.setItem("totalKasir", totalKasir);
+
+  tampilKasir();
+}
+
+function tampilKasir(){
+  let data = JSON.parse(localStorage.getItem("kasir") || "[]");
+  let list = document.getElementById('listKasir');
+  list.innerHTML = "";
+
+  data.forEach(i=>{
+    let li = document.createElement('li');
+    li.innerText = i;
+    list.appendChild(li);
+  });
+
+  document.getElementById('totalKasir').innerText = localStorage.getItem("totalKasir") || 0;
+}
+
+function resetKasir(){
+  localStorage.removeItem("kasir");
+  localStorage.removeItem("totalKasir");
+  tampilKasir();
+}
+
+// ================= LOAD =================
 window.onload = function(){
   tampilAbsen();
+  tampilStok();
+  tampilKasir();
+  document.getElementById('totalGaji').value = localStorage.getItem("total") || 0;
 }
-
 </script>
+
 </body>
 </html>
