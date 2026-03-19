@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>PT AGN</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: Arial; background:#eef3ff; padding:20px; }
+    h2 { color:blue; }
+    input, button { padding:10px; width:100%; margin:5px 0; }
+    .card { background:white; padding:15px; border-radius:10px; margin-top:10px; }
+  </style>
+</head>
+<body>
+
+<h2>PT AGN - Sistem Gudang</h2>
+
+<div class="card">
+<h3>Input Kempu</h3>
+<input id="kempu" placeholder="Jumlah Kempu">
+<button onclick="hitung()">Hitung Gaji</button>
+<input id="hasil" placeholder="Total Gaji" readonly>
+</div>
+
+<div class="card">
+<h3>Karyawan</h3>
+<ul>
+<li>Agung</li>
+<li>Hasan</li>
+<li>Hata</li>
+<li>Alda</li>
+<li>Nur</li>
+</ul>
+</div>
+
+<script>
+function hitung(){
+  let kempu = document.getElementById('kempu').value;
+  let total = kempu * 100000;
+  document.getElementById('hasil').value = total;
+}
+</script>
+
+</body>
+</html>
