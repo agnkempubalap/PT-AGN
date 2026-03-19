@@ -65,155 +65,71 @@ input, select, button {
 </div>
 </div>
 
-<!-- KERJA -->
-<div id="kerja" class="page">
-<h2>Input Kerja</h2>
-
-<div class="card">
-<h3>Kempu</h3>
-<input id="kempu" placeholder="Jumlah">
-<button onclick="hitungKempu()">Hitung</button>
-<input id="hasilKempu" readonly>
-</div>
-
-<div class="card">
-<h3>Jerigen</h3>
-<input id="jerigen" placeholder="Jumlah">
-<button onclick="hitungJerigen()">Hitung</button>
-<input id="hasilJerigen" readonly>
-</div>
-
-<div class="card">
-<h3>Bongkar</h3>
-<input id="bongkar" placeholder="Jumlah">
-<button onclick="hitungBongkar()">Hitung</button>
-<input id="hasilBongkar" readonly>
-</div>
-
-<div class="card">
-<h3>Pangkalan</h3>
-<input id="pangkalan" placeholder="Jumlah">
-<button onclick="hitungPangkalan()">Hitung</button>
-<input id="hasilPangkalan" readonly>
-</div>
-
-</div>
-
-<!-- GAJI -->
-<div id="gaji" class="page">
-<h2>Gaji</h2>
-<div class="card">
-<button onclick="totalGaji()">Hitung Total</button>
-<input id="totalGaji" readonly>
-</div>
-</div>
-
-<!-- NAV -->
+<!-- NAVBAR -->
 <div class="nav">
 <button onclick="show('dashboard')">Home</button>
 <button onclick="show('absensi')">Absensi</button>
-<button onclick="show('kerja')">Kerja</button>
-<button onclick="show('gaji')">Gaji</button>
 </div>
 
-<!-- FIREBASE -->
+<!-- FIREBASE + SCRIPT -->
 <script type="module">
+
+// 🔥 IMPORT FIREBASE
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
+// 🔥 GANTI CONFIG INI
 const firebaseConfig = {
-  apiKey: "AIzaSyAu67MAhW8xdmciPi3xOKwHdy-uP4u9tXI",
-  authDomain: "pt-agn.firebaseapp.com",
-  projectId: "pt-agn",
-  storageBucket: "pt-agn.firebasestorage.app",
-  messagingSenderId: "810494462386",
-  appId: "1:810494462386:web:d724517fb2042737437cab"
+  apiKey: "ISI_APIKEY_KAMU",
+  authDomain: "ISI_AUTHDOMAIN",
+  projectId: "ISI_PROJECT_ID",
+  storageBucket: "ISI_STORAGE",
+  messagingSenderId: "ISI_SENDER_ID",
+  appId: "ISI_APP_ID"
 };
 
+// 🔥 INIT
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// GLOBAL
-window.db = db;
-window.collection = collection;
-window.addDoc = addDoc;
-window.getDocs = getDocs;
-</script>
-
-<!-- SCRIPT APP -->
-<script>
-let total = 0;
-
 // NAVIGASI
-function show(id){
+window.show = function(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
 
-// ABSENSI (FIREBASE)
-async function absen(){
+// 🔥 ABSEN → SIMPAN KE FIREBASE
+window.absen = async function(){
   let nama = document.getElementById('nama').value;
 
   await addDoc(collection(db, "absensi"), {
     nama: nama,
+    status: "hadir",
     waktu: new Date()
   });
 
   tampilAbsen();
 }
 
-// TAMPIL ABSEN
-async function tampilAbsen(){
+// 🔥 TAMPILKAN DATA
+window.tampilAbsen = async function(){
   let list = document.getElementById('listAbsen');
   list.innerHTML = "";
 
-  const data = await getDocs(collection(db, "absensi"));
-
-  data.forEach(doc=>{
+  const querySnapshot = await getDocs(collection(db, "absensi"));
+  querySnapshot.forEach((doc) => {
+    let data = doc.data();
     let li = document.createElement('li');
-    li.innerText = doc.data().nama + " hadir";
+    li.innerText = data.nama + " hadir";
     list.appendChild(li);
   });
 }
 
-// KERJA
-function hitungKempu(){
-  let j = document.getElementById('kempu').value;
-  let hasil = j * 100000;
-  total += hasil;
-  document.getElementById('hasilKempu').value = hasil;
-}
-
-function hitungJerigen(){
-  let j = document.getElementById('jerigen').value;
-  let hasil = j * 1000;
-  total += hasil;
-  document.getElementById('hasilJerigen').value = hasil;
-}
-
-function hitungBongkar(){
-  let j = document.getElementById('bongkar').value;
-  let hasil = (j/25) * 100000;
-  total += hasil;
-  document.getElementById('hasilBongkar').value = hasil;
-}
-
-function hitungPangkalan(){
-  let j = document.getElementById('pangkalan').value;
-  let hasil = j * 500000;
-  total += hasil;
-  document.getElementById('hasilPangkalan').value = hasil;
-}
-
-// TOTAL GAJI
-function totalGaji(){
-  document.getElementById('totalGaji').value = total;
-}
-
-// LOAD
+// 🔥 LOAD OTOMATIS
 window.onload = function(){
   tampilAbsen();
 }
+
 </script>
 
 </body>
