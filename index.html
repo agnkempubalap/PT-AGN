@@ -1,42 +1,179 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>PT AGN</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    body { font-family: Arial; background:#eef3ff; padding:20px; }
-    h2 { color:blue; }
-    input, button { padding:10px; width:100%; margin:5px 0; }
-    .card { background:white; padding:15px; border-radius:10px; margin-top:10px; }
-  </style>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PT AGN</title>
+
+<style>
+body { font-family: Arial; margin:0; background:#eef3ff; }
+.page { display:none; padding:15px; }
+.active { display:block; }
+h2 { color:blue; }
+
+.card {
+  background:white;
+  padding:15px;
+  border-radius:10px;
+  margin-top:10px;
+}
+
+input, select, button {
+  width:100%;
+  padding:10px;
+  margin:5px 0;
+}
+
+.nav {
+  position:fixed;
+  bottom:0;
+  width:100%;
+  display:flex;
+  background:white;
+  border-top:1px solid #ccc;
+}
+
+.nav button {
+  flex:1;
+  padding:10px;
+  border:none;
+  background:white;
+}
+</style>
 </head>
+
 <body>
 
-<h2>PT AGN - Sistem Gudang</h2>
+<!-- DASHBOARD -->
+<div id="dashboard" class="page active">
+<h2>Dashboard</h2>
+<div class="card">Selamat datang di PT AGN</div>
+</div>
+
+<!-- ABSENSI -->
+<div id="absensi" class="page">
+<h2>Absensi</h2>
+<div class="card">
+<select id="nama">
+<option>Agung</option>
+<option>Hasan</option>
+<option>Hata</option>
+<option>Alda</option>
+<option>Nur</option>
+</select>
+<button onclick="absen()">Hadir</button>
+<ul id="listAbsen"></ul>
+</div>
+</div>
+
+<!-- KERJA -->
+<div id="kerja" class="page">
+<h2>Input Kerja</h2>
 
 <div class="card">
-<h3>Input Kempu</h3>
-<input id="kempu" placeholder="Jumlah Kempu">
-<button onclick="hitung()">Hitung Gaji</button>
-<input id="hasil" placeholder="Total Gaji" readonly>
+<h3>Kempu</h3>
+<input id="kempu" placeholder="Jumlah">
+<button onclick="hitungKempu()">Hitung</button>
+<input id="hasilKempu" placeholder="Total" readonly>
 </div>
 
 <div class="card">
-<h3>Karyawan</h3>
-<ul>
-<li>Agung</li>
-<li>Hasan</li>
-<li>Hata</li>
-<li>Alda</li>
-<li>Nur</li>
-</ul>
+<h3>Jerigen</h3>
+<input id="jerigen" placeholder="Jumlah">
+<button onclick="hitungJerigen()">Hitung</button>
+<input id="hasilJerigen" readonly>
+</div>
+
+<div class="card">
+<h3>Bongkar Muat</h3>
+<input id="bongkar" placeholder="Jumlah Kempu">
+<button onclick="hitungBongkar()">Hitung</button>
+<input id="hasilBongkar" readonly>
+</div>
+
+<div class="card">
+<h3>Pasang Pangkalan</h3>
+<input id="pangkalan" placeholder="Jumlah Orang">
+<button onclick="hitungPangkalan()">Hitung</button>
+<input id="hasilPangkalan" readonly>
+</div>
+
+</div>
+
+<!-- STOK -->
+<div id="stok" class="page">
+<h2>Stok Gudang</h2>
+<div class="card">
+<input placeholder="Nama Barang">
+<input placeholder="Stok Awal">
+<input placeholder="Masuk">
+<input placeholder="Keluar">
+<button>Simpan</button>
+</div>
+</div>
+
+<!-- GAJI -->
+<div id="gaji" class="page">
+<h2>Gaji</h2>
+<div class="card">
+<button onclick="totalGaji()">Hitung Total Gaji</button>
+<input id="totalGaji" placeholder="Total Gaji" readonly>
+</div>
+</div>
+
+<!-- NAVBAR -->
+<div class="nav">
+<button onclick="show('dashboard')">Home</button>
+<button onclick="show('absensi')">Absensi</button>
+<button onclick="show('kerja')">Kerja</button>
+<button onclick="show('stok')">Stok</button>
+<button onclick="show('gaji')">Gaji</button>
 </div>
 
 <script>
-function hitung(){
-  let kempu = document.getElementById('kempu').value;
-  let total = kempu * 100000;
-  document.getElementById('hasil').value = total;
+function show(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function absen(){
+  let nama = document.getElementById('nama').value;
+  let li = document.createElement('li');
+  li.innerText = nama + " hadir";
+  document.getElementById('listAbsen').appendChild(li);
+}
+
+let total = 0;
+
+function hitungKempu(){
+  let j = document.getElementById('kempu').value;
+  let hasil = j * 100000;
+  total += hasil;
+  document.getElementById('hasilKempu').value = hasil;
+}
+
+function hitungJerigen(){
+  let j = document.getElementById('jerigen').value;
+  let hasil = j * 1000;
+  total += hasil;
+  document.getElementById('hasilJerigen').value = hasil;
+}
+
+function hitungBongkar(){
+  let j = document.getElementById('bongkar').value;
+  let hasil = (j/25) * 100000;
+  total += hasil;
+  document.getElementById('hasilBongkar').value = hasil;
+}
+
+function hitungPangkalan(){
+  let j = document.getElementById('pangkalan').value;
+  let hasil = j * 500000;
+  total += hasil;
+  document.getElementById('hasilPangkalan').value = hasil;
+}
+
+function totalGaji(){
+  document.getElementById('totalGaji').value = total;
 }
 </script>
 
