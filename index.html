@@ -29,10 +29,14 @@ input, select, button {
   width:100%;
   display:flex;
   background:white;
+  border-top:1px solid #ccc;
 }
 
 .nav button {
   flex:1;
+  padding:10px;
+  border:none;
+  background:white;
 }
 </style>
 </head>
@@ -42,12 +46,13 @@ input, select, button {
 <!-- DASHBOARD -->
 <div id="dashboard" class="page active">
 <h2>Dashboard</h2>
-<div class="card">Aplikasi Gudang PT AGN</div>
+<div class="card">Selamat datang di PT AGN</div>
 </div>
 
 <!-- ABSENSI -->
 <div id="absensi" class="page">
 <h2>Absensi</h2>
+<div class="card">
 <select id="nama">
 <option>Agung</option>
 <option>Hasan</option>
@@ -58,62 +63,49 @@ input, select, button {
 <button onclick="absen()">Hadir</button>
 <ul id="listAbsen"></ul>
 </div>
+</div>
 
 <!-- KERJA -->
 <div id="kerja" class="page">
-<h2>Kerja</h2>
+<h2>Input Kerja</h2>
 
-<input id="kempu" placeholder="Kempu">
-<button onclick="hitung('Kempu',100000,'kempu')">Hitung</button>
+<div class="card">
+<h3>Kempu</h3>
+<input id="kempu" placeholder="Jumlah">
+<button onclick="hitungKempu()">Hitung</button>
+<input id="hasilKempu" readonly>
+</div>
 
-<input id="jerigen" placeholder="Jerigen">
-<button onclick="hitung('Jerigen',1000,'jerigen')">Hitung</button>
+<div class="card">
+<h3>Jerigen</h3>
+<input id="jerigen" placeholder="Jumlah">
+<button onclick="hitungJerigen()">Hitung</button>
+<input id="hasilJerigen" readonly>
+</div>
 
-<input id="bongkar" placeholder="Bongkar (25=100rb)">
+<div class="card">
+<h3>Bongkar</h3>
+<input id="bongkar" placeholder="Jumlah">
 <button onclick="hitungBongkar()">Hitung</button>
-
-<input id="pangkalan" placeholder="Pangkalan">
-<button onclick="hitung('Pangkalan',500000,'pangkalan')">Hitung</button>
-
+<input id="hasilBongkar" readonly>
 </div>
 
-<!-- STOK -->
-<div id="stok" class="page">
-<h2>Stok</h2>
-<input id="barangStok" placeholder="Nama Barang">
-<input id="jumlahStok" placeholder="Jumlah">
-<button onclick="tambahStok()">Tambah</button>
-<ul id="listStok"></ul>
+<div class="card">
+<h3>Pangkalan</h3>
+<input id="pangkalan" placeholder="Jumlah">
+<button onclick="hitungPangkalan()">Hitung</button>
+<input id="hasilPangkalan" readonly>
 </div>
 
-<!-- KASIR -->
-<div id="kasir" class="page">
-<h2>Kasir</h2>
-<input id="barang" placeholder="Barang">
-<input id="harga" placeholder="Harga">
-<input id="qty" placeholder="Qty">
-<button onclick="tambahKasir()">Tambah</button>
-
-<ul id="listKasir"></ul>
-<h3>Total: <span id="totalKasir">0</span></h3>
 </div>
 
 <!-- GAJI -->
 <div id="gaji" class="page">
 <h2>Gaji</h2>
-
-<input id="kasbon" placeholder="Kasbon">
-<button onclick="tambahKasbon()">Tambah Kasbon</button>
-
-<input id="bonus" placeholder="Bonus">
-<button onclick="tambahBonus()">Tambah Bonus</button>
-
+<div class="card">
 <button onclick="totalGaji()">Hitung Total</button>
 <input id="totalGaji" readonly>
-
-<ul id="rekap"></ul>
-<button onclick="resetAll()">Reset Semua</button>
-
+</div>
 </div>
 
 <!-- NAV -->
@@ -121,161 +113,106 @@ input, select, button {
 <button onclick="show('dashboard')">Home</button>
 <button onclick="show('absensi')">Absensi</button>
 <button onclick="show('kerja')">Kerja</button>
-<button onclick="show('stok')">Stok</button>
-<button onclick="show('kasir')">Kasir</button>
 <button onclick="show('gaji')">Gaji</button>
 </div>
 
-<script>
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
-// NAV
+const firebaseConfig = {
+  apiKey: "AIzaSyAu67MAhW8xdmciPi3xOKwHdy-uP4u9tXI",
+  authDomain: "pt-agn.firebaseapp.com",
+  projectId: "pt-agn",
+  storageBucket: "pt-agn.firebasestorage.app",
+  messagingSenderId: "810494462386",
+  appId: "1:810494462386:web:d724517fb2042737437cab"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// GLOBAL
+window.db = db;
+window.collection = collection;
+window.addDoc = addDoc;
+window.getDocs = getDocs;
+</script>
+
+<!-- SCRIPT APP -->
+<script>
+let total = 0;
+
+// NAVIGASI
 function show(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
 
-// TANGGAL
-function tgl(){
-  let d=new Date();
-  return d.toLocaleDateString();
-}
+// ABSENSI (FIREBASE)
+async function absen(){
+  let nama = document.getElementById('nama').value;
 
-// SIMPAN TRANSAKSI
-function simpan(jenis,jumlah){
-  let data=JSON.parse(localStorage.getItem("trx")||"[]");
-  data.push({tgl:tgl(),jenis:jenis,jumlah:jumlah});
-  localStorage.setItem("trx",JSON.stringify(data));
-}
+  await addDoc(collection(db, "absensi"), {
+    nama: nama,
+    waktu: new Date()
+  });
 
-// ABSEN
-function absen(){
-  let nama=document.getElementById('nama').value;
-  let data=JSON.parse(localStorage.getItem("absen")||"[]");
-  data.push(nama+" hadir");
-  localStorage.setItem("absen",JSON.stringify(data));
   tampilAbsen();
 }
 
-function tampilAbsen(){
-  let data=JSON.parse(localStorage.getItem("absen")||"[]");
-  let list=document.getElementById('listAbsen');
-  list.innerHTML="";
-  data.forEach(i=>{
-    let li=document.createElement('li');
-    li.innerText=i;
+// TAMPIL ABSEN
+async function tampilAbsen(){
+  let list = document.getElementById('listAbsen');
+  list.innerHTML = "";
+
+  const data = await getDocs(collection(db, "absensi"));
+
+  data.forEach(doc=>{
+    let li = document.createElement('li');
+    li.innerText = doc.data().nama + " hadir";
     list.appendChild(li);
   });
 }
 
 // KERJA
-function hitung(jenis,harga,id){
-  let j=document.getElementById(id).value;
-  let hasil=j*harga;
-  simpan(jenis,hasil);
+function hitungKempu(){
+  let j = document.getElementById('kempu').value;
+  let hasil = j * 100000;
+  total += hasil;
+  document.getElementById('hasilKempu').value = hasil;
+}
+
+function hitungJerigen(){
+  let j = document.getElementById('jerigen').value;
+  let hasil = j * 1000;
+  total += hasil;
+  document.getElementById('hasilJerigen').value = hasil;
 }
 
 function hitungBongkar(){
-  let j=document.getElementById('bongkar').value;
-  let hasil=(j/25)*100000;
-  simpan("Bongkar",hasil);
+  let j = document.getElementById('bongkar').value;
+  let hasil = (j/25) * 100000;
+  total += hasil;
+  document.getElementById('hasilBongkar').value = hasil;
 }
 
-// KASBON BONUS
-function tambahKasbon(){
-  let j=document.getElementById('kasbon').value;
-  simpan("Kasbon",-j);
+function hitungPangkalan(){
+  let j = document.getElementById('pangkalan').value;
+  let hasil = j * 500000;
+  total += hasil;
+  document.getElementById('hasilPangkalan').value = hasil;
 }
 
-function tambahBonus(){
-  let j=document.getElementById('bonus').value;
-  simpan("Bonus",Number(j));
-}
-
-// TOTAL
+// TOTAL GAJI
 function totalGaji(){
-  let data=JSON.parse(localStorage.getItem("trx")||"[]");
-  let total=0;
-  data.forEach(d=> total+=Number(d.jumlah));
-  document.getElementById('totalGaji').value=total;
-  tampilRekap();
-}
-
-// REKAP
-function tampilRekap(){
-  let data=JSON.parse(localStorage.getItem("trx")||"[]");
-  let list=document.getElementById('rekap');
-  list.innerHTML="";
-  data.forEach(d=>{
-    let li=document.createElement('li');
-    li.innerText=d.tgl+" | "+d.jenis+" | "+d.jumlah;
-    list.appendChild(li);
-  });
-}
-
-// STOK
-function tambahStok(){
-  let b=document.getElementById('barangStok').value;
-  let j=document.getElementById('jumlahStok').value;
-  let data=JSON.parse(localStorage.getItem("stok")||"[]");
-  data.push(b+" : "+j);
-  localStorage.setItem("stok",JSON.stringify(data));
-  tampilStok();
-}
-
-function tampilStok(){
-  let data=JSON.parse(localStorage.getItem("stok")||"[]");
-  let list=document.getElementById('listStok');
-  list.innerHTML="";
-  data.forEach(i=>{
-    let li=document.createElement('li');
-    li.innerText=i;
-    list.appendChild(li);
-  });
-}
-
-// KASIR
-function tambahKasir(){
-  let b=document.getElementById('barang').value;
-  let h=document.getElementById('harga').value;
-  let q=document.getElementById('qty').value;
-
-  let total=h*q;
-
-  let data=JSON.parse(localStorage.getItem("kasir")||"[]");
-  data.push(b+" x"+q+" = "+total);
-  localStorage.setItem("kasir",JSON.stringify(data));
-
-  let t=Number(localStorage.getItem("totalKasir")||0);
-  t+=Number(total);
-  localStorage.setItem("totalKasir",t);
-
-  tampilKasir();
-}
-
-function tampilKasir(){
-  let data=JSON.parse(localStorage.getItem("kasir")||"[]");
-  let list=document.getElementById('listKasir');
-  list.innerHTML="";
-  data.forEach(i=>{
-    let li=document.createElement('li');
-    li.innerText=i;
-    list.appendChild(li);
-  });
-
-  document.getElementById('totalKasir').innerText=localStorage.getItem("totalKasir")||0;
-}
-
-// RESET
-function resetAll(){
-  localStorage.clear();
-  location.reload();
+  document.getElementById('totalGaji').value = total;
 }
 
 // LOAD
-window.onload=function(){
+window.onload = function(){
   tampilAbsen();
-  tampilStok();
-  tampilKasir();
 }
 </script>
 
