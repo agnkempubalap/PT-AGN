@@ -36,7 +36,6 @@ input, select, button {
   flex:1;
   padding:10px;
   border:none;
-  background:white;
 }
 </style>
 </head>
@@ -46,7 +45,7 @@ input, select, button {
 <!-- DASHBOARD -->
 <div id="dashboard" class="page active">
 <h2>Dashboard</h2>
-<div class="card">Selamat datang di PT AGN</div>
+<div class="card">Aplikasi PT AGN (Cloud)</div>
 </div>
 
 <!-- ABSENSI -->
@@ -60,72 +59,162 @@ input, select, button {
 <option>Alda</option>
 <option>Nur</option>
 </select>
+
 <button onclick="absen()">Hadir</button>
 <ul id="listAbsen"></ul>
 </div>
 </div>
 
-<!-- NAVBAR -->
+<!-- KERJA -->
+<div id="kerja" class="page">
+<h2>Kerja</h2>
+
+<div class="card">
+<input id="kempu" placeholder="Kempu">
+<button onclick="simpanKerja('Kempu',100000,'kempu')">Simpan</button>
+</div>
+
+<div class="card">
+<input id="jerigen" placeholder="Jerigen">
+<button onclick="simpanKerja('Jerigen',1000,'jerigen')">Simpan</button>
+</div>
+
+<div class="card">
+<input id="bongkar" placeholder="Bongkar (25=100rb)">
+<button onclick="hitungBongkar()">Simpan</button>
+</div>
+
+<div class="card">
+<input id="pangkalan" placeholder="Pangkalan">
+<button onclick="simpanKerja('Pangkalan',500000,'pangkalan')">Simpan</button>
+</div>
+
+</div>
+
+<!-- GAJI -->
+<div id="gaji" class="page">
+<h2>Gaji</h2>
+<button onclick="loadGaji()">Load Data</button>
+<h3>Total: <span id="totalGaji">0</span></h3>
+<ul id="listGaji"></ul>
+</div>
+
+<!-- NAV -->
 <div class="nav">
 <button onclick="show('dashboard')">Home</button>
 <button onclick="show('absensi')">Absensi</button>
+<button onclick="show('kerja')">Kerja</button>
+<button onclick="show('gaji')">Gaji</button>
 </div>
 
-<!-- FIREBASE + SCRIPT -->
+<!-- FIREBASE -->
 <script type="module">
 
-// 🔥 IMPORT FIREBASE
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
-// 🔥 GANTI CONFIG INI
 const firebaseConfig = {
-  apiKey: "ISI_APIKEY_KAMU",
-  authDomain: "ISI_AUTHDOMAIN",
-  projectId: "ISI_PROJECT_ID",
-  storageBucket: "ISI_STORAGE",
-  messagingSenderId: "ISI_SENDER_ID",
-  appId: "ISI_APP_ID"
+  apiKey: "AIzaSyAu67MAhW8xdmciPi3xOKwHdy-uP4u9tXI",
+  authDomain: "pt-agn.firebaseapp.com",
+  projectId: "pt-agn",
+  storageBucket: "pt-agn.firebasestorage.app",
+  messagingSenderId: "810494462386",
+  appId: "1:810494462386:web:432a3050c054bdd8437cab"
 };
 
-// 🔥 INIT
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// NAVIGASI
-window.show = function(id){
+// GLOBAL
+window.db = db;
+window.collection = collection;
+window.addDoc = addDoc;
+window.getDocs = getDocs;
+
+</script>
+
+<!-- SCRIPT APP -->
+<script>
+
+// NAV
+function show(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
 
-// 🔥 ABSEN → SIMPAN KE FIREBASE
-window.absen = async function(){
+// ================= ABSENSI =================
+async function absen(){
   let nama = document.getElementById('nama').value;
 
   await addDoc(collection(db, "absensi"), {
     nama: nama,
-    status: "hadir",
     waktu: new Date()
   });
 
   tampilAbsen();
 }
 
-// 🔥 TAMPILKAN DATA
-window.tampilAbsen = async function(){
+async function tampilAbsen(){
   let list = document.getElementById('listAbsen');
   list.innerHTML = "";
 
-  const querySnapshot = await getDocs(collection(db, "absensi"));
-  querySnapshot.forEach((doc) => {
-    let data = doc.data();
+  const data = await getDocs(collection(db, "absensi"));
+
+  data.forEach(doc=>{
     let li = document.createElement('li');
-    li.innerText = data.nama + " hadir";
+    li.innerText = doc.data().nama + " hadir";
     list.appendChild(li);
   });
 }
 
-// 🔥 LOAD OTOMATIS
+// ================= KERJA =================
+async function simpanKerja(jenis,harga,id){
+  let j = document.getElementById(id).value;
+  let total = j * harga;
+
+  await addDoc(collection(db, "kerja"), {
+    jenis: jenis,
+    jumlah: total,
+    waktu: new Date()
+  });
+
+  alert("Tersimpan");
+}
+
+async function hitungBongkar(){
+  let j = document.getElementById('bongkar').value;
+  let total = (j/25) * 100000;
+
+  await addDoc(collection(db, "kerja"), {
+    jenis: "Bongkar",
+    jumlah: total,
+    waktu: new Date()
+  });
+
+  alert("Tersimpan");
+}
+
+// ================= GAJI =================
+async function loadGaji(){
+  let list = document.getElementById('listGaji');
+  list.innerHTML = "";
+  let total = 0;
+
+  const data = await getDocs(collection(db, "kerja"));
+
+  data.forEach(doc=>{
+    let d = doc.data();
+    total += Number(d.jumlah);
+
+    let li = document.createElement('li');
+    li.innerText = d.jenis + " = " + d.jumlah;
+    list.appendChild(li);
+  });
+
+  document.getElementById('totalGaji').innerText = total;
+}
+
+// LOAD
 window.onload = function(){
   tampilAbsen();
 }
