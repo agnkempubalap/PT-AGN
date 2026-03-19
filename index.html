@@ -176,6 +176,76 @@ function totalGaji(){
   document.getElementById('totalGaji').value = total;
 }
 </script>
+<script>
 
+let total = localStorage.getItem("total") || 0;
+
+function show(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function absen(){
+  let nama = document.getElementById('nama').value;
+  let data = JSON.parse(localStorage.getItem("absen") || "[]");
+
+  data.push(nama + " hadir");
+  localStorage.setItem("absen", JSON.stringify(data));
+
+  tampilAbsen();
+}
+
+function tampilAbsen(){
+  let data = JSON.parse(localStorage.getItem("absen") || "[]");
+  let list = document.getElementById('listAbsen');
+  list.innerHTML = "";
+  data.forEach(i=>{
+    let li = document.createElement('li');
+    li.innerText = i;
+    list.appendChild(li);
+  });
+}
+
+function hitungKempu(){
+  let j = document.getElementById('kempu').value;
+  let hasil = j * 100000;
+  total = Number(total) + hasil;
+  localStorage.setItem("total", total);
+  document.getElementById('hasilKempu').value = hasil;
+}
+
+function hitungJerigen(){
+  let j = document.getElementById('jerigen').value;
+  let hasil = j * 1000;
+  total = Number(total) + hasil;
+  localStorage.setItem("total", total);
+  document.getElementById('hasilJerigen').value = hasil;
+}
+
+function hitungBongkar(){
+  let j = document.getElementById('bongkar').value;
+  let hasil = (j/25) * 100000;
+  total = Number(total) + hasil;
+  localStorage.setItem("total", total);
+  document.getElementById('hasilBongkar').value = hasil;
+}
+
+function hitungPangkalan(){
+  let j = document.getElementById('pangkalan').value;
+  let hasil = j * 500000;
+  total = Number(total) + hasil;
+  localStorage.setItem("total", total);
+  document.getElementById('hasilPangkalan').value = hasil;
+}
+
+function totalGaji(){
+  document.getElementById('totalGaji').value = localStorage.getItem("total");
+}
+
+window.onload = function(){
+  tampilAbsen();
+}
+
+</script>
 </body>
 </html>
