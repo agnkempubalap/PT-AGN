@@ -18,14 +18,14 @@ input,select{width:100%;padding:8px;margin-bottom:8px}
 <body><!-- DASHBOARD --><div id="dashboardPage" class="page active">
 <div class="card"><h3>Dashboard</h3><div id="dashboard"></div></div>
 </div><!-- ABSENSI --><div id="absenPage" class="page">
-<div class="card"><h3>Absensi</h3>
-<select id="namaAbsen"></select>
-<select id="statusAbsen">
-<option>Hadir</option>
-<option>Izin</option>
-<option>Sakit</option>
-</select>
-<button class="save" onclick="absen()">Absen</button>
+<div class="card"><h3>📋 Absensi</h3>
+<select id="namaAbsen"></select><button class="save" style="background:#4caf50" onclick="absenMasuk()">Absen Masuk</button> <button class="save" style="background:#ff9800;margin-top:6px" onclick="absenPulang()">Absen Pulang</button> <button class="save" style="background:#f44336;margin-top:6px" onclick="resetHari()">Reset Hari Ini</button>
+
+<hr>
+<h4>Kelola Karyawan</h4>
+<input type="text" id="namaBaru" placeholder="Tambah Karyawan">
+<button class="save" onclick="tambahKaryawan()">Tambah</button>
+<div id="listKaryawan"></div><hr>
 <div id="dataAbsen"></div>
 </div>
 </div><!-- AKTIVITAS --><div id="aktivitasPage" class="page">
@@ -41,19 +41,26 @@ input,select{width:100%;padding:8px;margin-bottom:8px}
 <button class="save" onclick="tambahStok()">Tambah / Update</button>
 <div id="dataStok"></div>
 </div>
-</div><!-- KARYAWAN --><div id="karyawanPage" class="page">
-<div class="card"><h3>Kelola Karyawan</h3>
+</div><!-- ABSENSI --><div id="absenPage" class="page">
+<div class="card"><h3>Absensi</h3>
+<select id="namaAbsen"></select>
+<select id="statusAbsen">
+<option>Hadir</option>
+<option>Izin</option>
+<option>Sakit</option>
+</select>
+<button class="save" onclick="absen()">Absen</button><hr>
+<h4>Kelola Karyawan</h4>
 <input type="text" id="namaBaru" placeholder="Tambah Karyawan">
 <button class="save" onclick="tambahKaryawan()">Tambah</button>
-<div id="listKaryawan"></div>
+<div id="listKaryawan"></div><hr>
+<div id="dataAbsen"></div>
 </div>
 </div><!-- NAV --><div class="nav">
 <button onclick="showPage('dashboardPage')">Home</button>
 <button onclick="showPage('absenPage')">Absen</button>
 <button onclick="showPage('aktivitasPage')">Aktivitas</button>
-<button onclick="showPage('stokPage')">Stok</button>
-<button onclick="showPage('karyawanPage')">Karyawan</button>
-</div><script>
+<button onclick="showPage('stokPage')">Stok</button></div><script>
 // KARYAWAN DINAMIS
 let karyawan=JSON.parse(localStorage.getItem('karyawan')||'["Hatta","Agung"]');
 
@@ -87,17 +94,58 @@ select.innerHTML='';
 karyawan.forEach(n=>select.innerHTML+=`<option>${n}</option>`);
 }
 
-function absen(){
+function absenMasuk(){
 let nama=document.getElementById('namaAbsen').value;
-let status=document.getElementById('statusAbsen').value;
 let tanggal=new Date().toLocaleDateString();
 let waktu=new Date().toLocaleTimeString();
 
 let data=JSON.parse(localStorage.getItem('absen')||'[]');
-
-// cegah double hari sama
 let sudah=data.find(d=>d.nama==nama && d.tanggal==tanggal);
-if(sudah){alert('Sudah absen hari ini');return;}
+if(sudah){alert('Sudah absen masuk');return;}
+
+data.push({nama,tanggal,masuk:waktu,pulang:'-',status:'Hadir'});
+localStorage.setItem('absen',JSON.stringify(data));
+tampilAbsen();
+}
+
+function absenPulang(){
+let nama=document.getElementById('namaAbsen').value;
+let tanggal=new Date().toLocaleDateString();
+let waktu=new Date().toLocaleTimeString();
+
+let data=JSON.parse(localStorage.getItem('absen')||'[]');
+let item=data.find(d=>d.nama==nama && d.tanggal==tanggal);
+if(!item){alert('Belum absen masuk');return;}
+
+item.pulang=waktu;
+localStorage.setItem('absen',JSON.stringify(data));
+tampilAbsen();
+}
+
+function resetHari(){
+let tanggal=new Date().toLocaleDateString();
+let data=JSON.parse(localStorage.getItem('absen')||'[]');
+data=data.filter(d=>d.tanggal!=tanggal);
+localStorage.setItem('absen',JSON.stringify(data));
+tampilAbsen();
+}
+
+function tampilAbsen(){
+let data=JSON.parse(localStorage.getItem('absen')||'[]');
+let div=document.getElementById('dataAbsen');
+div.innerHTML='';
+
+data.slice().reverse().forEach(d=>{
+if(!d.nama) return;
+div.innerHTML+=`<div class='card'>
+<b>${d.nama}</b><br>
+${d.tanggal}<br>
+Masuk: ${d.masuk}<br>
+Pulang: ${d.pulang}<br>
+<span style='color:green'>${d.status}</span>
+</div>`;
+});
+}
 
 
 data.push({nama,status,tanggal,waktu});
