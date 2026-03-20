@@ -41,7 +41,7 @@ select, button {
 <!-- DASHBOARD -->
 <div id="dashboard" class="page active">
 <h2>Dashboard</h2>
-<div class="card">Aplikasi PT AGN</div>
+<div class="card">Aplikasi Absensi PT AGN</div>
 </div>
 
 <!-- ABSENSI -->
@@ -50,14 +50,14 @@ select, button {
 
 <div class="card">
 <select id="nama">
-<option value="Agung">Agung</option>
-<option value="Hasan">Hasan</option>
-<option value="Hata">Hata</option>
-<option value="Alda">Alda</option>
-<option value="Nur">Nur</option>
+<option>Agung</option>
+<option>Hasan</option>
+<option>Hata</option>
+<option>Alda</option>
+<option>Nur</option>
 </select>
 
-<button onclick="absen()">Hadir</button>
+<button id="btnAbsen" onclick="absen()">Hadir</button>
 
 <ul id="listAbsen"></ul>
 </div>
@@ -69,7 +69,6 @@ select, button {
 <button onclick="show('absensi')">Absensi</button>
 </div>
 
-<!-- NAV SCRIPT -->
 <script>
 function show(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -85,12 +84,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/fireba
 import { 
   getFirestore, 
   collection, 
-  addDoc, 
-  onSnapshot, 
-  query, 
-  orderBy,
-  where,
-  getDocs
+  doc,
+  setDoc,
+  getDoc,
+  onSnapshot,
+  query,
+  orderBy
 } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
 // CONFIG FIREBASE
@@ -107,39 +106,51 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// 🔥 ABSEN (ANTI DOUBLE)
+// 🔥 ABSEN SUPER ANTI DOUBLE
 window.absen = async function(){
 
+  const btn = document.getElementById("btnAbsen");
+  btn.disabled = true;
+  btn.innerText = "Loading...";
+
   let nama = document.getElementById("nama").value;
-  let hariIni = new Date().toDateString();
 
-  // CEK SUDAH ABSEN
-  const q = query(
-    collection(db, "absensi"),
-    where("nama", "==", nama),
-    where("tanggal", "==", hariIni)
-  );
+  let today = new Date();
+  let tanggal = today.getFullYear() + "-" + 
+                (today.getMonth()+1).toString().padStart(2,'0') + "-" + 
+                today.getDate().toString().padStart(2,'0');
 
-  const hasil = await getDocs(q);
+  let docId = nama + "_" + tanggal;
 
-  if(!hasil.empty){
-    alert("❌ " + nama + " sudah absen hari ini!");
-    return;
-  }
-
-  // SIMPAN
   try {
-    await addDoc(collection(db, "absensi"), {
+
+    const ref = doc(db, "absensi", docId);
+    const snap = await getDoc(ref);
+
+    // ❌ SUDAH ABSEN
+    if(snap.exists()){
+      alert("❌ " + nama + " sudah absen hari ini!");
+      btn.disabled = false;
+      btn.innerText = "Hadir";
+      return;
+    }
+
+    // ✅ SIMPAN
+    await setDoc(ref, {
       nama: nama,
       status: "Hadir",
       waktu: new Date(),
-      tanggal: hariIni
+      tanggal: tanggal
     });
 
     alert("✅ Absen berhasil");
+
   } catch (e) {
     alert("Error: " + e.message);
   }
+
+  btn.disabled = false;
+  btn.innerText = "Hadir";
 }
 
 // 🔥 REALTIME LIST
@@ -155,7 +166,7 @@ function realtime(){
       const d = doc.data();
       const li = document.createElement("li");
 
-      li.innerText = (d.nama || "-") + " - " + (d.status || "-");
+      li.innerText = d.nama + " - " + d.status;
 
       list.appendChild(li);
     });
