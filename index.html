@@ -5,6 +5,13 @@
 <title>Absensi Karyawan</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<!-- Chart -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
 <style>
 body {
   font-family: 'Segoe UI', sans-serif;
@@ -20,22 +27,19 @@ body {
   box-shadow: 0 10px 25px rgba(0,0,0,0.08);
 }
 
-h2 { margin-bottom: 10px; }
-
 button {
   width: 100%;
   padding: 12px;
   margin-top: 10px;
-  border: none;
   border-radius: 12px;
+  border: none;
   font-weight: bold;
-  cursor: pointer;
 }
 
-.btn-masuk { background:#16a34a; color:white; }
-.btn-pulang { background:#f59e0b; color:white; }
-.btn-reset { background:#ef4444; color:white; }
-.btn-excel { background:#3b82f6; color:white; }
+.btn-masuk { background:#16a34a;color:white; }
+.btn-pulang { background:#f59e0b;color:white; }
+.btn-reset { background:#ef4444;color:white; }
+.btn-excel { background:#3b82f6;color:white; }
 
 input, select {
   width:100%;
@@ -45,12 +49,9 @@ input, select {
   margin-top:8px;
 }
 
-.status-hadir {background:#16a34a;color:white;padding:3px 10px;border-radius:10px;}
-.status-telat {background:#f59e0b;color:white;padding:3px 10px;border-radius:10px;}
-
 .dashboard {
   display:grid;
-  grid-template-columns:1fr 1fr;
+  grid-template-columns:1fr 1fr 1fr;
   gap:10px;
 }
 
@@ -61,9 +62,12 @@ input, select {
   text-align:center;
 }
 
+.total { background:#3b82f6; }
 .hadir { background:#16a34a; }
 .telat { background:#f59e0b; }
-.total { background:#3b82f6; }
+
+.status-hadir {background:#16a34a;color:white;padding:3px 10px;border-radius:10px;}
+.status-telat {background:#f59e0b;color:white;padding:3px 10px;border-radius:10px;}
 </style>
 </head>
 
@@ -72,17 +76,22 @@ input, select {
 <div class="card">
   <h2>📋 Absensi Karyawan</h2>
 
-  <select id="nama"></select>
+  <select id="nama">
+    <option>Agung</option>
+    <option>Hasan</option>
+    <option>Hatta</option>
+    <option>Alda</option>
+  </select>
 
   <button class="btn-masuk" onclick="absenMasuk()">Absen Masuk</button>
   <button class="btn-pulang" onclick="absenPulang()">Absen Pulang</button>
   <button class="btn-reset" onclick="resetHari()">Reset Hari Ini</button>
   <button class="btn-excel" onclick="exportExcel()">Export Excel</button>
+  <button class="btn-excel" onclick="exportPDF()">Export PDF</button>
 </div>
 
 <div class="card">
   <h3>🔍 Filter</h3>
-
   <input type="date" id="filterTanggal" onchange="loadData()">
   <input type="month" id="filterBulan" onchange="loadData()">
   <input type="text" id="searchNama" placeholder="Cari nama..." onkeyup="loadData()">
@@ -97,11 +106,16 @@ input, select {
   </div>
 </div>
 
+<div class="card">
+  <h3>📈 Grafik Bulanan</h3>
+  <canvas id="chartBulanan"></canvas>
+</div>
+
 <div id="list"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, query, where, updateDoc, doc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, query, where, updateDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAu67MAhW8xdmciPi3xOKwHdy-uP4u9tXI",
@@ -115,45 +129,32 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const namaList = ["Agung","Hasan","Hatta","Nur","Alda"];
+function nowJam(){ return new Date().toLocaleTimeString("id-ID"); }
+function today(){ return new Date().toISOString().split("T")[0]; }
+function bulanNow(){ return new Date().toISOString().slice(0,7); }
 
-function nowJam() {
-  return new Date().toLocaleTimeString("id-ID");
-}
-
-function today() {
-  return new Date().toISOString().split("T")[0];
-}
-
-function bulanNow() {
-  return new Date().toISOString().slice(0,7);
-}
-
-function initNama() {
-  const select = document.getElementById("nama");
-  namaList.forEach(n => {
-    select.innerHTML += `<option>${n}</option>`;
-  });
-}
-
-window.absenMasuk = async () => {
+window.absenMasuk = async ()=>{
   const nama = document.getElementById("nama").value;
 
   await addDoc(collection(db,"absensi"),{
     nama,
     jamMasuk: nowJam(),
-    jamPulang: "-",
-    statusMasuk: (new Date().getHours() > 8 ? "Telat" : "Hadir"),
+    jamPulang:"-",
+    statusMasuk:(new Date().getHours()>8?"Telat":"Hadir"),
     tanggal: today()
   });
 
   loadData();
 };
 
-window.absenPulang = async () => {
+window.absenPulang = async ()=>{
   const nama = document.getElementById("nama").value;
 
-  const q = query(collection(db,"absensi"), where("nama","==",nama), where("tanggal","==",today()));
+  const q = query(collection(db,"absensi"),
+    where("nama","==",nama),
+    where("tanggal","==",today())
+  );
+
   const snap = await getDocs(q);
 
   snap.forEach(async d=>{
@@ -165,19 +166,20 @@ window.absenPulang = async () => {
   loadData();
 };
 
-window.resetHari = async () => {
-  const snap = await getDocs(collection(db,"absensi"));
+window.resetHari = async ()=>{
+  const q = query(collection(db,"absensi"), where("tanggal","==",today()));
+  const snap = await getDocs(q);
+
   snap.forEach(async d=>{
-    await updateDoc(doc(db,"absensi",d.id),{
-      jamMasuk:"-",
-      jamPulang:"-",
-      statusMasuk:"-"
-    });
+    await deleteDoc(doc(db,"absensi",d.id));
   });
+
   loadData();
 };
 
-async function loadData() {
+let chart;
+
+async function loadData(){
   const list = document.getElementById("list");
   list.innerHTML="Loading...";
 
@@ -189,66 +191,108 @@ async function loadData() {
 
   let html="";
   let total=0, hadir=0, telat=0;
+  let mapBulanan={};
 
   snap.forEach(docItem=>{
     const d = docItem.data();
 
-    if (tgl && d.tanggal !== tgl) return;
+    if (tgl && d.tanggal!==tgl) return;
     if (bln && !d.tanggal.startsWith(bln)) return;
     if (search && !d.nama.toLowerCase().includes(search)) return;
 
     total++;
-    if (d.statusMasuk==="Hadir") hadir++;
-    if (d.statusMasuk==="Telat") telat++;
+    if(d.statusMasuk==="Hadir") hadir++;
+    if(d.statusMasuk==="Telat") telat++;
 
-    html += `
-      <div class="card">
-        <b>${d.nama}</b><br>
-        ${d.tanggal}<br>
-        Masuk: ${d.jamMasuk}<br>
-        Pulang: ${d.jamPulang}<br>
-        Status: <span class="${d.statusMasuk==='Telat'?'status-telat':'status-hadir'}">${d.statusMasuk}</span>
-      </div>
-    `;
+    if(!mapBulanan[d.tanggal]) mapBulanan[d.tanggal]={hadir:0,telat:0};
+    if(d.statusMasuk==="Hadir") mapBulanan[d.tanggal].hadir++;
+    if(d.statusMasuk==="Telat") mapBulanan[d.tanggal].telat++;
+
+    html+=`
+    <div class="card">
+      <b>${d.nama}</b><br>
+      ${d.tanggal}<br>
+      Masuk: ${d.jamMasuk}<br>
+      Pulang: ${d.jamPulang}<br>
+      Status: <span class="${d.statusMasuk==='Telat'?'status-telat':'status-hadir'}">${d.statusMasuk}</span>
+    </div>`;
   });
 
   document.getElementById("total").innerText=total;
   document.getElementById("hadir").innerText=hadir;
   document.getElementById("telat").innerText=telat;
 
+  renderChart(mapBulanan);
+
   list.innerHTML = html || "Tidak ada data";
 }
 
-window.exportExcel = async () => {
+function renderChart(map){
+  const ctx = document.getElementById("chartBulanan");
+
+  const labels = Object.keys(map);
+  const hadirData = labels.map(t=>map[t].hadir);
+  const telatData = labels.map(t=>map[t].telat);
+
+  if(chart) chart.destroy();
+
+  chart = new Chart(ctx,{
+    type:"bar",
+    data:{
+      labels:labels,
+      datasets:[
+        {label:"Hadir", data:hadirData, backgroundColor:"#16a34a"},
+        {label:"Telat", data:telatData, backgroundColor:"#f59e0b"}
+      ]
+    }
+  });
+}
+
+window.exportExcel = async ()=>{
   const snap = await getDocs(collection(db,"absensi"));
 
-  let html = `<table border="1">
-  <tr style="background:#16a34a;color:white">
-  <th>Nama</th><th>Tanggal</th><th>Masuk</th><th>Pulang</th><th>Status</th></tr>`;
+  let html="<table border='1'><tr><th>Nama</th><th>Tanggal</th><th>Masuk</th><th>Pulang</th><th>Status</th></tr>";
 
   snap.forEach(d=>{
     const x=d.data();
-    html+=`<tr>
-    <td>${x.nama}</td>
-    <td>${x.tanggal}</td>
-    <td>${x.jamMasuk}</td>
-    <td>${x.jamPulang}</td>
-    <td>${x.statusMasuk}</td>
-    </tr>`;
+    html+=`<tr><td>${x.nama}</td><td>${x.tanggal}</td><td>${x.jamMasuk}</td><td>${x.jamPulang}</td><td>${x.statusMasuk}</td></tr>`;
   });
 
   html+="</table>";
 
-  const blob = new Blob([html],{type:"application/vnd.ms-excel"});
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "Absensi.xls";
+  const blob=new Blob([html],{type:"application/vnd.ms-excel"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="Absensi.xls";
   a.click();
 };
 
-initNama();
+window.exportPDF = async ()=>{
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  const snap = await getDocs(collection(db,"absensi"));
+  let rows=[];
+
+  snap.forEach(d=>{
+    const x=d.data();
+    rows.push([x.nama,x.tanggal,x.jamMasuk,x.jamPulang,x.statusMasuk]);
+  });
+
+  doc.text("Laporan Absensi",14,15);
+
+  doc.autoTable({
+    startY:20,
+    head:[["Nama","Tanggal","Masuk","Pulang","Status"]],
+    body:rows
+  });
+
+  doc.save("Absensi.pdf");
+};
+
 document.getElementById("filterTanggal").value = today();
 document.getElementById("filterBulan").value = bulanNow();
+
 loadData();
 
 </script>
