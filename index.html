@@ -1,313 +1,141 @@
-<!DOCTYPE html>
-<html>
+<!DOCTYPE html><html lang="id">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-
-<style>
-body{
- margin:0;
- font-family:sans-serif;
- background:linear-gradient(180deg,#6fa8dc,#cfe2f3);
-}
-
-/* CARD */
-.card{
- background:rgba(255,255,255,0.9);
- backdrop-filter:blur(10px);
- padding:15px;
- margin:10px;
- border-radius:20px;
- box-shadow:0 6px 20px rgba(0,0,0,0.1);
-}
-
-/* BUTTON */
-button{
- width:100%;
- padding:12px;
- border:none;
- border-radius:12px;
- margin:5px 0;
- font-weight:bold;
-}
-
-.green{background:#2ecc71;color:#fff}
-.orange{background:#f39c12;color:#fff}
-.red{background:#e74c3c;color:#fff}
-.blue{background:#3498db;color:#fff}
-
-/* INPUT */
-input,select{
- width:100%;
- padding:10px;
- border-radius:10px;
- border:none;
- margin:5px 0;
-}
-
-/* TAB */
-.tab{
- display:none;
- animation:fade 0.3s;
- padding-bottom:90px;
-}
-.tab.active{display:block}
-
-@keyframes fade{
- from{opacity:0;transform:translateY(10px)}
- to{opacity:1;transform:translateY(0)}
-}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PT-AGN System</title><script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><style>
+body{font-family:sans-serif;background:linear-gradient(to bottom,#6fa8dc,#cfe2f3);margin:0}
+.card{background:#fff;border-radius:15px;padding:15px;margin:15px;box-shadow:0 4px 10px rgba(0,0,0,0.1)}
+button{width:100%;padding:12px;border:none;border-radius:10px;margin:5px 0;color:#fff;font-weight:bold}
+.green{background:#2ecc71}.orange{background:#f39c12}.red{background:#e74c3c}.blue{background:#3498db}
+input,select{width:100%;padding:10px;border-radius:8px;margin:5px 0}
+.flex{display:flex;gap:10px}
+.box{flex:1;padding:10px;border-radius:10px;color:#fff;text-align:center}
+.b1{background:#3498db}.b2{background:#2ecc71}.b3{background:#f1c40f}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:12px 20px;border-radius:10px;opacity:0;transition:.3s}
+.show{opacity:1}
 
 /* NAV */
-.nav{
- position:fixed;
- bottom:0;
- width:100%;
- display:flex;
- background:#fff;
- border-top:1px solid #ddd;
-}
-
-.nav button{
- flex:1;
- background:none;
- padding:12px;
- font-size:12px;
-}
-
-.nav .activeTab{
- color:#3498db;
-}
-
-/* DASHBOARD BOX */
-.flex{display:flex;gap:10px}
-.box{
- flex:1;
- padding:15px;
- border-radius:15px;
- color:#fff;
- text-align:center;
- font-weight:bold;
-}
-.b1{background:#3498db}
-.b2{background:#2ecc71}
-.b3{background:#f1c40f}
-
-</style>
-</head>
-
-<body>
-
-<!-- LOGIN -->
-<div id="loginBox" class="card">
-<h3>🔐 Login Admin</h3>
-<input type="password" id="pin" placeholder="Masukkan PIN">
-<button class="blue" onclick="login()">Login</button>
-
-<h4>Ganti PIN</h4>
-<input type="password" id="pinLama" placeholder="PIN lama">
-<input type="password" id="pinBaru" placeholder="PIN baru">
-<button class="orange" onclick="gantiPin()">Ganti PIN</button>
-</div>
-
-<!-- APP -->
-<div id="app" style="display:none">
-
-<!-- DASHBOARD -->
-<div id="tabDashboard" class="tab active">
+.nav{display:flex;background:#fff;border-bottom:1px solid #ccc}
+.nav button{flex:1;background:none;color:#333}
+.nav .active{color:#3498db;font-weight:bold}
+.page{display:none}
+.page.active{display:block}
+</style></head>
+<body><div id="toast"></div><!-- NAVIGATION --><div class="nav">
+<button onclick="showPage('home',this)" class="active">Home</button>
+<button onclick="showPage('absen',this)">Absensi</button>
+<button onclick="showPage('stok',this)">Stok</button>
+<button onclick="showPage('aktivitas',this)">Aktivitas</button>
+<button onclick="showPage('gaji',this)">Gaji</button>
+</div><!-- HOME --><div id="home" class="page active">
 <div class="card">
-<h3>Dashboard</h3>
-<div class="flex">
-<div class="box b1" id="hadirBox">0</div>
-<div class="box b2" id="telatBox">0</div>
-<div class="box b3" id="alpaBox">0</div>
+<h3>🏠 Halaman Utama</h3>
+<p>Selamat datang di sistem PT-AGN</p>
 </div>
-</div>
-</div>
-
-<!-- ABSENSI -->
-<div id="tabAbsensi" class="tab">
+</div><!-- ABSENSI --><div id="absen" class="page">
 <div class="card">
+<h3>📋 Absensi</h3>
 <select id="nama"></select>
-<button class="green" onclick="masuk()">Masuk</button>
-<button class="blue" onclick="izin()">Izin</button>
+<button class="green" onclick="absenMasuk()">Masuk</button>
+<button class="orange" onclick="absenPulang()">Pulang</button>
+<button class="red" onclick="resetHari()">Reset</button>
+<button class="blue" onclick="exportExcel()">Excel</button>
+<button class="blue" onclick="exportPDF()">PDF</button>
+</div><div class="card">
+<h4>Dashboard</h4>
+<div class="flex">
+<div class="box b1" id="total">0</div>
+<div class="box b2" id="hadir">0</div>
+<div class="box b3" id="telat">0</div>
 </div>
-
-<div id="list"></div>
-</div>
-
-<!-- KARYAWAN -->
-<div id="tabKaryawan" class="tab">
+</div><div id="list"></div>
+</div><!-- STOK --><div id="stok" class="page">
 <div class="card">
-<input id="karyawanBaru" placeholder="Tambah nama">
-<button class="blue" onclick="tambahKaryawan()">Tambah</button>
-
-<select id="hapusNama"></select>
-<button class="red" onclick="hapusKaryawan()">Hapus</button>
+<h3>📦 Stok Gudang</h3>
+<p>Belum diisi</p>
 </div>
-</div>
-
-<!-- LAPORAN -->
-<div id="tabLaporan" class="tab">
+</div><!-- AKTIVITAS --><div id="aktivitas" class="page">
 <div class="card">
-<h3>📊 Laporan</h3>
-(isi nanti)
+<h3>🧑‍💼 Aktivitas Harian</h3>
+<p>Belum diisi</p>
 </div>
-</div>
-
-<!-- LOG -->
-<div id="tabLog" class="tab">
+</div><!-- GAJI --><div id="gaji" class="page">
 <div class="card">
-<h3>📜 Log Aktivitas</h3>
-<div id="logList"></div>
+<h3>💰 Gaji</h3>
+<p>Belum diisi</p>
 </div>
-</div>
+</div><script>
 
-<!-- NAV -->
-<div class="nav">
-<button onclick="showTab('Dashboard',this)" class="activeTab">🏠</button>
-<button onclick="showTab('Absensi',this)">📋</button>
-<button onclick="showTab('Karyawan',this)">👤</button>
-<button onclick="showTab('Laporan',this)">📊</button>
-<button onclick="showTab('Log',this)">🧠</button>
-</div>
+// ===== NAVIGATION =====
+function showPage(id,btn){
+ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
 
-</div>
-
-<script>
-
-// ===== FIREBASE =====
-const firebaseConfig={
- apiKey:"AIzaSy...",
- authDomain:"pt-agn.firebaseapp.com",
- databaseURL:"https://pt-agn-default-rtdb.firebaseio.com"
-};
-firebase.initializeApp(firebaseConfig);
-const db=firebase.database();
-
-let data=[],karyawan=[],PIN_GLOBAL="1234",logs=[];
-let SESSION_ID=Date.now();
-
-// ===== TAB =====
-function showTab(n,btn){
- document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
- document.getElementById("tab"+n).classList.add("active");
-
- document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('activeTab'));
- btn.classList.add("activeTab");
-}
-
-// ===== LOGIN =====
-db.ref("config/pin").on("value",s=>{
- PIN_GLOBAL=s.val()||"1234";
-});
-
-function login(){
- if(pin.value==PIN_GLOBAL){
-  localStorage.setItem("login",true);
-  localStorage.setItem("session",SESSION_ID);
-  db.ref("config/session").set(SESSION_ID);
-  loginBox.style.display="none";
-  app.style.display="block";
- }else alert("PIN salah");
-}
-
-if(localStorage.getItem("login")){
- loginBox.style.display="none";
- app.style.display="block";
+ document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+ btn.classList.add('active');
 }
 
 // ===== DATA =====
-db.ref("karyawan").on("value",s=>{
- if(!s.exists() || !Array.isArray(s.val()) || s.val().length===0){
-  karyawan=["Agung","Alda","Nur","Budi","Siti"];
-  db.ref("karyawan").set(karyawan);
- }else karyawan=s.val();
- updateDrop();
-});
+let data = JSON.parse(localStorage.getItem("absensi")) || [];
+let karyawan = ["Agung","Alda","Nur","Hasan","Hatta"];
 
-db.ref("absensi").on("value",s=>{
- data=s.val()||[];
- render();
-});
+const namaSelect = document.getElementById("nama");
+namaSelect.innerHTML = karyawan.map(n=>`<option>${n}</option>`);
 
-// ===== LOG =====
-db.ref("config/logs").limitToLast(20).on("value",s=>{
- logs=[];
- s.forEach(c=>logs.push(c.val()));
- logs.reverse();
- renderLogs();
-});
-
-// ===== KARYAWAN =====
-function updateDrop(){
- nama.innerHTML=karyawan.map(n=>`<option>${n}</option>`);
- hapusNama.innerHTML=karyawan.map(n=>`<option>${n}</option>`);
+function toast(msg){
+ const t = document.getElementById("toast");
+ t.innerText = msg;
+ t.classList.add("show");
+ setTimeout(()=>t.classList.remove("show"),2000);
 }
 
-function tambahKaryawan(){
- if(!karyawanBaru.value)return;
- karyawan.push(karyawanBaru.value);
- db.ref("karyawan").set(karyawan);
-}
-
-function hapusKaryawan(){
- let n=hapusNama.value;
- karyawan=karyawan.filter(x=>x!==n);
- db.ref("karyawan").set(karyawan);
-}
-
-// ===== ABSEN =====
 function now(){
  let d=new Date();
- return {tgl:d.toISOString().split('T')[0]};
+ return {tanggal:d.toISOString().split('T')[0],jam:d.toTimeString().split(' ')[0]}
 }
 
-function masuk(){
+function save(){
+ localStorage.setItem("absensi", JSON.stringify(data));
+ render();
+}
+
+function isTelat(jam){return jam>"08:00:00"}
+
+function absenMasuk(){
+ let n=namaSelect.value;
  let t=now();
- data.push({nama:nama.value,tgl:t.tgl,status:"Hadir"});
+ if(data.find(x=>x.nama==n&&x.tanggal==t.tanggal)){toast("Sudah absen");return}
+ let status=isTelat(t.jam)?"Telat":"Hadir";
+ data.push({nama:n,tanggal:t.tanggal,masuk:t.jam,pulang:"-",status});
  save();
 }
 
-function izin(){
+function absenPulang(){
+ let n=namaSelect.value;
  let t=now();
- data.push({nama:nama.value,tgl:t.tgl,status:"Izin"});
+ let d=data.find(x=>x.nama==n&&x.tanggal==t.tanggal);
+ if(!d){toast("Belum masuk");return}
+ d.pulang=t.jam;
  save();
 }
 
-function save(){ db.ref("absensi").set(data); }
+function resetHari(){
+ let today=now().tanggal;
+ data=data.filter(x=>x.tanggal!=today);
+ save();
+}
 
-// ===== RENDER =====
 function render(){
- list.innerHTML=data.map(x=>`
- <div class="card">${x.nama} - ${x.status}</div>
- `).join("");
-
- hadirBox.innerText=data.filter(x=>x.status=="Hadir").length;
- telatBox.innerText=data.filter(x=>x.status=="Telat").length;
- alpaBox.innerText=data.filter(x=>x.status=="Alpa").length;
-}
-
-// ===== LOG VIEW =====
-function renderLogs(){
- logList.innerHTML=logs.map(l=>`
+ document.getElementById("list").innerHTML=data.map(x=>`
  <div class="card">
- ${l.type} (${l.status})<br>
- ${l.time}
- </div>
- `).join("");
+ <b>${x.nama}</b><br>${x.tanggal}<br>${x.status}
+ </div>`).join("");
+
+ document.getElementById("total").innerText=data.length;
+ document.getElementById("hadir").innerText=data.filter(x=>x.status=="Hadir").length;
+ document.getElementById("telat").innerText=data.filter(x=>x.status=="Telat").length;
 }
 
-// ===== PIN =====
-function gantiPin(){
- if(pinLama.value!==PIN_GLOBAL){alert("PIN salah");return;}
- db.ref("config/pin").set(pinBaru.value);
- db.ref("config/session").set(Date.now());
- alert("PIN diganti");
-}
-
-</script>
-</body>
+render();
+</script></body>
 </html>
