@@ -22,37 +22,42 @@ select, button {
 }
 
 button {
-  background:#4CAF50;
-  color:white;
   border:none;
+  color:white;
+  font-weight:bold;
 }
+
+#btnMasuk { background:#4CAF50; }
+#btnPulang { background:#ff9800; }
 
 .item {
   background:#f5f7ff;
   padding:10px;
   margin-top:5px;
   border-radius:10px;
-  display:flex;
-  justify-content:space-between;
 }
+
+.telat { color:red; font-weight:bold; }
+.tepat { color:green; font-weight:bold; }
 </style>
 </head>
 
 <body>
 
-<h2>Absensi Karyawan</h2>
+<h2>📋 Absensi Karyawan</h2>
 
 <div class="card">
 
 <select id="nama">
-<option value="Agung">Agung</option>
-<option value="Hasan">Hasan</option>
-<option value="Hatta">Hatta</option>
-<option value="Alda">Alda</option>
-<option value="Nur">Nur</option>
+<option>Agung</option>
+<option>Hasan</option>
+<option>Hatta</option>
+<option>Alda</option>
+<option>Nur</option>
 </select>
 
-<button id="btn">Hadir</button>
+<button id="btnMasuk">Absen Masuk</button>
+<button id="btnPulang">Absen Pulang</button>
 
 <h3>List Hari Ini</h3>
 <div id="list">Memuat...</div>
@@ -67,11 +72,11 @@ import {
   collection, 
   doc, 
   setDoc, 
+  getDoc,
+  updateDoc,
   getDocs 
 } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
 
-
-// CONFIG
 const firebaseConfig = {
   apiKey: "AIzaSyAu67MAhW8xdmciPi3xOKwHdy-uP4u9tXI",
   authDomain: "pt-agn.firebaseapp.com",
@@ -85,15 +90,29 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 
-// FORMAT TANGGAL
+// FORMAT
 function today(){
   let d = new Date();
   return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
 }
 
+function jam(){
+  return new Date().toLocaleTimeString("id-ID");
+}
 
-// ABSEN
-document.getElementById("btn").onclick = async function(){
+
+// STATUS TELAT (jam masuk > 08:00 = telat)
+function statusMasuk(){
+  let now = new Date();
+  let batas = new Date();
+  batas.setHours(8,0,0);
+
+  return now > batas ? "Telat" : "Tepat Waktu";
+}
+
+
+// 🔵 ABSEN MASUK
+document.getElementById("btnMasuk").onclick = async function(){
 
   let btn = this;
   if(btn.disabled) return;
@@ -106,58 +125,116 @@ document.getElementById("btn").onclick = async function(){
 
   try{
 
-    await setDoc(doc(db,"absensi",id),{
+    let ref = doc(db,"absensi",id);
+    let snap = await getDoc(ref);
+
+    if(snap.exists()){
+      alert("❌ Sudah absen masuk");
+      btn.disabled=false;
+      btn.innerText="Absen Masuk";
+      return;
+    }
+
+    await setDoc(ref,{
       nama:nama,
       tanggal:today(),
-      status:"Hadir"
+      jamMasuk:jam(),
+      statusMasuk:statusMasuk()
     });
 
-    alert("✅ Berhasil");
+    alert("✅ Masuk berhasil");
 
     loadData();
 
   }catch(e){
-    alert("Error: "+e.message);
+    alert(e.message);
   }
 
-  btn.disabled = false;
-  btn.innerText = "Hadir";
+  btn.disabled=false;
+  btn.innerText="Absen Masuk";
 };
 
 
-// LOAD DATA (TANPA QUERY RIBET)
+// 🟠 ABSEN PULANG
+document.getElementById("btnPulang").onclick = async function(){
+
+  let btn = this;
+  if(btn.disabled) return;
+
+  btn.disabled = true;
+  btn.innerText = "Loading...";
+
+  let nama = document.getElementById("nama").value;
+  let id = nama + "_" + today();
+
+  try{
+
+    let ref = doc(db,"absensi",id);
+    let snap = await getDoc(ref);
+
+    if(!snap.exists()){
+      alert("❌ Belum absen masuk");
+      btn.disabled=false;
+      btn.innerText="Absen Pulang";
+      return;
+    }
+
+    let data = snap.data();
+
+    if(data.jamPulang){
+      alert("❌ Sudah absen pulang");
+      btn.disabled=false;
+      btn.innerText="Absen Pulang";
+      return;
+    }
+
+    await updateDoc(ref,{
+      jamPulang: jam()
+    });
+
+    alert("✅ Pulang berhasil");
+
+    loadData();
+
+  }catch(e){
+    alert(e.message);
+  }
+
+  btn.disabled=false;
+  btn.innerText="Absen Pulang";
+};
+
+
+// LOAD DATA
 async function loadData(){
 
   let list = document.getElementById("list");
   list.innerHTML = "Memuat...";
 
-  try{
+  let snap = await getDocs(collection(db,"absensi"));
 
-    let snap = await getDocs(collection(db,"absensi"));
+  list.innerHTML = "";
 
-    list.innerHTML = "";
+  let tgl = today();
 
-    let tgl = today();
+  snap.forEach(doc=>{
+    let d = doc.data();
 
-    snap.forEach(doc=>{
-      let d = doc.data();
+    if(d.tanggal === tgl){
 
-      if(d.tanggal === tgl){
-        list.innerHTML += `
-          <div class="item">
-            <span>${d.nama}</span>
-            <span>${d.status}</span>
-          </div>
-        `;
-      }
-    });
-
-    if(list.innerHTML === ""){
-      list.innerHTML = "Belum ada data";
+      list.innerHTML += `
+        <div class="item">
+          <b>${d.nama}</b><br>
+          Masuk: ${d.jamMasuk || "-"}<br>
+          Status: <span class="${d.statusMasuk=='Telat'?'telat':'tepat'}">${d.statusMasuk || "-"}</span><br>
+          Pulang: ${d.jamPulang || "-"}
+        </div>
+      `;
     }
+  });
 
-  }catch(e){
-    list.innerHTML = "Error load data";
+  if(list.innerHTML === ""){
+    list.innerHTML = "Belum ada data";
   }
 }
 
