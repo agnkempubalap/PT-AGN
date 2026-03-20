@@ -9,376 +9,197 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-<!-- FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
 <style>
 body{font-family:sans-serif;background:linear-gradient(to bottom,#6fa8dc,#cfe2f3);margin:0;padding:15px}
-.card{background:#fff;border-radius:15px;padding:15px;margin-bottom:15px;box-shadow:0 4px 10px rgba(0,0,0,0.1)}
-button{width:100%;padding:12px;border:none;border-radius:10px;margin:5px 0;color:#fff;font-weight:bold}
+.card{background:#fff;border-radius:15px;padding:15px;margin-bottom:15px}
+button{width:100%;padding:10px;margin:5px 0;border:none;border-radius:8px;color:#fff}
 .green{background:#2ecc71}.orange{background:#f39c12}.red{background:#e74c3c}.blue{background:#3498db}
-input,select,textarea{width:100%;padding:10px;border-radius:8px;margin:5px 0}
-.flex{display:flex;gap:10px}
-.box{flex:1;padding:10px;border-radius:10px;color:#fff;text-align:center}
-.b1{background:#3498db}.b2{background:#2ecc71}.b3{background:#f1c40f}
-#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:12px 20px;border-radius:10px;opacity:0;transition:.3s}
-.show{opacity:1}
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN -->
 <div id="loginBox" class="card">
-<h3>🔐 Login Admin</h3>
-<input type="text" id="adminUser" placeholder="Username">
-<input type="password" id="adminPass" placeholder="Password">
-<button class="blue" onclick="loginAdmin()">Login</button>
+<h3>Login Admin</h3>
+<input type="password" id="pinInput" placeholder="PIN">
+<button class="blue" onclick="loginPIN()">Login</button>
 </div>
 
-<div id="toast"></div>
+<div id="app" style="display:none">
 
-<!-- ABSENSI -->
 <div class="card">
-<h3>📋 Absensi PT-AGN</h3>
+<select id="nama">
+<option>Agung</option>
+<option>Alda</option>
+<option>Nur</option>
+<option>Hasan</option>
+<option>Hatta</option>
+</select>
 
-<select id="nama"></select>
-
-<button class="green" onclick="absenMasuk()">Absen Masuk</button>
-<button class="orange" onclick="absenPulang()">Absen Pulang</button>
+<button class="green" onclick="absenMasuk()">Masuk</button>
+<button class="orange" onclick="absenPulang()">Pulang</button>
 <button class="blue" onclick="izin()">Izin</button>
-<button class="red" onclick="resetHari()">Reset Hari Ini</button>
-<button class="blue" onclick="exportExcel()">Export Excel</button>
-<button class="blue" onclick="exportPDF()">Export PDF</button>
+<button class="red" onclick="resetHari()">Reset</button>
 
-<input type="text" id="waList" placeholder="WA Global: 628xxx,628xxx">
-<button class="green" onclick="kirimWA()">Kirim WA Global</button>
+<input id="waGlobal" placeholder="WA Global">
+<button onclick="kirimWA()">WA Global</button>
 
-<textarea id="waMap" placeholder="Mapping WA:
-Agung=628xxx"></textarea>
-<button class="blue" onclick="kirimWAperOrang()">WA Per Orang</button>
+<textarea id="waMap" placeholder="Agung=628xxx"></textarea>
+<button onclick="kirimWAper()">WA Per Orang</button>
 
-<button class="blue" onclick="toggleBoss()">📊 Dashboard Bos</button>
-</div>
-
-<!-- MANAJEMEN KARYAWAN -->
-<div class="card">
-<h4>👥 Manajemen Karyawan</h4>
-<input type="text" id="namaBaru" placeholder="Nama karyawan baru">
-<button class="green" onclick="tambahKaryawan()">Tambah</button>
-<select id="hapusNama"></select>
-<button class="red" onclick="hapusKaryawan()">Hapus</button>
-</div>
-
-<!-- FILTER -->
-<div class="card">
-<h4>Filter</h4>
-<select id="bulan"></select>
-<input type="text" id="search" placeholder="Cari nama...">
-</div>
-
-<!-- DASHBOARD -->
-<div class="card">
-<h4>Dashboard</h4>
-<div class="flex">
-<div class="box b1" id="total">0</div>
-<div class="box b2" id="hadir">0</div>
-<div class="box b3" id="telat">0</div>
-</div>
-</div>
-
-<div class="card">
-<h4>Grafik</h4>
-<canvas id="chart"></canvas>
-</div>
-
-<div class="card">
-<h4>Grafik Performa</h4>
-<canvas id="chartOrang"></canvas>
-</div>
-
-<!-- DASHBOARD BOS -->
-<div id="bossPanel" class="card" style="display:none">
-<h3>📊 Dashboard Bos</h3>
-<div id="bossSummary"></div>
-<h4>🏆 Ranking</h4>
-<div id="bossRanking"></div>
-<h4>⚠️ Warning</h4>
-<div id="bossWarning"></div>
 </div>
 
 <div id="list"></div>
 
+<div class="card">
+<h3>Ranking</h3>
+<div id="ranking"></div>
+</div>
+
+<div class="card">
+<select id="pilihKaryawan"></select>
+<canvas id="chart"></canvas>
+</div>
+
+</div>
+
 <script>
 
-// ===== ADMIN =====
-const ADMIN_USER="admin";
-const ADMIN_PASS="123456";
-let isAdmin=false;
-
-// ===== LOGIN =====
-function loginAdmin(){
-  let u=document.getElementById("adminUser").value;
-  let p=document.getElementById("adminPass").value;
-  if(u===ADMIN_USER && p===ADMIN_PASS){
-    isAdmin=true;
-    document.getElementById("loginBox").style.display="none";
-    toast("Login berhasil");
-  }else toast("Login gagal");
+// PIN
+let PIN="1234";
+function loginPIN(){
+ if(pinInput.value===PIN){
+   loginBox.style.display="none";
+   app.style.display="block";
+ }
 }
 
-// ===== FIREBASE =====
-const firebaseConfig={apiKey:"demo",databaseURL:"https://demo.firebaseio.com"};
+// FIREBASE
+const firebaseConfig = {
+  apiKey: "AIzaSyAu67MAhW8xdmciPi3xOKwdy-uP4u9tXI",
+  authDomain: "pt-agn.firebaseapp.com",
+  databaseURL: "https://pt-agn-default-rtdb.firebaseio.com",
+  projectId: "pt-agn"
+};
 firebase.initializeApp(firebaseConfig);
 const db=firebase.database();
 
-// ===== DATA =====
-let data=JSON.parse(localStorage.getItem("absensi"))||[];
-let karyawan=JSON.parse(localStorage.getItem("karyawan"))||["Agung","Alda","Nur","Hasan","Hatta"];
+let data=[];
 
-const namaSelect=document.getElementById("nama");
+db.ref("absensi").on("value",snap=>{
+ data=snap.val()||[];
+ render();
+});
 
-// ===== BULAN =====
-const bulanNama=["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
-const bulanSelect=document.getElementById("bulan");
-
-bulanNama.forEach((b,i)=>bulanSelect.innerHTML+=`<option value="${i+1}">${b}</option>`);
-bulanSelect.value=new Date().getMonth()+1;
-bulanSelect.onchange=render;
-document.getElementById("search").oninput=render;
-
-// ===== UTIL =====
-function toast(msg){
-  let t=document.getElementById("toast");
-  t.innerText=msg;
-  t.classList.add("show");
-  setTimeout(()=>t.classList.remove("show"),2000);
-}
+function save(){ db.ref("absensi").set(data); }
 
 function now(){
-  let d=new Date();
-  return {tanggal:d.toISOString().split('T')[0],jam:d.toTimeString().split(' ')[0],bulan:d.getMonth()+1}
+ let d=new Date();
+ return {tgl:d.toISOString().split('T')[0],jam:d.toTimeString().split(' ')[0],bulan:d.getMonth()+1}
 }
 
-// ===== SAVE =====
-function save(){
-  localStorage.setItem("absensi",JSON.stringify(data));
-  db.ref("absensi").set(data);
-  render();
-}
-
-// ===== KARYAWAN =====
-function saveKaryawan(){
-  localStorage.setItem("karyawan",JSON.stringify(karyawan));
-  db.ref("karyawan").set(karyawan);
-  renderKaryawan();
-}
-
-db.ref("karyawan").on("value",snap=>{
-  let c=snap.val();
-  if(c){karyawan=c;renderKaryawan();}
-});
-
-function renderKaryawan(){
-  let s=document.getElementById("nama");
-  let h=document.getElementById("hapusNama");
-  s.innerHTML=""; h.innerHTML="";
-  karyawan.forEach(n=>{
-    s.innerHTML+=`<option>${n}</option>`;
-    h.innerHTML+=`<option>${n}</option>`;
-  });
-}
-
-function tambahKaryawan(){
-  if(!isAdmin){toast("Admin only");return}
-  let n=document.getElementById("namaBaru").value.trim();
-  if(!n)return toast("Isi nama");
-  if(karyawan.includes(n))return toast("Sudah ada");
-  karyawan.push(n);
-  document.getElementById("namaBaru").value="";
-  saveKaryawan(); toast("Ditambah");
-}
-
-function hapusKaryawan(){
-  if(!isAdmin){toast("Admin only");return}
-  let n=document.getElementById("hapusNama").value;
-  karyawan=karyawan.filter(x=>x!==n);
-  saveKaryawan(); toast("Dihapus");
-}
-
-// ===== LOAD CLOUD =====
-db.ref("absensi").on("value",snap=>{
-  let c=snap.val();
-  if(c){data=c;render();}
-});
-
-// ===== ABSEN =====
-function isTelat(jam){return jam>"09:00:00";}
-
+// ABSEN
 function absenMasuk(){
-  if(!isAdmin)return toast("Login dulu");
-  let n=namaSelect.value,t=now();
-  if(data.find(x=>x.nama==n&&x.tanggal==t.tanggal))return toast("Sudah absen");
-  data.push({nama:n,tanggal:t.tanggal,masuk:t.jam,pulang:"-",status:isTelat(t.jam)?"Telat":"Hadir",bulan:t.bulan});
-  save(); toast("Masuk");
+ let t=now(),n=nama.value;
+ if(data.find(x=>x.nama==n&&x.tgl==t.tgl))return;
+ data.push({nama:n,tgl:t.tgl,status:t.jam>"09:00:00"?"Telat":"Hadir",bulan:t.bulan});
+ save();
 }
 
 function absenPulang(){
-  if(!isAdmin)return toast("Login dulu");
-  let n=namaSelect.value,t=now();
-  let d=data.find(x=>x.nama==n&&x.tanggal==t.tanggal);
-  if(!d)return toast("Belum absen");
-  if(d.pulang!="-")return toast("Sudah pulang");
-  d.pulang=t.jam; save(); toast("Pulang");
+ let t=now();
+ let d=data.find(x=>x.nama==nama.value&&x.tgl==t.tgl);
+ if(d)d.pulang=t.jam;
+ save();
 }
 
 function izin(){
-  if(!isAdmin)return toast("Login dulu");
-  let n=namaSelect.value,t=now();
-  if(data.find(x=>x.nama==n&&x.tanggal==t.tanggal))return toast("Sudah ada");
-  data.push({nama:n,tanggal:t.tanggal,masuk:"-",pulang:"-",status:"Izin",bulan:t.bulan});
-  save(); toast("Izin");
+ let t=now();
+ data.push({nama:nama.value,tgl:t.tgl,status:"Izin",bulan:t.bulan});
+ save();
 }
 
 function resetHari(){
-  if(!isAdmin)return toast("Admin only");
-  let today=now().tanggal;
-  data=data.filter(x=>x.tanggal!=today);
-  save(); toast("Reset");
+ let t=now().tgl;
+ data=data.filter(x=>x.tgl!=t);
+ save();
 }
 
-// ===== WA =====
+// AUTO ALPA
+setInterval(()=>{
+ let t=now();
+ if(t.jam>="16:00:00"){
+  let names=[...new Set(data.map(x=>x.nama))];
+  names.forEach(n=>{
+    if(!data.find(x=>x.nama==n&&x.tgl==t.tgl)){
+      data.push({nama:n,tgl:t.tgl,status:"Alpa",bulan:t.bulan});
+    }
+  });
+  save();
+ }
+},60000);
+
+// RANKING AI
+function rank(){
+ let r={};
+ data.forEach(x=>{
+  if(!r[x.nama])r[x.nama]={score:0};
+  if(x.status=="Hadir")r[x.nama].score+=3;
+  if(x.status=="Telat")r[x.nama].score+=1;
+  if(x.status=="Alpa")r[x.nama].score-=3;
+ });
+ return Object.entries(r).map(([n,v])=>({n,...v})).sort((a,b)=>b.score-a.score);
+}
+
+// WA
 function kirimWA(){
-  if(!isAdmin)return toast("Admin only");
-  let f=data.filter(x=>x.bulan==bulanSelect.value);
-  let list=document.getElementById("waList").value.split(",");
-  let text="Laporan\n";
-  f.forEach(d=>text+=`${d.nama}-${d.status}\n`);
-  list.forEach((n,i)=>setTimeout(()=>window.open("https://wa.me/"+n+"?text="+encodeURIComponent(text)),i*1000));
+ let txt="Absensi\n";
+ data.forEach(d=>txt+=`${d.nama} ${d.status}\n`);
+ window.open(`https://wa.me/${waGlobal.value}?text=${encodeURIComponent(txt)}`);
 }
 
-function getMapWA(){
-  let raw=document.getElementById("waMap").value.trim();
-  let map={};
-  raw.split("\n").forEach(l=>{
-    let [n,no]=l.split("=");
-    if(n&&no) map[n.trim()]=no.trim();
-  });
-  return map;
+function kirimWAper(){
+ let map=waMap.value.split("\n");
+ map.forEach(m=>{
+   let [nama,no]=m.split("=");
+   let d=data.filter(x=>x.nama==nama);
+   let txt=`Laporan ${nama}\n`;
+   d.forEach(x=>txt+=`${x.tgl} ${x.status}\n`);
+   window.open(`https://wa.me/${no}?text=${encodeURIComponent(txt)}`);
+ });
 }
 
-function kirimWAperOrang(){
-  if(!isAdmin)return toast("Admin only");
-  let f=data.filter(x=>x.bulan==bulanSelect.value);
-  let map=getMapWA();
-  let rank=hitungRankingAI(f);
+// CHART
+let chart;
+function renderChart(n){
+ let d=data.filter(x=>x.nama==n);
+ let h=d.filter(x=>x.status=="Hadir").length;
+ let t=d.filter(x=>x.status=="Telat").length;
+ let a=d.filter(x=>x.status=="Alpa").length;
 
-  Object.keys(map).forEach((nama,i)=>{
-    let d=f.filter(x=>x.nama==nama);
-    if(!d.length)return;
-    let text=`${nama}\n`;
-    d.forEach(x=>text+=`${x.tanggal}-${x.status}\n`);
-    let r=rank.find(x=>x.nama==nama);
-    if(r) text+=`Rank:${rank.indexOf(r)+1}`;
-    setTimeout(()=>window.open("https://wa.me/"+map[nama]+"?text="+encodeURIComponent(text)),i*1000);
-  });
-}
-
-// ===== AI =====
-function hitungRankingAI(d){
-  let map={};
-  d.forEach(x=>{
-    if(!map[x.nama]) map[x.nama]={nama:x.nama,hadir:0,telat:0,izin:0,alpa:0};
-    if(x.status=="Hadir") map[x.nama].hadir++;
-    else if(x.status=="Telat") map[x.nama].telat++;
-    else if(x.status=="Izin") map[x.nama].izin++;
-    else if(x.status=="Alpa") map[x.nama].alpa++;
-  });
-
-  return Object.values(map).map(m=>{
-    let total=m.hadir+m.telat+m.izin+m.alpa;
-    m.skor=(m.hadir*3)+(m.telat)-(m.alpa*2);
-    m.disiplin=total?Math.round((m.hadir/total)*100):0;
-    return m;
-  }).sort((a,b)=>b.skor-a.skor);
-}
-
-// ===== BOS =====
-function toggleBoss(){
-  let p=document.getElementById("bossPanel");
-  p.style.display=p.style.display==="none"?"block":"none";
-  renderBoss();
-}
-
-function renderBoss(){
-  let f=data.filter(x=>x.bulan==bulanSelect.value);
-  let rank=hitungRankingAI(f);
-
-  document.getElementById("bossSummary").innerHTML=
-    `Total:${rank.length}<br>Terbaik:${rank[0]?.nama||"-"}`;
-
-  document.getElementById("bossRanking").innerHTML=
-    rank.map((r,i)=>`${i+1}. ${r.nama} (${r.skor})`).join("<br>");
-
-  document.getElementById("bossWarning").innerHTML=
-    rank.filter(r=>r.telat>=3||r.disiplin<50)
-    .map(r=>`⚠️ ${r.nama}`).join("<br>");
-}
-
-// ===== RENDER =====
-function render(){
-  let f=data.filter(x=>x.bulan==bulanSelect.value);
-
-  document.getElementById("list").innerHTML=
-    f.map(x=>`<div class="card">${x.nama}<br>${x.status}</div>`).join("");
-
-  document.getElementById("total").innerText=f.length;
-  document.getElementById("hadir").innerText=f.filter(x=>x.status=="Hadir").length;
-  document.getElementById("telat").innerText=f.filter(x=>x.status=="Telat").length;
-
-  let r=hitungRankingAI(f);
-
-  chartOrang.data.labels=r.map(x=>x.nama);
-  chartOrang.data.datasets[0].data=r.map(x=>x.hadir);
-  chartOrang.data.datasets[1].data=r.map(x=>x.telat);
-  chartOrang.data.datasets[2].data=r.map(x=>x.alpa);
-  chartOrang.update();
-}
-
-// ===== CHART =====
-const chart=new Chart(document.getElementById('chart'),{type:'bar',data:{labels:[],datasets:[{label:'Absensi',data:[]}]}});
-
-const chartOrang=new Chart(document.getElementById('chartOrang'),{
+ if(chart)chart.destroy();
+ chart=new Chart(chartCanvas,{
   type:'bar',
-  data:{labels:[],datasets:[
-    {label:'Hadir',data:[]},
-    {label:'Telat',data:[]},
-    {label:'Alpa',data:[]}
-  ]}
-});
-
-// ===== EXPORT =====
-function exportExcel(){
-  if(!isAdmin)return toast("Admin only");
-  let ws=XLSX.utils.json_to_sheet(data);
-  let wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,"Absensi");
-  XLSX.writeFile(wb,"absensi.xlsx");
+  data:{labels:["Hadir","Telat","Alpa"],datasets:[{data:[h,t,a]}]}
+ });
 }
 
-async function exportPDF(){
-  if(!isAdmin)return toast("Admin only");
-  const {jsPDF}=window.jspdf;
-  let doc=new jsPDF();
-  doc.text("Laporan",10,10);
-  data.forEach((d,i)=>doc.text(`${i+1}. ${d.nama} ${d.status}`,10,20+(i*10)));
-  doc.save("absensi.pdf");
-}
+// RENDER
+function render(){
+ list.innerHTML=data.map(x=>`<div>${x.nama} ${x.status}</div>`).join("");
 
-// ===== INIT =====
-render();
-renderKaryawan();
+ let r=rank();
+ ranking.innerHTML=r.map((x,i)=>`#${i+1} ${x.n} (${x.score})`).join("<br>");
+
+ let unik=[...new Set(data.map(x=>x.nama))];
+ pilihKaryawan.innerHTML=unik.map(n=>`<option>${n}</option>`);
+
+ renderChart(pilihKaryawan.value);
+ pilihKaryawan.onchange=()=>renderChart(pilihKaryawan.value);
+}
 
 </script>
 </body>
