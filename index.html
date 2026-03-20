@@ -1,220 +1,313 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Absensi Karyawan</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Absensi Pro</title>
 
-  <style>
-    body {
-      font-family: sans-serif;
-      background: #eef1f5;
-      padding: 20px;
-    }
+<style>
+body { font-family:sans-serif; background:#eef2f7; padding:15px; }
+.card { background:white; padding:15px; border-radius:10px; margin-bottom:15px; }
 
-    h2 { text-align: center; }
+button,select {
+width:100%;
+padding:10px;
+margin-top:10px;
+border-radius:8px;
+border:none;
+}
 
-    .card {
-      background: white;
-      padding: 15px;
-      border-radius: 10px;
-      margin-bottom: 15px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
+.masuk { background:green;color:white; }
+.pulang { background:orange;color:white; }
+.reset { background:red;color:white; }
+.export { background:blue;color:white; }
 
-    select, button {
-      width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-      border-radius: 8px;
-      border: none;
-      font-size: 16px;
-    }
+.calendar {
+display:grid;
+grid-template-columns:repeat(7,1fr);
+gap:5px;
+margin-top:10px;
+}
 
-    .masuk { background: green; color: white; }
-    .pulang { background: orange; color: white; }
-    .reset { background: red; color: white; }
+.day {
+padding:10px;
+text-align:center;
+border-radius:6px;
+font-size:12px;
+cursor:pointer;
+background:#ddd;
+}
 
-    .item {
-      background: #f0f0f0;
-      padding: 10px;
-      margin-top: 5px;
-      border-radius: 8px;
-    }
+.hadir { background:#4caf50;color:white; }
+.telat { background:#ff9800;color:white; }
+.absen { background:#f44336;color:white; }
 
-    .calendar {
-      display: grid;
-      grid-template-columns: repeat(7,1fr);
-      gap: 5px;
-    }
+.header-day {
+font-weight:bold;
+text-align:center;
+}
 
-    .day {
-      padding: 8px;
-      border-radius: 6px;
-      text-align: center;
-      font-size: 12px;
-    }
-
-    .hadir { background: #4caf50; color: white; }
-    .telat { background: #ff9800; color: white; }
-    .absen { background: #f44336; color: white; }
-  </style>
+.popup {
+position:fixed;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+background:white;
+padding:15px;
+border-radius:10px;
+box-shadow:0 0 10px rgba(0,0,0,0.3);
+display:none;
+}
+</style>
 </head>
 
 <body>
 
-<h2>📋 Absensi Karyawan</h2>
-
 <div class="card">
-  <select id="nama"></select>
-  <button class="masuk" onclick="absenMasuk()">Absen Masuk</button>
-  <button class="pulang" onclick="absenPulang()">Absen Pulang</button>
-  <button class="reset" onclick="resetHari()">Reset Hari Ini</button>
+<select id="nama"></select>
+<button class="masuk" onclick="masuk()">Absen Masuk</button>
+<button class="pulang" onclick="pulang()">Absen Pulang</button>
+<button class="reset" onclick="reset()">Reset Hari Ini</button>
+<button class="export" onclick="exportExcel()">Export Excel</button>
 </div>
 
 <div class="card">
-  <b>📅 Hari Ini</b>
-  <div id="list"></div>
+<b>Hari Ini</b>
+<div id="list"></div>
 </div>
 
 <div class="card">
-  <b>📆 Kalender Bulan Ini</b>
-  <div id="calendar" class="calendar"></div>
+<b id="judulBulan"></b>
+<div id="calendar" class="calendar"></div>
 </div>
+
+<div class="card">
+<b>Rekap Bulan Ini</b>
+<div id="rekap"></div>
+</div>
+
+<div id="popup" class="popup"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import {
-  getFirestore, collection, getDocs,
-  addDoc, query, where
+getFirestore, collection, getDocs, addDoc,
+query, where, updateDoc, doc
 } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "ISI PUNYAMU",
-  authDomain: "pt-agn.firebaseapp.com",
-  projectId: "pt-agn"
+apiKey: "ISI_APIKEY_KAMU",
+authDomain: "pt-agn.firebaseapp.com",
+projectId: "pt-agn"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const jamMasuk = "09:00";
-const jamPulang = "16:00";
+const JAM_MASUK = "09:00";
 
-function today() {
-  return new Date().toISOString().slice(0,10);
+function today(){
+return new Date().toISOString().slice(0,10);
 }
 
-function nowTime() {
-  return new Date().toLocaleTimeString();
+function time(){
+return new Date().toLocaleTimeString();
 }
 
-async function loadKaryawan() {
-  const snap = await getDocs(collection(db, "karyawan"));
-  let html = "";
-
-  snap.forEach(doc => {
-    const d = doc.data();
-    if (d.aktif === true) {
-      html += `<option value="${d.nama}">${d.nama}</option>`;
-    }
-  });
-
-  document.getElementById("nama").innerHTML = html;
+function getMonthYear(){
+const d=new Date();
+return {bulan:d.getMonth(),tahun:d.getFullYear()};
 }
 
-window.absenMasuk = async function() {
-  const nama = document.getElementById("nama").value;
-
-  const q = query(
-    collection(db, "absensi"),
-    where("nama","==",nama),
-    where("tanggal","==",today())
-  );
-
-  const snap = await getDocs(q);
-
-  if (!snap.empty) {
-    alert("Sudah absen!");
-    return;
-  }
-
-  const waktu = nowTime();
-  const telat = waktu > jamMasuk;
-
-  await addDoc(collection(db,"absensi"),{
-    nama,
-    tanggal: today(),
-    masuk: waktu,
-    pulang: "",
-    status: telat ? "Telat" : "Hadir"
-  });
-
-  loadData();
-};
-
-window.absenPulang = async function() {
-  const nama = document.getElementById("nama").value;
-
-  const q = query(
-    collection(db,"absensi"),
-    where("nama","==",nama),
-    where("tanggal","==",today())
-  );
-
-  const snap = await getDocs(q);
-
-  if (snap.empty) return alert("Belum absen masuk");
-
-  snap.forEach(async d => {
-    await addDoc(collection(db,"absensi"),{
-      ...d.data(),
-      pulang: nowTime()
-    });
-  });
-
-  loadData();
-};
-
-window.resetHari = async function() {
-  alert("Reset manual di Firebase (hapus data hari ini)");
-};
-
-async function loadData() {
-  const snap = await getDocs(collection(db,"absensi"));
-  let html = "";
-
-  snap.forEach(doc => {
-    const d = doc.data();
-    if (d.tanggal === today()) {
-      html += `
-        <div class="item">
-          ${d.nama}<br>
-          Masuk: ${d.masuk || "-"}<br>
-          Pulang: ${d.pulang || "-"}<br>
-          Status: ${d.status}
-        </div>
-      `;
-    }
-  });
-
-  document.getElementById("list").innerHTML = html;
-
-  renderCalendar(snap);
+// LOAD KARYAWAN
+async function loadKaryawan(){
+const snap = await getDocs(collection(db,"karyawan"));
+let html="";
+snap.forEach(d=>{
+const data=d.data();
+if(data.aktif===true){
+html+=`<option value="${data.nama}">${data.nama}</option>`;
+}
+});
+document.getElementById("nama").innerHTML=html;
 }
 
-function renderCalendar(snap) {
-  let html = "";
+// ABSEN MASUK
+window.masuk = async ()=>{
+const nama=document.getElementById("nama").value;
 
-  for (let i=1;i<=31;i++) {
-    html += `<div class="day">${i}</div>`;
-  }
+const q=query(
+collection(db,"absensi"),
+where("nama","==",nama),
+where("tanggal","==",today())
+);
 
-  document.getElementById("calendar").innerHTML = html;
+const snap=await getDocs(q);
+if(!snap.empty){ alert("Sudah absen!"); return; }
+
+const t=time();
+const telat = t > JAM_MASUK;
+
+await addDoc(collection(db,"absensi"),{
+nama,
+tanggal:today(),
+masuk:t,
+pulang:"",
+status: telat ? "Telat" : "Hadir"
+});
+
+loadData();
 }
+
+// ABSEN PULANG
+window.pulang = async ()=>{
+const nama=document.getElementById("nama").value;
+
+const q=query(
+collection(db,"absensi"),
+where("nama","==",nama),
+where("tanggal","==",today())
+);
+
+const snap=await getDocs(q);
+if(snap.empty){ alert("Belum masuk!"); return; }
+
+snap.forEach(async d=>{
+await updateDoc(doc(db,"absensi",d.id),{
+pulang:time()
+});
+});
+
+loadData();
+}
+
+// RESET
+window.reset = ()=>{
+alert("Hapus manual di Firebase");
+}
+
+// LOAD DATA
+let globalData=[];
+
+async function loadData(){
+const snap=await getDocs(collection(db,"absensi"));
+globalData=[];
+
+let html="";
+let rekap={};
+
+snap.forEach(docu=>{
+const d=docu.data();
+globalData.push(d);
+
+// REKAP
+if(!rekap[d.nama]) rekap[d.nama]={hadir:0,telat:0,absen:0};
+if(d.status==="Hadir") rekap[d.nama].hadir++;
+if(d.status==="Telat") rekap[d.nama].telat++;
+
+// HARI INI
+if(d.tanggal===today()){
+html+=`${d.nama} | ${d.masuk} - ${d.pulang} (${d.status})<br>`;
+}
+});
+
+document.getElementById("list").innerHTML=html;
+
+// HITUNG TIDAK MASUK
+const {bulan,tahun}=getMonthYear();
+const totalHari=new Date(tahun,bulan+1,0).getDate();
+
+for(let nama in rekap){
+let hadirHari = globalData.filter(d=>d.nama===nama && d.tanggal.startsWith(`${tahun}-${String(bulan+1).padStart(2,"0")}`)).length;
+rekap[nama].absen = totalHari - hadirHari;
+}
+
+// TAMPILKAN REKAP
+let r="";
+for(let n in rekap){
+r+=`${n} → Hadir:${rekap[n].hadir} | Telat:${rekap[n].telat} | Tidak Masuk:${rekap[n].absen}<br>`;
+}
+document.getElementById("rekap").innerHTML=r;
+
+renderCalendar();
+}
+
+// KALENDER
+function renderCalendar(){
+const {bulan,tahun}=getMonthYear();
+const selected=document.getElementById("nama").value;
+
+const firstDay=new Date(tahun,bulan,1).getDay();
+const totalDays=new Date(tahun,bulan+1,0).getDate();
+
+const bulanNama=["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Ags","Sep","Okt","Nov","Des"];
+document.getElementById("judulBulan").innerText="Kalender "+bulanNama[bulan]+" "+tahun;
+
+let html=`<div>Min</div><div>Sen</div><div>Sel</div><div>Rab</div><div>Kam</div><div>Jum</div><div>Sab</div>`;
+
+for(let i=0;i<firstDay;i++){ html+=`<div></div>`; }
+
+for(let i=1;i<=totalDays;i++){
+
+let warna="absen";
+
+globalData.forEach(d=>{
+if(
+d.nama===selected &&
+d.tanggal===`${tahun}-${String(bulan+1).padStart(2,"0")}-${String(i).padStart(2,"0")}`
+){
+warna = d.status==="Telat" ? "telat" : "hadir";
+}
+});
+
+html+=`<div class="day ${warna}" onclick="detail('${i}')">${i}</div>`;
+}
+
+document.getElementById("calendar").innerHTML=html;
+}
+
+// DETAIL POPUP
+window.detail = (tgl)=>{
+const selected=document.getElementById("nama").value;
+const {bulan,tahun}=getMonthYear();
+
+let data = globalData.find(d =>
+d.nama===selected &&
+d.tanggal===`${tahun}-${String(bulan+1).padStart(2,"0")}-${String(tgl).padStart(2,"0")}`
+);
+
+let isi = data ?
+`${data.nama}<br>Masuk:${data.masuk}<br>Pulang:${data.pulang}<br>Status:${data.status}`
+:
+"Tidak Masuk";
+
+const p=document.getElementById("popup");
+p.innerHTML=isi;
+p.style.display="block";
+
+setTimeout(()=>p.style.display="none",2000);
+}
+
+// EXPORT EXCEL
+window.exportExcel = ()=>{
+let csv="Nama,Tanggal,Masuk,Pulang,Status\n";
+
+globalData.forEach(d=>{
+csv+=`${d.nama},${d.tanggal},${d.masuk},${d.pulang},${d.status}\n`;
+});
+
+const blob=new Blob([csv],{type:"text/csv"});
+const a=document.createElement("a");
+a.href=URL.createObjectURL(blob);
+a.download="absensi.csv";
+a.click();
+}
+
+// INIT
+document.getElementById("nama").addEventListener("change",loadData);
 
 loadKaryawan();
 loadData();
-
 </script>
+
 </body>
 </html>
