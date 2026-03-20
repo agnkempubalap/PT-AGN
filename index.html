@@ -24,9 +24,12 @@ input,select{width:100%;padding:8px;margin-bottom:8px}
 <button class="save" onclick="absenMasuk()">Absen Masuk</button>
 <button class="save" style="background:#ff9800" onclick="absenPulang()">Absen Pulang</button>
 <button class="save" style="background:#f44336" onclick="resetHari()">Reset Hari Ini</button><h4>Kelola Karyawan</h4>
-<input id="namaBaru" placeholder="Tambah Karyawan">
-<button class="save" onclick="tambahKaryawan()">Tambah</button>
-<div id="listKaryawan"></div><div id="dataAbsen"></div>
+<input id="namaBaru" placeholder="Nama Karyawan">
+<button class="save" onclick="kelolaKaryawan()">Tambah / Edit</button>
+<div id="listKaryawan"></div><hr>
+<h4>Filter Absensi</h4>
+<input type="month" id="filterBulan" onchange="filterAbsen()">
+<div id="hasilFilter"></div><div id="dataAbsen"></div>
 </div>
 </div><!-- AKTIVITAS --><div id="aktivitasPage" class="page">
 <div class="card"><h3>Aktivitas</h3><div id="karyawanList"></div>
@@ -59,19 +62,82 @@ s.innerHTML='';
 karyawan.forEach(n=>s.innerHTML+=`<option>${n}</option>`);
 }
 
-function tambahKaryawan(){
-let n=document.getElementById('namaBaru').value;
+function kelolaKaryawan(){
+let n=document.getElementById('namaBaru').value.trim();
 if(!n)return;
+if(!karyawan.includes(n)){
 karyawan.push(n);
+}else{
+alert('Nama sudah ada (mode edit manual)');
+}
 localStorage.setItem('karyawan',JSON.stringify(karyawan));
+document.getElementById('namaBaru').value='';
 renderAll();
+
+function filterAbsen(){
+let bulan=document.getElementById('filterBulan').value;
+let data=getData('absen',[]);
+let hasil=document.getElementById('hasilFilter');
+hasil.innerHTML='';
+
+if(!bulan)return;
+
+let [y,m]=bulan.split('-');
+
+karyawan.forEach(nama=>{
+let absenKaryawan=data.filter(d=>{
+if(!d.tanggal)return false;
+let t=new Date(d.tanggal);
+let bulanData=(t.getMonth()+1).toString().padStart(2,'0');
+let tahunData=t.getFullYear().toString();
+return d.nama==nama && bulanData==m && tahunData==y;
+});
+
+// hitung hari kerja (Senin-Sabtu)
+let totalHariKerja=0;
+let daysInMonth=new Date(y, m, 0).getDate();
+for(let i=1;i<=daysInMonth;i++){
+let date=new Date(y, m-1, i);
+let day=date.getDay();
+if(day!=0) totalHariKerja++; // kecuali Minggu
+}
+
+let hadir=absenKaryawan.filter(d=>d.masuk).length;
+let bolos=totalHariKerja-hadir;
+if(bolos<0) bolos=0;
+
+hasil.innerHTML+=`<div class='card'>
+<b>${nama}</b><br>
+Hari Kerja: ${totalHariKerja}<br>
+Hadir: ${hadir}<br>
+Bolos: ${bolos}
+</div>`;
+});
+}</b><br>
+Total Absen: ${absenKaryawan.length}<br>
+Bolos: ${bolos.length}
+</div>`;
+});
+}
 }
 
 function renderKaryawan(){
 let d=document.getElementById('listKaryawan');
 d.innerHTML='';
 karyawan.forEach((n,i)=>{
-d.innerHTML+=`<div class='card'>${n} <button onclick='hapusKaryawan(${i})'>Hapus</button></div>`;
+d.innerHTML+=`<div class='card'>${n}
+<button onclick='editKaryawan(${i})'>Edit</button>
+<button onclick='hapusKaryawan(${i})'>Hapus</button>
+</div>`;
+});
+}
+
+function editKaryawan(i){
+document.getElementById('namaBaru').value=karyawan[i];
+karyawan.splice(i,1);
+localStorage.setItem('karyawan',JSON.stringify(karyawan));
+renderAll();
+} <button onclick='hapusKaryawan(${i})'>Hapus</button></div>`;
 });
 }
 
@@ -118,7 +184,15 @@ let div=document.getElementById('dataAbsen');
 div.innerHTML='';
 data.slice(-20).reverse().forEach(d=>{
 if(!d.nama)return;
-div.innerHTML+=`<div class='card'>${d.nama}<br>${d.tanggal}<br>Masuk:${d.masuk}<br>Pulang:${d.pulang}</div>`;
+let hari=new Date(d.tanggal).toLocaleDateString('id-ID',{weekday:'long'});
+div.innerHTML+=`<div class='card'>
+<b>${d.nama}</b><br>
+${d.tanggal} (${hari})<br>
+Masuk:${d.masuk||'-'}<br>
+Pulang:${d.pulang||'-'}
+</div>`;
+});
+}<br>${d.tanggal}<br>Masuk:${d.masuk}<br>Pulang:${d.pulang}</div>`;
 });
 }
 
