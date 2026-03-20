@@ -2,104 +2,106 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Absensi Karyawan</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- Style -->
 <style>
 body {
-  font-family: Arial, sans-serif;
-  background: #f5f6fa;
-  margin: 0;
-  padding: 20px;
-}
-
-.container {
-  max-width: 500px;
-  margin: auto;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg,#eef2f3,#dfe9f3);
+  padding: 15px;
 }
 
 .card {
   background: white;
-  padding: 15px;
+  border-radius: 20px;
+  padding: 20px;
   margin-bottom: 15px;
-  border-radius: 12px;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
 }
 
-h2 {
-  margin-top: 0;
-}
-
-select, button {
-  width: 100%;
-  padding: 10px;
-  margin-top: 8px;
-  border-radius: 8px;
-  border: none;
-  font-size: 14px;
-}
+h2 { margin-bottom: 10px; }
 
 button {
-  color: white;
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 12px;
   font-weight: bold;
+  cursor: pointer;
 }
 
-.btn-masuk { background: #27ae60; }
-.btn-pulang { background: #f39c12; }
-.btn-reset { background: #e74c3c; }
-.btn-export { background: #2980b9; }
+.btn-masuk { background:#16a34a; color:white; }
+.btn-pulang { background:#f59e0b; color:white; }
+.btn-reset { background:#ef4444; color:white; }
+.btn-excel { background:#3b82f6; color:white; }
 
-.badge {
-  padding: 3px 8px;
-  border-radius: 6px;
-  font-size: 12px;
-  color: white;
+input, select {
+  width:100%;
+  padding:10px;
+  border-radius:10px;
+  border:1px solid #ccc;
+  margin-top:8px;
 }
 
-.hadir { background: green; }
-.telat { background: red; }
+.status-hadir {background:#16a34a;color:white;padding:3px 10px;border-radius:10px;}
+.status-telat {background:#f59e0b;color:white;padding:3px 10px;border-radius:10px;}
 
-.item {
-  border-bottom: 1px solid #eee;
-  padding: 8px 0;
+.dashboard {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
 }
+
+.box {
+  padding:15px;
+  border-radius:15px;
+  color:white;
+  text-align:center;
+}
+
+.hadir { background:#16a34a; }
+.telat { background:#f59e0b; }
+.total { background:#3b82f6; }
 </style>
 </head>
 
 <body>
 
-<div class="container">
+<div class="card">
+  <h2>📋 Absensi Karyawan</h2>
 
-  <!-- ABSEN -->
-  <div class="card">
-    <h2>📋 Absensi Karyawan</h2>
+  <select id="nama"></select>
 
-    <select id="nama">
-      <option>Agung</option>
-      <option>Hasan</option>
-      <option>Hatta</option>
-      <option>Nur</option>
-    </select>
-
-    <button class="btn-masuk" onclick="absenMasuk()">Absen Masuk</button>
-    <button class="btn-pulang" onclick="absenPulang()">Absen Pulang</button>
-    <button class="btn-reset" onclick="resetHariIni()">Reset Hari Ini</button>
-    <button class="btn-export" onclick="exportExcel()">Export Excel</button>
-  </div>
-
-  <!-- HARI INI -->
-  <div class="card">
-    <h2>📅 Hari Ini</h2>
-    <div id="hariIni">Loading...</div>
-  </div>
-
+  <button class="btn-masuk" onclick="absenMasuk()">Absen Masuk</button>
+  <button class="btn-pulang" onclick="absenPulang()">Absen Pulang</button>
+  <button class="btn-reset" onclick="resetHari()">Reset Hari Ini</button>
+  <button class="btn-excel" onclick="exportExcel()">Export Excel</button>
 </div>
 
-<!-- FIREBASE -->
+<div class="card">
+  <h3>🔍 Filter</h3>
+
+  <input type="date" id="filterTanggal" onchange="loadData()">
+  <input type="month" id="filterBulan" onchange="loadData()">
+  <input type="text" id="searchNama" placeholder="Cari nama..." onkeyup="loadData()">
+</div>
+
+<div class="card">
+  <h3>📊 Dashboard</h3>
+  <div class="dashboard">
+    <div class="box total">Total<br><b id="total">0</b></div>
+    <div class="box hadir">Hadir<br><b id="hadir">0</b></div>
+    <div class="box telat">Telat<br><b id="telat">0</b></div>
+  </div>
+</div>
+
+<div id="list"></div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, query, where, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, query, where, updateDoc, doc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAu67MAhW8xdmciPi3xOKwHdy-uP4u9tXI",
@@ -113,131 +115,141 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const hari = new Date().toISOString().split("T")[0];
+const namaList = ["Agung","Hasan","Hatta","Nur","Alda"];
 
-// ================== ABSEN MASUK ==================
+function nowJam() {
+  return new Date().toLocaleTimeString("id-ID");
+}
+
+function today() {
+  return new Date().toISOString().split("T")[0];
+}
+
+function bulanNow() {
+  return new Date().toISOString().slice(0,7);
+}
+
+function initNama() {
+  const select = document.getElementById("nama");
+  namaList.forEach(n => {
+    select.innerHTML += `<option>${n}</option>`;
+  });
+}
+
 window.absenMasuk = async () => {
   const nama = document.getElementById("nama").value;
-  const jam = new Date().toLocaleTimeString();
 
-  const status = jam > "08:00:00" ? "Telat" : "Hadir";
-
-  await addDoc(collection(db, "absensi"), {
+  await addDoc(collection(db,"absensi"),{
     nama,
-    tanggal: hari,
-    jamMasuk: jam,
-    statusMasuk: status
+    jamMasuk: nowJam(),
+    jamPulang: "-",
+    statusMasuk: (new Date().getHours() > 8 ? "Telat" : "Hadir"),
+    tanggal: today()
   });
 
   loadData();
 };
 
-// ================== ABSEN PULANG ==================
 window.absenPulang = async () => {
   const nama = document.getElementById("nama").value;
 
-  const q = query(collection(db, "absensi"),
-    where("nama", "==", nama),
-    where("tanggal", "==", hari)
-  );
-
+  const q = query(collection(db,"absensi"), where("nama","==",nama), where("tanggal","==",today()));
   const snap = await getDocs(q);
 
-  snap.forEach(async (d) => {
-    await addDoc(collection(db, "absensi"), {
-      ...d.data(),
-      jamPulang: new Date().toLocaleTimeString()
+  snap.forEach(async d=>{
+    await updateDoc(doc(db,"absensi",d.id),{
+      jamPulang: nowJam()
     });
-    await deleteDoc(doc(db, "absensi", d.id));
   });
 
   loadData();
 };
 
-// ================== LOAD DATA ==================
+window.resetHari = async () => {
+  const snap = await getDocs(collection(db,"absensi"));
+  snap.forEach(async d=>{
+    await updateDoc(doc(db,"absensi",d.id),{
+      jamMasuk:"-",
+      jamPulang:"-",
+      statusMasuk:"-"
+    });
+  });
+  loadData();
+};
+
 async function loadData() {
-  const q = query(collection(db, "absensi"),
-    where("tanggal", "==", hari)
-  );
+  const list = document.getElementById("list");
+  list.innerHTML="Loading...";
 
-  const snap = await getDocs(q);
+  const tgl = document.getElementById("filterTanggal").value;
+  const bln = document.getElementById("filterBulan").value;
+  const search = document.getElementById("searchNama").value.toLowerCase();
 
-  let html = "";
+  const snap = await getDocs(collection(db,"absensi"));
 
-  snap.forEach(d => {
-    const data = d.data();
+  let html="";
+  let total=0, hadir=0, telat=0;
+
+  snap.forEach(docItem=>{
+    const d = docItem.data();
+
+    if (tgl && d.tanggal !== tgl) return;
+    if (bln && !d.tanggal.startsWith(bln)) return;
+    if (search && !d.nama.toLowerCase().includes(search)) return;
+
+    total++;
+    if (d.statusMasuk==="Hadir") hadir++;
+    if (d.statusMasuk==="Telat") telat++;
 
     html += `
-      <div class="item">
-        <b>${data.nama}</b><br>
-        Masuk: ${data.jamMasuk || "-"}<br>
-        Pulang: ${data.jamPulang || "-"}<br>
-        Status: 
-        <span class="badge ${data.statusMasuk === 'Telat' ? 'telat' : 'hadir'}">
-          ${data.statusMasuk || '-'}
-        </span>
+      <div class="card">
+        <b>${d.nama}</b><br>
+        ${d.tanggal}<br>
+        Masuk: ${d.jamMasuk}<br>
+        Pulang: ${d.jamPulang}<br>
+        Status: <span class="${d.statusMasuk==='Telat'?'status-telat':'status-hadir'}">${d.statusMasuk}</span>
       </div>
     `;
   });
 
-  document.getElementById("hariIni").innerHTML = html || "Belum ada data";
+  document.getElementById("total").innerText=total;
+  document.getElementById("hadir").innerText=hadir;
+  document.getElementById("telat").innerText=telat;
+
+  list.innerHTML = html || "Tidak ada data";
 }
 
-loadData();
-
-// ================== RESET ==================
-window.resetHariIni = async () => {
-  const q = query(collection(db, "absensi"),
-    where("tanggal", "==", hari)
-  );
-
-  const snap = await getDocs(q);
-
-  snap.forEach(async d => {
-    await deleteDoc(doc(db, "absensi", d.id));
-  });
-
-  loadData();
-};
-
-// ================== EXPORT EXCEL ==================
 window.exportExcel = async () => {
-  const snap = await getDocs(collection(db, "absensi"));
+  const snap = await getDocs(collection(db,"absensi"));
 
-  let table = `
-    <table border="1">
-      <tr>
-        <th>Nama</th>
-        <th>Tanggal</th>
-        <th>Jam Masuk</th>
-        <th>Jam Pulang</th>
-        <th>Status</th>
-      </tr>
-  `;
+  let html = `<table border="1">
+  <tr style="background:#16a34a;color:white">
+  <th>Nama</th><th>Tanggal</th><th>Masuk</th><th>Pulang</th><th>Status</th></tr>`;
 
-  snap.forEach(d => {
-    const data = d.data();
-    table += `
-      <tr>
-        <td>${data.nama}</td>
-        <td>${data.tanggal}</td>
-        <td>${data.jamMasuk || "-"}</td>
-        <td>${data.jamPulang || "-"}</td>
-        <td>${data.statusMasuk || "-"}</td>
-      </tr>
-    `;
+  snap.forEach(d=>{
+    const x=d.data();
+    html+=`<tr>
+    <td>${x.nama}</td>
+    <td>${x.tanggal}</td>
+    <td>${x.jamMasuk}</td>
+    <td>${x.jamPulang}</td>
+    <td>${x.statusMasuk}</td>
+    </tr>`;
   });
 
-  table += "</table>";
+  html+="</table>";
 
-  const blob = new Blob([table], { type: "application/vnd.ms-excel" });
-  const url = URL.createObjectURL(blob);
-
+  const blob = new Blob([html],{type:"application/vnd.ms-excel"});
   const a = document.createElement("a");
-  a.href = url;
-  a.download = "absensi.xls";
+  a.href = URL.createObjectURL(blob);
+  a.download = "Absensi.xls";
   a.click();
 };
+
+initNama();
+document.getElementById("filterTanggal").value = today();
+document.getElementById("filterBulan").value = bulanNow();
+loadData();
 
 </script>
 
