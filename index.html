@@ -1,65 +1,105 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-  <title>Absensi Karyawan</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Absensi Karyawan</title>
 
-  <style>
-    body { font-family:sans-serif; background:#f2f2f2; padding:10px; }
-    .card { background:white; padding:15px; border-radius:10px; margin-bottom:15px; }
-    button {
-      width:100%; padding:12px; border:none; border-radius:8px;
-      margin-top:5px; color:white; font-weight:bold;
-    }
-    .masuk{background:green;}
-    .pulang{background:orange;}
-    .reset{background:red;}
-    .excel{background:blue;}
+<!-- Style -->
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #f5f6fa;
+  margin: 0;
+  padding: 20px;
+}
 
-    .calendar{
-      display:grid;
-      grid-template-columns:repeat(7,1fr);
-      gap:5px;
-      text-align:center;
-    }
-    .day{padding:8px;border-radius:6px;background:#ddd;}
-    .hadir{background:#4caf50;color:white;}
-    .telat{background:orange;}
-    .kosong{background:#ccc;}
-  </style>
+.container {
+  max-width: 500px;
+  margin: auto;
+}
+
+.card {
+  background: white;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 12px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+}
+
+h2 {
+  margin-top: 0;
+}
+
+select, button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 8px;
+  border-radius: 8px;
+  border: none;
+  font-size: 14px;
+}
+
+button {
+  color: white;
+  font-weight: bold;
+}
+
+.btn-masuk { background: #27ae60; }
+.btn-pulang { background: #f39c12; }
+.btn-reset { background: #e74c3c; }
+.btn-export { background: #2980b9; }
+
+.badge {
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: white;
+}
+
+.hadir { background: green; }
+.telat { background: red; }
+
+.item {
+  border-bottom: 1px solid #eee;
+  padding: 8px 0;
+}
+</style>
 </head>
 
 <body>
 
-<div class="card">
-  <h3>📋 Absensi Karyawan</h3>
-  <select id="nama"></select>
+<div class="container">
 
-  <button class="masuk" onclick="absenMasuk()">Absen Masuk</button>
-  <button class="pulang" onclick="absenPulang()">Absen Pulang</button>
-  <button class="reset" onclick="resetHari()">Reset Hari Ini</button>
-  <button class="excel" onclick="exportExcel()">Export Excel</button>
-</div>
+  <!-- ABSEN -->
+  <div class="card">
+    <h2>📋 Absensi Karyawan</h2>
 
-<div class="card">
-  <h3>📅 Hari Ini</h3>
-  <div id="hariIni"></div>
-</div>
+    <select id="nama">
+      <option>Agung</option>
+      <option>Hasan</option>
+      <option>Hatta</option>
+      <option>Nur</option>
+    </select>
 
-<div class="card">
-  <h3>📆 Kalender Bulan Ini</h3>
-  <div id="calendar" class="calendar"></div>
-</div>
+    <button class="btn-masuk" onclick="absenMasuk()">Absen Masuk</button>
+    <button class="btn-pulang" onclick="absenPulang()">Absen Pulang</button>
+    <button class="btn-reset" onclick="resetHariIni()">Reset Hari Ini</button>
+    <button class="btn-export" onclick="exportExcel()">Export Excel</button>
+  </div>
 
-<div class="card">
-  <h3>📊 Rekap Bulan Ini</h3>
-  <div id="rekap"></div>
+  <!-- HARI INI -->
+  <div class="card">
+    <h2>📅 Hari Ini</h2>
+    <div id="hariIni">Loading...</div>
+  </div>
+
 </div>
 
 <!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc, getDocs, collection, deleteDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, query, where, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAu67MAhW8xdmciPi3xOKwHdy-uP4u9tXI",
@@ -67,193 +107,137 @@ const firebaseConfig = {
   projectId: "pt-agn",
   storageBucket: "pt-agn.firebasestorage.app",
   messagingSenderId: "810494462386",
-  appId: "1:810494462386:web:432a3050c054bdd8437cab",
-  measurementId: "G-N6S12LYQLD"
+  appId: "1:810494462386:web:432a3050c054bdd8437cab"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const today = new Date();
-const tanggal = today.toISOString().split("T")[0];
+const hari = new Date().toISOString().split("T")[0];
 
-let listKaryawan = [];
-
-/* LOAD KARYAWAN */
-async function loadKaryawan(){
-  const snap = await getDocs(collection(db,"karyawan"));
-  const select = document.getElementById("nama");
-  select.innerHTML = "";
-  listKaryawan = [];
-
-  snap.forEach(d=>{
-    const data = d.data();
-    if(data.nama){
-      listKaryawan.push(data.nama);
-      select.innerHTML += `<option>${data.nama}</option>`;
-    }
-  });
-}
-
-/* JAM */
-function jam(){
-  return new Date().toLocaleTimeString();
-}
-
-/* GET DOC HARI */
-async function getDocHari(){
-  const ref = doc(db,"absensi",tanggal);
-  const snap = await getDoc(ref);
-
-  if(!snap.exists()){
-    await setDoc(ref,{});
-    return {};
-  }
-  return snap.data();
-}
-
-/* ABSEN MASUK */
-window.absenMasuk = async function(){
+// ================== ABSEN MASUK ==================
+window.absenMasuk = async () => {
   const nama = document.getElementById("nama").value;
-  const ref = doc(db,"absensi",tanggal);
-  const data = await getDocHari();
+  const jam = new Date().toLocaleTimeString();
 
-  data[nama] = {
-    ...data[nama],
-    masuk: jam(),
-    statusMasuk: new Date().getHours()>9 ? "Telat":"Normal"
-  };
+  const status = jam > "08:00:00" ? "Telat" : "Hadir";
 
-  await setDoc(ref,data);
-  loadAll();
-}
-
-/* ABSEN PULANG */
-window.absenPulang = async function(){
-  const nama = document.getElementById("nama").value;
-  const ref = doc(db,"absensi",tanggal);
-  const data = await getDocHari();
-
-  data[nama] = {
-    ...data[nama],
-    pulang: jam()
-  };
-
-  await setDoc(ref,data);
-  loadAll();
-}
-
-/* RESET */
-window.resetHari = async function(){
-  await deleteDoc(doc(db,"absensi",tanggal));
-  loadAll();
-}
-
-/* HARI INI */
-async function loadHariIni(){
-  const data = await getDocHari();
-  const div = document.getElementById("hariIni");
-  div.innerHTML = "";
-
-  listKaryawan.forEach(nama=>{
-    const d = data[nama]||{};
-    div.innerHTML += `
-    <div>
-      <b>${nama}</b><br>
-      Masuk: ${d.masuk||"-"}<br>
-      Pulang: ${d.pulang||"-"}<br>
-      Status: ${d.statusMasuk||"-"}
-      <hr>
-    </div>`;
-  });
-}
-
-/* KALENDER */
-async function loadCalendar(){
-  const cal = document.getElementById("calendar");
-  cal.innerHTML = "";
-
-  const year = today.getFullYear();
-  const month = today.getMonth();
-  const days = new Date(year,month+1,0).getDate();
-
-  const snap = await getDocs(collection(db,"absensi"));
-  let map={};
-
-  snap.forEach(d=>{
-    map[d.id]=d.data();
+  await addDoc(collection(db, "absensi"), {
+    nama,
+    tanggal: hari,
+    jamMasuk: jam,
+    statusMasuk: status
   });
 
+  loadData();
+};
+
+// ================== ABSEN PULANG ==================
+window.absenPulang = async () => {
   const nama = document.getElementById("nama").value;
 
-  for(let i=1;i<=days;i++){
-    const tgl = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
-    let cls="day kosong";
+  const q = query(collection(db, "absensi"),
+    where("nama", "==", nama),
+    where("tanggal", "==", hari)
+  );
 
-    if(map[tgl] && map[tgl][nama]){
-      const d = map[tgl][nama];
-      cls = d.statusMasuk=="Telat" ? "day telat" : "day hadir";
-    }
+  const snap = await getDocs(q);
 
-    cal.innerHTML += `<div class="${cls}">${i}</div>`;
-  }
-}
-
-/* REKAP */
-async function loadRekap(){
-  const snap = await getDocs(collection(db,"absensi"));
-  const nama = document.getElementById("nama").value;
-
-  let hadir=0, telat=0;
-
-  snap.forEach(d=>{
-    const data = d.data()[nama];
-    if(data){
-      hadir++;
-      if(data.statusMasuk=="Telat") telat++;
-    }
-  });
-
-  document.getElementById("rekap").innerHTML = `
-    Hadir: ${hadir}<br>
-    Telat: ${telat}
-  `;
-}
-
-/* EXPORT */
-window.exportExcel = function(){
-  let csv="Tanggal,Nama,Masuk,Pulang,Status\n";
-
-  getDocs(collection(db,"absensi")).then(snap=>{
-    snap.forEach(d=>{
-      const tanggal = d.id;
-      const data = d.data();
-
-      for(let nama in data){
-        const x=data[nama];
-        csv += `${tanggal},${nama},${x.masuk||""},${x.pulang||""},${x.statusMasuk||""}\n`;
-      }
+  snap.forEach(async (d) => {
+    await addDoc(collection(db, "absensi"), {
+      ...d.data(),
+      jamPulang: new Date().toLocaleTimeString()
     });
-
-    const blob=new Blob([csv]);
-    const a=document.createElement("a");
-    a.href=URL.createObjectURL(blob);
-    a.download="absensi.csv";
-    a.click();
+    await deleteDoc(doc(db, "absensi", d.id));
   });
+
+  loadData();
+};
+
+// ================== LOAD DATA ==================
+async function loadData() {
+  const q = query(collection(db, "absensi"),
+    where("tanggal", "==", hari)
+  );
+
+  const snap = await getDocs(q);
+
+  let html = "";
+
+  snap.forEach(d => {
+    const data = d.data();
+
+    html += `
+      <div class="item">
+        <b>${data.nama}</b><br>
+        Masuk: ${data.jamMasuk || "-"}<br>
+        Pulang: ${data.jamPulang || "-"}<br>
+        Status: 
+        <span class="badge ${data.statusMasuk === 'Telat' ? 'telat' : 'hadir'}">
+          ${data.statusMasuk || '-'}
+        </span>
+      </div>
+    `;
+  });
+
+  document.getElementById("hariIni").innerHTML = html || "Belum ada data";
 }
 
-/* LOAD ALL */
-function loadAll(){
-  loadHariIni();
-  loadCalendar();
-  loadRekap();
-}
+loadData();
 
-/* INIT */
-document.getElementById("nama").addEventListener("change",loadAll);
+// ================== RESET ==================
+window.resetHariIni = async () => {
+  const q = query(collection(db, "absensi"),
+    where("tanggal", "==", hari)
+  );
 
-loadKaryawan().then(loadAll);
+  const snap = await getDocs(q);
+
+  snap.forEach(async d => {
+    await deleteDoc(doc(db, "absensi", d.id));
+  });
+
+  loadData();
+};
+
+// ================== EXPORT EXCEL ==================
+window.exportExcel = async () => {
+  const snap = await getDocs(collection(db, "absensi"));
+
+  let table = `
+    <table border="1">
+      <tr>
+        <th>Nama</th>
+        <th>Tanggal</th>
+        <th>Jam Masuk</th>
+        <th>Jam Pulang</th>
+        <th>Status</th>
+      </tr>
+  `;
+
+  snap.forEach(d => {
+    const data = d.data();
+    table += `
+      <tr>
+        <td>${data.nama}</td>
+        <td>${data.tanggal}</td>
+        <td>${data.jamMasuk || "-"}</td>
+        <td>${data.jamPulang || "-"}</td>
+        <td>${data.statusMasuk || "-"}</td>
+      </tr>
+    `;
+  });
+
+  table += "</table>";
+
+  const blob = new Blob([table], { type: "application/vnd.ms-excel" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "absensi.xls";
+  a.click();
+};
 
 </script>
 
