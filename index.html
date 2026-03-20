@@ -23,6 +23,8 @@ select, button {
   margin:5px 0;
 }
 
+ul { padding-left:15px; }
+
 .nav {
   position:fixed;
   bottom:0;
@@ -49,6 +51,7 @@ select, button {
 <h2>Absensi Hari Ini</h2>
 
 <div class="card">
+
 <select id="nama">
 <option>Agung</option>
 <option>Hasan</option>
@@ -59,7 +62,12 @@ select, button {
 
 <button id="btnAbsen" onclick="absen()">Hadir</button>
 
+<h3>Data Hari Ini</h3>
 <ul id="listAbsen"></ul>
+
+<h3>Rekap Bulanan</h3>
+<ul id="rekapBulanan"></ul>
+
 </div>
 </div>
 
@@ -93,7 +101,7 @@ import {
   where
 } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
-// 🔥 CONFIG (PUNYAMU)
+// CONFIG FIREBASE
 const firebaseConfig = {
   apiKey: "AIzaSyAu67MAhW8xdmciPi3xOKwHdy-uP4u9tXI",
   authDomain: "pt-agn.firebaseapp.com",
@@ -130,7 +138,6 @@ window.absen = async function(){
     const ref = doc(db, "absensi", docId);
     const snap = await getDoc(ref);
 
-    // ❌ SUDAH ABSEN
     if(snap.exists()){
       alert("❌ " + nama + " sudah absen hari ini!");
       btn.disabled = false;
@@ -138,7 +145,6 @@ window.absen = async function(){
       return;
     }
 
-    // ✅ SIMPAN
     await setDoc(ref, {
       nama: nama,
       status: "Hadir",
@@ -158,7 +164,7 @@ window.absen = async function(){
 
 
 
-// 🔥 REALTIME (HANYA HARI INI)
+// 🔥 REALTIME HARI INI
 function realtime(){
 
   const list = document.getElementById('listAbsen');
@@ -188,8 +194,60 @@ function realtime(){
   });
 }
 
+
+
+// 🔥 REKAP BULANAN
+function rekapBulanan(){
+
+  const list = document.getElementById("rekapBulanan");
+
+  let now = new Date();
+  let bulan = now.getMonth() + 1;
+  let tahun = now.getFullYear();
+
+  let prefix = tahun + "-" + bulan.toString().padStart(2,'0');
+
+  const q = query(
+    collection(db, "absensi"),
+    orderBy("tanggal", "asc")
+  );
+
+  onSnapshot(q, (snapshot) => {
+
+    let dataRekap = {};
+
+    snapshot.forEach(doc => {
+      const d = doc.data();
+
+      if(d.tanggal && d.tanggal.startsWith(prefix)){
+
+        if(!dataRekap[d.nama]){
+          dataRekap[d.nama] = 0;
+        }
+
+        dataRekap[d.nama]++;
+      }
+    });
+
+    list.innerHTML = "";
+
+    for(let nama in dataRekap){
+      const li = document.createElement("li");
+      li.innerText = nama + " : " + dataRekap[nama] + " hari";
+      list.appendChild(li);
+    }
+
+  });
+
+}
+
+
+
 // LOAD
-window.onload = realtime;
+window.onload = function(){
+  realtime();
+  rekapBulanan();
+}
 
 </script>
 
