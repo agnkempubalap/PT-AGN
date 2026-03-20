@@ -2,120 +2,81 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Absensi Karyawan</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Absensi Karyawan PT-AGN</title>
 
 <!-- Chart -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+<!-- Excel -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
 <!-- PDF -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable"></script>
 
 <style>
-body {
-  font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(135deg,#eef2f3,#dfe9f3);
-  padding: 15px;
-}
-
-.card {
-  background: white;
-  border-radius: 20px;
-  padding: 20px;
-  margin-bottom: 15px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-}
-
-button {
-  width: 100%;
-  padding: 12px;
-  margin-top: 10px;
-  border-radius: 12px;
-  border: none;
-  font-weight: bold;
-}
-
-.btn-masuk { background:#16a34a;color:white; }
-.btn-pulang { background:#f59e0b;color:white; }
-.btn-reset { background:#ef4444;color:white; }
-.btn-excel { background:#3b82f6;color:white; }
-
-input, select {
-  width:100%;
-  padding:10px;
-  border-radius:10px;
-  border:1px solid #ccc;
-  margin-top:8px;
-}
-
-.dashboard {
-  display:grid;
-  grid-template-columns:1fr 1fr 1fr;
-  gap:10px;
-}
-
-.box {
-  padding:15px;
-  border-radius:15px;
-  color:white;
-  text-align:center;
-}
-
-.total { background:#3b82f6; }
-.hadir { background:#16a34a; }
-.telat { background:#f59e0b; }
-
-.status-hadir {background:#16a34a;color:white;padding:3px 10px;border-radius:10px;}
-.status-telat {background:#f59e0b;color:white;padding:3px 10px;border-radius:10px;}
+body{font-family:Arial;background:#eef2f7;padding:15px;}
+.card{background:white;padding:15px;border-radius:15px;margin-bottom:10px;box-shadow:0 5px 10px rgba(0,0,0,0.1);}
+button{width:100%;padding:10px;margin-top:5px;border:none;border-radius:10px;color:white;font-weight:bold;}
+.green{background:#22c55e;} .orange{background:#f59e0b;}
+.red{background:#ef4444;} .blue{background:#3b82f6;}
+.dashboard{display:flex;gap:10px;}
+.box{flex:1;padding:10px;border-radius:10px;color:white;text-align:center;}
+.status-hadir{background:#22c55e;color:white;padding:5px;border-radius:10px;}
+.status-telat{background:#f59e0b;color:white;padding:5px;border-radius:10px;}
 </style>
 </head>
 
 <body>
 
 <div class="card">
-  <h2>📋 Absensi Karyawan</h2>
+<h2>📋 Absensi PT-AGN</h2>
 
-  <select id="nama">
-    <option>Agung</option>
-    <option>Hasan</option>
-    <option>Hatta</option>
-    <option>Alda</option>
-  </select>
+<select id="nama">
+<option>Agung</option>
+<option>Alda</option>
+<option>Hasan</option>
+<option>Hatta</option>
+</select>
 
-  <button class="btn-masuk" onclick="absenMasuk()">Absen Masuk</button>
-  <button class="btn-pulang" onclick="absenPulang()">Absen Pulang</button>
-  <button class="btn-reset" onclick="resetHari()">Reset Hari Ini</button>
-  <button class="btn-excel" onclick="exportExcel()">Export Excel</button>
-  <button class="btn-excel" onclick="exportPDF()">Export PDF</button>
+<button class="green" onclick="absenMasuk()">Absen Masuk</button>
+<button class="orange" onclick="absenPulang()">Absen Pulang</button>
+<button class="red" onclick="resetHari()">Reset Hari Ini</button>
+
+<button class="blue" onclick="exportExcel()">Export Excel</button>
+<button class="blue" onclick="exportPDF()">Export PDF</button>
+
+<button class="blue" onclick="backupJSON()">Backup Data</button>
+<input type="file" id="restoreFile">
+<button class="green" onclick="restoreData()">Restore Data</button>
 </div>
 
 <div class="card">
-  <h3>🔍 Filter</h3>
-  <input type="date" id="filterTanggal" onchange="loadData()">
-  <input type="month" id="filterBulan" onchange="loadData()">
-  <input type="text" id="searchNama" placeholder="Cari nama..." onkeyup="loadData()">
+<h3>Filter</h3>
+<input type="date" id="filterTanggal" onchange="loadData()">
+<input type="month" id="filterBulan" onchange="loadData()">
+<input type="text" id="searchNama" placeholder="Cari nama..." onkeyup="loadData()">
 </div>
 
 <div class="card">
-  <h3>📊 Dashboard</h3>
-  <div class="dashboard">
-    <div class="box total">Total<br><b id="total">0</b></div>
-    <div class="box hadir">Hadir<br><b id="hadir">0</b></div>
-    <div class="box telat">Telat<br><b id="telat">0</b></div>
-  </div>
+<div class="dashboard">
+<div class="box" style="background:#3b82f6">Total<br><span id="total">0</span></div>
+<div class="box" style="background:#22c55e">Hadir<br><span id="hadir">0</span></div>
+<div class="box" style="background:#f59e0b">Telat<br><span id="telat">0</span></div>
+</div>
 </div>
 
 <div class="card">
-  <h3>📈 Grafik Bulanan</h3>
-  <canvas id="chartBulanan"></canvas>
+<canvas id="chart"></canvas>
 </div>
 
 <div id="list"></div>
 
+<div id="notif"></div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, query, where, updateDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+import { getFirestore, collection, onSnapshot, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAu67MAhW8xdmciPi3xOKwHdy-uP4u9tXI",
@@ -129,173 +90,245 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-function nowJam(){ return new Date().toLocaleTimeString("id-ID"); }
-function today(){ return new Date().toISOString().split("T")[0]; }
-function bulanNow(){ return new Date().toISOString().slice(0,7); }
+function today(){return new Date().toISOString().slice(0,10);}
+function nowJam(){return new Date().toLocaleTimeString("id-ID");}
 
-window.absenMasuk = async ()=>{
-  const nama = document.getElementById("nama").value;
-
-  await addDoc(collection(db,"absensi"),{
-    nama,
-    jamMasuk: nowJam(),
-    jamPulang:"-",
-    statusMasuk:(new Date().getHours()>8?"Telat":"Hadir"),
-    tanggal: today()
-  });
-
-  loadData();
-};
-
-window.absenPulang = async ()=>{
-  const nama = document.getElementById("nama").value;
-
-  const q = query(collection(db,"absensi"),
-    where("nama","==",nama),
-    where("tanggal","==",today())
-  );
-
-  const snap = await getDocs(q);
-
-  snap.forEach(async d=>{
-    await updateDoc(doc(db,"absensi",d.id),{
-      jamPulang: nowJam()
-    });
-  });
-
-  loadData();
-};
-
-window.resetHari = async ()=>{
-  const q = query(collection(db,"absensi"), where("tanggal","==",today()));
-  const snap = await getDocs(q);
-
-  snap.forEach(async d=>{
-    await deleteDoc(doc(db,"absensi",d.id));
-  });
-
-  loadData();
-};
-
-let chart;
-
-async function loadData(){
-  const list = document.getElementById("list");
-  list.innerHTML="Loading...";
-
-  const tgl = document.getElementById("filterTanggal").value;
-  const bln = document.getElementById("filterBulan").value;
-  const search = document.getElementById("searchNama").value.toLowerCase();
-
-  const snap = await getDocs(collection(db,"absensi"));
-
-  let html="";
-  let total=0, hadir=0, telat=0;
-  let mapBulanan={};
-
-  snap.forEach(docItem=>{
-    const d = docItem.data();
-
-    if (tgl && d.tanggal!==tgl) return;
-    if (bln && !d.tanggal.startsWith(bln)) return;
-    if (search && !d.nama.toLowerCase().includes(search)) return;
-
-    total++;
-    if(d.statusMasuk==="Hadir") hadir++;
-    if(d.statusMasuk==="Telat") telat++;
-
-    if(!mapBulanan[d.tanggal]) mapBulanan[d.tanggal]={hadir:0,telat:0};
-    if(d.statusMasuk==="Hadir") mapBulanan[d.tanggal].hadir++;
-    if(d.statusMasuk==="Telat") mapBulanan[d.tanggal].telat++;
-
-    html+=`
-    <div class="card">
-      <b>${d.nama}</b><br>
-      ${d.tanggal}<br>
-      Masuk: ${d.jamMasuk}<br>
-      Pulang: ${d.jamPulang}<br>
-      Status: <span class="${d.statusMasuk==='Telat'?'status-telat':'status-hadir'}">${d.statusMasuk}</span>
-    </div>`;
-  });
-
-  document.getElementById("total").innerText=total;
-  document.getElementById("hadir").innerText=hadir;
-  document.getElementById("telat").innerText=telat;
-
-  renderChart(mapBulanan);
-
-  list.innerHTML = html || "Tidak ada data";
+// NOTIF
+function showNotif(text,type){
+  const n=document.getElementById("notif");
+  n.innerText=text;
+  n.style.display="block";
+  n.style.position="fixed";
+  n.style.top="20px";
+  n.style.right="20px";
+  n.style.padding="10px";
+  n.style.borderRadius="10px";
+  n.style.color="white";
+  n.style.background= type=="success"?"#22c55e":type=="error"?"#ef4444":"#f59e0b";
+  setTimeout(()=>n.style.display="none",2000);
 }
 
+// ABSEN MASUK
+window.absenMasuk=async()=>{
+  const nama=document.getElementById("nama").value;
+  const id=nama+"_"+today();
+
+  const ref=doc(db,"absensi",id);
+  const snap=await getDoc(ref);
+
+  if(snap.exists()){
+    showNotif("Sudah absen","warning");
+    return;
+  }
+
+  await setDoc(ref,{
+    nama,
+    jamMasuk:nowJam(),
+    jamPulang:"-",
+    statusMasuk:(new Date().getHours()>8?"Telat":"Hadir"),
+    tanggal:today()
+  });
+
+  showNotif("Absen masuk berhasil","success");
+}
+
+// ABSEN PULANG
+window.absenPulang=async()=>{
+  const nama=document.getElementById("nama").value;
+  const id=nama+"_"+today();
+
+  const ref=doc(db,"absensi",id);
+  const snap=await getDoc(ref);
+
+  if(!snap.exists()){
+    showNotif("Belum absen masuk","error");
+    return;
+  }
+
+  const data=snap.data();
+  if(data.jamPulang!=="-"){
+    showNotif("Sudah pulang","warning");
+    return;
+  }
+
+  await updateDoc(ref,{jamPulang:nowJam()});
+  showNotif("Absen pulang berhasil","success");
+}
+
+// RESET
+window.resetHari=async()=>{
+  const snap=await getDocs(collection(db,"absensi"));
+  snap.forEach(async d=>{
+    if(d.data().tanggal===today()){
+      await deleteDoc(doc(db,"absensi",d.id));
+    }
+  });
+  showNotif("Reset selesai","success");
+}
+
+// REALTIME
+let chart;
+function loadData(){
+  const tgl=document.getElementById("filterTanggal").value;
+  const bln=document.getElementById("filterBulan").value;
+  const search=document.getElementById("searchNama").value.toLowerCase();
+
+  onSnapshot(collection(db,"absensi"),snap=>{
+    let html="",total=0,hadir=0,telat=0,map={};
+
+    snap.forEach(d=>{
+      const x=d.data();
+
+      if(tgl && x.tanggal!==tgl) return;
+      if(bln && !x.tanggal.startsWith(bln)) return;
+      if(search && !x.nama.toLowerCase().includes(search)) return;
+
+      total++;
+      if(x.statusMasuk==="Hadir") hadir++;
+      if(x.statusMasuk==="Telat") telat++;
+
+      if(!map[x.tanggal]) map[x.tanggal]={hadir:0,telat:0};
+      if(x.statusMasuk==="Hadir") map[x.tanggal].hadir++;
+      if(x.statusMasuk==="Telat") map[x.tanggal].telat++;
+
+      html+=`
+      <div class="card">
+      <b>${x.nama}</b><br>
+      ${x.tanggal}<br>
+      Masuk: ${x.jamMasuk}<br>
+      Pulang: ${x.jamPulang}<br>
+      <span class="${x.statusMasuk==='Telat'?'status-telat':'status-hadir'}">${x.statusMasuk}</span>
+      </div>`;
+    });
+
+    document.getElementById("total").innerText=total;
+    document.getElementById("hadir").innerText=hadir;
+    document.getElementById("telat").innerText=telat;
+
+    renderChart(map);
+    document.getElementById("list").innerHTML=html||"Tidak ada data";
+  });
+}
+
+// CHART
 function renderChart(map){
-  const ctx = document.getElementById("chartBulanan");
-
-  const labels = Object.keys(map);
-  const hadirData = labels.map(t=>map[t].hadir);
-  const telatData = labels.map(t=>map[t].telat);
-
+  const ctx=document.getElementById("chart");
   if(chart) chart.destroy();
 
-  chart = new Chart(ctx,{
+  chart=new Chart(ctx,{
     type:"bar",
     data:{
-      labels:labels,
+      labels:Object.keys(map),
       datasets:[
-        {label:"Hadir", data:hadirData, backgroundColor:"#16a34a"},
-        {label:"Telat", data:telatData, backgroundColor:"#f59e0b"}
+        {label:"Hadir",data:Object.values(map).map(x=>x.hadir),backgroundColor:"green"},
+        {label:"Telat",data:Object.values(map).map(x=>x.telat),backgroundColor:"orange"}
       ]
     }
   });
 }
 
-window.exportExcel = async ()=>{
-  const snap = await getDocs(collection(db,"absensi"));
+// EXCEL BULANAN
+window.exportExcel=async()=>{
+  const bulan=document.getElementById("filterBulan").value;
+  if(!bulan){showNotif("Pilih bulan dulu","warning");return;}
 
-  let html="<table border='1'><tr><th>Nama</th><th>Tanggal</th><th>Masuk</th><th>Pulang</th><th>Status</th></tr>";
+  const snap=await getDocs(collection(db,"absensi"));
+  let data=[];
 
   snap.forEach(d=>{
     const x=d.data();
-    html+=`<tr><td>${x.nama}</td><td>${x.tanggal}</td><td>${x.jamMasuk}</td><td>${x.jamPulang}</td><td>${x.statusMasuk}</td></tr>`;
+    if(x.tanggal.startsWith(bulan)){
+      data.push(x);
+    }
   });
 
-  html+="</table>";
+  const ws=XLSX.utils.json_to_sheet(data);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,"Absensi");
 
-  const blob=new Blob([html],{type:"application/vnd.ms-excel"});
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download="Absensi.xls";
-  a.click();
-};
+  XLSX.writeFile(wb,`Absensi_${bulan}.xlsx`);
+}
 
-window.exportPDF = async ()=>{
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
+// PDF PRO + RANKING
+window.exportPDF=async()=>{
+  const bulan=document.getElementById("filterBulan").value;
+  if(!bulan){showNotif("Pilih bulan dulu","warning");return;}
 
-  const snap = await getDocs(collection(db,"absensi"));
-  let rows=[];
+  const snap=await getDocs(collection(db,"absensi"));
+
+  let rows=[],rekap={},total=0,hadir=0,telat=0;
 
   snap.forEach(d=>{
     const x=d.data();
+    if(!x.tanggal.startsWith(bulan)) return;
+
+    total++;
+    if(x.statusMasuk==="Hadir") hadir++;
+    if(x.statusMasuk==="Telat") telat++;
+
     rows.push([x.nama,x.tanggal,x.jamMasuk,x.jamPulang,x.statusMasuk]);
+
+    if(!rekap[x.nama]) rekap[x.nama]={hadir:0,telat:0};
+    if(x.statusMasuk==="Hadir") rekap[x.nama].hadir++;
+    if(x.statusMasuk==="Telat") rekap[x.nama].telat++;
   });
 
-  doc.text("Laporan Absensi",14,15);
+  const { jsPDF } = window.jspdf;
+  const doc=new jsPDF();
+
+  doc.text("PT-AGN",14,15);
+  doc.text("LAPORAN ABSENSI",14,22);
+  doc.text("Periode: "+bulan,14,28);
+
+  doc.text(`Total:${total}`,14,38);
+  doc.text(`Hadir:${hadir}`,14,44);
+  doc.text(`Telat:${telat}`,14,50);
 
   doc.autoTable({
-    startY:20,
     head:[["Nama","Tanggal","Masuk","Pulang","Status"]],
-    body:rows
+    body:rows,
+    startY:60
   });
 
-  doc.save("Absensi.pdf");
-};
+  let ranking=Object.keys(rekap).map(n=>[n,rekap[n].hadir,rekap[n].telat])
+  .sort((a,b)=>b[1]-a[1]);
 
-document.getElementById("filterTanggal").value = today();
-document.getElementById("filterBulan").value = bulanNow();
+  doc.autoTable({
+    head:[["Nama","Hadir","Telat"]],
+    body:ranking,
+    startY:doc.lastAutoTable.finalY+10
+  });
+
+  doc.save("laporan.pdf");
+}
+
+// BACKUP
+window.backupJSON=async()=>{
+  const snap=await getDocs(collection(db,"absensi"));
+  let data=[];
+  snap.forEach(d=>data.push(d.data()));
+
+  const blob=new Blob([JSON.stringify(data)],{type:"application/json"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="backup.json";
+  a.click();
+}
+
+// RESTORE
+window.restoreData=async()=>{
+  const file=document.getElementById("restoreFile").files[0];
+  const text=await file.text();
+  const data=JSON.parse(text);
+
+  for(const d of data){
+    await setDoc(doc(db,"absensi",d.nama+"_"+d.tanggal),d);
+  }
+  showNotif("Restore selesai","success");
+}
 
 loadData();
 
 </script>
-
 </body>
 </html>
