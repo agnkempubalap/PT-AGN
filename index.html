@@ -2,112 +2,84 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <style>
-body{font-family:sans-serif;margin:0;background:#dbeafe;}
-
-.nav{
- display:flex;overflow-x:auto;background:#fff;
- position:sticky;top:0;
-}
-.nav button{
- flex:none;padding:12px;border:none;background:none;
-}
-.nav .active{color:blue;border-bottom:2px solid blue;}
-
-.page{display:none;padding:10px;}
-.activePage{display:block;}
-
-.card{
- background:#fff;margin:10px 0;padding:12px;
- border-radius:10px;
-}
-
-button{
- width:100%;padding:10px;margin:5px 0;
- border:none;border-radius:8px;color:#fff;
-}
-
-.green{background:green}
-.orange{background:orange}
-.red{background:red}
-.blue{background:blue}
-
-input,select{
- width:100%;padding:8px;margin:5px 0;
-}
+body{font-family:sans-serif;margin:0;background:#e0f2fe;padding-bottom:70px}
+.page{display:none;padding:10px}
+.active{display:block}
+.card{background:#fff;padding:12px;margin:10px 0;border-radius:10px}
+button{width:100%;padding:10px;margin:5px 0;border:none;border-radius:8px;color:#fff}
+.green{background:#22c55e}
+.orange{background:#f59e0b}
+.red{background:#ef4444}
+.blue{background:#3b82f6}
+input,select{width:100%;padding:10px;margin:5px 0}
+.nav{position:fixed;bottom:0;width:100%;display:flex;background:#fff}
+.nav button{flex:1;color:#333;background:none}
 </style>
 </head>
 
 <body>
 
-<!-- NAV -->
-<div class="nav">
-<button onclick="nav('home',this)" class="active">Home</button>
-<button onclick="nav('absen',this)">Absensi</button>
-</div>
-
-<!-- HOME -->
-<div id="home" class="page activePage">
-<div class="card">🏠 Sistem siap</div>
-</div>
-
-<!-- ABSENSI -->
-<div id="absen" class="page">
+<!-- ABSEN -->
+<div id="absen" class="page active">
 
 <div class="card">
-<h3>Karyawan</h3>
-
 <select id="nama"></select>
 
 <input id="namaBaru" placeholder="Tambah karyawan">
-<button class="blue" onclick="tambahKaryawan()">Tambah</button>
-<button class="red" onclick="hapusKaryawan()">Hapus</button>
-
+<button class="blue" onclick="tambah()">Tambah</button>
+<button class="red" onclick="hapus()">Hapus</button>
 </div>
 
 <div class="card">
 <button class="green" onclick="masuk()">Masuk</button>
-<button class="orange" onclick="pulang()">Pulang</button>
-<button class="red" onclick="resetHari()">Reset</button>
-</div>
-
-<div class="card">
-Total: <span id="total">0</span><br>
-Hadir: <span id="hadir">0</span><br>
-Telat: <span id="telat">0</span>
-</div>
-
-<div class="card">
-<canvas id="chart"></canvas>
+<button class="orange" onclick="izin()">Izin</button>
 </div>
 
 <div id="list"></div>
 
 </div>
 
+<!-- AKTIVITAS -->
+<div id="aktivitas" class="page">
+
+<div class="card">
+<b>Pilih Aktivitas</b>
+
+<select id="aktifitas">
+<option>Rekondisi Kempu</option>
+<option>Derigen 18L</option>
+<option>Derigen 5L</option>
+<option>Muat/Bongkar</option>
+<option>Pangkalan</option>
+<option>Kirim Minyak</option>
+</select>
+
+<div id="cekKaryawan"></div>
+
+<button class="blue" onclick="simpanAktivitas()">Simpan Aktivitas</button>
+</div>
+
+</div>
+
+<!-- LAPORAN -->
+<div id="laporan" class="page">
+<div id="laporanIsi"></div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+<button onclick="pindah('absen')">Absen</button>
+<button onclick="pindah('aktivitas')">Aktivitas</button>
+<button onclick="pindah('laporan')">Laporan</button>
+</div>
+
 <script>
 
-// NAV
-function nav(id,btn){
- document.querySelectorAll('.page').forEach(p=>p.classList.remove('activePage'));
- document.getElementById(id).classList.add('activePage');
+let karyawan = JSON.parse(localStorage.getItem("karyawan")) || ["Agung","Alda","Nur"];
+let absen = JSON.parse(localStorage.getItem("absen")) || [];
+let aktivitas = JSON.parse(localStorage.getItem("aktivitas")) || [];
 
- document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
- btn.classList.add('active');
-}
-
-// DATA (ANTI RESET)
-let data = JSON.parse(localStorage.getItem("absen")) || [];
-let karyawan = JSON.parse(localStorage.getItem("karyawan"));
-
-if(!karyawan){
- karyawan = ["Agung","Alda","Nur","Budi","Siti"];
- localStorage.setItem("karyawan", JSON.stringify(karyawan));
-}
-
-// LOAD
 const nama = document.getElementById("nama");
 
 function loadNama(){
@@ -115,30 +87,25 @@ function loadNama(){
 }
 loadNama();
 
-// SIMPAN
-function save(){
- localStorage.setItem("absen", JSON.stringify(data));
- localStorage.setItem("karyawan", JSON.stringify(karyawan));
- render();
+// NAV
+function pindah(id){
+ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
 }
 
-// TAMBAH KARYAWAN
-function tambahKaryawan(){
- let n = document.getElementById("namaBaru").value;
+// TAMBAH
+function tambah(){
+ let n=document.getElementById("namaBaru").value;
  if(!n) return;
-
  karyawan.push(n);
- document.getElementById("namaBaru").value="";
  save();
- loadNama();
 }
 
-// HAPUS KARYAWAN
-function hapusKaryawan(){
- let n = nama.value;
- karyawan = karyawan.filter(x=>x!=n);
+// HAPUS
+function hapus(){
+ let n=nama.value;
+ karyawan=karyawan.filter(x=>x!=n);
  save();
- loadNama();
 }
 
 // TIME
@@ -153,69 +120,108 @@ function now(){
 // MASUK
 function masuk(){
  let t=now();
- let n=nama.value;
-
- if(data.find(x=>x.nama==n && x.tgl==t.tgl)) return;
-
  let status = t.jam>"09:00:00"?"Telat":"Hadir";
 
- data.push({
-  nama:n,
+ absen.push({
+  nama:nama.value,
   tgl:t.tgl,
   masuk:t.jam,
-  pulang:"-",
   status
  });
 
  save();
 }
 
-// PULANG
-function pulang(){
+// IZIN
+function izin(){
  let t=now();
- let d=data.find(x=>x.nama==nama.value && x.tgl==t.tgl);
- if(d) d.pulang=t.jam;
+ absen.push({
+  nama:nama.value,
+  tgl:t.tgl,
+  masuk:"-",
+  status:"Izin"
+ });
  save();
 }
 
-// RESET
-function resetHari(){
- let today=now().tgl;
- data = data.filter(x=>x.tgl!=today);
+// AUTO ALFA
+function cekAlfa(){
+ let t=now();
+ if(t.jam<"16:00:00") return;
+
+ karyawan.forEach(n=>{
+  let ada = absen.find(x=>x.nama==n && x.tgl==t.tgl);
+  if(!ada){
+   absen.push({nama:n,tgl:t.tgl,status:"Alfa"});
+  }
+ });
+
  save();
 }
 
-// CHART
-let chart = new Chart(document.getElementById("chart"),{
- type:'bar',
- data:{labels:[],datasets:[{label:'Absensi',data:[]}]}
-});
+// AKTIVITAS
+function loadCek(){
+ document.getElementById("cekKaryawan").innerHTML =
+ karyawan.map(n=>`<label><input type="checkbox" value="${n}"> ${n}</label><br>`).join("");
+}
+loadCek();
+
+function simpanAktivitas(){
+ let t=now();
+ let akt = document.getElementById("aktifitas").value;
+ let pilih=[...document.querySelectorAll("#cekKaryawan input:checked")].map(x=>x.value);
+
+ aktivitas.push({
+  tgl:t.tgl,
+  aktivitas:akt,
+  orang:pilih
+ });
+
+ save();
+}
 
 // RENDER
 function render(){
 
- total.innerText = data.length;
- hadir.innerText = data.filter(x=>x.status=="Hadir").length;
- telat.innerText = data.filter(x=>x.status=="Telat").length;
+ cekAlfa();
 
- document.getElementById("list").innerHTML = data.map(x=>`
+ document.getElementById("list").innerHTML =
+ absen.map(x=>`
  <div class="card">
- ${x.nama}<br>
- ${x.tgl}<br>
- ${x.masuk} - ${x.pulang}<br>
+ ${x.nama} - ${x.tgl}<br>
  ${x.status}
  </div>
  `).join("");
 
- let group={};
- data.forEach(x=>{
-  if(!group[x.tgl]) group[x.tgl]=0;
-  group[x.tgl]++;
+ // LAPORAN DETAIL
+ let html="";
+ karyawan.forEach(n=>{
+  html+=`<div class="card"><b>${n}</b><br>`;
+
+  absen.filter(x=>x.nama==n).forEach(a=>{
+   html+=`${a.tgl} - ${a.status}<br>`;
+
+   aktivitas.filter(k=>k.tgl==a.tgl && k.orang.includes(n))
+   .forEach(k=>{
+    html+=`- ${k.aktivitas}<br>`;
+   });
+
+  });
+
+  html+="</div>";
  });
 
- chart.data.labels = Object.keys(group);
- chart.data.datasets[0].data = Object.values(group);
- chart.update();
+ document.getElementById("laporanIsi").innerHTML = html;
+}
+
+// SAVE
+function save(){
+ localStorage.setItem("karyawan",JSON.stringify(karyawan));
+ localStorage.setItem("absen",JSON.stringify(absen));
+ localStorage.setItem("aktivitas",JSON.stringify(aktivitas));
+ loadNama();
+ loadCek();
+ render();
 }
 
 render();
