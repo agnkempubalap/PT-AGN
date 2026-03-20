@@ -2,7 +2,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sistem Karyawan Lengkap</title>
+<title>Sistem Karyawan Stabil</title>
 <style>
 body{font-family:Arial;margin:0;background:#e3f2fd}
 .page{display:none;padding:10px}
@@ -11,258 +11,193 @@ body{font-family:Arial;margin:0;background:#e3f2fd}
 .nav button{flex:1;padding:10px;border:none;background:#fff}
 .card{background:#fff;padding:12px;margin-bottom:10px;border-radius:10px}
 button{padding:10px;border:none;border-radius:8px}
-.save{background:#4caf50;color:#fff;width:100%}
+.save{background:#4caf50;color:#fff;width:100%;margin-top:5px}
 input,select{width:100%;padding:8px;margin-bottom:8px}
 </style>
 </head>
 <body><!-- DASHBOARD --><div id="dashboardPage" class="page active">
 <div class="card"><h3>Dashboard</h3><div id="dashboard"></div></div>
 </div><!-- ABSENSI --><div id="absenPage" class="page">
-<div class="card"><h3>📋 Absensi</h3>
-<select id="namaAbsen"></select><button class="save" style="background:#4caf50" onclick="absenMasuk()">Absen Masuk</button> <button class="save" style="background:#ff9800;margin-top:6px" onclick="absenPulang()">Absen Pulang</button> <button class="save" style="background:#f44336;margin-top:6px" onclick="resetHari()">Reset Hari Ini</button>
-
-<hr>
-<h4>Kelola Karyawan</h4>
-<input type="text" id="namaBaru" placeholder="Tambah Karyawan">
+<div class="card">
+<h3>Absensi</h3>
+<select id="namaAbsen"></select>
+<button class="save" onclick="absenMasuk()">Absen Masuk</button>
+<button class="save" style="background:#ff9800" onclick="absenPulang()">Absen Pulang</button>
+<button class="save" style="background:#f44336" onclick="resetHari()">Reset Hari Ini</button><h4>Kelola Karyawan</h4>
+<input id="namaBaru" placeholder="Tambah Karyawan">
 <button class="save" onclick="tambahKaryawan()">Tambah</button>
-<div id="listKaryawan"></div><hr>
-<div id="dataAbsen"></div>
+<div id="listKaryawan"></div><div id="dataAbsen"></div>
 </div>
 </div><!-- AKTIVITAS --><div id="aktivitasPage" class="page">
-<div class="card"><h3>Aktivitas</h3>
-<div id="karyawanList"></div>
-<button class="save" onclick="simpanAktivitas()">Simpan</button>
-</div>
-<div class="card"><div id="output"></div></div>
+<div class="card"><h3>Aktivitas</h3><div id="karyawanList"></div>
+<button class="save" onclick="simpanAktivitas()">Simpan</button></div>
+<div id="output"></div>
 </div><!-- STOK --><div id="stokPage" class="page">
-<div class="card"><h3>Stok Gudang</h3>
-<input type="text" id="namaBarang" placeholder="Nama Barang">
-<input type="number" id="jumlahBarang" placeholder="Jumlah">
-<button class="save" onclick="tambahStok()">Tambah / Update</button>
+<div class="card"><h3>Stok</h3>
+<input id="namaBarang" placeholder="Nama Barang">
+<input id="jumlahBarang" type="number" placeholder="Jumlah">
+<button class="save" onclick="tambahStok()">Tambah</button>
 <div id="dataStok"></div>
-</div>
-</div><!-- ABSENSI --><div id="absenPage" class="page">
-<div class="card"><h3>Absensi</h3>
-<select id="namaAbsen"></select>
-<select id="statusAbsen">
-<option>Hadir</option>
-<option>Izin</option>
-<option>Sakit</option>
-</select>
-<button class="save" onclick="absen()">Absen</button><hr>
-<h4>Kelola Karyawan</h4>
-<input type="text" id="namaBaru" placeholder="Tambah Karyawan">
-<button class="save" onclick="tambahKaryawan()">Tambah</button>
-<div id="listKaryawan"></div><hr>
-<div id="dataAbsen"></div>
 </div>
 </div><!-- NAV --><div class="nav">
 <button onclick="showPage('dashboardPage')">Home</button>
 <button onclick="showPage('absenPage')">Absen</button>
 <button onclick="showPage('aktivitasPage')">Aktivitas</button>
-<button onclick="showPage('stokPage')">Stok</button></div><script>
-// KARYAWAN DINAMIS
-let karyawan=JSON.parse(localStorage.getItem('karyawan')||'["Hatta","Agung"]');
-
-const aktivitasList=[
-"Rekondisi Kempu",
-"Rekondisi Derigen 18L",
-"Rekondisi Derigen 5L",
-"Muat / Bongkar Barang",
-"Kirim Minyak",
-"Pasang Pangkalan"
-];
-
-const harga={
-"Rekondisi Kempu":5000,
-"Rekondisi Derigen 18L":4000,
-"Rekondisi Derigen 5L":3000,
-"Muat / Bongkar Barang":6000,
-"Kirim Minyak":7000,
-"Pasang Pangkalan":8000
-};
-
-function showPage(id){
-document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-document.getElementById(id).classList.add('active');
-}
-
-// ABSENSI FULL
-function loadNama(){
-let select=document.getElementById('namaAbsen');
-select.innerHTML='';
-karyawan.forEach(n=>select.innerHTML+=`<option>${n}</option>`);
-}
-
-function absenMasuk(){
-let nama=document.getElementById('namaAbsen').value;
-let tanggal=new Date().toLocaleDateString();
-let waktu=new Date().toLocaleTimeString();
-
-let data=JSON.parse(localStorage.getItem('absen')||'[]');
-let sudah=data.find(d=>d.nama==nama && d.tanggal==tanggal);
-if(sudah){alert('Sudah absen masuk');return;}
-
-data.push({nama,tanggal,masuk:waktu,pulang:'-',status:'Hadir'});
-localStorage.setItem('absen',JSON.stringify(data));
-tampilAbsen();
-}
-
-function absenPulang(){
-let nama=document.getElementById('namaAbsen').value;
-let tanggal=new Date().toLocaleDateString();
-let waktu=new Date().toLocaleTimeString();
-
-let data=JSON.parse(localStorage.getItem('absen')||'[]');
-let item=data.find(d=>d.nama==nama && d.tanggal==tanggal);
-if(!item){alert('Belum absen masuk');return;}
-
-item.pulang=waktu;
-localStorage.setItem('absen',JSON.stringify(data));
-tampilAbsen();
-}
-
-function resetHari(){
-let tanggal=new Date().toLocaleDateString();
-let data=JSON.parse(localStorage.getItem('absen')||'[]');
-data=data.filter(d=>d.tanggal!=tanggal);
-localStorage.setItem('absen',JSON.stringify(data));
-tampilAbsen();
-}
-
-function tampilAbsen(){
-let data=JSON.parse(localStorage.getItem('absen')||'[]');
-let div=document.getElementById('dataAbsen');
-div.innerHTML='';
-
-data.slice().reverse().forEach(d=>{
-if(!d.nama) return;
-div.innerHTML+=`<div class='card'>
-<b>${d.nama}</b><br>
-${d.tanggal}<br>
-Masuk: ${d.masuk}<br>
-Pulang: ${d.pulang}<br>
-<span style='color:green'>${d.status}</span>
-</div>`;
-});
-}
-
-
-data.push({nama,status,tanggal,waktu});
-localStorage.setItem('absen',JSON.stringify(data));
-tampilAbsen();
-}
-
-function tampilAbsen(){
-let data=JSON.parse(localStorage.getItem('absen')||'[]');
-let div=document.getElementById('dataAbsen');
-div.innerHTML='';
-
-data.slice().reverse().forEach(d=>{
-if(!d.nama) return;
-div.innerHTML+=`<div class='card'>${d.nama} - ${d.status}<br>${d.tanggal} ${d.waktu}</div>`;
-});
-}
-
-// AKTIVITAS
-function renderForm(){
-let c=document.getElementById('karyawanList');
-c.innerHTML='';
-karyawan.forEach(n=>{
-let html=`<div class='card'><b>${n}</b>`;
-aktivitasList.forEach(a=>{
-html+=`<div><input type='checkbox' data-nama='${n}' value='${a}'> ${a}</div>`;
-});
-html+='</div>';
-c.innerHTML+=html;
-});
-}
-
-function simpanAktivitas(){
-let cb=document.querySelectorAll('input[type=checkbox]:checked');
-let data=[];
-cb.forEach(x=>{
-data.push({nama:x.dataset.nama,aktivitas:x.value,gaji:harga[x.value],waktu:new Date().toLocaleString()});
-});
-let lama=JSON.parse(localStorage.getItem('aktivitas')||'[]');
-localStorage.setItem('aktivitas',JSON.stringify(lama.concat(data)));
-tampilkan();dashboard();
-document.querySelectorAll('input[type=checkbox]').forEach(c=>c.checked=false);
-}
-
-function tampilkan(){
-let data=JSON.parse(localStorage.getItem('aktivitas')||'[]');
-let out=document.getElementById('output');
-out.innerHTML='';
-data.slice().reverse().forEach(d=>{
-out.innerHTML+=`<div class='card'>${d.nama} - ${d.aktivitas}<br>Rp ${d.gaji}</div>`;
-});
-}
-
-// DASHBOARD
-function dashboard(){
-let data=JSON.parse(localStorage.getItem('aktivitas')||'[]');
-let total=0; let per={};
-data.forEach(d=>{
-total+=d.gaji;
-per[d.nama]=(per[d.nama]||0)+d.gaji;
-});
-let div=document.getElementById('dashboard');
-div.innerHTML=`<div class='card'>Total: Rp ${total}</div>`;
-for(let n in per){div.innerHTML+=`<div class='card'>${n}: Rp ${per[n]}</div>`}
-}
-
-// STOK
-function tambahStok(){
-let nama=document.getElementById('namaBarang').value;
-let jumlah=parseInt(document.getElementById('jumlahBarang').value);
-if(!nama||!jumlah)return;
-let data=JSON.parse(localStorage.getItem('stok')||'{}');
-data[nama]=(data[nama]||0)+jumlah;
-localStorage.setItem('stok',JSON.stringify(data));
-tampilkanStok();
-}
-
-function tampilkanStok(){
-let data=JSON.parse(localStorage.getItem('stok')||'{}');
-let div=document.getElementById('dataStok');
-div.innerHTML='';
-for(let nama in data){div.innerHTML+=`<div class='card'>${nama}: ${data[nama]}</div>`}
+<button onclick="showPage('stokPage')">Stok</button>
+</div><script>
+// SAFE GET
+function getData(key,def){
+try{return JSON.parse(localStorage.getItem(key))||def}catch{return def}
 }
 
 // KARYAWAN
+let karyawan=getData('karyawan',["Hatta","Agung"]);
+
+function loadNama(){
+let s=document.getElementById('namaAbsen');
+s.innerHTML='';
+karyawan.forEach(n=>s.innerHTML+=`<option>${n}</option>`);
+}
+
 function tambahKaryawan(){
-let nama=document.getElementById('namaBaru').value;
-if(!nama)return;
-karyawan.push(nama);
+let n=document.getElementById('namaBaru').value;
+if(!n)return;
+karyawan.push(n);
 localStorage.setItem('karyawan',JSON.stringify(karyawan));
-renderSemua();
+renderAll();
 }
 
 function renderKaryawan(){
-let div=document.getElementById('listKaryawan');
-div.innerHTML='';
+let d=document.getElementById('listKaryawan');
+d.innerHTML='';
 karyawan.forEach((n,i)=>{
-div.innerHTML+=`<div class='card'>${n} <button onclick='hapusKaryawan(${i})'>Hapus</button></div>`;
+d.innerHTML+=`<div class='card'>${n} <button onclick='hapusKaryawan(${i})'>Hapus</button></div>`;
 });
 }
 
 function hapusKaryawan(i){
 karyawan.splice(i,1);
 localStorage.setItem('karyawan',JSON.stringify(karyawan));
-renderSemua();
+renderAll();
 }
 
-function renderSemua(){
+// ABSENSI
+function absenMasuk(){
+let nama=namaAbsen.value;
+let tgl=new Date().toLocaleDateString();
+let jam=new Date().toLocaleTimeString();
+let data=getData('absen',[]);
+if(data.find(d=>d.nama==nama&&d.tanggal==tgl))return alert('Sudah absen');
+data.push({nama,tanggal:tgl,masuk:jam,pulang:'-'});
+localStorage.setItem('absen',JSON.stringify(data));
+renderAll();
+}
+
+function absenPulang(){
+let nama=namaAbsen.value;
+let tgl=new Date().toLocaleDateString();
+let jam=new Date().toLocaleTimeString();
+let data=getData('absen',[]);
+let d=data.find(x=>x.nama==nama&&x.tanggal==tgl);
+if(!d)return alert('Belum absen masuk');
+d.pulang=jam;
+localStorage.setItem('absen',JSON.stringify(data));
+renderAll();
+}
+
+function resetHari(){
+let tgl=new Date().toLocaleDateString();
+let data=getData('absen',[]).filter(d=>d.tanggal!=tgl);
+localStorage.setItem('absen',JSON.stringify(data));
+renderAll();
+}
+
+function tampilAbsen(){
+let data=getData('absen',[]);
+let div=document.getElementById('dataAbsen');
+div.innerHTML='';
+data.slice(-20).reverse().forEach(d=>{
+if(!d.nama)return;
+div.innerHTML+=`<div class='card'>${d.nama}<br>${d.tanggal}<br>Masuk:${d.masuk}<br>Pulang:${d.pulang}</div>`;
+});
+}
+
+// AKTIVITAS
+const aktivitas=["Kempu","18L","5L","Muat","Kirim","Pasang"];
+const harga={Kempu:5000,"18L":4000,"5L":3000,Muat:6000,Kirim:7000,Pasang:8000};
+
+function renderForm(){
+let c=document.getElementById('karyawanList');
+c.innerHTML='';
+karyawan.forEach(n=>{
+let h=`<div class='card'><b>${n}</b>`;
+aktivitas.forEach(a=>{
+h+=`<div><input type='checkbox' data-nama='${n}' value='${a}'> ${a}</div>`;
+});
+h+='</div>';
+c.innerHTML+=h;
+});
+}
+
+function simpanAktivitas(){
+let cb=document.querySelectorAll('input[type=checkbox]:checked');
+let data=getData('aktivitas',[]);
+cb.forEach(x=>data.push({nama:x.dataset.nama,act:x.value,gaji:harga[x.value]}));
+localStorage.setItem('aktivitas',JSON.stringify(data));
+renderAll();
+document.querySelectorAll('input[type=checkbox]').forEach(c=>c.checked=false);
+}
+
+function tampilkan(){
+let data=getData('aktivitas',[]);
+let out=document.getElementById('output');
+out.innerHTML='';
+data.slice(-20).reverse().forEach(d=>{
+out.innerHTML+=`<div class='card'>${d.nama}-${d.act}-Rp${d.gaji}</div>`;
+});
+}
+
+// STOK
+function tambahStok(){
+let n=namaBarang.value;
+let j=parseInt(jumlahBarang.value);
+if(!n||!j)return;
+let data=getData('stok',{});
+data[n]=(data[n]||0)+j;
+localStorage.setItem('stok',JSON.stringify(data));
+renderAll();
+}
+
+function tampilkanStok(){
+let data=getData('stok',{});
+let d=document.getElementById('dataStok');
+d.innerHTML='';
+for(let k in data)d.innerHTML+=`<div class='card'>${k}:${data[k]}</div>`;
+}
+
+// DASHBOARD
+function dashboard(){
+let data=getData('aktivitas',[]);
+let total=0;
+data.forEach(d=>total+=d.gaji||0);
+document.getElementById('dashboard').innerHTML=`<div class='card'>Total Rp ${total}</div>`;
+}
+
+function showPage(id){
+document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+document.getElementById(id).classList.add('active');
+}
+
+function renderAll(){
 loadNama();
-renderForm();
 renderKaryawan();
 tampilAbsen();
+renderForm();
 tampilkan();
-dashboard();
 tampilkanStok();
+dashboard();
 }
 
-renderSemua();
+renderAll();
 </script></body>
 </html>
