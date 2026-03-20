@@ -6,28 +6,84 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body{font-family:sans-serif;margin:0;background:#cfe2f3}
+body{
+  font-family:sans-serif;
+  margin:0;
+  background:linear-gradient(135deg,#dbeafe,#bfdbfe);
+}
 
 /* NAV */
-.nav{display:flex;background:#fff;border-bottom:1px solid #ccc}
-.nav button{flex:1;padding:10px;border:none;background:none}
-.nav .active{color:#3498db;font-weight:bold}
+.nav{
+  display:flex;
+  background:#fff;
+  box-shadow:0 2px 6px rgba(0,0,0,0.1);
+  position:sticky;
+  top:0;
+  z-index:10;
+}
+.nav button{
+  flex:1;
+  padding:12px;
+  border:none;
+  background:none;
+  font-weight:600;
+}
+.nav .active{
+  color:#2563eb;
+  border-bottom:3px solid #2563eb;
+}
 
 /* PAGE */
-.page{display:none}
-.page.active{display:block}
+.page{display:none;padding:10px;}
+.page.active{display:block;}
 
 /* CARD */
-.card{background:#fff;margin:10px;padding:15px;border-radius:10px}
+.card{
+  background:#fff;
+  margin:10px 0;
+  padding:15px;
+  border-radius:15px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.08);
+}
 
-/* UI */
-button{width:100%;padding:10px;margin:5px 0;border:none;border-radius:8px;color:#fff}
-.green{background:#2ecc71}.orange{background:#f39c12}.red{background:#e74c3c}.blue{background:#3498db}
-input,select{width:100%;padding:8px;margin:5px 0;border-radius:6px}
+/* BUTTON */
+button{
+  width:100%;
+  padding:12px;
+  margin:6px 0;
+  border:none;
+  border-radius:10px;
+  color:#fff;
+  font-weight:bold;
+}
 
+.green{background:#22c55e}
+.orange{background:#f59e0b}
+.red{background:#ef4444}
+.blue{background:#3b82f6}
+
+/* INPUT */
+input,select{
+  width:100%;
+  padding:10px;
+  margin:6px 0;
+  border-radius:8px;
+  border:1px solid #ddd;
+}
+
+/* DASHBOARD */
 .flex{display:flex;gap:10px}
-.box{flex:1;padding:10px;border-radius:10px;color:#fff;text-align:center}
-.b1{background:#3498db}.b2{background:#2ecc71}.b3{background:#f1c40f}
+.box{
+  flex:1;
+  padding:12px;
+  border-radius:12px;
+  color:#fff;
+  text-align:center;
+  font-weight:bold;
+}
+.b1{background:#3b82f6}
+.b2{background:#22c55e}
+.b3{background:#f59e0b}
 </style>
 </head>
 
@@ -88,46 +144,38 @@ Sistem siap digunakan
 
 <!-- STOK -->
 <div id="stok" class="page">
-<div class="card">📦 Stok Gudang (belum dibuat)</div>
+<div class="card">📦 Stok Gudang (siap dikembangkan)</div>
 </div>
 
 <!-- AKTIVITAS -->
 <div id="aktivitas" class="page">
-<div class="card">🧑‍💼 Aktivitas (belum dibuat)</div>
+<div class="card">🧑‍💼 Aktivitas Harian (siap dikembangkan)</div>
 </div>
 
 <!-- GAJI -->
 <div id="gaji" class="page">
-<div class="card">💰 Gaji (belum dibuat)</div>
+<div class="card">💰 Gaji (siap dikembangkan)</div>
 </div>
 
 <script>
 
-// ===== NAV FIX =====
+// NAV
 function showPage(id,btn){
+ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
 
- document.querySelectorAll('.page').forEach(p=>{
-  p.style.display="none";
- });
-
- let el=document.getElementById(id);
- if(el) el.style.display="block";
-
- document.querySelectorAll('.nav button').forEach(b=>{
-  b.classList.remove('active');
- });
-
+ document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
  if(btn) btn.classList.add('active');
 }
 
-// ===== DATA =====
+// DATA
 let data = JSON.parse(localStorage.getItem("absensi")) || [];
-let karyawan = ["Agung","Alda","Nur","Budi","Siti"];
+let karyawan = JSON.parse(localStorage.getItem("karyawan")) || ["Agung","Alda","Nur","Budi","Siti"];
 
 const nama = document.getElementById("nama");
 nama.innerHTML = karyawan.map(n=>`<option>${n}</option>`);
 
-// ===== FILTER INIT =====
+// FILTER
 const bulan = document.getElementById("bulan");
 for(let i=1;i<=12;i++){
  bulan.innerHTML += `<option value="${i}">Bulan ${i}</option>`;
@@ -137,7 +185,7 @@ bulan.value = new Date().getMonth()+1;
 document.getElementById("search").oninput = render;
 bulan.onchange = render;
 
-// ===== TIME =====
+// TIME
 function now(){
  let d=new Date();
  return {
@@ -146,13 +194,13 @@ function now(){
  };
 }
 
-// ===== SAVE =====
+// SAVE
 function save(){
  localStorage.setItem("absensi", JSON.stringify(data));
  render();
 }
 
-// ===== ABSEN =====
+// ABSEN
 function masuk(){
  let t=now();
  let n=nama.value;
@@ -185,13 +233,13 @@ function resetHari(){
  save();
 }
 
-// ===== CHART =====
+// CHART
 let chart = new Chart(document.getElementById("chart"),{
- type:'line',
- data:{labels:[],datasets:[{data:[]}]}
+ type:'bar',
+ data:{labels:[],datasets:[{label:'Absensi',data:[]}]}
 });
 
-// ===== RENDER =====
+// RENDER
 function render(){
 
  let m = bulan.value;
@@ -203,13 +251,13 @@ function render(){
   return cocokBulan && cocokNama;
  });
 
- list.innerHTML = filtered.map(x=>`
+ document.getElementById("list").innerHTML = filtered.map(x=>`
  <div class="card">
  <b>${x.nama}</b><br>
  ${x.tanggal}<br>
  Masuk: ${x.masuk}<br>
  Pulang: ${x.pulang}<br>
- ${x.status}
+ <span style="color:${x.status=='Telat'?'red':'green'}">${x.status}</span>
  </div>
  `).join("");
 
@@ -232,5 +280,6 @@ function render(){
 render();
 
 </script>
+
 </body>
 </html>
