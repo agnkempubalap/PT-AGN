@@ -2,95 +2,41 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body{
-  font-family:sans-serif;
-  margin:0;
-  background:linear-gradient(135deg,#dbeafe,#bfdbfe);
-}
+body{font-family:sans-serif;margin:0;background:#dbeafe;}
 
-/* NAV FIX (SCROLLABLE) */
 .nav{
-  display:flex;
-  overflow-x:auto;
-  white-space:nowrap;
-  background:#fff;
-  position:sticky;
-  top:0;
-  z-index:10;
-  box-shadow:0 2px 6px rgba(0,0,0,0.1);
+ display:flex;overflow-x:auto;background:#fff;
+ position:sticky;top:0;
 }
-.nav::-webkit-scrollbar{display:none;}
-
 .nav button{
-  flex:none;
-  padding:12px 16px;
-  border:none;
-  background:none;
-  font-weight:600;
-  font-size:14px;
+ flex:none;padding:12px;border:none;background:none;
 }
+.nav .active{color:blue;border-bottom:2px solid blue;}
 
-.nav .active{
-  color:#2563eb;
-  border-bottom:3px solid #2563eb;
-}
+.page{display:none;padding:10px;}
+.activePage{display:block;}
 
-/* PAGE */
-.page{display:none;padding:12px;}
-.page.active{display:block;}
-
-/* CARD */
 .card{
-  background:#fff;
-  margin:10px 0;
-  padding:15px;
-  border-radius:15px;
-  box-shadow:0 4px 10px rgba(0,0,0,0.08);
+ background:#fff;margin:10px 0;padding:12px;
+ border-radius:10px;
 }
 
-/* BUTTON */
-button.action{
-  width:100%;
-  padding:12px;
-  margin:6px 0;
-  border:none;
-  border-radius:10px;
-  color:#fff;
-  font-weight:bold;
+button{
+ width:100%;padding:10px;margin:5px 0;
+ border:none;border-radius:8px;color:#fff;
 }
 
-.green{background:#22c55e}
-.orange{background:#f59e0b}
-.red{background:#ef4444}
-.blue{background:#3b82f6}
+.green{background:green}
+.orange{background:orange}
+.red{background:red}
+.blue{background:blue}
 
-/* INPUT */
 input,select{
-  width:100%;
-  padding:10px;
-  margin:6px 0;
-  border-radius:8px;
-  border:1px solid #ddd;
+ width:100%;padding:8px;margin:5px 0;
 }
-
-/* DASHBOARD */
-.flex{display:flex;gap:10px}
-.box{
-  flex:1;
-  padding:12px;
-  border-radius:12px;
-  color:#fff;
-  text-align:center;
-  font-weight:bold;
-}
-.b1{background:#3b82f6}
-.b2{background:#22c55e}
-.b3{background:#f59e0b}
-
 </style>
 </head>
 
@@ -98,47 +44,39 @@ input,select{
 
 <!-- NAV -->
 <div class="nav">
-<button onclick="showPage('home',this)" class="active">Home</button>
-<button onclick="showPage('absen',this)">Absensi</button>
-<button onclick="showPage('stok',this)">Stok</button>
-<button onclick="showPage('aktivitas',this)">Aktivitas</button>
-<button onclick="showPage('gaji',this)">Gaji</button>
+<button onclick="nav('home',this)" class="active">Home</button>
+<button onclick="nav('absen',this)">Absensi</button>
 </div>
 
 <!-- HOME -->
-<div id="home" class="page active">
-<div class="card">
-<h3>🏠 Halaman Utama</h3>
-Sistem siap digunakan
-</div>
+<div id="home" class="page activePage">
+<div class="card">🏠 Sistem siap</div>
 </div>
 
 <!-- ABSENSI -->
 <div id="absen" class="page">
 
 <div class="card">
-<h3>📋 Absensi</h3>
+<h3>Karyawan</h3>
 
 <select id="nama"></select>
 
-<button class="action green" onclick="masuk()">Masuk</button>
-<button class="action orange" onclick="pulang()">Pulang</button>
-<button class="action red" onclick="resetHari()">Reset Hari</button>
+<input id="namaBaru" placeholder="Tambah karyawan">
+<button class="blue" onclick="tambahKaryawan()">Tambah</button>
+<button class="red" onclick="hapusKaryawan()">Hapus</button>
 
 </div>
 
 <div class="card">
-<h4>Filter</h4>
-<select id="bulan"></select>
-<input id="search" placeholder="Cari nama">
+<button class="green" onclick="masuk()">Masuk</button>
+<button class="orange" onclick="pulang()">Pulang</button>
+<button class="red" onclick="resetHari()">Reset</button>
 </div>
 
 <div class="card">
-<div class="flex">
-<div class="box b1" id="total">0</div>
-<div class="box b2" id="hadir">0</div>
-<div class="box b3" id="telat">0</div>
-</div>
+Total: <span id="total">0</span><br>
+Hadir: <span id="hadir">0</span><br>
+Telat: <span id="telat">0</span>
 </div>
 
 <div class="card">
@@ -149,98 +87,101 @@ Sistem siap digunakan
 
 </div>
 
-<!-- STOK -->
-<div id="stok" class="page">
-<div class="card">📦 Stok Gudang (siap dikembangkan)</div>
-</div>
-
-<!-- AKTIVITAS -->
-<div id="aktivitas" class="page">
-<div class="card">🧑‍💼 Aktivitas Harian (siap dikembangkan)</div>
-</div>
-
-<!-- GAJI -->
-<div id="gaji" class="page">
-<div class="card">💰 Gaji (siap dikembangkan)</div>
-</div>
-
 <script>
 
 // NAV
-function showPage(id,btn){
- document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
- document.getElementById(id).classList.add('active');
+function nav(id,btn){
+ document.querySelectorAll('.page').forEach(p=>p.classList.remove('activePage'));
+ document.getElementById(id).classList.add('activePage');
 
  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
- if(btn) btn.classList.add('active');
+ btn.classList.add('active');
 }
 
-// DATA
-let data = JSON.parse(localStorage.getItem("absensi")) || [];
-let karyawan = JSON.parse(localStorage.getItem("karyawan")) || ["Agung","Alda","Nur","Budi","Siti"];
+// DATA (ANTI RESET)
+let data = JSON.parse(localStorage.getItem("absen")) || [];
+let karyawan = JSON.parse(localStorage.getItem("karyawan"));
 
-// LOAD NAMA
+if(!karyawan){
+ karyawan = ["Agung","Alda","Nur","Budi","Siti"];
+ localStorage.setItem("karyawan", JSON.stringify(karyawan));
+}
+
+// LOAD
 const nama = document.getElementById("nama");
+
 function loadNama(){
  nama.innerHTML = karyawan.map(n=>`<option>${n}</option>`).join("");
 }
 loadNama();
 
-// FILTER
-const bulan = document.getElementById("bulan");
-for(let i=1;i<=12;i++){
- bulan.innerHTML += `<option value="${i}">Bulan ${i}</option>`;
+// SIMPAN
+function save(){
+ localStorage.setItem("absen", JSON.stringify(data));
+ localStorage.setItem("karyawan", JSON.stringify(karyawan));
+ render();
 }
-bulan.value = new Date().getMonth()+1;
 
-document.getElementById("search").oninput = render;
-bulan.onchange = render;
+// TAMBAH KARYAWAN
+function tambahKaryawan(){
+ let n = document.getElementById("namaBaru").value;
+ if(!n) return;
+
+ karyawan.push(n);
+ document.getElementById("namaBaru").value="";
+ save();
+ loadNama();
+}
+
+// HAPUS KARYAWAN
+function hapusKaryawan(){
+ let n = nama.value;
+ karyawan = karyawan.filter(x=>x!=n);
+ save();
+ loadNama();
+}
 
 // TIME
 function now(){
  let d=new Date();
  return {
-  tanggal:d.toISOString().split('T')[0],
+  tgl:d.toISOString().split('T')[0],
   jam:d.toTimeString().split(' ')[0]
  };
 }
 
-// SAVE
-function save(){
- localStorage.setItem("absensi", JSON.stringify(data));
- render();
-}
-
-// ABSEN
+// MASUK
 function masuk(){
  let t=now();
  let n=nama.value;
 
- if(data.find(x=>x.nama==n && x.tanggal==t.tanggal)) return;
+ if(data.find(x=>x.nama==n && x.tgl==t.tgl)) return;
 
- let status = t.jam>"09:00:00" ? "Telat" : "Hadir";
+ let status = t.jam>"09:00:00"?"Telat":"Hadir";
 
  data.push({
   nama:n,
-  tanggal:t.tanggal,
+  tgl:t.tgl,
   masuk:t.jam,
   pulang:"-",
-  status:status
+  status
  });
 
  save();
 }
 
+// PULANG
 function pulang(){
  let t=now();
- let d=data.find(x=>x.nama==nama.value && x.tanggal==t.tanggal);
- if(d) d.pulang = t.jam;
+ let d=data.find(x=>x.nama==nama.value && x.tgl==t.tgl);
+ if(d) d.pulang=t.jam;
  save();
 }
 
+// RESET
 function resetHari(){
- let today = now().tanggal;
- data = data.filter(x=>x.tanggal!=today);
+ let today=now().tgl;
+ data = data.filter(x=>x.tgl!=today);
  save();
 }
 
@@ -253,33 +194,23 @@ let chart = new Chart(document.getElementById("chart"),{
 // RENDER
 function render(){
 
- let m = bulan.value;
- let s = document.getElementById("search").value.toLowerCase();
+ total.innerText = data.length;
+ hadir.innerText = data.filter(x=>x.status=="Hadir").length;
+ telat.innerText = data.filter(x=>x.status=="Telat").length;
 
- let filtered = data.filter(x=>{
-  let cocokBulan = new Date(x.tanggal).getMonth()+1 == m;
-  let cocokNama = x.nama.toLowerCase().includes(s);
-  return cocokBulan && cocokNama;
- });
-
- document.getElementById("list").innerHTML = filtered.map(x=>`
+ document.getElementById("list").innerHTML = data.map(x=>`
  <div class="card">
- <b>${x.nama}</b><br>
- ${x.tanggal}<br>
- Masuk: ${x.masuk}<br>
- Pulang: ${x.pulang}<br>
- <span style="color:${x.status=='Telat'?'red':'green'}">${x.status}</span>
+ ${x.nama}<br>
+ ${x.tgl}<br>
+ ${x.masuk} - ${x.pulang}<br>
+ ${x.status}
  </div>
  `).join("");
 
- total.innerText = filtered.length;
- hadir.innerText = filtered.filter(x=>x.status=="Hadir").length;
- telat.innerText = filtered.filter(x=>x.status=="Telat").length;
-
  let group={};
- filtered.forEach(x=>{
-  if(!group[x.tanggal]) group[x.tanggal]=0;
-  group[x.tanggal]++;
+ data.forEach(x=>{
+  if(!group[x.tgl]) group[x.tgl]=0;
+  group[x.tgl]++;
  });
 
  chart.data.labels = Object.keys(group);
@@ -287,7 +218,6 @@ function render(){
  chart.update();
 }
 
-// INIT
 render();
 
 </script>
