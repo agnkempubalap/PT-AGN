@@ -2,81 +2,14 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Absensi Karyawan PT-AGN</title>
+<title>Absensi PT-AGN</title>
 
-<!-- Chart -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-<!-- Excel -->
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-
-<!-- PDF -->
-<script src="https://cdn.jsdelivr.net/npm/jspdf"></script>
-<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable"></script>
-
-<style>
-body{font-family:Arial;background:#eef2f7;padding:15px;}
-.card{background:white;padding:15px;border-radius:15px;margin-bottom:10px;box-shadow:0 5px 10px rgba(0,0,0,0.1);}
-button{width:100%;padding:10px;margin-top:5px;border:none;border-radius:10px;color:white;font-weight:bold;}
-.green{background:#22c55e;} .orange{background:#f59e0b;}
-.red{background:#ef4444;} .blue{background:#3b82f6;}
-.dashboard{display:flex;gap:10px;}
-.box{flex:1;padding:10px;border-radius:10px;color:white;text-align:center;}
-.status-hadir{background:#22c55e;color:white;padding:5px;border-radius:10px;}
-.status-telat{background:#f59e0b;color:white;padding:5px;border-radius:10px;}
-</style>
-</head>
-
-<body>
-
-<div class="card">
-<h2>📋 Absensi PT-AGN</h2>
-
-<select id="nama">
-<option>Agung</option>
-<option>Alda</option>
-<option>Hasan</option>
-<option>Hatta</option>
-</select>
-
-<button class="green" onclick="absenMasuk()">Absen Masuk</button>
-<button class="orange" onclick="absenPulang()">Absen Pulang</button>
-<button class="red" onclick="resetHari()">Reset Hari Ini</button>
-
-<button class="blue" onclick="exportExcel()">Export Excel</button>
-<button class="blue" onclick="exportPDF()">Export PDF</button>
-
-<button class="blue" onclick="backupJSON()">Backup Data</button>
-<input type="file" id="restoreFile">
-<button class="green" onclick="restoreData()">Restore Data</button>
-</div>
-
-<div class="card">
-<h3>Filter</h3>
-<input type="date" id="filterTanggal" onchange="loadData()">
-<input type="month" id="filterBulan" onchange="loadData()">
-<input type="text" id="searchNama" placeholder="Cari nama..." onkeyup="loadData()">
-</div>
-
-<div class="card">
-<div class="dashboard">
-<div class="box" style="background:#3b82f6">Total<br><span id="total">0</span></div>
-<div class="box" style="background:#22c55e">Hadir<br><span id="hadir">0</span></div>
-<div class="box" style="background:#f59e0b">Telat<br><span id="telat">0</span></div>
-</div>
-</div>
-
-<div class="card">
-<canvas id="chart"></canvas>
-</div>
-
-<div id="list"></div>
-
-<div id="notif"></div>
-
+<!-- Firebase -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-import { getFirestore, collection, onSnapshot, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, updateDoc, doc, getDocs, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAu67MAhW8xdmciPi3xOKwHdy-uP4u9tXI",
@@ -90,245 +23,196 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-function today(){return new Date().toISOString().slice(0,10);}
-function nowJam(){return new Date().toLocaleTimeString("id-ID");}
+window.db = db;
+</script>
 
-// NOTIF
-function showNotif(text,type){
-  const n=document.getElementById("notif");
-  n.innerText=text;
-  n.style.display="block";
-  n.style.position="fixed";
-  n.style.top="20px";
-  n.style.right="20px";
-  n.style.padding="10px";
-  n.style.borderRadius="10px";
-  n.style.color="white";
-  n.style.background= type=="success"?"#22c55e":type=="error"?"#ef4444":"#f59e0b";
-  setTimeout(()=>n.style.display="none",2000);
+<!-- Library -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+<style>
+body{font-family:sans-serif;background:#eef2f7;padding:10px}
+.card{background:white;padding:15px;border-radius:12px;margin-bottom:15px;box-shadow:0 4px 10px rgba(0,0,0,0.1)}
+button{width:100%;padding:10px;margin:5px 0;border:none;border-radius:8px;font-weight:bold;color:white}
+.green{background:#27ae60}
+.orange{background:#f39c12}
+.red{background:#e74c3c}
+.blue{background:#3498db}
+select,input{width:100%;padding:8px;margin:5px 0;border-radius:8px;border:1px solid #ccc}
+.badge{padding:4px 10px;border-radius:8px;color:white}
+.hadir{background:#27ae60}
+.telat{background:#f39c12}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+<h2>📋 Absensi PT-AGN</h2>
+
+<select id="nama"></select>
+
+<button class="green" onclick="absenMasuk()">Absen Masuk</button>
+<button class="orange" onclick="absenPulang()">Absen Pulang</button>
+<button class="red" onclick="resetHari()">Reset Hari Ini</button>
+
+<button class="blue" onclick="exportExcel()">Export Excel</button>
+<button class="blue" onclick="exportPDF()">Export PDF</button>
+</div>
+
+<div class="card">
+<h3>Filter</h3>
+<input type="month" id="bulan">
+<input type="text" id="search" placeholder="Cari nama...">
+</div>
+
+<div class="card">
+<h3>Dashboard</h3>
+<div id="dashboard"></div>
+</div>
+
+<div id="list"></div>
+
+<script type="module">
+import { collection, addDoc, updateDoc, doc, getDocs, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+
+const db = window.db;
+
+let allData = [];
+
+// LOAD KARYAWAN
+async function loadKaryawan(){
+  const snap = await getDocs(collection(db,"karyawan"));
+  const select = document.getElementById("nama");
+  select.innerHTML="";
+  snap.forEach(d=>{
+    const opt=document.createElement("option");
+    opt.value=d.data().nama;
+    opt.textContent=d.data().nama;
+    select.appendChild(opt);
+  });
 }
+loadKaryawan();
+
+// REALTIME DATA
+onSnapshot(collection(db,"absensi"), snap=>{
+  allData=[];
+  snap.forEach(d=>allData.push({id:d.id,...d.data()}));
+  render();
+});
 
 // ABSEN MASUK
 window.absenMasuk=async()=>{
   const nama=document.getElementById("nama").value;
-  const id=nama+"_"+today();
+  const today=new Date().toISOString().split("T")[0];
 
-  const ref=doc(db,"absensi",id);
-  const snap=await getDoc(ref);
+  const q=query(collection(db,"absensi"),where("nama","==",nama),where("tanggal","==",today));
+  const cek=await getDocs(q);
 
-  if(snap.exists()){
-    showNotif("Sudah absen","warning");
+  if(!cek.empty){
+    alert("Sudah absen masuk!");
     return;
   }
 
-  await setDoc(ref,{
+  await addDoc(collection(db,"absensi"),{
     nama,
-    jamMasuk:nowJam(),
-    jamPulang:"-",
-    statusMasuk:(new Date().getHours()>8?"Telat":"Hadir"),
-    tanggal:today()
+    tanggal:today,
+    jamMasuk:new Date().toLocaleTimeString(),
+    jamPulang:"",
+    statusMasuk:"Hadir"
   });
 
-  showNotif("Absen masuk berhasil","success");
-}
+  alert("Absen masuk berhasil");
+};
 
 // ABSEN PULANG
 window.absenPulang=async()=>{
   const nama=document.getElementById("nama").value;
-  const id=nama+"_"+today();
+  const today=new Date().toISOString().split("T")[0];
 
-  const ref=doc(db,"absensi",id);
-  const snap=await getDoc(ref);
+  const q=query(collection(db,"absensi"),where("nama","==",nama),where("tanggal","==",today));
+  const snap=await getDocs(q);
 
-  if(!snap.exists()){
-    showNotif("Belum absen masuk","error");
-    return;
-  }
+  snap.forEach(async d=>{
+    await updateDoc(doc(db,"absensi",d.id),{
+      jamPulang:new Date().toLocaleTimeString()
+    });
+  });
 
-  const data=snap.data();
-  if(data.jamPulang!=="-"){
-    showNotif("Sudah pulang","warning");
-    return;
-  }
-
-  await updateDoc(ref,{jamPulang:nowJam()});
-  showNotif("Absen pulang berhasil","success");
-}
+  alert("Absen pulang berhasil");
+};
 
 // RESET
 window.resetHari=async()=>{
-  const snap=await getDocs(collection(db,"absensi"));
-  snap.forEach(async d=>{
-    if(d.data().tanggal===today()){
-      await deleteDoc(doc(db,"absensi",d.id));
-    }
+  alert("Reset manual via Firestore ya");
+};
+
+// RENDER
+function render(){
+  const list=document.getElementById("list");
+  const search=document.getElementById("search").value.toLowerCase();
+  const bulan=document.getElementById("bulan").value;
+
+  let data=allData.filter(d=>{
+    return (!search || d.nama.toLowerCase().includes(search)) &&
+           (!bulan || d.tanggal.startsWith(bulan));
   });
-  showNotif("Reset selesai","success");
-}
 
-// REALTIME
-let chart;
-function loadData(){
-  const tgl=document.getElementById("filterTanggal").value;
-  const bln=document.getElementById("filterBulan").value;
-  const search=document.getElementById("searchNama").value.toLowerCase();
+  // DASHBOARD
+  document.getElementById("dashboard").innerHTML=
+  `Total: ${data.length} | Hadir: ${data.filter(d=>d.statusMasuk=="Hadir").length}`;
 
-  onSnapshot(collection(db,"absensi"),snap=>{
-    let html="",total=0,hadir=0,telat=0,map={};
-
-    snap.forEach(d=>{
-      const x=d.data();
-
-      if(tgl && x.tanggal!==tgl) return;
-      if(bln && !x.tanggal.startsWith(bln)) return;
-      if(search && !x.nama.toLowerCase().includes(search)) return;
-
-      total++;
-      if(x.statusMasuk==="Hadir") hadir++;
-      if(x.statusMasuk==="Telat") telat++;
-
-      if(!map[x.tanggal]) map[x.tanggal]={hadir:0,telat:0};
-      if(x.statusMasuk==="Hadir") map[x.tanggal].hadir++;
-      if(x.statusMasuk==="Telat") map[x.tanggal].telat++;
-
-      html+=`
-      <div class="card">
-      <b>${x.nama}</b><br>
-      ${x.tanggal}<br>
-      Masuk: ${x.jamMasuk}<br>
-      Pulang: ${x.jamPulang}<br>
-      <span class="${x.statusMasuk==='Telat'?'status-telat':'status-hadir'}">${x.statusMasuk}</span>
-      </div>`;
-    });
-
-    document.getElementById("total").innerText=total;
-    document.getElementById("hadir").innerText=hadir;
-    document.getElementById("telat").innerText=telat;
-
-    renderChart(map);
-    document.getElementById("list").innerHTML=html||"Tidak ada data";
+  list.innerHTML="";
+  data.reverse().forEach(d=>{
+    list.innerHTML+=`
+    <div class="card">
+      <b>${d.nama}</b><br>
+      ${d.tanggal}<br>
+      Masuk: ${d.jamMasuk}<br>
+      Pulang: ${d.jamPulang || "-"}<br>
+      <span class="badge hadir">${d.statusMasuk}</span>
+    </div>`;
   });
 }
 
-// CHART
-function renderChart(map){
-  const ctx=document.getElementById("chart");
-  if(chart) chart.destroy();
+// FILTER EVENT
+document.getElementById("search").oninput=render;
+document.getElementById("bulan").onchange=render;
 
-  chart=new Chart(ctx,{
-    type:"bar",
-    data:{
-      labels:Object.keys(map),
-      datasets:[
-        {label:"Hadir",data:Object.values(map).map(x=>x.hadir),backgroundColor:"green"},
-        {label:"Telat",data:Object.values(map).map(x=>x.telat),backgroundColor:"orange"}
-      ]
-    }
-  });
-}
-
-// EXCEL BULANAN
-window.exportExcel=async()=>{
-  const bulan=document.getElementById("filterBulan").value;
-  if(!bulan){showNotif("Pilih bulan dulu","warning");return;}
-
-  const snap=await getDocs(collection(db,"absensi"));
-  let data=[];
-
-  snap.forEach(d=>{
-    const x=d.data();
-    if(x.tanggal.startsWith(bulan)){
-      data.push(x);
-    }
+// EXCEL
+window.exportExcel=()=>{
+  let rows=[["No","Nama","Tanggal","Masuk","Pulang","Status"]];
+  allData.forEach((d,i)=>{
+    rows.push([i+1,d.nama,d.tanggal,d.jamMasuk,d.jamPulang,d.statusMasuk]);
   });
 
-  const ws=XLSX.utils.json_to_sheet(data);
+  const ws=XLSX.utils.aoa_to_sheet(rows);
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,"Absensi");
+  XLSX.writeFile(wb,"Absensi.xlsx");
+};
 
-  XLSX.writeFile(wb,`Absensi_${bulan}.xlsx`);
-}
-
-// PDF PRO + RANKING
-window.exportPDF=async()=>{
-  const bulan=document.getElementById("filterBulan").value;
-  if(!bulan){showNotif("Pilih bulan dulu","warning");return;}
-
-  const snap=await getDocs(collection(db,"absensi"));
-
-  let rows=[],rekap={},total=0,hadir=0,telat=0;
-
-  snap.forEach(d=>{
-    const x=d.data();
-    if(!x.tanggal.startsWith(bulan)) return;
-
-    total++;
-    if(x.statusMasuk==="Hadir") hadir++;
-    if(x.statusMasuk==="Telat") telat++;
-
-    rows.push([x.nama,x.tanggal,x.jamMasuk,x.jamPulang,x.statusMasuk]);
-
-    if(!rekap[x.nama]) rekap[x.nama]={hadir:0,telat:0};
-    if(x.statusMasuk==="Hadir") rekap[x.nama].hadir++;
-    if(x.statusMasuk==="Telat") rekap[x.nama].telat++;
-  });
-
+// PDF
+window.exportPDF=()=>{
   const { jsPDF } = window.jspdf;
   const doc=new jsPDF();
 
-  doc.text("PT-AGN",14,15);
-  doc.text("LAPORAN ABSENSI",14,22);
-  doc.text("Periode: "+bulan,14,28);
+  doc.text("LAPORAN ABSENSI PT-AGN",14,15);
 
-  doc.text(`Total:${total}`,14,38);
-  doc.text(`Hadir:${hadir}`,14,44);
-  doc.text(`Telat:${telat}`,14,50);
+  const rows=allData.map((d,i)=>[
+    i+1,d.nama,d.tanggal,d.jamMasuk,d.jamPulang,d.statusMasuk
+  ]);
 
   doc.autoTable({
-    head:[["Nama","Tanggal","Masuk","Pulang","Status"]],
+    head:[["No","Nama","Tanggal","Masuk","Pulang","Status"]],
     body:rows,
-    startY:60
+    startY:20
   });
 
-  let ranking=Object.keys(rekap).map(n=>[n,rekap[n].hadir,rekap[n].telat])
-  .sort((a,b)=>b[1]-a[1]);
-
-  doc.autoTable({
-    head:[["Nama","Hadir","Telat"]],
-    body:ranking,
-    startY:doc.lastAutoTable.finalY+10
-  });
-
-  doc.save("laporan.pdf");
-}
-
-// BACKUP
-window.backupJSON=async()=>{
-  const snap=await getDocs(collection(db,"absensi"));
-  let data=[];
-  snap.forEach(d=>data.push(d.data()));
-
-  const blob=new Blob([JSON.stringify(data)],{type:"application/json"});
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download="backup.json";
-  a.click();
-}
-
-// RESTORE
-window.restoreData=async()=>{
-  const file=document.getElementById("restoreFile").files[0];
-  const text=await file.text();
-  const data=JSON.parse(text);
-
-  for(const d of data){
-    await setDoc(doc(db,"absensi",d.nama+"_"+d.tanggal),d);
-  }
-  showNotif("Restore selesai","success");
-}
-
-loadData();
-
+  doc.save("Absensi.pdf");
+};
 </script>
+
 </body>
 </html>
