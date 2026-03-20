@@ -3,13 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <title>Absensi PT-AGN</title>
-
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <!-- Firebase -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-import { getFirestore, collection, addDoc, updateDoc, doc, getDocs, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAu67MAhW8xdmciPi3xOKwHdy-uP4u9tXI",
@@ -22,7 +21,6 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-
 window.db = db;
 </script>
 
@@ -32,16 +30,72 @@ window.db = db;
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 
 <style>
-body{font-family:sans-serif;background:#eef2f7;padding:10px}
-.card{background:white;padding:15px;border-radius:12px;margin-bottom:15px;box-shadow:0 4px 10px rgba(0,0,0,0.1)}
-button{width:100%;padding:10px;margin:5px 0;border:none;border-radius:8px;font-weight:bold;color:white}
+body{
+  font-family:sans-serif;
+  background:linear-gradient(135deg,#74b9ff,#dfe6e9);
+  padding:10px;
+}
+
+.card{
+  background:white;
+  padding:15px;
+  border-radius:15px;
+  margin-bottom:15px;
+  box-shadow:0 5px 15px rgba(0,0,0,0.15);
+}
+
+h2,h3{margin:5px 0}
+
+button{
+  width:100%;
+  padding:12px;
+  margin:6px 0;
+  border:none;
+  border-radius:10px;
+  font-weight:bold;
+  color:white;
+  font-size:15px;
+}
+
 .green{background:#27ae60}
 .orange{background:#f39c12}
 .red{background:#e74c3c}
 .blue{background:#3498db}
-select,input{width:100%;padding:8px;margin:5px 0;border-radius:8px;border:1px solid #ccc}
-.badge{padding:4px 10px;border-radius:8px;color:white}
-.hadir{background:#27ae60}
+
+select,input{
+  width:100%;
+  padding:10px;
+  margin:5px 0;
+  border-radius:10px;
+  border:1px solid #ccc;
+}
+
+.dashboard{
+  display:flex;
+  gap:10px;
+}
+
+.box{
+  flex:1;
+  color:white;
+  padding:15px;
+  border-radius:12px;
+  text-align:center;
+  font-weight:bold;
+}
+
+.b1{background:#0984e3}
+.b2{background:#00b894}
+.b3{background:#fdcb6e;color:black}
+
+.badge{
+  padding:5px 12px;
+  border-radius:10px;
+  color:white;
+  font-size:12px;
+}
+
+.hadir{background:#00b894}
 .telat{background:#f39c12}
 </style>
 </head>
@@ -68,8 +122,12 @@ select,input{width:100%;padding:8px;margin:5px 0;border-radius:8px;border:1px so
 </div>
 
 <div class="card">
-<h3>Dashboard</h3>
-<div id="dashboard"></div>
+<h3>📊 Dashboard</h3>
+<div class="dashboard">
+  <div class="box b1" id="total">0</div>
+  <div class="box b2" id="hadir">0</div>
+  <div class="box b3" id="telat">0</div>
+</div>
 </div>
 
 <div id="list"></div>
@@ -78,16 +136,15 @@ select,input{width:100%;padding:8px;margin:5px 0;border-radius:8px;border:1px so
 import { collection, addDoc, updateDoc, doc, getDocs, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
 
 const db = window.db;
-
-let allData = [];
+let allData=[];
 
 // LOAD KARYAWAN
 async function loadKaryawan(){
-  const snap = await getDocs(collection(db,"karyawan"));
-  const select = document.getElementById("nama");
+  const snap=await getDocs(collection(db,"karyawan"));
+  const select=document.getElementById("nama");
   select.innerHTML="";
   snap.forEach(d=>{
-    const opt=document.createElement("option");
+    let opt=document.createElement("option");
     opt.value=d.data().nama;
     opt.textContent=d.data().nama;
     select.appendChild(opt);
@@ -95,7 +152,7 @@ async function loadKaryawan(){
 }
 loadKaryawan();
 
-// REALTIME DATA
+// REALTIME
 onSnapshot(collection(db,"absensi"), snap=>{
   allData=[];
   snap.forEach(d=>allData.push({id:d.id,...d.data()}));
@@ -104,14 +161,16 @@ onSnapshot(collection(db,"absensi"), snap=>{
 
 // ABSEN MASUK
 window.absenMasuk=async()=>{
-  const nama=document.getElementById("nama").value;
+  const nama=namaEl.value;
   const today=new Date().toISOString().split("T")[0];
 
-  const q=query(collection(db,"absensi"),where("nama","==",nama),where("tanggal","==",today));
-  const cek=await getDocs(q);
+  const q=query(collection(db,"absensi"),
+    where("nama","==",nama),
+    where("tanggal","==",today));
 
+  const cek=await getDocs(q);
   if(!cek.empty){
-    alert("Sudah absen masuk!");
+    alert("Sudah absen!");
     return;
   }
 
@@ -122,30 +181,23 @@ window.absenMasuk=async()=>{
     jamPulang:"",
     statusMasuk:"Hadir"
   });
-
-  alert("Absen masuk berhasil");
 };
 
 // ABSEN PULANG
 window.absenPulang=async()=>{
-  const nama=document.getElementById("nama").value;
+  const nama=namaEl.value;
   const today=new Date().toISOString().split("T")[0];
 
-  const q=query(collection(db,"absensi"),where("nama","==",nama),where("tanggal","==",today));
-  const snap=await getDocs(q);
+  const q=query(collection(db,"absensi"),
+    where("nama","==",nama),
+    where("tanggal","==",today));
 
+  const snap=await getDocs(q);
   snap.forEach(async d=>{
     await updateDoc(doc(db,"absensi",d.id),{
       jamPulang:new Date().toLocaleTimeString()
     });
   });
-
-  alert("Absen pulang berhasil");
-};
-
-// RESET
-window.resetHari=async()=>{
-  alert("Reset manual via Firestore ya");
 };
 
 // RENDER
@@ -159,9 +211,9 @@ function render(){
            (!bulan || d.tanggal.startsWith(bulan));
   });
 
-  // DASHBOARD
-  document.getElementById("dashboard").innerHTML=
-  `Total: ${data.length} | Hadir: ${data.filter(d=>d.statusMasuk=="Hadir").length}`;
+  document.getElementById("total").innerText="Total\n"+data.length;
+  document.getElementById("hadir").innerText="Hadir\n"+data.filter(d=>d.statusMasuk=="Hadir").length;
+  document.getElementById("telat").innerText="Telat\n"+data.filter(d=>d.statusMasuk=="Telat").length;
 
   list.innerHTML="";
   data.reverse().forEach(d=>{
@@ -176,9 +228,9 @@ function render(){
   });
 }
 
-// FILTER EVENT
-document.getElementById("search").oninput=render;
-document.getElementById("bulan").onchange=render;
+// FILTER
+search.oninput=render;
+bulan.onchange=render;
 
 // EXCEL
 window.exportExcel=()=>{
@@ -186,7 +238,6 @@ window.exportExcel=()=>{
   allData.forEach((d,i)=>{
     rows.push([i+1,d.nama,d.tanggal,d.jamMasuk,d.jamPulang,d.statusMasuk]);
   });
-
   const ws=XLSX.utils.aoa_to_sheet(rows);
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,"Absensi");
