@@ -2,56 +2,33 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Absensi PT AGN</title>
+<title>Absensi</title>
 
 <style>
-body {
-  font-family: Arial;
-  background:#eef3ff;
-  margin:0;
-}
-
-.container {
-  padding:15px;
-}
+body { font-family:Arial; background:#eef3ff; padding:15px; }
 
 .card {
   background:white;
   padding:15px;
   border-radius:15px;
   box-shadow:0 4px 10px rgba(0,0,0,0.1);
-  margin-top:10px;
 }
-
-h2 { margin:0 0 10px; }
 
 select, button {
   width:100%;
   padding:12px;
   margin-top:8px;
   border-radius:10px;
-  border:1px solid #ccc;
 }
 
 button {
   background:#4CAF50;
   color:white;
-  font-weight:bold;
   border:none;
 }
 
-.list-item {
+.item {
   background:#f5f7ff;
-  padding:10px;
-  margin-top:5px;
-  border-radius:10px;
-  display:flex;
-  justify-content:space-between;
-}
-
-.rekap {
-  background:#4CAF50;
-  color:white;
   padding:10px;
   margin-top:5px;
   border-radius:10px;
@@ -63,52 +40,38 @@ button {
 
 <body>
 
-<div class="container">
-
-<h2>📋 Absensi Karyawan</h2>
+<h2>Absensi Karyawan</h2>
 
 <div class="card">
 
-<h3>Absensi Hari Ini</h3>
-
 <select id="nama">
-<option>Agung</option>
-<option>Hasan</option>
-<option>Hatta</option>
-<option>Alda</option>
-<option>Nur</option>
+<option value="Agung">Agung</option>
+<option value="Hasan">Hasan</option>
+<option value="Hatta">Hatta</option>
+<option value="Alda">Alda</option>
+<option value="Nur">Nur</option>
 </select>
 
-<button id="btnAbsen">Hadir</button>
+<button id="btn">Hadir</button>
 
 <h3>List Hari Ini</h3>
-<div id="list">Loading...</div>
-
-<h3>Rekap Bulanan</h3>
-<div id="rekap">Loading...</div>
+<div id="list">Memuat...</div>
 
 </div>
 
-</div>
-
-<!-- FIREBASE -->
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-
 import { 
   getFirestore, 
   collection, 
-  doc,
-  setDoc,
-  getDoc,
-  onSnapshot,
-  query,
-  where
+  doc, 
+  setDoc, 
+  getDocs 
 } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
 
 
-// CONFIG KAMU (SUDAH BENAR)
+// CONFIG
 const firebaseConfig = {
   apiKey: "AIzaSyAu67MAhW8xdmciPi3xOKwHdy-uP4u9tXI",
   authDomain: "pt-agn.firebaseapp.com",
@@ -123,50 +86,38 @@ const db = getFirestore(app);
 
 
 // FORMAT TANGGAL
-function getTanggal(){
+function today(){
   let d = new Date();
-  return d.getFullYear() + "-" +
-    (d.getMonth()+1).toString().padStart(2,'0') + "-" +
-    d.getDate().toString().padStart(2,'0');
+  return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
 }
 
 
-// 🔥 ABSEN SUPER ANTI DOUBLE
-document.getElementById("btnAbsen").onclick = async function(){
+// ABSEN
+document.getElementById("btn").onclick = async function(){
 
-  const btn = this;
+  let btn = this;
   if(btn.disabled) return;
 
   btn.disabled = true;
   btn.innerText = "Loading...";
 
   let nama = document.getElementById("nama").value;
-  let tanggal = getTanggal();
-  let id = nama + "_" + tanggal;
+  let id = nama + "_" + today();
 
-  try {
+  try{
 
-    const ref = doc(db, "absensi", id);
-    const snap = await getDoc(ref);
-
-    if(snap.exists()){
-      alert("❌ Sudah absen hari ini");
-      btn.disabled = false;
-      btn.innerText = "Hadir";
-      return;
-    }
-
-    await setDoc(ref, {
-      nama: nama,
-      status: "Hadir",
-      tanggal: tanggal,
-      waktu: Date.now()
+    await setDoc(doc(db,"absensi",id),{
+      nama:nama,
+      tanggal:today(),
+      status:"Hadir"
     });
 
-    alert("✅ Absen berhasil");
+    alert("✅ Berhasil");
 
-  } catch(e){
-    alert("Error: " + e.message);
+    loadData();
+
+  }catch(e){
+    alert("Error: "+e.message);
   }
 
   btn.disabled = false;
@@ -174,86 +125,45 @@ document.getElementById("btnAbsen").onclick = async function(){
 };
 
 
-// 📋 REALTIME LIST
-function loadList(){
+// LOAD DATA (TANPA QUERY RIBET)
+async function loadData(){
 
-  const list = document.getElementById("list");
-  let tanggal = getTanggal();
+  let list = document.getElementById("list");
+  list.innerHTML = "Memuat...";
 
-  const q = query(
-    collection(db, "absensi"),
-    where("tanggal", "==", tanggal)
-  );
+  try{
 
-  onSnapshot(q, (snap)=>{
+    let snap = await getDocs(collection(db,"absensi"));
 
     list.innerHTML = "";
 
-    if(snap.empty){
-      list.innerHTML = "Belum ada absen";
-      return;
-    }
+    let tgl = today();
 
     snap.forEach(doc=>{
-      const d = doc.data();
+      let d = doc.data();
 
-      list.innerHTML += `
-        <div class="list-item">
-          <span>${d.nama}</span>
-          <span>${d.status}</span>
-        </div>
-      `;
-    });
-
-  });
-}
-
-
-// 📊 REKAP BULANAN
-function loadRekap(){
-
-  const el = document.getElementById("rekap");
-
-  const q = collection(db, "absensi");
-
-  onSnapshot(q, (snap)=>{
-
-    let data = {};
-    let now = new Date();
-    let prefix = now.getFullYear() + "-" + (now.getMonth()+1).toString().padStart(2,'0');
-
-    snap.forEach(doc=>{
-      const d = doc.data();
-
-      if(d.tanggal && d.tanggal.startsWith(prefix)){
-        if(!data[d.nama]) data[d.nama]=0;
-        data[d.nama]++;
+      if(d.tanggal === tgl){
+        list.innerHTML += `
+          <div class="item">
+            <span>${d.nama}</span>
+            <span>${d.status}</span>
+          </div>
+        `;
       }
     });
 
-    el.innerHTML = "";
-
-    if(Object.keys(data).length === 0){
-      el.innerHTML = "Belum ada data";
-      return;
+    if(list.innerHTML === ""){
+      list.innerHTML = "Belum ada data";
     }
 
-    for(let n in data){
-      el.innerHTML += `
-        <div class="rekap">
-          <span>${n}</span>
-          <span>${data[n]} hari</span>
-        </div>
-      `;
-    }
-
-  });
+  }catch(e){
+    list.innerHTML = "Error load data";
+  }
 }
 
 
 // LOAD AWAL
-loadList();
-loadRekap();
+loadData();
 
 </script>
 
