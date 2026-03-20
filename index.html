@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PT AGN</title>
+<title>Absensi PT AGN</title>
 
 <style>
 body { font-family: Arial; margin:0; background:#eef3ff; }
@@ -46,7 +46,7 @@ select, button {
 
 <!-- ABSENSI -->
 <div id="absensi" class="page">
-<h2>Absensi</h2>
+<h2>Absensi Hari Ini</h2>
 
 <div class="card">
 <select id="nama">
@@ -89,10 +89,11 @@ import {
   getDoc,
   onSnapshot,
   query,
-  orderBy
+  orderBy,
+  where
 } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
-// CONFIG FIREBASE
+// 🔥 CONFIG (PUNYAMU)
 const firebaseConfig = {
   apiKey: "AIzaSyAu67MAhW8xdmciPi3xOKwHdy-uP4u9tXI",
   authDomain: "pt-agn.firebaseapp.com",
@@ -105,6 +106,8 @@ const firebaseConfig = {
 // INIT
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+
+
 
 // 🔥 ABSEN SUPER ANTI DOUBLE
 window.absen = async function(){
@@ -153,11 +156,23 @@ window.absen = async function(){
   btn.innerText = "Hadir";
 }
 
-// 🔥 REALTIME LIST
+
+
+// 🔥 REALTIME (HANYA HARI INI)
 function realtime(){
+
   const list = document.getElementById('listAbsen');
 
-  const q = query(collection(db, "absensi"), orderBy("waktu", "desc"));
+  let today = new Date();
+  let tanggal = today.getFullYear() + "-" + 
+                (today.getMonth()+1).toString().padStart(2,'0') + "-" + 
+                today.getDate().toString().padStart(2,'0');
+
+  const q = query(
+    collection(db, "absensi"),
+    where("tanggal", "==", tanggal),
+    orderBy("waktu", "desc")
+  );
 
   onSnapshot(q, (snapshot) => {
     list.innerHTML = "";
