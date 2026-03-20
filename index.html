@@ -51,6 +51,7 @@ select, button {
 <h2>Absensi</h2>
 
 <div class="card">
+
 <select id="nama">
 <option value="Agung">Agung</option>
 <option value="Hasan">Hasan</option>
@@ -62,6 +63,7 @@ select, button {
 <button onclick="absen()">Hadir</button>
 
 <ul id="listAbsen"></ul>
+
 </div>
 </div>
 
@@ -71,7 +73,6 @@ select, button {
 <button onclick="show('absensi')">Absensi</button>
 </div>
 
-<!-- NAV SCRIPT -->
 <script>
 function show(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -85,6 +86,7 @@ function show(id){
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
+// CONFIG KAMU (SUDAH BENAR)
 const firebaseConfig = {
   apiKey: "AIzaSyAu67MAhW8xdmciPi3xOKwHdy-uP4u9tXI",
   authDomain: "pt-agn.firebaseapp.com",
@@ -94,29 +96,31 @@ const firebaseConfig = {
   appId: "1:810494462386:web:432a3050c054bdd8437cab"
 };
 
+// INIT
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// 🔥 ABSEN
+// 🔥 ABSEN (FIX)
 window.absen = async function(){
   let nama = document.getElementById('nama').value;
 
-  console.log("Dipilih:", nama);
+  console.log("Kirim ke Firebase:", nama);
 
-  if(!nama){
-    alert("Pilih nama dulu!");
-    return;
+  try {
+    await addDoc(collection(db, "absensi"), {
+      nama: nama,
+      status: "Hadir",
+      waktu: new Date()
+    });
+
+    alert("✅ Berhasil masuk Firebase: " + nama);
+
+    tampilAbsen();
+
+  } catch (e) {
+    console.error(e);
+    alert("❌ Error: " + e.message);
   }
-
-  await addDoc(collection(db, "absensi"), {
-    nama: nama,
-    status: "Hadir",
-    waktu: new Date()
-  });
-
-  alert("✅ " + nama + " berhasil absen");
-
-  tampilAbsen();
 }
 
 // 🔥 TAMPIL DATA
@@ -124,20 +128,13 @@ async function tampilAbsen(){
   let list = document.getElementById('listAbsen');
   list.innerHTML = "";
 
-  const data = await getDocs(collection(db, "absensi"));
+  const querySnapshot = await getDocs(collection(db, "absensi"));
 
-  data.forEach(doc=>{
+  querySnapshot.forEach((doc) => {
     let d = doc.data();
 
-    let waktu = d.waktu?.seconds 
-      ? new Date(d.waktu.seconds * 1000).toLocaleString()
-      : "-";
-
     let li = document.createElement("li");
-    li.innerHTML = `
-      <b>${d.nama}</b> - ${d.status}<br>
-      <small>${waktu}</small>
-    `;
+    li.innerText = d.nama + " - " + d.status;
 
     list.appendChild(li);
   });
