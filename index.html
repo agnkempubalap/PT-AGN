@@ -13,17 +13,68 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
 <style>
-body{font-family:sans-serif;background:linear-gradient(to bottom,#6fa8dc,#cfe2f3);margin:0;padding:15px}
-.card{background:#fff;border-radius:15px;padding:15px;margin-bottom:15px}
-button{width:100%;padding:10px;margin:5px 0;border:none;border-radius:8px;color:#fff}
-.green{background:#2ecc71}.orange{background:#f39c12}.red{background:#e74c3c}.blue{background:#3498db}
+body{
+ font-family:'Segoe UI',sans-serif;
+ background:linear-gradient(135deg,#74b9ff,#dfe6e9);
+ margin:0;padding:15px;
+}
 
-#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
-background:#333;color:#fff;padding:12px 20px;border-radius:10px;opacity:0;transition:.3s}
+.card{
+ background:#fff;
+ border-radius:18px;
+ padding:15px;
+ margin-bottom:15px;
+ box-shadow:0 8px 20px rgba(0,0,0,0.1);
+}
+
+button{
+ width:100%;
+ padding:12px;
+ margin:6px 0;
+ border:none;
+ border-radius:12px;
+ color:#fff;
+ font-weight:bold;
+}
+
+.green{background:#2ecc71}
+.orange{background:#f39c12}
+.red{background:#e74c3c}
+.blue{background:#3498db}
+
+.status{
+ padding:5px 10px;
+ border-radius:8px;
+ color:#fff;
+ font-size:12px;
+}
+
+.hadir{background:#2ecc71}
+.telat{background:#f39c12}
+.izin{background:#3498db}
+.alpa{background:#e74c3c}
+
+input,select,textarea{
+ width:100%;
+ padding:10px;
+ margin:5px 0;
+ border-radius:10px;
+ border:1px solid #ccc;
+}
+
+#toast{
+ position:fixed;
+ bottom:20px;
+ left:50%;
+ transform:translateX(-50%);
+ background:#333;
+ color:#fff;
+ padding:10px 20px;
+ border-radius:10px;
+ opacity:0;
+ transition:.3s;
+}
 .show{opacity:1}
-
-.success{animation:pop .4s}
-@keyframes pop{0%{transform:scale(.8)}100%{transform:scale(1)}}
 </style>
 </head>
 
@@ -31,6 +82,7 @@ background:#333;color:#fff;padding:12px 20px;border-radius:10px;opacity:0;transi
 
 <div id="toast"></div>
 
+<!-- LOGIN -->
 <div id="loginBox" class="card">
 <h3>Login Admin</h3>
 <input type="password" id="pinInput" placeholder="PIN">
@@ -38,6 +90,7 @@ background:#333;color:#fff;padding:12px 20px;border-radius:10px;opacity:0;transi
 <button class="orange" onclick="gantiPIN()">Ganti PIN</button>
 </div>
 
+<!-- APP -->
 <div id="app" style="display:none">
 
 <div class="card">
@@ -45,8 +98,6 @@ background:#333;color:#fff;padding:12px 20px;border-radius:10px;opacity:0;transi
 <option>Agung</option>
 <option>Alda</option>
 <option>Nur</option>
-<option>Hasan</option>
-<option>Hatta</option>
 </select>
 
 <button class="green" onclick="absenMasuk()">Masuk</button>
@@ -94,24 +145,6 @@ function showToast(msg){
  setTimeout(()=>t.classList.remove("show"),2000);
 }
 
-// ===== SOUND =====
-function playSound(type){
- let ctx=new (window.AudioContext||window.webkitAudioContext)();
- let osc=ctx.createOscillator();
- osc.type="sine";
- osc.frequency.value=(type=="success")?800:200;
- osc.connect(ctx.destination);
- osc.start();
- setTimeout(()=>osc.stop(),150);
-}
-
-// ===== VIBRATE =====
-function vibrate(type){
- if(navigator.vibrate){
-  navigator.vibrate(type=="success"?[100,50,100]:[300]);
- }
-}
-
 // ===== SESSION =====
 function resetSession(){
  clearTimeout(sessionTimer);
@@ -120,9 +153,7 @@ function resetSession(){
 
 function logoutAuto(){
  localStorage.removeItem("login");
- showToast("⏳ Session habis");
- playSound("error");
- vibrate("error");
+ showToast("Session habis");
  setTimeout(()=>location.reload(),1500);
 }
 
@@ -132,61 +163,43 @@ function loginPIN(){
   localStorage.setItem("login","true");
   loginBox.style.display="none";
   app.style.display="block";
-  app.classList.add("success");
-
-  showToast("✅ Login berhasil");
-  playSound("success");
-  vibrate("success");
-
+  showToast("Login berhasil");
   resetSession();
  }else{
-  showToast("❌ PIN salah");
-  playSound("error");
-  vibrate("error");
+  showToast("PIN salah");
  }
 }
 
-// AUTO LOGIN
 if(localStorage.getItem("login")==="true"){
  loginBox.style.display="none";
  app.style.display="block";
  resetSession();
 }
 
-// DETEKSI AKTIVITAS
-["click","touchstart","keypress"].forEach(evt=>{
- document.addEventListener(evt, resetSession);
+["click","touchstart","keypress"].forEach(e=>{
+ document.addEventListener(e,resetSession);
 });
 
-// ===== LOGOUT =====
 function logout(){
  localStorage.removeItem("login");
  location.reload();
 }
 
-// ===== GANTI PIN =====
 function gantiPIN(){
  let lama=prompt("PIN lama:");
- if(lama!==PIN){
-  showToast("❌ PIN salah");
-  return;
- }
+ if(lama!==PIN)return showToast("Salah");
  let baru=prompt("PIN baru:");
- if(!baru || baru.length<4){
-  showToast("⚠️ Min 4 digit");
-  return;
- }
+ if(!baru || baru.length<4)return showToast("Min 4 digit");
  PIN=baru;
  localStorage.setItem("PIN",baru);
- showToast("✅ PIN diganti");
+ showToast("PIN diganti");
 }
 
 // ===== FIREBASE =====
 const firebaseConfig={
  apiKey:"AIzaSyAu67MAhW8xdmciPi3xOKwdy-uP4u9tXI",
  authDomain:"pt-agn.firebaseapp.com",
- databaseURL:"https://pt-agn-default-rtdb.firebaseio.com",
- projectId:"pt-agn"
+ databaseURL:"https://pt-agn-default-rtdb.firebaseio.com"
 };
 firebase.initializeApp(firebaseConfig);
 const db=firebase.database();
@@ -202,19 +215,15 @@ function save(){ db.ref("absensi").set(data); }
 
 function now(){
  let d=new Date();
- return {tgl:d.toISOString().split('T')[0],jam:d.toTimeString().split(' ')[0],bulan:d.getMonth()+1}
+ return {tgl:d.toISOString().split('T')[0],jam:d.toTimeString().split(' ')[0]}
 }
 
 // ===== ABSEN =====
 function absenMasuk(){
  let t=now(),n=nama.value;
- if(data.find(x=>x.nama==n&&x.tgl==t.tgl)){
-  showToast("Sudah absen");
-  return;
- }
- data.push({nama:n,tgl:t.tgl,status:t.jam>"09:00:00"?"Telat":"Hadir",bulan:t.bulan});
+ if(data.find(x=>x.nama==n&&x.tgl==t.tgl)) return showToast("Sudah absen");
+ data.push({nama:n,tgl:t.tgl,jam:t.jam,status:t.jam>"09:00:00"?"Telat":"Hadir"});
  save();
- showToast("Masuk ✔");
 }
 
 function absenPulang(){
@@ -222,36 +231,38 @@ function absenPulang(){
  let d=data.find(x=>x.nama==nama.value&&x.tgl==t.tgl);
  if(d)d.pulang=t.jam;
  save();
- showToast("Pulang ✔");
 }
 
 function izin(){
  let t=now();
- data.push({nama:nama.value,tgl:t.tgl,status:"Izin",bulan:t.bulan});
+ data.push({nama:nama.value,tgl:t.tgl,status:"Izin"});
  save();
- showToast("Izin ✔");
 }
 
 function resetHari(){
  let t=now().tgl;
  data=data.filter(x=>x.tgl!=t);
  save();
- showToast("Reset ✔");
 }
 
 // ===== AUTO ALPA =====
 setInterval(()=>{
- let t=now();
- if(t.jam>="16:00:00"){
-  let names=[...new Set(data.map(x=>x.nama))];
+ let nowTime=new Date().toTimeString().split(' ')[0];
+ if(nowTime>="16:00:00"){
+  let names=["Agung","Alda","Nur"];
   names.forEach(n=>{
-    if(!data.find(x=>x.nama==n&&x.tgl==t.tgl)){
-      data.push({nama:n,tgl:t.tgl,status:"Alpa",bulan:t.bulan});
-    }
+   if(!data.find(x=>x.nama==n && x.tgl==new Date().toISOString().split('T')[0])){
+    data.push({nama:n,tgl:new Date().toISOString().split('T')[0],status:"Alpa"});
+   }
   });
   save();
  }
 },60000);
+
+// ===== STATUS CLASS =====
+function getStatusClass(s){
+ return s=="Hadir"?"hadir":s=="Telat"?"telat":s=="Izin"?"izin":"alpa";
+}
 
 // ===== RANKING =====
 function rank(){
@@ -274,58 +285,65 @@ function renderChart(n){
  let a=d.filter(x=>x.status=="Alpa").length;
 
  if(chart)chart.destroy();
- chart=new Chart(document.getElementById("chart"),{
+ chart=new Chart(chartCanvas,{
   type:'bar',
-  data:{labels:["Hadir","Telat","Alpa"],datasets:[{data:[h,t,a]}]}
+  data:{
+   labels:["Hadir","Telat","Alpa"],
+   datasets:[{
+    label:"Performa",
+    data:[h,t,a],
+    backgroundColor:["#2ecc71","#f39c12","#e74c3c"]
+   }]
+  },
+  options:{plugins:{legend:{display:false}}}
  });
 }
 
 // ===== RENDER =====
 function render(){
- list.innerHTML=data.map(x=>`<div>${x.nama} ${x.status}</div>`).join("");
+
+ list.innerHTML=data.map(x=>`
+ <div class="card">
+  <b>${x.nama}</b><br>
+  <small>${x.tgl}</small><br><br>
+  Masuk: ${x.jam||'-'}<br>
+  Pulang: ${x.pulang||'-'}<br><br>
+  <span class="status ${getStatusClass(x.status)}">${x.status}</span>
+ </div>
+ `).join("");
 
  let r=rank();
- ranking.innerHTML=r.map((x,i)=>`#${i+1} ${x.n} (${x.score})`).join("<br>");
+ ranking.innerHTML=r.map((x,i)=>`
+ <div style="display:flex;justify-content:space-between;padding:10px;border-radius:10px;background:${i==0?'#ffeaa7':'#f1f2f6'}">
+  <b>#${i+1} ${x.n}</b>
+  <span>${x.score}</span>
+ </div>
+ `).join("");
 
  let unik=[...new Set(data.map(x=>x.nama))];
  pilihKaryawan.innerHTML=unik.map(n=>`<option>${n}</option>`);
-
  renderChart(pilihKaryawan.value);
  pilihKaryawan.onchange=()=>renderChart(pilihKaryawan.value);
 }
 
 // ===== WA =====
 function kirimWA(){
+ if(!waGlobal.value) return showToast("Isi nomor dulu");
  let txt="Absensi\n";
  data.forEach(d=>txt+=`${d.nama} ${d.status}\n`);
  window.open(`https://wa.me/${waGlobal.value}?text=${encodeURIComponent(txt)}`);
 }
 
 function kirimWAper(){
- let map=waMap.value.split("\n");
- map.forEach(m=>{
-   let [nama,no]=m.split("=");
-   let d=data.filter(x=>x.nama==nama);
-   let txt=`${nama}\n`;
-   d.forEach(x=>txt+=`${x.tgl} ${x.status}\n`);
-   window.open(`https://wa.me/${no}?text=${encodeURIComponent(txt)}`);
+ if(!waMap.value) return showToast("Isi mapping");
+ waMap.value.split("\n").forEach(m=>{
+  let [n,no]=m.split("=");
+  if(!n||!no)return;
+  let d=data.filter(x=>x.nama==n.trim());
+  let txt=`${n}\n`;
+  d.forEach(x=>txt+=`${x.tgl} ${x.status}\n`);
+  window.open(`https://wa.me/${no.trim()}?text=${encodeURIComponent(txt)}`);
  });
-}
-
-// ===== EXPORT =====
-function exportExcel(){
- let ws=XLSX.utils.json_to_sheet(data);
- let wb=XLSX.utils.book_new();
- XLSX.utils.book_append_sheet(wb,ws,"Absensi");
- XLSX.writeFile(wb,"absensi.xlsx");
-}
-
-async function exportPDF(){
- const { jsPDF } = window.jspdf;
- let doc=new jsPDF();
- doc.text("Absensi",10,10);
- data.forEach((d,i)=>doc.text(`${d.nama} ${d.status}`,10,20+i*10));
- doc.save("absensi.pdf");
 }
 
 </script>
