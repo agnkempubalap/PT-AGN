@@ -17,7 +17,7 @@ h2 { color:blue; }
   margin-top:10px;
 }
 
-input, select, button {
+select, button {
   width:100%;
   padding:10px;
   margin:5px 0;
@@ -34,9 +34,6 @@ input, select, button {
 
 .nav button {
   flex:1;
-  padding:10px;
-  border:none;
-  background:white;
 }
 </style>
 </head>
@@ -46,12 +43,13 @@ input, select, button {
 <!-- DASHBOARD -->
 <div id="dashboard" class="page active">
 <h2>Dashboard</h2>
-<div class="card">Selamat datang di PT AGN</div>
+<div class="card">Aplikasi PT AGN</div>
 </div>
 
 <!-- ABSENSI -->
 <div id="absensi" class="page">
 <h2>Absensi</h2>
+
 <div class="card">
 <select id="nama">
 <option>Agung</option>
@@ -60,18 +58,20 @@ input, select, button {
 <option>Alda</option>
 <option>Nur</option>
 </select>
+
 <button onclick="absen()">Hadir</button>
+
 <ul id="listAbsen"></ul>
 </div>
 </div>
 
-<!-- NAVBAR -->
+<!-- NAV -->
 <div class="nav">
 <button onclick="show('dashboard')">Home</button>
 <button onclick="show('absensi')">Absensi</button>
 </div>
 
-<!-- SCRIPT -->
+<!-- SCRIPT NAV -->
 <script>
 function show(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -79,31 +79,34 @@ function show(id){
 }
 </script>
 
-<!-- FIREBASE -->
+<!-- FIREBASE (WAJIB PALING BAWAH) -->
 <script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
+// CONFIG KAMU (SUDAH SAYA ISI)
 const firebaseConfig = {
   apiKey: "AIzaSyAu67MAhW8xdmciPi3xOKwHdy-uP4u9tXI",
   authDomain: "pt-agn.firebaseapp.com",
   projectId: "pt-agn",
   storageBucket: "pt-agn.firebasestorage.app",
   messagingSenderId: "810494462386",
-  appId: "1:810494462386:web:432a3050c054bdd8437cab",
-  measurementId: "G-N6S12LYQLD"
+  appId: "1:810494462386:web:432a3050c054bdd8437cab"
 };
 
+// INIT
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// SIMPAN DATA
+// ABSEN
 window.absen = async function(){
   let nama = document.getElementById('nama').value;
 
   await addDoc(collection(db, "absensi"), {
     nama: nama,
-    status: "Hadir"
+    status: "Hadir",
+    waktu: new Date()
   });
 
   tampilAbsen();
@@ -114,19 +117,19 @@ async function tampilAbsen(){
   let list = document.getElementById('listAbsen');
   list.innerHTML = "";
 
-  const querySnapshot = await getDocs(collection(db, "absensi"));
-  querySnapshot.forEach((doc) => {
-    let data = doc.data();
-    let li = document.createElement('li');
-    li.innerText = data.nama + " - " + data.status;
+  const data = await getDocs(collection(db, "absensi"));
+
+  data.forEach(doc=>{
+    let d = doc.data();
+    let li = document.createElement("li");
+    li.innerText = d.nama + " - " + d.status;
     list.appendChild(li);
   });
 }
 
 // LOAD AWAL
-window.onload = function(){
-  tampilAbsen();
-}
+window.onload = tampilAbsen;
+
 </script>
 
 </body>
