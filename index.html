@@ -3,7 +3,7 @@
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-body{font-family:sans-serif;margin:0;background:#e0f2fe;padding-bottom:70px}
+body{font-family:sans-serif;margin:0;background:#e0f2fe;padding-bottom:80px}
 .page{display:none;padding:10px}
 .active{display:block}
 .card{background:#fff;padding:12px;margin:10px 0;border-radius:10px}
@@ -13,19 +13,33 @@ button{width:100%;padding:10px;margin:5px 0;border:none;border-radius:8px;color:
 .red{background:#ef4444}
 .blue{background:#3b82f6}
 input,select{width:100%;padding:10px;margin:5px 0}
-.nav{position:fixed;bottom:0;width:100%;display:flex;background:#fff}
-.nav button{flex:1;color:#333;background:none}
+
+.nav{
+position:fixed;bottom:0;width:100%;display:flex;background:#fff;
+box-shadow:0 -2px 10px rgba(0,0,0,0.2)
+}
+.nav button{flex:1;background:none;color:#333}
 </style>
 </head>
 
 <body>
 
+<!-- DASHBOARD -->
+<div id="home" class="page active">
+<div class="card">
+<h3>📊 Dashboard</h3>
+Total Karyawan: <b id="dkaryawan">0</b><br>
+Hadir Hari Ini: <b id="dhadir">0</b><br>
+Alfa Hari Ini: <b id="dalfa">0</b><br>
+Aktivitas Hari Ini: <b id="daktif">0</b>
+</div>
+</div>
+
 <!-- ABSEN -->
-<div id="absen" class="page active">
+<div id="absen" class="page">
 
 <div class="card">
 <select id="nama"></select>
-
 <input id="namaBaru" placeholder="Tambah karyawan">
 <button class="blue" onclick="tambah()">Tambah</button>
 <button class="red" onclick="hapus()">Hapus</button>
@@ -34,184 +48,73 @@ input,select{width:100%;padding:10px;margin:5px 0}
 <div class="card">
 <button class="green" onclick="masuk()">Masuk</button>
 <button class="orange" onclick="izin()">Izin</button>
+<button class="red" onclick="resetHari()">Reset Hari</button>
 </div>
 
 <div id="list"></div>
-
 </div>
 
 <!-- AKTIVITAS -->
 <div id="aktivitas" class="page">
-
 <div class="card">
-<b>Pilih Aktivitas</b>
-
 <select id="aktifitas">
 <option>Rekondisi Kempu</option>
-<option>Derigen 18L</option>
-<option>Derigen 5L</option>
+<option>Rekondisi 18L</option>
+<option>Rekondisi 5L</option>
 <option>Muat/Bongkar</option>
 <option>Pangkalan</option>
 <option>Kirim Minyak</option>
 </select>
-
-<div id="cekKaryawan"></div>
-
-<button class="blue" onclick="simpanAktivitas()">Simpan Aktivitas</button>
+<div id="cek"></div>
+<button class="blue" onclick="simpanAkt()">Simpan</button>
+</div>
 </div>
 
+<!-- STOK -->
+<div id="stok" class="page">
+<div class="card">
+<input id="barang" placeholder="Nama barang">
+<input id="jumlah" type="number" placeholder="Jumlah">
+<button class="green" onclick="stokMasuk()">Masuk</button>
+<button class="red" onclick="stokKeluar()">Keluar</button>
+</div>
+<div id="listStok"></div>
 </div>
 
-<!-- LAPORAN -->
-<div id="laporan" class="page">
-<div id="laporanIsi"></div>
+<!-- GAJI -->
+<div id="gaji" class="page">
+<div id="listGaji"></div>
 </div>
 
 <!-- NAV -->
 <div class="nav">
-<button onclick="pindah('absen')">Absen</button>
-<button onclick="pindah('aktivitas')">Aktivitas</button>
-<button onclick="pindah('laporan')">Laporan</button>
+<button onclick="go('home')">Home</button>
+<button onclick="go('absen')">Absen</button>
+<button onclick="go('aktivitas')">Aktivitas</button>
+<button onclick="go('stok')">Stok</button>
+<button onclick="go('gaji')">Gaji</button>
 </div>
 
 <script>
 
-let karyawan = JSON.parse(localStorage.getItem("karyawan")) || ["Agung","Alda","Nur"];
-let absen = JSON.parse(localStorage.getItem("absen")) || [];
-let aktivitas = JSON.parse(localStorage.getItem("aktivitas")) || [];
-
-const nama = document.getElementById("nama");
-
-function loadNama(){
- nama.innerHTML = karyawan.map(n=>`<option>${n}</option>`).join("");
-}
-loadNama();
-
 // NAV
-function pindah(id){
+function go(id){
  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
  document.getElementById(id).classList.add('active');
 }
 
-// TAMBAH
-function tambah(){
- let n=document.getElementById("namaBaru").value;
- if(!n) return;
- karyawan.push(n);
- save();
-}
+// DATA
+let karyawan=JSON.parse(localStorage.getItem("karyawan"))||["Agung","Alda"];
+let absen=JSON.parse(localStorage.getItem("absen"))||[];
+let aktivitas=JSON.parse(localStorage.getItem("aktivitas"))||[];
+let stok=JSON.parse(localStorage.getItem("stok"))||{};
 
-// HAPUS
-function hapus(){
- let n=nama.value;
- karyawan=karyawan.filter(x=>x!=n);
- save();
-}
+const nama=document.getElementById("nama");
 
-// TIME
-function now(){
- let d=new Date();
- return {
-  tgl:d.toISOString().split('T')[0],
-  jam:d.toTimeString().split(' ')[0]
- };
-}
-
-// MASUK
-function masuk(){
- let t=now();
- let status = t.jam>"09:00:00"?"Telat":"Hadir";
-
- absen.push({
-  nama:nama.value,
-  tgl:t.tgl,
-  masuk:t.jam,
-  status
- });
-
- save();
-}
-
-// IZIN
-function izin(){
- let t=now();
- absen.push({
-  nama:nama.value,
-  tgl:t.tgl,
-  masuk:"-",
-  status:"Izin"
- });
- save();
-}
-
-// AUTO ALFA
-function cekAlfa(){
- let t=now();
- if(t.jam<"16:00:00") return;
-
- karyawan.forEach(n=>{
-  let ada = absen.find(x=>x.nama==n && x.tgl==t.tgl);
-  if(!ada){
-   absen.push({nama:n,tgl:t.tgl,status:"Alfa"});
-  }
- });
-
- save();
-}
-
-// AKTIVITAS
-function loadCek(){
- document.getElementById("cekKaryawan").innerHTML =
- karyawan.map(n=>`<label><input type="checkbox" value="${n}"> ${n}</label><br>`).join("");
-}
-loadCek();
-
-function simpanAktivitas(){
- let t=now();
- let akt = document.getElementById("aktifitas").value;
- let pilih=[...document.querySelectorAll("#cekKaryawan input:checked")].map(x=>x.value);
-
- aktivitas.push({
-  tgl:t.tgl,
-  aktivitas:akt,
-  orang:pilih
- });
-
- save();
-}
-
-// RENDER
-function render(){
-
- cekAlfa();
-
- document.getElementById("list").innerHTML =
- absen.map(x=>`
- <div class="card">
- ${x.nama} - ${x.tgl}<br>
- ${x.status}
- </div>
- `).join("");
-
- // LAPORAN DETAIL
- let html="";
- karyawan.forEach(n=>{
-  html+=`<div class="card"><b>${n}</b><br>`;
-
-  absen.filter(x=>x.nama==n).forEach(a=>{
-   html+=`${a.tgl} - ${a.status}<br>`;
-
-   aktivitas.filter(k=>k.tgl==a.tgl && k.orang.includes(n))
-   .forEach(k=>{
-    html+=`- ${k.aktivitas}<br>`;
-   });
-
-  });
-
-  html+="</div>";
- });
-
- document.getElementById("laporanIsi").innerHTML = html;
+function loadNama(){
+ nama.innerHTML=karyawan.map(n=>`<option>${n}</option>`).join("");
+ document.getElementById("cek").innerHTML=
+ karyawan.map(n=>`<label><input type="checkbox" value="${n}">${n}</label><br>`).join("");
 }
 
 // SAVE
@@ -219,11 +122,118 @@ function save(){
  localStorage.setItem("karyawan",JSON.stringify(karyawan));
  localStorage.setItem("absen",JSON.stringify(absen));
  localStorage.setItem("aktivitas",JSON.stringify(aktivitas));
- loadNama();
- loadCek();
+ localStorage.setItem("stok",JSON.stringify(stok));
  render();
 }
 
+// TAMBAH
+function tambah(){
+ let n=namaBaru.value;
+ if(!n) return alert("Isi nama");
+ karyawan.push(n);
+ namaBaru.value="";
+ alert("Berhasil tambah");
+ save();loadNama();
+}
+
+// HAPUS
+function hapus(){
+ let n=nama.value;
+ if(confirm("Hapus "+n+"?")){
+ karyawan=karyawan.filter(x=>x!=n);
+ alert("Dihapus");
+ save();loadNama();
+ }
+}
+
+// TIME
+function now(){
+ let d=new Date();
+ return {tgl:d.toISOString().split('T')[0],jam:d.toTimeString().split(' ')[0]};
+}
+
+// ABSEN
+function masuk(){
+ let t=now();
+ absen.push({nama:nama.value,tgl:t.tgl,status:t.jam>"09:00:00"?"Telat":"Hadir"});
+ save();
+}
+
+function izin(){
+ let t=now();
+ absen.push({nama:nama.value,tgl:t.tgl,status:"Izin"});
+ save();
+}
+
+function resetHari(){
+ let t=now().tgl;
+ if(confirm("Reset hari ini?")){
+ absen=absen.filter(x=>x.tgl!=t);
+ aktivitas=aktivitas.filter(x=>x.tgl!=t);
+ save();
+ }
+}
+
+// AUTO ALFA
+function alfa(){
+ let t=now();
+ if(t.jam<"16:00:00") return;
+ karyawan.forEach(n=>{
+ if(!absen.find(x=>x.nama==n && x.tgl==t.tgl)){
+ absen.push({nama:n,tgl:t.tgl,status:"Alfa"});
+ }
+ });
+}
+
+// AKTIVITAS
+function simpanAkt(){
+ let t=now();
+ let akt=aktifitas.value;
+ let orang=[...document.querySelectorAll("#cek input:checked")].map(x=>x.value);
+ aktivitas.push({tgl:t.tgl,akt,orang});
+ save();
+}
+
+// STOK
+function stokMasuk(){
+ stok[barang.value]=(stok[barang.value]||0)+Number(jumlah.value);
+ save();
+}
+function stokKeluar(){
+ stok[barang.value]=(stok[barang.value]||0)-Number(jumlah.value);
+ save();
+}
+
+// RENDER
+function render(){
+
+ alfa();
+
+ // dashboard
+ let today=now().tgl;
+ dkaryawan.innerText=karyawan.length;
+ dhadir.innerText=absen.filter(x=>x.tgl==today && x.status=="Hadir").length;
+ dalfa.innerText=absen.filter(x=>x.tgl==today && x.status=="Alfa").length;
+ daktif.innerText=aktivitas.filter(x=>x.tgl==today).length;
+
+ // list absen
+ list.innerHTML=absen.map(x=>`<div class="card">${x.nama} ${x.tgl} ${x.status}</div>`).join("");
+
+ // stok
+ listStok.innerHTML=Object.keys(stok).map(k=>`<div class="card">${k}: ${stok[k]}</div>`).join("");
+
+ // gaji
+ listGaji.innerHTML=karyawan.map(n=>{
+ let h=absen.filter(x=>x.nama==n && x.status=="Hadir").length;
+ let a=absen.filter(x=>x.nama==n && x.status=="Alfa").length;
+ let g=(h*100000)-(a*50000);
+ return `<div class="card">${n}<br>Gaji: ${g}</div>`;
+ }).join("");
+
+}
+
+// INIT
+loadNama();
 render();
 
 </script>
