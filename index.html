@@ -9,6 +9,28 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAu67MAhW8xdmciPi3xOKwHdy-uP4u9tXI",
+  authDomain: "pt-agn.firebaseapp.com",
+  projectId: "pt-agn",
+  storageBucket: "pt-agn.appspot.com",
+  messagingSenderId: "810494462386",
+  appId: "1:810494462386:web:432a3050c054bdd8437cab"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+window.colRef = collection(db, "absensi");
+window.addDoc = addDoc;
+window.getDocs = getDocs;
+</script>
+
 <style>
 body{font-family:sans-serif;background:linear-gradient(to bottom,#6fa8dc,#cfe2f3);margin:0;padding:15px}
 .card{background:#fff;border-radius:15px;padding:15px;margin-bottom:15px;box-shadow:0 4px 10px rgba(0,0,0,0.1)}
@@ -18,7 +40,7 @@ input,select{width:100%;padding:10px;border-radius:8px;margin:5px 0}
 .flex{display:flex;gap:10px}
 .box{flex:1;padding:10px;border-radius:10px;color:#fff;text-align:center}
 .b1{background:#3498db}.b2{background:#2ecc71}.b3{background:#f1c40f}
-#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);color:#fff;padding:12px 20px;border-radius:10px;opacity:0;transition:.3s}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:12px 20px;border-radius:10px;opacity:0;transition:.3s}
 .show{opacity:1}
 </style>
 </head>
@@ -43,8 +65,10 @@ input,select{width:100%;padding:10px;border-radius:8px;margin:5px 0}
 <button class="orange" onclick="izin()">Izin</button>
 <button class="red" onclick="alpa()">Alpa</button>
 <button class="red" onclick="resetHari()">Reset Hari Ini</button>
+
 <button class="blue" onclick="exportExcel()">Export Excel</button>
 <button class="blue" onclick="exportPDF()">Export PDF</button>
+<button class="green" onclick="kirimWA()">Kirim Laporan WA</button>
 </div>
 
 <div class="card">
@@ -63,7 +87,7 @@ input,select{width:100%;padding:10px;border-radius:8px;margin:5px 0}
 </div>
 
 <div class="card">
-<h4>Grafik Harian</h4>
+<h4>Grafik</h4>
 <canvas id="chart"></canvas>
 </div>
 
@@ -71,249 +95,220 @@ input,select{width:100%;padding:10px;border-radius:8px;margin:5px 0}
 
 <script>
 let data = JSON.parse(localStorage.getItem("absensi")) || [];
-const namaSelect = document.getElementById("nama");
 
 const bulanSelect = document.getElementById("bulan");
-for(let i=1;i<=12;i++){
-  bulanSelect.innerHTML += `<option value="${i}">Bulan ${i}</option>`;
-}
+const namaBulan = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+
+namaBulan.forEach((b,i)=>{
+  bulanSelect.innerHTML += `<option value="${i+1}">${b}</option>`;
+});
 bulanSelect.value = new Date().getMonth()+1;
 
 bulanSelect.onchange = render;
 document.getElementById("search").oninput = render;
 
-// ================= TOAST =================
 function toast(msg){
-  const t = document.getElementById("toast");
-  t.innerText = msg;
+  const t=document.getElementById("toast");
+  t.innerText=msg;
   t.classList.add("show");
   setTimeout(()=>t.classList.remove("show"),2000);
 }
 
-// ================= TIME =================
 function now(){
   let d=new Date();
-
-  let jam = String(d.getHours()).padStart(2,'0');
-  let menit = String(d.getMinutes()).padStart(2,'0');
-  let detik = String(d.getSeconds()).padStart(2,'0');
-
   return {
     tanggal:d.toISOString().split('T')[0],
-    jam:`${jam}:${menit}:${detik}`
+    jam:d.toTimeString().split(' ')[0],
+    bulan:d.getMonth()+1
   }
 }
 
-function save(){
-  localStorage.setItem("absensi", JSON.stringify(data));
+// ===== CLOUD SYNC =====
+async function syncCloud(){
+  let snap = await getDocs(colRef);
+  data=[];
+  snap.forEach(doc=>data.push(doc.data()));
+  localStorage.setItem("absensi",JSON.stringify(data));
   render();
 }
 
-// ================= AUTO ALPA =================
+async function save(item){
+  if(item) await addDoc(colRef,item);
+  localStorage.setItem("absensi",JSON.stringify(data));
+  render();
+}
+
+// ===== AUTO ALPA =====
 function autoAlpa(){
-  let t = now();
+  let t=now();
+  if(t.jam < "16:00:00") return;
 
-  let [h,m,s] = t.jam.split(":").map(Number);
-  let total = h*3600 + m*60 + s;
-
-  if(total < 16*3600) return;
-
-  let semua = ["Agung","Alda","Nur","Hasan","Hatta"];
+  let semua=["Agung","Alda","Nur","Hasan","Hatta"];
 
   semua.forEach(n=>{
-    let ada = data.find(x=>x.nama==n && x.tanggal==t.tanggal);
-    if(!ada){
-      data.push({
-        nama:n,
-        tanggal:t.tanggal,
-        masuk:"-",
-        pulang:"-",
-        status:"Alpa",
-        bulan:new Date().getMonth()+1
-      });
+    let cek=data.find(x=>x.nama==n && x.tanggal==t.tanggal);
+    if(!cek){
+      let obj={nama:n,tanggal:t.tanggal,masuk:"-",pulang:"-",status:"Alpa",bulan:t.bulan};
+      data.push(obj);
+      save(obj);
     }
   });
-
-  localStorage.setItem("absensi", JSON.stringify(data));
 }
 
-// ================= TELAT =================
-function isTelat(jam){
-  let [h,m,s] = jam.split(":").map(Number);
-  let total = h*3600 + m*60 + s;
-  return total > 9*3600;
-}
-
-// ================= ABSEN =================
+// ===== ABSEN =====
 function absenMasuk(){
-  let n = namaSelect.value;
-  let t = now();
+  let n=nama.value;
+  let t=now();
 
-  let cek = data.find(x=>x.nama==n && x.tanggal==t.tanggal);
-  if(cek){toast("⚠️ Sudah absen masuk");return}
+  if(data.find(x=>x.nama==n && x.tanggal==t.tanggal)){
+    toast("Sudah absen");return;
+  }
 
-  let status = isTelat(t.jam) ? "Telat" : "Hadir";
+  let status = t.jam > "09:00:00" ? "Telat":"Hadir";
 
-  data.push({
-    nama:n,
-    tanggal:t.tanggal,
-    masuk:t.jam,
-    pulang:"-",
-    status:status,
-    bulan:new Date().getMonth()+1
-  });
-
-  toast("✅ Absen masuk berhasil");
-  save();
+  let obj={nama:n,tanggal:t.tanggal,masuk:t.jam,pulang:"-",status:status,bulan:t.bulan};
+  data.push(obj);
+  toast("Absen masuk");
+  save(obj);
 }
 
 function absenPulang(){
-  let n = namaSelect.value;
-  let t = now();
+  let n=nama.value;
+  let t=now();
 
-  let d = data.find(x=>x.nama==n && x.tanggal==t.tanggal);
+  let d=data.find(x=>x.nama==n && x.tanggal==t.tanggal);
+  if(!d){toast("Belum masuk");return;}
 
-  if(!d){toast("❌ Belum absen masuk");return}
-  if(d.pulang!="-"){toast("⚠️ Sudah absen pulang");return}
-
-  let [h,m,s] = t.jam.split(":").map(Number);
-  let total = h*3600 + m*60 + s;
-
-  if(total < 16*3600){
-    toast("⚠️ Belum waktunya pulang");
-    return;
-  }
-
-  d.pulang = t.jam;
-  toast("🏁 Absen pulang berhasil");
+  d.pulang=t.jam;
   save();
 }
 
 function izin(){
-  let n = namaSelect.value;
-  let t = now();
+  let n=nama.value;
+  let t=now();
 
-  if(data.find(x=>x.nama==n && x.tanggal==t.tanggal)){
-    toast("⚠️ Sudah ada data hari ini");return;
-  }
-
-  data.push({nama:n,tanggal:t.tanggal,masuk:"-",pulang:"-",status:"Izin",bulan:new Date().getMonth()+1});
-  toast("📌 Izin dicatat");
-  save();
+  let obj={nama:n,tanggal:t.tanggal,masuk:"-",pulang:"-",status:"Izin",bulan:t.bulan};
+  data.push(obj);
+  save(obj);
 }
 
 function alpa(){
-  let n = namaSelect.value;
-  let t = now();
+  let n=nama.value;
+  let t=now();
 
-  if(data.find(x=>x.nama==n && x.tanggal==t.tanggal)){
-    toast("⚠️ Sudah ada data hari ini");return;
-  }
-
-  data.push({nama:n,tanggal:t.tanggal,masuk:"-",pulang:"-",status:"Alpa",bulan:new Date().getMonth()+1});
-  toast("🚫 Alpa dicatat");
-  save();
+  let obj={nama:n,tanggal:t.tanggal,masuk:"-",pulang:"-",status:"Alpa",bulan:t.bulan};
+  data.push(obj);
+  save(obj);
 }
 
 function resetHari(){
-  let today = now().tanggal;
-  data = data.filter(x=>x.tanggal!=today);
-  toast("🔄 Data hari ini direset");
+  let today=now().tanggal;
+  data=data.filter(x=>x.tanggal!=today);
   save();
 }
 
-// ================= RENDER =================
+// ===== RENDER =====
 function render(){
   autoAlpa();
 
-  let bulan = bulanSelect.value;
-  let search = document.getElementById("search").value.toLowerCase();
+  let bulan=bulanSelect.value;
+  let search=document.getElementById("search").value.toLowerCase();
 
-  let filtered = data.filter(x=>x.bulan==bulan && x.nama.toLowerCase().includes(search));
+  let filtered=data.filter(x=>x.bulan==bulan && x.nama.toLowerCase().includes(search));
 
   document.getElementById("list").innerHTML = filtered.map(x=>`
   <div class="card">
   <b>${x.nama}</b><br>
   ${x.tanggal}<br>
-  Masuk: ${x.masuk}<br>
-  Pulang: ${x.pulang=="-"?"Belum pulang":x.pulang}<br>
-  <span style="
-  background:${
-    x.status=='Telat' ? '#e74c3c' :
-    x.status=='Hadir' ? '#2ecc71' :
-    x.status=='Izin' ? '#3498db' :
-    '#7f8c8d'
-  };
-  color:#fff;
-  padding:5px 10px;
-  border-radius:8px;
-  font-weight:bold;">
+  Masuk: ${(x.status=="Alpa"||x.status=="Izin")?"-":x.masuk}<br>
+  Pulang: ${(x.status=="Alpa"||x.status=="Izin")?"-":(x.pulang=="-"?"Belum pulang":x.pulang)}<br>
   ${x.status}
-  </span>
   </div>`).join("");
 
-  let hadir = filtered.filter(x=>x.status=="Hadir").length;
-  let telat = filtered.filter(x=>x.status=="Telat").length;
+  total.innerText=filtered.length;
+  hadir.innerText=filtered.filter(x=>x.status=="Hadir").length;
+  telat.innerText=filtered.filter(x=>x.status=="Telat").length;
 
-  document.getElementById("total").innerText = filtered.length;
-  document.getElementById("hadir").innerText = hadir;
-  document.getElementById("telat").innerText = telat;
-
-  let group = {};
+  let group={};
   filtered.forEach(x=>{
     if(!group[x.tanggal]) group[x.tanggal]=0;
     group[x.tanggal]++;
   });
 
-  chart.data.labels = Object.keys(group);
-  chart.data.datasets[0].data = Object.values(group);
+  chart.data.labels=Object.keys(group);
+  chart.data.datasets[0].data=Object.values(group);
   chart.update();
 }
 
-// ================= CHART =================
+// ===== WA PRO MAX =====
+function kirimWA(){
+  let bulan = bulanSelect.value;
+  let filtered = data.filter(x=>x.bulan==bulan);
+
+  let rekap = {};
+
+  filtered.forEach(x=>{
+    if(!rekap[x.nama]){
+      rekap[x.nama]={hadir:0,telat:0,izin:0,alpa:0};
+    }
+    rekap[x.nama][x.status.toLowerCase()]++;
+  });
+
+  let ranking = Object.keys(rekap).map(n=>{
+    let r = rekap[n];
+    return {nama:n, skor:r.hadir - r.telat};
+  }).sort((a,b)=>b.skor-a.skor);
+
+  let text = "📊 *LAPORAN ABSENSI BULANAN PT-AGN*\n";
+  text += `📅 Bulan: ${bulanSelect.options[bulanSelect.selectedIndex].text}\n\n`;
+
+  Object.keys(rekap).forEach(n=>{
+    let r = rekap[n];
+    text += `👤 *${n}*\n`;
+    text += `✅ Hadir : ${r.hadir}\n⏰ Telat : ${r.telat}\n📌 Izin : ${r.izin}\n❌ Alpa : ${r.alpa}\n\n`;
+  });
+
+  text += "🏆 *RANKING*\n";
+  ranking.forEach((r,i)=>{
+    text += `${i+1}. ${r.nama} (${r.skor})\n`;
+  });
+
+  let nomorList = ["6281234567890","6289876543210"];
+
+  nomorList.forEach(no=>{
+    let url = `https://wa.me/${no}?text=${encodeURIComponent(text)}`;
+    window.open(url,"_blank");
+  });
+
+  toast("WA siap dikirim");
+}
+
+// ===== EXPORT =====
+function exportExcel(){
+  let ws=XLSX.utils.json_to_sheet(data);
+  let wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,"Absensi");
+  XLSX.writeFile(wb,"absensi.xlsx");
+}
+
+async function exportPDF(){
+  const { jsPDF } = window.jspdf;
+  let doc=new jsPDF();
+  doc.text("Laporan",10,10);
+  data.forEach((d,i)=>{
+    doc.text(`${i+1}. ${d.nama} ${d.status}`,10,20+(i*8));
+  });
+  doc.save("laporan.pdf");
+}
+
+// INIT
+syncCloud();
+
 const chart = new Chart(document.getElementById('chart'),{
   type:'bar',
   data:{labels:[],datasets:[{label:'Absensi',data:[]}]}
 });
-
-// ================= EXPORT EXCEL PRO =================
-function exportExcel(){
-  let header=[["No","Nama","Tanggal","Masuk","Pulang","Status"]];
-
-  let rows=data.map((d,i)=>[
-    i+1,d.nama,d.tanggal,d.masuk,d.pulang=="-"?"Belum":d.pulang,d.status
-  ]);
-
-  let ws=XLSX.utils.aoa_to_sheet(header.concat(rows));
-  let wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,"Absensi");
-
-  XLSX.writeFile(wb,"Absensi_PT-AGN.xlsx");
-  toast("📊 Export Excel PRO berhasil");
-}
-
-// ================= EXPORT PDF PRO =================
-async function exportPDF(){
-  const { jsPDF } = window.jspdf;
-  let doc=new jsPDF();
-
-  doc.text("Laporan Absensi PT-AGN",10,10);
-
-  let y=20;
-
-  data.forEach((d,i)=>{
-    doc.text(`${i+1}. ${d.nama}`,10,y);
-    doc.text(`${d.tanggal} | ${d.status}`,10,y+5);
-    y+=12;
-
-    if(y>280){doc.addPage();y=20;}
-  });
-
-  doc.save("Absensi_PT-AGN.pdf");
-  toast("📄 Export PDF PRO berhasil");
-}
-
-render();
 </script>
+
 </body>
 </html>
