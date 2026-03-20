@@ -14,32 +14,16 @@
 
 <style>
 body{font-family:sans-serif;background:linear-gradient(to bottom,#6fa8dc,#cfe2f3);margin:0;padding:15px}
-.card{background:#fff;border-radius:15px;padding:15px;margin-bottom:15px;transition:0.3s}
+.card{background:#fff;border-radius:15px;padding:15px;margin-bottom:15px}
 button{width:100%;padding:10px;margin:5px 0;border:none;border-radius:8px;color:#fff}
 .green{background:#2ecc71}.orange{background:#f39c12}.red{background:#e74c3c}.blue{background:#3498db}
 
-#toast{
- position:fixed;
- bottom:20px;
- left:50%;
- transform:translateX(-50%);
- background:#333;
- color:#fff;
- padding:12px 20px;
- border-radius:10px;
- opacity:0;
- transition:.3s;
-}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+background:#333;color:#fff;padding:12px 20px;border-radius:10px;opacity:0;transition:.3s}
 .show{opacity:1}
 
-/* Animasi login */
-.success{
- animation:pop 0.5s ease;
-}
-@keyframes pop{
- 0%{transform:scale(0.8);opacity:0}
- 100%{transform:scale(1);opacity:1}
-}
+.success{animation:pop .4s}
+@keyframes pop{0%{transform:scale(.8)}100%{transform:scale(1)}}
 </style>
 </head>
 
@@ -69,6 +53,7 @@ button{width:100%;padding:10px;margin:5px 0;border:none;border-radius:8px;color:
 <button class="orange" onclick="absenPulang()">Pulang</button>
 <button class="blue" onclick="izin()">Izin</button>
 <button class="red" onclick="resetHari()">Reset</button>
+<button class="red" onclick="logout()">Logout</button>
 
 <input id="waGlobal" placeholder="WA Global">
 <button onclick="kirimWA()">WA Global</button>
@@ -81,7 +66,7 @@ button{width:100%;padding:10px;margin:5px 0;border:none;border-radius:8px;color:
 <div id="list"></div>
 
 <div class="card">
-<h3>Ranking</h3>
+<h3>🏆 Ranking</h3>
 <div id="ranking"></div>
 </div>
 
@@ -94,32 +79,14 @@ button{width:100%;padding:10px;margin:5px 0;border:none;border-radius:8px;color:
 
 <script>
 
-// ====== PIN ======
+// ===== PIN =====
 let PIN = localStorage.getItem("PIN") || "1234";
 
-// ====== SOUND ======
-function playSound(type){
- let ctx = new (window.AudioContext || window.webkitAudioContext)();
- let osc = ctx.createOscillator();
- osc.type="sine";
+// ===== SESSION =====
+let SESSION_TIMEOUT = 10 * 60 * 1000;
+let sessionTimer;
 
- if(type=="success") osc.frequency.value=800;
- else osc.frequency.value=200;
-
- osc.connect(ctx.destination);
- osc.start();
- setTimeout(()=>osc.stop(),150);
-}
-
-// ====== VIBRATION ======
-function vibrate(type){
- if(navigator.vibrate){
-   if(type=="success") navigator.vibrate([100,50,100]);
-   else navigator.vibrate([300]);
- }
-}
-
-// ====== TOAST ======
+// ===== TOAST =====
 function showToast(msg){
  let t=document.getElementById("toast");
  t.innerText=msg;
@@ -127,48 +94,96 @@ function showToast(msg){
  setTimeout(()=>t.classList.remove("show"),2000);
 }
 
-// ====== LOGIN ======
-function loginPIN(){
- if(pinInput.value===PIN){
-   loginBox.style.display="none";
-   app.style.display="block";
-   app.classList.add("success");
+// ===== SOUND =====
+function playSound(type){
+ let ctx=new (window.AudioContext||window.webkitAudioContext)();
+ let osc=ctx.createOscillator();
+ osc.type="sine";
+ osc.frequency.value=(type=="success")?800:200;
+ osc.connect(ctx.destination);
+ osc.start();
+ setTimeout(()=>osc.stop(),150);
+}
 
-   showToast("✅ Login berhasil");
-   playSound("success");
-   vibrate("success");
- }else{
-   showToast("❌ PIN salah");
-   playSound("error");
-   vibrate("error");
+// ===== VIBRATE =====
+function vibrate(type){
+ if(navigator.vibrate){
+  navigator.vibrate(type=="success"?[100,50,100]:[300]);
  }
 }
 
-// ====== GANTI PIN ======
+// ===== SESSION =====
+function resetSession(){
+ clearTimeout(sessionTimer);
+ sessionTimer=setTimeout(logoutAuto,SESSION_TIMEOUT);
+}
+
+function logoutAuto(){
+ localStorage.removeItem("login");
+ showToast("⏳ Session habis");
+ playSound("error");
+ vibrate("error");
+ setTimeout(()=>location.reload(),1500);
+}
+
+// ===== LOGIN =====
+function loginPIN(){
+ if(pinInput.value===PIN){
+  localStorage.setItem("login","true");
+  loginBox.style.display="none";
+  app.style.display="block";
+  app.classList.add("success");
+
+  showToast("✅ Login berhasil");
+  playSound("success");
+  vibrate("success");
+
+  resetSession();
+ }else{
+  showToast("❌ PIN salah");
+  playSound("error");
+  vibrate("error");
+ }
+}
+
+// AUTO LOGIN
+if(localStorage.getItem("login")==="true"){
+ loginBox.style.display="none";
+ app.style.display="block";
+ resetSession();
+}
+
+// DETEKSI AKTIVITAS
+["click","touchstart","keypress"].forEach(evt=>{
+ document.addEventListener(evt, resetSession);
+});
+
+// ===== LOGOUT =====
+function logout(){
+ localStorage.removeItem("login");
+ location.reload();
+}
+
+// ===== GANTI PIN =====
 function gantiPIN(){
  let lama=prompt("PIN lama:");
  if(lama!==PIN){
-   showToast("❌ PIN salah");
-   playSound("error");
-   return;
+  showToast("❌ PIN salah");
+  return;
  }
-
  let baru=prompt("PIN baru:");
  if(!baru || baru.length<4){
-   showToast("⚠️ Min 4 digit");
-   return;
+  showToast("⚠️ Min 4 digit");
+  return;
  }
-
  PIN=baru;
  localStorage.setItem("PIN",baru);
-
  showToast("✅ PIN diganti");
- playSound("success");
 }
 
-// ====== FIREBASE ======
+// ===== FIREBASE =====
 const firebaseConfig={
- apiKey:"AIzaSy...",
+ apiKey:"AIzaSyAu67MAhW8xdmciPi3xOKwdy-uP4u9tXI",
  authDomain:"pt-agn.firebaseapp.com",
  databaseURL:"https://pt-agn-default-rtdb.firebaseio.com",
  projectId:"pt-agn"
@@ -190,16 +205,16 @@ function now(){
  return {tgl:d.toISOString().split('T')[0],jam:d.toTimeString().split(' ')[0],bulan:d.getMonth()+1}
 }
 
-// ====== ABSEN ======
+// ===== ABSEN =====
 function absenMasuk(){
  let t=now(),n=nama.value;
  if(data.find(x=>x.nama==n&&x.tgl==t.tgl)){
-   showToast("Sudah absen");
-   return;
+  showToast("Sudah absen");
+  return;
  }
  data.push({nama:n,tgl:t.tgl,status:t.jam>"09:00:00"?"Telat":"Hadir",bulan:t.bulan});
  save();
- showToast("Absen masuk ✔");
+ showToast("Masuk ✔");
 }
 
 function absenPulang(){
@@ -207,7 +222,7 @@ function absenPulang(){
  let d=data.find(x=>x.nama==nama.value&&x.tgl==t.tgl);
  if(d)d.pulang=t.jam;
  save();
- showToast("Absen pulang ✔");
+ showToast("Pulang ✔");
 }
 
 function izin(){
@@ -224,7 +239,7 @@ function resetHari(){
  showToast("Reset ✔");
 }
 
-// ====== AUTO ALPA ======
+// ===== AUTO ALPA =====
 setInterval(()=>{
  let t=now();
  if(t.jam>="16:00:00"){
@@ -238,7 +253,7 @@ setInterval(()=>{
  }
 },60000);
 
-// ====== RANKING ======
+// ===== RANKING =====
 function rank(){
  let r={};
  data.forEach(x=>{
@@ -250,7 +265,7 @@ function rank(){
  return Object.entries(r).map(([n,v])=>({n,...v})).sort((a,b)=>b.score-a.score);
 }
 
-// ====== CHART ======
+// ===== CHART =====
 let chart;
 function renderChart(n){
  let d=data.filter(x=>x.nama==n);
@@ -259,13 +274,13 @@ function renderChart(n){
  let a=d.filter(x=>x.status=="Alpa").length;
 
  if(chart)chart.destroy();
- chart=new Chart(chart,{
+ chart=new Chart(document.getElementById("chart"),{
   type:'bar',
   data:{labels:["Hadir","Telat","Alpa"],datasets:[{data:[h,t,a]}]}
  });
 }
 
-// ====== RENDER ======
+// ===== RENDER =====
 function render(){
  list.innerHTML=data.map(x=>`<div>${x.nama} ${x.status}</div>`).join("");
 
@@ -279,7 +294,7 @@ function render(){
  pilihKaryawan.onchange=()=>renderChart(pilihKaryawan.value);
 }
 
-// ====== WA ======
+// ===== WA =====
 function kirimWA(){
  let txt="Absensi\n";
  data.forEach(d=>txt+=`${d.nama} ${d.status}\n`);
@@ -295,6 +310,22 @@ function kirimWAper(){
    d.forEach(x=>txt+=`${x.tgl} ${x.status}\n`);
    window.open(`https://wa.me/${no}?text=${encodeURIComponent(txt)}`);
  });
+}
+
+// ===== EXPORT =====
+function exportExcel(){
+ let ws=XLSX.utils.json_to_sheet(data);
+ let wb=XLSX.utils.book_new();
+ XLSX.utils.book_append_sheet(wb,ws,"Absensi");
+ XLSX.writeFile(wb,"absensi.xlsx");
+}
+
+async function exportPDF(){
+ const { jsPDF } = window.jspdf;
+ let doc=new jsPDF();
+ doc.text("Absensi",10,10);
+ data.forEach((d,i)=>doc.text(`${d.nama} ${d.status}`,10,20+i*10));
+ doc.save("absensi.pdf");
 }
 
 </script>
