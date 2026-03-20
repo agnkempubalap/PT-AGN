@@ -38,9 +38,18 @@ button{width:100%;padding:10px;margin:5px 0;border:none;border-radius:10px;color
 <input id="wa" placeholder="Nomor WA">
 <button class="blue" onclick="kirimWA()">WA Harian</button>
 
-<h4>Karyawan</h4>
-<input id="karyawanBaru">
+<h4>Kelola Karyawan</h4>
+
+<input id="karyawanBaru" placeholder="Tambah nama">
 <button onclick="tambahKaryawan()">Tambah</button>
+
+<select id="hapusNama"></select>
+<button class="red" onclick="hapusKaryawan()">Hapus</button>
+
+<select id="editNama"></select>
+<input id="namaBaru" placeholder="Nama baru">
+<button class="orange" onclick="editKaryawan()">Edit Nama</button>
+
 </div>
 
 <div class="card">
@@ -70,11 +79,10 @@ button{width:100%;padding:10px;margin:5px 0;border:none;border-radius:10px;color
 <canvas id="chart2"></canvas>
 </div>
 
-<!-- 🔥 LAPORAN BULANAN -->
 <div class="card">
 <h3>📊 Laporan Bulanan</h3>
 <input type="month" id="bulan">
-<button class="blue" onclick="kirimLaporanBulanan()">Kirim WA Laporan</button>
+<button class="blue" onclick="kirimLaporanBulanan()">Kirim WA</button>
 <pre id="previewBulanan"></pre>
 </div>
 
@@ -100,7 +108,12 @@ db.ref("absensi").on("value",s=>{
 });
 
 db.ref("karyawan").on("value",s=>{
- karyawan=s.val()||["Agung","Alda","Nur","Budi","Siti"];
+ if(s.exists()){
+   karyawan=s.val();
+ }else{
+   karyawan=["Agung","Alda","Nur","Budi","Siti"];
+   db.ref("karyawan").set(karyawan);
+ }
  updateDrop();
 });
 
@@ -118,16 +131,53 @@ if(localStorage.getItem("login")){
  app.style.display="block";
 }
 
-// ===== KARYAWAN =====
+// ===== DROPDOWN =====
 function updateDrop(){
  nama.innerHTML=karyawan.map(n=>`<option>${n}</option>`);
  pilih.innerHTML=karyawan.map(n=>`<option>${n}</option>`);
+ hapusNama.innerHTML=karyawan.map(n=>`<option>${n}</option>`);
+ editNama.innerHTML=karyawan.map(n=>`<option>${n}</option>`);
 }
+
+// ===== KARYAWAN =====
 function tambahKaryawan(){
  if(!karyawanBaru.value)return;
  karyawan.push(karyawanBaru.value);
  db.ref("karyawan").set(karyawan);
  karyawanBaru.value="";
+}
+
+function hapusKaryawan(){
+ let n=hapusNama.value;
+ if(!confirm("Hapus "+n+"?"))return;
+
+ karyawan=karyawan.filter(x=>x!==n);
+ data=data.filter(x=>x.nama!==n);
+
+ db.ref("karyawan").set(karyawan);
+ db.ref("absensi").set(data);
+}
+
+function editKaryawan(){
+ let lama=editNama.value;
+ let baru=namaBaru.value;
+
+ if(!baru)return alert("Isi nama baru");
+
+ // update list karyawan
+ karyawan=karyawan.map(n=>n===lama?baru:n);
+
+ // update data absensi
+ data=data.map(x=>{
+  if(x.nama===lama)x.nama=baru;
+  return x;
+ });
+
+ db.ref("karyawan").set(karyawan);
+ db.ref("absensi").set(data);
+
+ namaBaru.value="";
+ alert("Nama berhasil diubah");
 }
 
 // ===== WAKTU =====
@@ -217,6 +267,7 @@ chart=new Chart(chart,{type:'bar',data:{labels:["Hadir","Telat","Alpa"],datasets
 
 let n=pilih.value;
 let d=data.filter(x=>x.nama==n);
+
 if(chart2)chart2.destroy();
 chart2=new Chart(chart2,{type:'bar',data:{labels:["Hadir","Telat","Alpa"],datasets:[{label:n,data:[
 d.filter(x=>x.status=="Hadir").length,
@@ -224,7 +275,7 @@ d.filter(x=>x.status=="Telat").length,
 d.filter(x=>x.status=="Alpa").length
 ]}]}});
 
-previewBulanan.innerText = generateLaporan();
+previewBulanan.innerText=generateLaporan();
 }
 
 // ===== WA =====
@@ -235,16 +286,13 @@ function kirimWA(){
  window.open(`https://wa.me/${wa.value}?text=${encodeURIComponent(txt)}`);
 }
 
-// ===== LAPORAN BULANAN PRO =====
+// ===== LAPORAN BULANAN =====
 function generateLaporan(){
- let bulanVal=bulan.value;
- if(!bulanVal)return "Pilih bulan";
-
+ if(!bulan.value)return "Pilih bulan";
  let hasil={};
 
  data.forEach(x=>{
-  if(!x.tgl.includes(bulanVal))return;
-
+  if(!x.tgl.includes(bulan.value))return;
   if(!hasil[x.nama])hasil[x.nama]={h:0,t:0,a:0,s:0};
 
   if(x.status=="Hadir"){hasil[x.nama].h++;hasil[x.nama].s+=3;}
@@ -256,7 +304,6 @@ function generateLaporan(){
  .sort((a,b)=>b.s-a.s);
 
  let txt="📊 LAPORAN BULANAN\n\n";
-
  arr.forEach((x,i)=>{
   txt+=`#${i+1} ${x.n}\nH:${x.h} T:${x.t} A:${x.a}\nSkor:${x.s}\n\n`;
  });
@@ -266,8 +313,7 @@ function generateLaporan(){
 
 function kirimLaporanBulanan(){
  if(!wa.value)return alert("Isi nomor");
- let txt=generateLaporan();
- window.open(`https://wa.me/${wa.value}?text=${encodeURIComponent(txt)}`);
+ window.open(`https://wa.me/${wa.value}?text=${encodeURIComponent(generateLaporan())}`);
 }
 
 </script>
