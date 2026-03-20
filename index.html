@@ -1,173 +1,222 @@
-<!DOCTYPE html><html lang="id">
+<!DOCTYPE html>
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PT-AGN System</title><script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><style>
-body{font-family:sans-serif;background:linear-gradient(to bottom,#6fa8dc,#cfe2f3);margin:0}
-.card{background:#fff;border-radius:15px;padding:15px;margin:15px;box-shadow:0 4px 10px rgba(0,0,0,0.1)}
-button{width:100%;padding:12px;border:none;border-radius:10px;margin:5px 0;color:#fff;font-weight:bold}
-.green{background:#2ecc71}.orange{background:#f39c12}.red{background:#e74c3c}.blue{background:#3498db}
-input,select{width:100%;padding:10px;border-radius:8px;margin:5px 0}
-.flex{display:flex;gap:10px}
-.box{flex:1;padding:10px;border-radius:10px;color:#fff;text-align:center}
-.b1{background:#3498db}.b2{background:#2ecc71}.b3{background:#f1c40f}
-#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:12px 20px;border-radius:10px;opacity:0;transition:.3s}
-.show{opacity:1}
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body{font-family:sans-serif;margin:0;background:#cfe2f3}
 
 /* NAV */
 .nav{display:flex;background:#fff;border-bottom:1px solid #ccc}
-.nav button{flex:1;background:none;color:#333}
+.nav button{flex:1;padding:10px;border:none;background:none}
 .nav .active{color:#3498db;font-weight:bold}
+
+/* PAGE */
 .page{display:none}
 .page.active{display:block}
-</style></head>
-<body><div id="toast"></div><!-- NAVIGATION --><div class="nav">
+
+/* CARD */
+.card{background:#fff;margin:10px;padding:15px;border-radius:10px}
+
+/* UI */
+button{width:100%;padding:10px;margin:5px 0;border:none;border-radius:8px;color:#fff}
+.green{background:#2ecc71}.orange{background:#f39c12}.red{background:#e74c3c}.blue{background:#3498db}
+input,select{width:100%;padding:8px;margin:5px 0;border-radius:6px}
+
+.flex{display:flex;gap:10px}
+.box{flex:1;padding:10px;border-radius:10px;color:#fff;text-align:center}
+.b1{background:#3498db}.b2{background:#2ecc71}.b3{background:#f1c40f}
+</style>
+</head>
+
+<body>
+
+<!-- NAV -->
+<div class="nav">
 <button onclick="showPage('home',this)" class="active">Home</button>
 <button onclick="showPage('absen',this)">Absensi</button>
 <button onclick="showPage('stok',this)">Stok</button>
 <button onclick="showPage('aktivitas',this)">Aktivitas</button>
 <button onclick="showPage('gaji',this)">Gaji</button>
-</div><!-- HOME --><div id="home" class="page active">
+</div>
+
+<!-- HOME -->
+<div id="home" class="page active">
 <div class="card">
 <h3>🏠 Halaman Utama</h3>
-<p>Selamat datang di sistem PT-AGN</p>
+Sistem siap digunakan
 </div>
-</div><!-- ABSENSI --><div id="absen" class="page"><div class="card">
-<h3>📋 Absensi PT-AGN</h3>
-<select id="nama"></select><button class="green" onclick="absenMasuk()">Absen Masuk</button> <button class="orange" onclick="absenPulang()">Absen Pulang</button> <button class="red" onclick="resetHari()">Reset Hari Ini</button>
+</div>
 
-</div><div class="card">
+<!-- ABSENSI -->
+<div id="absen" class="page">
+
+<div class="card">
+<h3>📋 Absensi</h3>
+
+<select id="nama"></select>
+
+<button class="green" onclick="masuk()">Masuk</button>
+<button class="orange" onclick="pulang()">Pulang</button>
+<button class="red" onclick="resetHari()">Reset Hari</button>
+
+</div>
+
+<div class="card">
 <h4>Filter</h4>
 <select id="bulan"></select>
-<input type="text" id="search" placeholder="Cari nama...">
-</div><div class="card">
-<h4>Dashboard</h4>
+<input id="search" placeholder="Cari nama">
+</div>
+
+<div class="card">
 <div class="flex">
 <div class="box b1" id="total">0</div>
 <div class="box b2" id="hadir">0</div>
 <div class="box b3" id="telat">0</div>
 </div>
-</div><div class="card">
-<h4>Grafik Harian</h4>
+</div>
+
+<div class="card">
 <canvas id="chart"></canvas>
-</div><div id="list"></div></div><!-- STOK --><div id="stok" class="page">
-<div class="card">
-<h3>📦 Stok Gudang</h3>
-<p>Belum diisi</p>
 </div>
-</div><!-- AKTIVITAS --><div id="aktivitas" class="page">
-<div class="card">
-<h3>🧑‍💼 Aktivitas Harian</h3>
-<p>Belum diisi</p>
-</div>
-</div><!-- GAJI --><div id="gaji" class="page">
-<div class="card">
-<h3>💰 Gaji</h3>
-<p>Belum diisi</p>
-</div>
-</div><script>
 
-// ===== NAVIGATION =====
+<div id="list"></div>
+
+</div>
+
+<!-- STOK -->
+<div id="stok" class="page">
+<div class="card">📦 Stok Gudang (belum dibuat)</div>
+</div>
+
+<!-- AKTIVITAS -->
+<div id="aktivitas" class="page">
+<div class="card">🧑‍💼 Aktivitas (belum dibuat)</div>
+</div>
+
+<!-- GAJI -->
+<div id="gaji" class="page">
+<div class="card">💰 Gaji (belum dibuat)</div>
+</div>
+
+<script>
+
+// ===== NAV FIX =====
 function showPage(id,btn){
- document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
- document.getElementById(id).classList.add('active');
 
- document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
- btn.classList.add('active');
+ document.querySelectorAll('.page').forEach(p=>{
+  p.style.display="none";
+ });
+
+ let el=document.getElementById(id);
+ if(el) el.style.display="block";
+
+ document.querySelectorAll('.nav button').forEach(b=>{
+  b.classList.remove('active');
+ });
+
+ if(btn) btn.classList.add('active');
 }
 
 // ===== DATA =====
 let data = JSON.parse(localStorage.getItem("absensi")) || [];
+let karyawan = ["Agung","Alda","Nur","Budi","Siti"];
+
+const nama = document.getElementById("nama");
+nama.innerHTML = karyawan.map(n=>`<option>${n}</option>`);
 
 // ===== FILTER INIT =====
-const bulanSelect = document.getElementById("bulan");
-if(bulanSelect){
- bulanSelect.innerHTML="";
- for(let i=1;i<=12;i++){
-  bulanSelect.innerHTML += `<option value="${i}">Bulan ${i}</option>`;
- }
- bulanSelect.value = new Date().getMonth()+1;
- bulanSelect.onchange = render;
+const bulan = document.getElementById("bulan");
+for(let i=1;i<=12;i++){
+ bulan.innerHTML += `<option value="${i}">Bulan ${i}</option>`;
 }
+bulan.value = new Date().getMonth()+1;
 
-const searchInput = document.getElementById("search");
-if(searchInput) searchInput.oninput = render;
-let karyawan = ["Agung","Alda","Nur","Hasan","Hatta"];
+document.getElementById("search").oninput = render;
+bulan.onchange = render;
 
-const namaSelect = document.getElementById("nama");
-namaSelect.innerHTML = karyawan.map(n=>`<option>${n}</option>`);
-
-function toast(msg){
- const t = document.getElementById("toast");
- t.innerText = msg;
- t.classList.add("show");
- setTimeout(()=>t.classList.remove("show"),2000);
-}
-
+// ===== TIME =====
 function now(){
  let d=new Date();
- return {tanggal:d.toISOString().split('T')[0],jam:d.toTimeString().split(' ')[0]}
+ return {
+  tanggal:d.toISOString().split('T')[0],
+  jam:d.toTimeString().split(' ')[0]
+ };
 }
 
+// ===== SAVE =====
 function save(){
  localStorage.setItem("absensi", JSON.stringify(data));
  render();
 }
 
-function isTelat(jam){return jam>"08:00:00"}
-
-function absenMasuk(){
- let n=namaSelect.value;
+// ===== ABSEN =====
+function masuk(){
  let t=now();
- if(data.find(x=>x.nama==n&&x.tanggal==t.tanggal)){toast("Sudah absen");return}
- let status=isTelat(t.jam)?"Telat":"Hadir";
- data.push({nama:n,tanggal:t.tanggal,masuk:t.jam,pulang:"-",status});
+ let n=nama.value;
+
+ if(data.find(x=>x.nama==n && x.tanggal==t.tanggal)) return;
+
+ let status = t.jam>"09:00:00" ? "Telat" : "Hadir";
+
+ data.push({
+  nama:n,
+  tanggal:t.tanggal,
+  masuk:t.jam,
+  pulang:"-",
+  status:status
+ });
+
  save();
 }
 
-function absenPulang(){
- let n=namaSelect.value;
+function pulang(){
  let t=now();
- let d=data.find(x=>x.nama==n&&x.tanggal==t.tanggal);
- if(!d){toast("Belum masuk");return}
- d.pulang=t.jam;
+ let d=data.find(x=>x.nama==nama.value && x.tanggal==t.tanggal);
+ if(d) d.pulang = t.jam;
  save();
 }
 
 function resetHari(){
- let today=now().tanggal;
- data=data.filter(x=>x.tanggal!=today);
+ let today = now().tanggal;
+ data = data.filter(x=>x.tanggal!=today);
  save();
 }
 
+// ===== CHART =====
+let chart = new Chart(document.getElementById("chart"),{
+ type:'line',
+ data:{labels:[],datasets:[{data:[]}]}
+});
+
+// ===== RENDER =====
 function render(){
 
- let bulan = document.getElementById("bulan")?.value;
- let search = document.getElementById("search")?.value.toLowerCase() || "";
+ let m = bulan.value;
+ let s = document.getElementById("search").value.toLowerCase();
 
  let filtered = data.filter(x=>{
-  let cocokBulan = bulan ? (new Date(x.tanggal).getMonth()+1 == bulan) : true;
-  let cocokNama = x.nama.toLowerCase().includes(search);
+  let cocokBulan = new Date(x.tanggal).getMonth()+1 == m;
+  let cocokNama = x.nama.toLowerCase().includes(s);
   return cocokBulan && cocokNama;
  });
 
- document.getElementById("list").innerHTML=filtered.map(x=>`
+ list.innerHTML = filtered.map(x=>`
  <div class="card">
  <b>${x.nama}</b><br>
  ${x.tanggal}<br>
  Masuk: ${x.masuk}<br>
  Pulang: ${x.pulang}<br>
- <span style="background:${x.status=='Telat'?'#e74c3c':'#2ecc71'};color:#fff;padding:3px 8px;border-radius:5px">${x.status}</span>
- </div>`).join("");
+ ${x.status}
+ </div>
+ `).join("");
 
- let hadir = filtered.filter(x=>x.status=="Hadir").length;
- let telat = filtered.filter(x=>x.status=="Telat").length;
+ total.innerText = filtered.length;
+ hadir.innerText = filtered.filter(x=>x.status=="Hadir").length;
+ telat.innerText = filtered.filter(x=>x.status=="Telat").length;
 
- document.getElementById("total").innerText = filtered.length;
- document.getElementById("hadir").innerText = hadir;
- document.getElementById("telat").innerText = telat;
-
- // grafik
  let group={};
  filtered.forEach(x=>{
   if(!group[x.tanggal]) group[x.tanggal]=0;
@@ -177,14 +226,11 @@ function render(){
  chart.data.labels = Object.keys(group);
  chart.data.datasets[0].data = Object.values(group);
  chart.update();
-}</b><br>${x.tanggal}<br>${x.status}
- </div>`).join("");
-
- document.getElementById("total").innerText=data.length;
- document.getElementById("hadir").innerText=data.filter(x=>x.status=="Hadir").length;
- document.getElementById("telat").innerText=data.filter(x=>x.status=="Telat").length;
 }
 
+// INIT
 render();
-</script></body>
+
+</script>
+</body>
 </html>
