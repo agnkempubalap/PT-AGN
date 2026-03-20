@@ -101,6 +101,16 @@ const db=firebase.database();
 
 let data=[],karyawan=[];
 
+// ===== AUTO BACKUP =====
+function backupKaryawan(){
+ localStorage.setItem("backup_karyawan", JSON.stringify(karyawan));
+}
+
+function restoreBackup(){
+ let b = localStorage.getItem("backup_karyawan");
+ return b ? JSON.parse(b) : null;
+}
+
 // ===== LOAD =====
 db.ref("absensi").on("value",s=>{
  data=s.val()||[];
@@ -108,12 +118,24 @@ db.ref("absensi").on("value",s=>{
 });
 
 db.ref("karyawan").on("value",s=>{
- if(s.exists()){
-   karyawan=s.val();
- }else{
-   karyawan=["Agung","Alda","Nur","Budi","Siti"];
+
+ if(!s.exists() || s.val().length===0){
+
+   let backup = restoreBackup();
+
+   if(backup && backup.length){
+     karyawan = backup;
+   }else{
+     karyawan = ["Agung","Alda","Nur","Budi","Siti"];
+   }
+
    db.ref("karyawan").set(karyawan);
+
+ }else{
+   karyawan = s.val();
  }
+
+ backupKaryawan(); // 🔥 simpan backup setiap load
  updateDrop();
 });
 
@@ -144,6 +166,7 @@ function tambahKaryawan(){
  if(!karyawanBaru.value)return;
  karyawan.push(karyawanBaru.value);
  db.ref("karyawan").set(karyawan);
+ backupKaryawan();
  karyawanBaru.value="";
 }
 
@@ -156,18 +179,15 @@ function hapusKaryawan(){
 
  db.ref("karyawan").set(karyawan);
  db.ref("absensi").set(data);
+ backupKaryawan();
 }
 
 function editKaryawan(){
  let lama=editNama.value;
  let baru=namaBaru.value;
+ if(!baru)return;
 
- if(!baru)return alert("Isi nama baru");
-
- // update list karyawan
  karyawan=karyawan.map(n=>n===lama?baru:n);
-
- // update data absensi
  data=data.map(x=>{
   if(x.nama===lama)x.nama=baru;
   return x;
@@ -175,9 +195,9 @@ function editKaryawan(){
 
  db.ref("karyawan").set(karyawan);
  db.ref("absensi").set(data);
+ backupKaryawan();
 
  namaBaru.value="";
- alert("Nama berhasil diubah");
 }
 
 // ===== WAKTU =====
