@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Absensi</title>
+<title>Absensi Pro</title>
 
 <style>
 body { font-family:Arial; background:#eef3ff; padding:15px; }
@@ -12,6 +12,7 @@ body { font-family:Arial; background:#eef3ff; padding:15px; }
   padding:15px;
   border-radius:15px;
   box-shadow:0 4px 10px rgba(0,0,0,0.1);
+  margin-bottom:15px;
 }
 
 select, button {
@@ -21,14 +22,10 @@ select, button {
   border-radius:10px;
 }
 
-button {
-  border:none;
-  color:white;
-  font-weight:bold;
-}
+button { border:none; color:white; font-weight:bold; }
 
-#btnMasuk { background:#4CAF50; }
-#btnPulang { background:#ff9800; }
+#masuk { background:#4CAF50; }
+#pulang { background:#ff9800; }
 
 .item {
   background:#f5f7ff;
@@ -37,8 +34,11 @@ button {
   border-radius:10px;
 }
 
-.telat { color:red; font-weight:bold; }
-.tepat { color:green; font-weight:bold; }
+.telat { color:red; }
+.tepat { color:green; }
+.cepat { color:orange; }
+
+h2 { margin-bottom:5px; }
 </style>
 </head>
 
@@ -56,25 +56,32 @@ button {
 <option>Nur</option>
 </select>
 
-<button id="btnMasuk">Absen Masuk</button>
-<button id="btnPulang">Absen Pulang</button>
+<button id="masuk">Absen Masuk</button>
+<button id="pulang">Absen Pulang</button>
 
-<h3>List Hari Ini</h3>
+</div>
+
+<div class="card">
+<h3>📅 Hari Ini</h3>
 <div id="list">Memuat...</div>
+</div>
 
+<div class="card">
+<h3>📊 Rekap Bulan Ini</h3>
+<div id="rekap">Memuat...</div>
 </div>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-import { 
-  getFirestore, 
-  collection, 
-  doc, 
-  setDoc, 
+import {
+  getFirestore,
+  collection,
+  doc,
+  setDoc,
   getDoc,
   updateDoc,
-  getDocs 
+  getDocs
 } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -96,23 +103,47 @@ function today(){
   return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
 }
 
+function bulan(){
+  let d = new Date();
+  return d.getMonth()+1;
+}
+
 function jam(){
   return new Date().toLocaleTimeString("id-ID");
 }
 
 
-// STATUS TELAT (jam masuk > 08:00 = telat)
-function statusMasuk(){
+// HITUNG TELAT MENIT
+function hitungTelat(){
   let now = new Date();
   let batas = new Date();
-  batas.setHours(8,0,0);
+  batas.setHours(9,0,0);
 
-  return now > batas ? "Telat" : "Tepat Waktu";
+  if(now <= batas) return 0;
+
+  let diff = (now - batas) / 60000;
+  return Math.floor(diff);
 }
 
 
-// 🔵 ABSEN MASUK
-document.getElementById("btnMasuk").onclick = async function(){
+// STATUS MASUK
+function statusMasuk(){
+  return hitungTelat() > 0 ? "Telat" : "Tepat Waktu";
+}
+
+
+// STATUS PULANG
+function statusPulang(){
+  let now = new Date();
+  let batas = new Date();
+  batas.setHours(16,0,0);
+
+  return now < batas ? "Pulang Cepat" : "Normal";
+}
+
+
+// MASUK
+document.getElementById("masuk").onclick = async function(){
 
   let btn = this;
   if(btn.disabled) return;
@@ -129,20 +160,22 @@ document.getElementById("btnMasuk").onclick = async function(){
     let snap = await getDoc(ref);
 
     if(snap.exists()){
-      alert("❌ Sudah absen masuk");
+      alert("Sudah absen masuk");
       btn.disabled=false;
       btn.innerText="Absen Masuk";
       return;
     }
 
     await setDoc(ref,{
-      nama:nama,
+      nama,
       tanggal:today(),
+      bulan:bulan(),
       jamMasuk:jam(),
-      statusMasuk:statusMasuk()
+      statusMasuk:statusMasuk(),
+      telatMenit:hitungTelat()
     });
 
-    alert("✅ Masuk berhasil");
+    alert("Masuk berhasil");
 
     loadData();
 
@@ -155,8 +188,8 @@ document.getElementById("btnMasuk").onclick = async function(){
 };
 
 
-// 🟠 ABSEN PULANG
-document.getElementById("btnPulang").onclick = async function(){
+// PULANG
+document.getElementById("pulang").onclick = async function(){
 
   let btn = this;
   if(btn.disabled) return;
@@ -173,7 +206,7 @@ document.getElementById("btnPulang").onclick = async function(){
     let snap = await getDoc(ref);
 
     if(!snap.exists()){
-      alert("❌ Belum absen masuk");
+      alert("Belum absen masuk");
       btn.disabled=false;
       btn.innerText="Absen Pulang";
       return;
@@ -182,17 +215,18 @@ document.getElementById("btnPulang").onclick = async function(){
     let data = snap.data();
 
     if(data.jamPulang){
-      alert("❌ Sudah absen pulang");
+      alert("Sudah absen pulang");
       btn.disabled=false;
       btn.innerText="Absen Pulang";
       return;
     }
 
     await updateDoc(ref,{
-      jamPulang: jam()
+      jamPulang: jam(),
+      statusPulang: statusPulang()
     });
 
-    alert("✅ Pulang berhasil");
+    alert("Pulang berhasil");
 
     loadData();
 
@@ -209,37 +243,77 @@ document.getElementById("btnPulang").onclick = async function(){
 async function loadData(){
 
   let list = document.getElementById("list");
+  let rekap = document.getElementById("rekap");
+
   list.innerHTML = "Memuat...";
+  rekap.innerHTML = "Memuat...";
 
   let snap = await getDocs(collection(db,"absensi"));
 
   list.innerHTML = "";
+  let dataRekap = {};
 
   let tgl = today();
+  let bln = bulan();
 
   snap.forEach(doc=>{
+
     let d = doc.data();
 
+    // LIST HARI INI
     if(d.tanggal === tgl){
-
       list.innerHTML += `
         <div class="item">
           <b>${d.nama}</b><br>
-          Masuk: ${d.jamMasuk || "-"}<br>
-          Status: <span class="${d.statusMasuk=='Telat'?'telat':'tepat'}">${d.statusMasuk || "-"}</span><br>
-          Pulang: ${d.jamPulang || "-"}
+          Masuk: ${d.jamMasuk}<br>
+          Status: <span class="${d.statusMasuk=='Telat'?'telat':'tepat'}">${d.statusMasuk}</span><br>
+          Telat: ${d.telatMenit} menit<br>
+          Pulang: ${d.jamPulang || "-"}<br>
+          Status Pulang: ${d.statusPulang || "-"}
         </div>
       `;
     }
+
+    // REKAP BULAN
+    if(d.bulan === bln){
+
+      if(!dataRekap[d.nama]){
+        dataRekap[d.nama] = {
+          hadir:0,
+          telat:0
+        };
+      }
+
+      dataRekap[d.nama].hadir++;
+
+      if(d.telatMenit > 0){
+        dataRekap[d.nama].telat += d.telatMenit;
+      }
+    }
+
   });
 
   if(list.innerHTML === ""){
     list.innerHTML = "Belum ada data";
   }
+
+  // TAMPILKAN REKAP
+  rekap.innerHTML = "";
+
+  for(let nama in dataRekap){
+    let d = dataRekap[nama];
+
+    rekap.innerHTML += `
+      <div class="item">
+        <b>${nama}</b><br>
+        Hadir: ${d.hadir} hari<br>
+        Total Telat: ${d.telat} menit
+      </div>
+    `;
+  }
+
 }
 
-
-// LOAD AWAL
 loadData();
 
 </script>
