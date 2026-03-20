@@ -2,7 +2,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sistem Karyawan</title>
+<title>Sistem Karyawan Lengkap</title>
 <style>
 body{font-family:Arial;margin:0;background:#e3f2fd}
 .page{display:none;padding:10px}
@@ -12,6 +12,7 @@ body{font-family:Arial;margin:0;background:#e3f2fd}
 .card{background:#fff;padding:12px;margin-bottom:10px;border-radius:10px}
 button{padding:10px;border:none;border-radius:8px}
 .save{background:#4caf50;color:#fff;width:100%}
+input,select{width:100%;padding:8px;margin-bottom:8px}
 </style>
 </head>
 <body><!-- DASHBOARD --><div id="dashboardPage" class="page active">
@@ -19,6 +20,11 @@ button{padding:10px;border:none;border-radius:8px}
 </div><!-- ABSENSI --><div id="absenPage" class="page">
 <div class="card"><h3>Absensi</h3>
 <select id="namaAbsen"></select>
+<select id="statusAbsen">
+<option>Hadir</option>
+<option>Izin</option>
+<option>Sakit</option>
+</select>
 <button class="save" onclick="absen()">Absen</button>
 <div id="dataAbsen"></div>
 </div>
@@ -28,20 +34,28 @@ button{padding:10px;border:none;border-radius:8px}
 <button class="save" onclick="simpanAktivitas()">Simpan</button>
 </div>
 <div class="card"><div id="output"></div></div>
-</div><!-- STOK GUDANG --><div id="stokPage" class="page">
+</div><!-- STOK --><div id="stokPage" class="page">
 <div class="card"><h3>Stok Gudang</h3>
-<input type="text" id="namaBarang" placeholder="Nama Barang"><br><br>
-<input type="number" id="jumlahBarang" placeholder="Jumlah"><br><br>
+<input type="text" id="namaBarang" placeholder="Nama Barang">
+<input type="number" id="jumlahBarang" placeholder="Jumlah">
 <button class="save" onclick="tambahStok()">Tambah / Update</button>
 <div id="dataStok"></div>
 </div>
-</div><!-- NAVBAR --><div class="nav">
+</div><!-- KARYAWAN --><div id="karyawanPage" class="page">
+<div class="card"><h3>Kelola Karyawan</h3>
+<input type="text" id="namaBaru" placeholder="Tambah Karyawan">
+<button class="save" onclick="tambahKaryawan()">Tambah</button>
+<div id="listKaryawan"></div>
+</div>
+</div><!-- NAV --><div class="nav">
 <button onclick="showPage('dashboardPage')">Home</button>
 <button onclick="showPage('absenPage')">Absen</button>
 <button onclick="showPage('aktivitasPage')">Aktivitas</button>
 <button onclick="showPage('stokPage')">Stok</button>
+<button onclick="showPage('karyawanPage')">Karyawan</button>
 </div><script>
-const karyawan=["Hatta","Agung"];
+// KARYAWAN DINAMIS
+let karyawan=JSON.parse(localStorage.getItem('karyawan')||'["Hatta","Agung"]');
 
 const aktivitasList=[
 "Rekondisi Kempu",
@@ -66,7 +80,7 @@ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
 document.getElementById(id).classList.add('active');
 }
 
-// ABSENSI
+// ABSENSI FULL
 function loadNama(){
 let select=document.getElementById('namaAbsen');
 select.innerHTML='';
@@ -75,8 +89,18 @@ karyawan.forEach(n=>select.innerHTML+=`<option>${n}</option>`);
 
 function absen(){
 let nama=document.getElementById('namaAbsen').value;
+let status=document.getElementById('statusAbsen').value;
+let tanggal=new Date().toLocaleDateString();
+let waktu=new Date().toLocaleTimeString();
+
 let data=JSON.parse(localStorage.getItem('absen')||'[]');
-data.push({nama,waktu:new Date().toLocaleString()});
+
+// cegah double hari sama
+let sudah=data.find(d=>d.nama==nama && d.tanggal==tanggal);
+if(sudah){alert('Sudah absen hari ini');return;}
+
+
+data.push({nama,status,tanggal,waktu});
 localStorage.setItem('absen',JSON.stringify(data));
 tampilAbsen();
 }
@@ -85,8 +109,10 @@ function tampilAbsen(){
 let data=JSON.parse(localStorage.getItem('absen')||'[]');
 let div=document.getElementById('dataAbsen');
 div.innerHTML='';
+
 data.slice().reverse().forEach(d=>{
-div.innerHTML+=`<div class='card'>${d.nama}<br>${d.waktu}</div>`;
+if(!d.nama) return;
+div.innerHTML+=`<div class='card'>${d.nama} - ${d.status}<br>${d.tanggal} ${d.waktu}</div>`;
 });
 }
 
@@ -113,7 +139,6 @@ data.push({nama:x.dataset.nama,aktivitas:x.value,gaji:harga[x.value],waktu:new D
 let lama=JSON.parse(localStorage.getItem('aktivitas')||'[]');
 localStorage.setItem('aktivitas',JSON.stringify(lama.concat(data)));
 tampilkan();dashboard();
-tampilkanStok();
 document.querySelectorAll('input[type=checkbox]').forEach(c=>c.checked=false);
 }
 
@@ -139,11 +164,6 @@ div.innerHTML=`<div class='card'>Total: Rp ${total}</div>`;
 for(let n in per){div.innerHTML+=`<div class='card'>${n}: Rp ${per[n]}</div>`}
 }
 
-loadNama();
-tampilAbsen();
-renderForm();
-tampilkan();
-dashboard();
 // STOK
 function tambahStok(){
 let nama=document.getElementById('namaBarang').value;
@@ -159,10 +179,42 @@ function tampilkanStok(){
 let data=JSON.parse(localStorage.getItem('stok')||'{}');
 let div=document.getElementById('dataStok');
 div.innerHTML='';
-for(let nama in data){
-div.innerHTML+=`<div class='card'>${nama}: ${data[nama]}</div>`;
-}
+for(let nama in data){div.innerHTML+=`<div class='card'>${nama}: ${data[nama]}</div>`}
 }
 
+// KARYAWAN
+function tambahKaryawan(){
+let nama=document.getElementById('namaBaru').value;
+if(!nama)return;
+karyawan.push(nama);
+localStorage.setItem('karyawan',JSON.stringify(karyawan));
+renderSemua();
+}
+
+function renderKaryawan(){
+let div=document.getElementById('listKaryawan');
+div.innerHTML='';
+karyawan.forEach((n,i)=>{
+div.innerHTML+=`<div class='card'>${n} <button onclick='hapusKaryawan(${i})'>Hapus</button></div>`;
+});
+}
+
+function hapusKaryawan(i){
+karyawan.splice(i,1);
+localStorage.setItem('karyawan',JSON.stringify(karyawan));
+renderSemua();
+}
+
+function renderSemua(){
+loadNama();
+renderForm();
+renderKaryawan();
+tampilAbsen();
+tampilkan();
+dashboard();
+tampilkanStok();
+}
+
+renderSemua();
 </script></body>
 </html>
