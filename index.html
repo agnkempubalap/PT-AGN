@@ -3,59 +3,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Absensi PT-AGN</title><script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><style>
-body{
-  font-family:sans-serif;
-  background:linear-gradient(to bottom,#6fa8dc,#cfe2f3);
-  margin:0;padding:15px;
-}
-.card{
-  background:#fff;
-  border-radius:15px;
-  padding:15px;
-  margin-bottom:15px;
-  box-shadow:0 4px 10px rgba(0,0,0,0.1);
-}
-button{
-  width:100%;
-  padding:12px;
-  border:none;
-  border-radius:10px;
-  margin:5px 0;
-  color:#fff;
-  font-weight:bold;
-}
-.green{background:#2ecc71}
-.orange{background:#f39c12}
-.red{background:#e74c3c}
-.blue{background:#3498db}
-input,select{
-  width:100%;
-  padding:10px;
-  border-radius:8px;
-  margin:5px 0;
-}
+body{font-family:sans-serif;background:linear-gradient(to bottom,#6fa8dc,#cfe2f3);margin:0;padding:15px}
+.card{background:#fff;border-radius:15px;padding:15px;margin-bottom:15px;box-shadow:0 4px 10px rgba(0,0,0,0.1)}
+button{width:100%;padding:12px;border:none;border-radius:10px;margin:5px 0;color:#fff;font-weight:bold}
+.green{background:#2ecc71}.orange{background:#f39c12}.red{background:#e74c3c}.blue{background:#3498db}
+input,select{width:100%;padding:10px;border-radius:8px;margin:5px 0}
 .flex{display:flex;gap:10px}
 .box{flex:1;padding:10px;border-radius:10px;color:#fff;text-align:center}
-.b1{background:#3498db}
-.b2{background:#2ecc71}
-.b3{background:#f1c40f}
-
-/* TOAST */
-#toast{
-  position:fixed;
-  bottom:20px;
-  left:50%;
-  transform:translateX(-50%);
-  background:#333;
-  color:#fff;
-  padding:12px 20px;
-  border-radius:10px;
-  opacity:0;
-  transition:0.3s;
-  z-index:999;
-}
+.b1{background:#3498db}.b2{background:#2ecc71}.b3{background:#f1c40f}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:12px 20px;border-radius:10px;opacity:0;transition:.3s}
 .show{opacity:1}
-</style></head><body><div id="toast"></div><div class="card">
+</style></head>
+<body><div id="toast"></div><div class="card">
 <h3>📋 Absensi PT-AGN</h3>
 <select id="nama">
 <option>Agung</option>
@@ -77,7 +36,7 @@ input,select{
 <div class="box b3" id="telat">0</div>
 </div>
 </div><div class="card">
-<h4>Grafik</h4>
+<h4>Grafik Harian</h4>
 <canvas id="chart"></canvas>
 </div><div id="list"></div><script>
 let data = JSON.parse(localStorage.getItem("absensi")) || [];
@@ -112,6 +71,10 @@ function save(){
   render();
 }
 
+function isTelat(jam){
+  return jam > "08:00:00";
+}
+
 function absenMasuk(){
   let n = namaSelect.value;
   let t = now();
@@ -119,8 +82,10 @@ function absenMasuk(){
   let cek = data.find(x=>x.nama==n && x.tanggal==t.tanggal);
   if(cek){toast("⚠️ Sudah absen masuk");return}
 
-  data.push({nama:n,tanggal:t.tanggal,masuk:t.jam,pulang:"-",status:"Hadir",bulan:new Date().getMonth()+1});
-  toast("✅ Absen masuk berhasil");
+  let status = isTelat(t.jam) ? "Telat" : "Hadir";
+
+  data.push({nama:n,tanggal:t.tanggal,masuk:t.jam,pulang:"-",status:status,bulan:new Date().getMonth()+1});
+  toast(status=="Telat" ? "⏰ Kamu telat!" : "✅ Absen masuk berhasil");
   save();
 }
 
@@ -156,20 +121,30 @@ function render(){
   ${x.tanggal}<br>
   Masuk: ${x.masuk}<br>
   Pulang: ${x.pulang}<br>
-  <span style="background:#2ecc71;color:#fff;padding:3px 8px;border-radius:5px">${x.status}</span>
+  <span style="background:${x.status=='Telat'?'#e74c3c':'#2ecc71'};color:#fff;padding:3px 8px;border-radius:5px">${x.status}</span>
   </div>`).join("");
 
-  document.getElementById("total").innerText = filtered.length;
-  document.getElementById("hadir").innerText = filtered.length;
-  document.getElementById("telat").innerText = 0;
+  let hadir = filtered.filter(x=>x.status=="Hadir").length;
+  let telat = filtered.filter(x=>x.status=="Telat").length;
 
-  chart.data.labels = ["Hadir"];
-  chart.data.datasets[0].data = [filtered.length];
+  document.getElementById("total").innerText = filtered.length;
+  document.getElementById("hadir").innerText = hadir;
+  document.getElementById("telat").innerText = telat;
+
+  // Grafik per tanggal
+  let group = {};
+  filtered.forEach(x=>{
+    if(!group[x.tanggal]) group[x.tanggal]=0;
+    group[x.tanggal]++;
+  });
+
+  chart.data.labels = Object.keys(group);
+  chart.data.datasets[0].data = Object.values(group);
   chart.update();
 }
 
 const ctx = document.getElementById('chart');
-const chart = new Chart(ctx,{type:'bar',data:{labels:[],datasets:[{label:'Jumlah',data:[]}]}});
+const chart = new Chart(ctx,{type:'bar',data:{labels:[],datasets:[{label:'Absensi Harian',data:[]}]}});
 
 function exportExcel(){
   let ws = XLSX.utils.json_to_sheet(data);
@@ -185,7 +160,7 @@ async function exportPDF(){
   doc.text("Laporan Absensi PT-AGN", 10,10);
 
   data.forEach((d,i)=>{
-    doc.text(`${i+1}. ${d.nama} ${d.tanggal} ${d.masuk}-${d.pulang}`,10,20+(i*10));
+    doc.text(`${i+1}. ${d.nama} ${d.tanggal} ${d.masuk}-${d.pulang} (${d.status})`,10,20+(i*10));
   });
 
   doc.save("absensi.pdf");
