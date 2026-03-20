@@ -7,29 +7,28 @@
 <style>
 body {
   font-family: Arial;
-  margin:0;
   background:#eef3ff;
+  margin:0;
 }
 
-.page { display:none; padding:15px; }
-.active { display:block; }
+.container {
+  padding:15px;
+}
 
-h2 { color:#2c3e50; }
-
-/* CARD */
 .card {
   background:white;
   padding:15px;
   border-radius:15px;
-  margin-top:10px;
   box-shadow:0 4px 10px rgba(0,0,0,0.1);
+  margin-top:10px;
 }
 
-/* INPUT */
+h2 { margin:0 0 10px; }
+
 select, button {
   width:100%;
   padding:12px;
-  margin:5px 0;
+  margin-top:8px;
   border-radius:10px;
   border:1px solid #ccc;
 }
@@ -41,90 +40,56 @@ button {
   border:none;
 }
 
-/* LIST */
 .list-item {
-  background:#f8f9ff;
+  background:#f5f7ff;
   padding:10px;
-  margin:5px 0;
+  margin-top:5px;
   border-radius:10px;
   display:flex;
   justify-content:space-between;
 }
 
-/* REKAP */
-.rekap-box {
+.rekap {
   background:#4CAF50;
   color:white;
   padding:10px;
+  margin-top:5px;
   border-radius:10px;
-  margin:5px 0;
   display:flex;
   justify-content:space-between;
-}
-
-/* NAV */
-.nav {
-  position:fixed;
-  bottom:0;
-  width:100%;
-  display:flex;
-  background:white;
-  border-top:1px solid #ccc;
-}
-
-.nav button {
-  flex:1;
-  background:white;
-  color:#333;
 }
 </style>
 </head>
 
 <body>
 
-<!-- DASHBOARD -->
-<div id="dashboard" class="page active">
-<h2>Dashboard</h2>
-<div class="card">Aplikasi Absensi PT AGN</div>
-</div>
+<div class="container">
 
-<!-- ABSENSI -->
-<div id="absensi" class="page">
-<h2>Absensi Hari Ini</h2>
+<h2>📋 Absensi Karyawan</h2>
 
 <div class="card">
+
+<h3>Absensi Hari Ini</h3>
 
 <select id="nama">
 <option>Agung</option>
 <option>Hasan</option>
-<option>Hata</option>
+<option>Hatta</option>
 <option>Alda</option>
 <option>Nur</option>
 </select>
 
-<button id="btnAbsen" onclick="absen()">Hadir</button>
+<button id="btnAbsen">Hadir</button>
 
-<h3>Data Hari Ini</h3>
-<div id="listAbsen"></div>
+<h3>List Hari Ini</h3>
+<div id="list">Loading...</div>
 
 <h3>Rekap Bulanan</h3>
-<div id="rekapBulanan"></div>
+<div id="rekap">Loading...</div>
 
 </div>
-</div>
 
-<!-- NAV -->
-<div class="nav">
-<button onclick="show('dashboard')">Home</button>
-<button onclick="show('absensi')">Absensi</button>
 </div>
-
-<script>
-function show(id){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
-</script>
 
 <!-- FIREBASE -->
 <script type="module">
@@ -139,12 +104,11 @@ import {
   getDoc,
   onSnapshot,
   query,
-  orderBy,
   where
 } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
 
 
-// 🔥 CONFIG (PUNYA KAMU - SUDAH BENAR)
+// CONFIG KAMU (SUDAH BENAR)
 const firebaseConfig = {
   apiKey: "AIzaSyAu67MAhW8xdmciPi3xOKwHdy-uP4u9tXI",
   authDomain: "pt-agn.firebaseapp.com",
@@ -154,13 +118,11 @@ const firebaseConfig = {
   appId: "1:810494462386:web:432a3050c054bdd8437cab"
 };
 
-
-// INIT
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 
-// 📅 FORMAT TANGGAL
+// FORMAT TANGGAL
 function getTanggal(){
   let d = new Date();
   return d.getFullYear() + "-" +
@@ -169,24 +131,26 @@ function getTanggal(){
 }
 
 
-// 🚫 ABSEN (ANTI DOUBLE SUPER)
-window.absen = async function(){
+// 🔥 ABSEN SUPER ANTI DOUBLE
+document.getElementById("btnAbsen").onclick = async function(){
 
-  const btn = document.getElementById("btnAbsen");
+  const btn = this;
+  if(btn.disabled) return;
+
   btn.disabled = true;
   btn.innerText = "Loading...";
 
   let nama = document.getElementById("nama").value;
   let tanggal = getTanggal();
-  let docId = nama + "_" + tanggal;
+  let id = nama + "_" + tanggal;
 
   try {
 
-    const ref = doc(db, "absensi", docId);
+    const ref = doc(db, "absensi", id);
     const snap = await getDoc(ref);
 
     if(snap.exists()){
-      alert("❌ " + nama + " sudah absen hari ini!");
+      alert("❌ Sudah absen hari ini");
       btn.disabled = false;
       btn.innerText = "Hadir";
       return;
@@ -196,7 +160,7 @@ window.absen = async function(){
       nama: nama,
       status: "Hadir",
       tanggal: tanggal,
-      waktu: new Date()
+      waktu: Date.now()
     });
 
     alert("✅ Absen berhasil");
@@ -210,17 +174,15 @@ window.absen = async function(){
 };
 
 
-// 📋 REALTIME HARI INI
-function realtime(){
+// 📋 REALTIME LIST
+function loadList(){
 
-  const list = document.getElementById("listAbsen");
-
+  const list = document.getElementById("list");
   let tanggal = getTanggal();
 
   const q = query(
     collection(db, "absensi"),
-    where("tanggal", "==", tanggal),
-    orderBy("waktu", "desc")
+    where("tanggal", "==", tanggal)
   );
 
   onSnapshot(q, (snap)=>{
@@ -228,7 +190,7 @@ function realtime(){
     list.innerHTML = "";
 
     if(snap.empty){
-      list.innerHTML = "<div class='list-item'>Belum ada absen</div>";
+      list.innerHTML = "Belum ada absen";
       return;
     }
 
@@ -248,21 +210,20 @@ function realtime(){
 
 
 // 📊 REKAP BULANAN
-function rekapBulanan(){
+function loadRekap(){
 
-  const list = document.getElementById("rekapBulanan");
+  const el = document.getElementById("rekap");
 
-  let now = new Date();
-  let prefix = now.getFullYear() + "-" + (now.getMonth()+1).toString().padStart(2,'0');
-
-  const q = query(collection(db, "absensi"));
+  const q = collection(db, "absensi");
 
   onSnapshot(q, (snap)=>{
 
     let data = {};
+    let now = new Date();
+    let prefix = now.getFullYear() + "-" + (now.getMonth()+1).toString().padStart(2,'0');
 
     snap.forEach(doc=>{
-      let d = doc.data();
+      const d = doc.data();
 
       if(d.tanggal && d.tanggal.startsWith(prefix)){
         if(!data[d.nama]) data[d.nama]=0;
@@ -270,18 +231,18 @@ function rekapBulanan(){
       }
     });
 
-    list.innerHTML = "";
+    el.innerHTML = "";
 
     if(Object.keys(data).length === 0){
-      list.innerHTML = "<div class='list-item'>Belum ada data</div>";
+      el.innerHTML = "Belum ada data";
       return;
     }
 
-    for(let nama in data){
-      list.innerHTML += `
-        <div class="rekap-box">
-          <span>${nama}</span>
-          <span>${data[nama]} hari</span>
+    for(let n in data){
+      el.innerHTML += `
+        <div class="rekap">
+          <span>${n}</span>
+          <span>${data[n]} hari</span>
         </div>
       `;
     }
@@ -290,11 +251,9 @@ function rekapBulanan(){
 }
 
 
-// LOAD
-window.onload = function(){
-  realtime();
-  rekapBulanan();
-};
+// LOAD AWAL
+loadList();
+loadRekap();
 
 </script>
 
