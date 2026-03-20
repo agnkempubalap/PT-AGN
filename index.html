@@ -12,29 +12,35 @@ body{
   background:linear-gradient(135deg,#dbeafe,#bfdbfe);
 }
 
-/* NAV */
+/* NAV FIX (SCROLLABLE) */
 .nav{
   display:flex;
+  overflow-x:auto;
+  white-space:nowrap;
   background:#fff;
-  box-shadow:0 2px 6px rgba(0,0,0,0.1);
   position:sticky;
   top:0;
   z-index:10;
+  box-shadow:0 2px 6px rgba(0,0,0,0.1);
 }
+.nav::-webkit-scrollbar{display:none;}
+
 .nav button{
-  flex:1;
-  padding:12px;
+  flex:none;
+  padding:12px 16px;
   border:none;
   background:none;
   font-weight:600;
+  font-size:14px;
 }
+
 .nav .active{
   color:#2563eb;
   border-bottom:3px solid #2563eb;
 }
 
 /* PAGE */
-.page{display:none;padding:10px;}
+.page{display:none;padding:12px;}
 .page.active{display:block;}
 
 /* CARD */
@@ -47,7 +53,7 @@ body{
 }
 
 /* BUTTON */
-button{
+button.action{
   width:100%;
   padding:12px;
   margin:6px 0;
@@ -84,6 +90,7 @@ input,select{
 .b1{background:#3b82f6}
 .b2{background:#22c55e}
 .b3{background:#f59e0b}
+
 </style>
 </head>
 
@@ -114,9 +121,9 @@ Sistem siap digunakan
 
 <select id="nama"></select>
 
-<button class="green" onclick="masuk()">Masuk</button>
-<button class="orange" onclick="pulang()">Pulang</button>
-<button class="red" onclick="resetHari()">Reset Hari</button>
+<button class="action green" onclick="masuk()">Masuk</button>
+<button class="action orange" onclick="pulang()">Pulang</button>
+<button class="action red" onclick="resetHari()">Reset Hari</button>
 
 </div>
 
@@ -172,8 +179,12 @@ function showPage(id,btn){
 let data = JSON.parse(localStorage.getItem("absensi")) || [];
 let karyawan = JSON.parse(localStorage.getItem("karyawan")) || ["Agung","Alda","Nur","Budi","Siti"];
 
+// LOAD NAMA
 const nama = document.getElementById("nama");
-nama.innerHTML = karyawan.map(n=>`<option>${n}</option>`);
+function loadNama(){
+ nama.innerHTML = karyawan.map(n=>`<option>${n}</option>`).join("");
+}
+loadNama();
 
 // FILTER
 const bulan = document.getElementById("bulan");
