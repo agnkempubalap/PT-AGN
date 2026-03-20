@@ -82,4 +82,69 @@ function show(id){
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
-import
+import { getFirestore, collection, addDoc, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAu67MAhW8xdmciPi3xOKwHdy-uP4u9tXI",
+  authDomain: "pt-agn.firebaseapp.com",
+  projectId: "pt-agn",
+  storageBucket: "pt-agn.firebasestorage.app",
+  messagingSenderId: "810494462386",
+  appId: "1:810494462386:web:432a3050c054bdd8437cab"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// 🔥 ABSEN
+window.absen = async function(){
+
+  let nama = document.getElementById("nama").value;
+  console.log("Dipilih:", nama);
+
+  try {
+    await addDoc(collection(db, "absensi"), {
+      nama: nama,
+      status: "Hadir",
+      waktu: serverTimestamp()
+    });
+
+    alert("Absen berhasil ✅");
+
+    tampilAbsen();
+
+  } catch (e) {
+    console.error(e);
+    alert("Gagal: " + e.message);
+  }
+}
+
+// 🔥 TAMPIL DATA
+async function tampilAbsen(){
+  let list = document.getElementById("listAbsen");
+  list.innerHTML = "";
+
+  try {
+    const snapshot = await getDocs(collection(db, "absensi"));
+
+    snapshot.forEach(doc=>{
+      let d = doc.data();
+
+      let li = document.createElement("li");
+      li.innerText = d.nama + " - " + d.status;
+
+      list.appendChild(li);
+    });
+
+  } catch (e) {
+    console.error("Load error:", e);
+  }
+}
+
+// LOAD AWAL
+window.onload = tampilAbsen;
+
+</script>
+
+</body>
+</html>
