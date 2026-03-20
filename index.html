@@ -2,85 +2,94 @@
 <html>
 <head>
   <title>Absensi Karyawan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
   <style>
     body {
-      font-family: Arial;
-      background:#f0f2f5;
-      padding:20px;
+      font-family: sans-serif;
+      background: #eef1f5;
+      padding: 20px;
     }
-    h1 {text-align:center;}
+
+    h2 { text-align: center; }
 
     .card {
-      background:white;
-      padding:15px;
-      border-radius:12px;
-      margin-bottom:15px;
-      box-shadow:0 2px 8px rgba(0,0,0,0.1);
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
 
     select, button {
-      width:100%;
-      padding:12px;
-      margin-top:10px;
-      border-radius:8px;
-      border:1px solid #ccc;
-      font-size:16px;
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 8px;
+      border: none;
+      font-size: 16px;
     }
 
-    .btn-masuk {background:green;color:white;}
-    .btn-pulang {background:orange;color:white;}
-    .btn-reset {background:red;color:white;}
+    .masuk { background: green; color: white; }
+    .pulang { background: orange; color: white; }
+    .reset { background: red; color: white; }
+
+    .item {
+      background: #f0f0f0;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 8px;
+    }
 
     .calendar {
-      display:grid;
+      display: grid;
       grid-template-columns: repeat(7,1fr);
-      gap:5px;
-      margin-top:10px;
+      gap: 5px;
     }
 
     .day {
-      padding:10px;
-      text-align:center;
-      border-radius:6px;
-      background:#eee;
-      font-size:12px;
+      padding: 8px;
+      border-radius: 6px;
+      text-align: center;
+      font-size: 12px;
     }
 
-    .hadir {background:#4caf50;color:white;}
-    .telat {background:#f44336;color:white;}
-    .kosong {background:#ddd;}
-
+    .hadir { background: #4caf50; color: white; }
+    .telat { background: #ff9800; color: white; }
+    .absen { background: #f44336; color: white; }
   </style>
 </head>
 
 <body>
 
-<h1>📋 Absensi Karyawan</h1>
+<h2>📋 Absensi Karyawan</h2>
 
 <div class="card">
   <select id="nama"></select>
-
-  <button class="btn-masuk" onclick="absenMasuk()">Absen Masuk</button>
-  <button class="btn-pulang" onclick="absenPulang()">Absen Pulang</button>
-  <button class="btn-reset" onclick="resetHari()">Reset Hari Ini</button>
+  <button class="masuk" onclick="absenMasuk()">Absen Masuk</button>
+  <button class="pulang" onclick="absenPulang()">Absen Pulang</button>
+  <button class="reset" onclick="resetHari()">Reset Hari Ini</button>
 </div>
 
 <div class="card">
-  <h3>📅 Hari Ini</h3>
-  <div id="today"></div>
+  <b>📅 Hari Ini</b>
+  <div id="list"></div>
 </div>
 
 <div class="card">
-  <h3>📊 Kalender Bulan Ini</h3>
+  <b>📆 Kalender Bulan Ini</b>
   <div id="calendar" class="calendar"></div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, query, where, deleteDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+import {
+  getFirestore, collection, getDocs,
+  addDoc, query, where
+} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "ISI_API_KEY_KAMU",
+  apiKey: "ISI PUNYAMU",
   authDomain: "pt-agn.firebaseapp.com",
   projectId: "pt-agn"
 };
@@ -88,122 +97,124 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-let karyawanList = [];
+const jamMasuk = "09:00";
+const jamPulang = "16:00";
 
-// ================= LOAD KARYAWAN =================
+function today() {
+  return new Date().toISOString().slice(0,10);
+}
+
+function nowTime() {
+  return new Date().toLocaleTimeString();
+}
+
 async function loadKaryawan() {
-  const q = query(collection(db, "karyawan"), where("aktif", "==", true));
-  const snap = await getDocs(q);
-
+  const snap = await getDocs(collection(db, "karyawan"));
   let html = "";
+
   snap.forEach(doc => {
-    let nama = doc.data().nama;
-    karyawanList.push(nama);
-    html += `<option>${nama}</option>`;
+    const d = doc.data();
+    if (d.aktif === true) {
+      html += `<option value="${d.nama}">${d.nama}</option>`;
+    }
   });
 
   document.getElementById("nama").innerHTML = html;
 }
 
-// ================= ABSEN MASUK =================
-window.absenMasuk = async () => {
+window.absenMasuk = async function() {
   const nama = document.getElementById("nama").value;
-  const now = new Date();
-  const jam = now.toLocaleTimeString();
-  const tanggal = now.toISOString().split("T")[0];
 
-  let status = now.getHours() >= 9 ? "Telat" : "Hadir";
+  const q = query(
+    collection(db, "absensi"),
+    where("nama","==",nama),
+    where("tanggal","==",today())
+  );
 
-  await addDoc(collection(db,"absensi"),{
-    nama, tanggal, masuk: jam, status
-  });
-
-  loadHariIni();
-  loadKalender();
-}
-
-// ================= ABSEN PULANG =================
-window.absenPulang = async () => {
-  const nama = document.getElementById("nama").value;
-  const now = new Date();
-  const jam = now.toLocaleTimeString();
-  const tanggal = now.toISOString().split("T")[0];
-
-  await addDoc(collection(db,"absensi"),{
-    nama, tanggal, pulang: jam
-  });
-
-  loadHariIni();
-}
-
-// ================= RESET =================
-window.resetHari = async () => {
-  const today = new Date().toISOString().split("T")[0];
-  const q = query(collection(db,"absensi"), where("tanggal","==",today));
   const snap = await getDocs(q);
+
+  if (!snap.empty) {
+    alert("Sudah absen!");
+    return;
+  }
+
+  const waktu = nowTime();
+  const telat = waktu > jamMasuk;
+
+  await addDoc(collection(db,"absensi"),{
+    nama,
+    tanggal: today(),
+    masuk: waktu,
+    pulang: "",
+    status: telat ? "Telat" : "Hadir"
+  });
+
+  loadData();
+};
+
+window.absenPulang = async function() {
+  const nama = document.getElementById("nama").value;
+
+  const q = query(
+    collection(db,"absensi"),
+    where("nama","==",nama),
+    where("tanggal","==",today())
+  );
+
+  const snap = await getDocs(q);
+
+  if (snap.empty) return alert("Belum absen masuk");
 
   snap.forEach(async d => {
-    await deleteDoc(d.ref);
+    await addDoc(collection(db,"absensi"),{
+      ...d.data(),
+      pulang: nowTime()
+    });
   });
 
-  alert("Reset berhasil");
-  loadHariIni();
-  loadKalender();
-}
+  loadData();
+};
 
-// ================= HARI INI =================
-async function loadHariIni() {
-  const today = new Date().toISOString().split("T")[0];
-  const q = query(collection(db,"absensi"), where("tanggal","==",today));
-  const snap = await getDocs(q);
+window.resetHari = async function() {
+  alert("Reset manual di Firebase (hapus data hari ini)");
+};
 
+async function loadData() {
+  const snap = await getDocs(collection(db,"absensi"));
   let html = "";
 
-  snap.forEach(doc=>{
-    let d = doc.data();
-    html += `<div>${d.nama} - ${d.masuk || "-"} (${d.status || "-"})</div>`;
+  snap.forEach(doc => {
+    const d = doc.data();
+    if (d.tanggal === today()) {
+      html += `
+        <div class="item">
+          ${d.nama}<br>
+          Masuk: ${d.masuk || "-"}<br>
+          Pulang: ${d.pulang || "-"}<br>
+          Status: ${d.status}
+        </div>
+      `;
+    }
   });
 
-  document.getElementById("today").innerHTML = html;
+  document.getElementById("list").innerHTML = html;
+
+  renderCalendar(snap);
 }
 
-// ================= KALENDER =================
-async function loadKalender() {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
-
-  const q = await getDocs(collection(db,"absensi"));
-
-  let data = {};
-
-  q.forEach(doc=>{
-    let d = doc.data();
-    let day = d.tanggal.split("-")[2];
-    data[day] = d.status;
-  });
-
+function renderCalendar(snap) {
   let html = "";
 
-  for(let i=1;i<=31;i++){
-    let status = data[i];
-    let cls = "day kosong";
-
-    if(status=="Hadir") cls="day hadir";
-    if(status=="Telat") cls="day telat";
-
-    html += `<div class="${cls}">${i}</div>`;
+  for (let i=1;i<=31;i++) {
+    html += `<div class="day">${i}</div>`;
   }
 
   document.getElementById("calendar").innerHTML = html;
 }
 
-// ================= INIT =================
 loadKaryawan();
-loadHariIni();
-loadKalender();
+loadData();
 
 </script>
-
 </body>
 </html>
