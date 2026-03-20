@@ -2,8 +2,8 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
@@ -49,6 +49,11 @@ button{width:100%;padding:10px;margin:5px 0;border:none;border-radius:10px;color
 <select id="editNama"></select>
 <input id="namaBaru" placeholder="Nama baru">
 <button class="orange" onclick="editKaryawan()">Edit Nama</button>
+
+<h4>Ganti PIN</h4>
+<input type="password" id="pinLama" placeholder="PIN lama">
+<input type="password" id="pinBaru" placeholder="PIN baru">
+<button class="blue" onclick="gantiPin()">Ganti PIN</button>
 
 </div>
 
@@ -99,55 +104,78 @@ const firebaseConfig={
 firebase.initializeApp(firebaseConfig);
 const db=firebase.database();
 
-let data=[],karyawan=[];
+let data=[],karyawan=[],PIN_GLOBAL="1234";
+let SESSION_ID=Date.now();
 
-// ===== AUTO BACKUP =====
-function backupKaryawan(){
- localStorage.setItem("backup_karyawan", JSON.stringify(karyawan));
+// ===== PIN GLOBAL =====
+db.ref("config/pin").on("value",s=>{
+ if(s.exists()) PIN_GLOBAL=s.val();
+ else db.ref("config/pin").set("1234");
+});
+
+// ===== SESSION CHECK =====
+db.ref("config/session").on("value",s=>{
+ let server=s.val();
+ let local=localStorage.getItem("session");
+
+ if(local && server && local!=server){
+  alert("Session berakhir");
+  localStorage.clear();
+  location.reload();
+ }
+});
+
+// ===== BACKUP =====
+function backupAll(){
+ localStorage.setItem("backup_karyawan",JSON.stringify(karyawan));
+ let time=new Date().toISOString();
+ db.ref("backup_karyawan_history/"+time).set({karyawan});
 }
-
 function restoreBackup(){
- let b = localStorage.getItem("backup_karyawan");
- return b ? JSON.parse(b) : null;
+ let b=localStorage.getItem("backup_karyawan");
+ return b?JSON.parse(b):null;
 }
 
-// ===== LOAD =====
+// ===== LOAD DATA =====
 db.ref("absensi").on("value",s=>{
  data=s.val()||[];
  render();
 });
 
 db.ref("karyawan").on("value",s=>{
+ if(!s.exists()||s.val().length===0){
+  let b=restoreBackup();
+  karyawan=b&&b.length?b:["Agung","Alda","Nur","Budi","Siti"];
+  db.ref("karyawan").set(karyawan);
+ }else karyawan=s.val();
 
- if(!s.exists() || s.val().length===0){
-
-   let backup = restoreBackup();
-
-   if(backup && backup.length){
-     karyawan = backup;
-   }else{
-     karyawan = ["Agung","Alda","Nur","Budi","Siti"];
-   }
-
-   db.ref("karyawan").set(karyawan);
-
- }else{
-   karyawan = s.val();
- }
-
- backupKaryawan(); // 🔥 simpan backup setiap load
+ backupAll();
  updateDrop();
 });
 
 // ===== LOGIN =====
-let PIN=localStorage.getItem("PIN")||"1234";
 function login(){
- if(pin.value==PIN){
+ if(pin.value==PIN_GLOBAL){
+
   localStorage.setItem("login",true);
+  localStorage.setItem("session",SESSION_ID);
+  db.ref("config/session").set(SESSION_ID);
+
+  db.ref("config/logs/"+Date.now()).set({type:"login_success"});
+
+  navigator.vibrate(200);
+  new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg").play();
+
   loginBox.style.display="none";
   app.style.display="block";
- }else alert("PIN salah");
+
+ }else{
+  navigator.vibrate([100,50,100]);
+  db.ref("config/logs/"+Date.now()).set({type:"login_failed"});
+  alert("PIN salah");
+ }
 }
+
 if(localStorage.getItem("login")){
  loginBox.style.display="none";
  app.style.display="block";
@@ -166,7 +194,7 @@ function tambahKaryawan(){
  if(!karyawanBaru.value)return;
  karyawan.push(karyawanBaru.value);
  db.ref("karyawan").set(karyawan);
- backupKaryawan();
+ backupAll();
  karyawanBaru.value="";
 }
 
@@ -179,7 +207,7 @@ function hapusKaryawan(){
 
  db.ref("karyawan").set(karyawan);
  db.ref("absensi").set(data);
- backupKaryawan();
+ backupAll();
 }
 
 function editKaryawan(){
@@ -195,9 +223,38 @@ function editKaryawan(){
 
  db.ref("karyawan").set(karyawan);
  db.ref("absensi").set(data);
- backupKaryawan();
-
+ backupAll();
  namaBaru.value="";
+}
+
+// ===== GANTI PIN =====
+function gantiPin(){
+
+ if(pinLama.value!==PIN_GLOBAL){
+  alert("PIN lama salah");
+  navigator.vibrate([100,50,100]);
+  return;
+ }
+
+ if(pinBaru.value.length<4){
+  alert("Minimal 4 digit");
+  return;
+ }
+
+ db.ref("config/pin").set(pinBaru.value);
+
+ let newSession=Date.now();
+ db.ref("config/session").set(newSession);
+
+ db.ref("config/logs/"+Date.now()).set({type:"change_pin"});
+
+ navigator.vibrate(300);
+ new Audio("https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg").play();
+
+ alert("PIN diganti, semua device logout");
+
+ pinLama.value="";
+ pinBaru.value="";
 }
 
 // ===== WAKTU =====
@@ -244,18 +301,6 @@ setInterval(()=>{
  }
 },60000);
 
-// ===== RANKING =====
-function rank(){
- let r={};
- data.forEach(x=>{
-  if(!r[x.nama])r[x.nama]={score:0};
-  if(x.status=="Hadir")r[x.nama].score+=3;
-  if(x.status=="Telat")r[x.nama].score+=1;
-  if(x.status=="Alpa")r[x.nama].score-=3;
- });
- return Object.entries(r).map(([n,v])=>({n,...v})).sort((a,b)=>b.score-a.score);
-}
-
 // ===== RENDER =====
 let chart,chart2;
 
@@ -275,21 +320,30 @@ hadirBox.innerText=data.filter(x=>x.status=="Hadir").length;
 telatBox.innerText=data.filter(x=>x.status=="Telat").length;
 alpaBox.innerText=data.filter(x=>x.status=="Alpa").length;
 
-let r=rank();
-ranking.innerHTML=r.map((x,i)=>`#${i+1} ${x.n} (${x.score})`).join("<br>");
+let r={};
+data.forEach(x=>{
+ if(!r[x.nama])r[x.nama]={score:0};
+ if(x.status=="Hadir")r[x.nama].score+=3;
+ if(x.status=="Telat")r[x.nama].score+=1;
+ if(x.status=="Alpa")r[x.nama].score-=3;
+});
+ranking.innerHTML=Object.entries(r)
+.map(([n,v])=>({n,...v}))
+.sort((a,b)=>b.score-a.score)
+.map((x,i)=>`#${i+1} ${x.n} (${x.score})`).join("<br>");
 
 let h=data.filter(x=>x.status=="Hadir").length;
 let t=data.filter(x=>x.status=="Telat").length;
 let a=data.filter(x=>x.status=="Alpa").length;
 
 if(chart)chart.destroy();
-chart=new Chart(chart,{type:'bar',data:{labels:["Hadir","Telat","Alpa"],datasets:[{label:"Absensi",data:[h,t,a]}]}});
+chart=new Chart(chart,{type:'bar',data:{labels:["Hadir","Telat","Alpa"],datasets:[{data:[h,t,a]}]}});
 
 let n=pilih.value;
 let d=data.filter(x=>x.nama==n);
 
 if(chart2)chart2.destroy();
-chart2=new Chart(chart2,{type:'bar',data:{labels:["Hadir","Telat","Alpa"],datasets:[{label:n,data:[
+chart2=new Chart(chart2,{type:'bar',data:{labels:["Hadir","Telat","Alpa"],datasets:[{data:[
 d.filter(x=>x.status=="Hadir").length,
 d.filter(x=>x.status=="Telat").length,
 d.filter(x=>x.status=="Alpa").length
@@ -306,7 +360,7 @@ function kirimWA(){
  window.open(`https://wa.me/${wa.value}?text=${encodeURIComponent(txt)}`);
 }
 
-// ===== LAPORAN BULANAN =====
+// ===== LAPORAN =====
 function generateLaporan(){
  if(!bulan.value)return "Pilih bulan";
  let hasil={};
