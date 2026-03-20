@@ -2,207 +2,194 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Absensi PT-AGN Ultimate</title><!-- LIBRARY --><script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script><style>
+<title>Absensi PT-AGN</title><script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><style>
 body{
-  font-family: sans-serif;
-  margin:0;
-  background: linear-gradient(to bottom,#6ea8dc,#cfe2f3);
-}
-.container{
-  padding:15px;
+  font-family:sans-serif;
+  background:linear-gradient(to bottom,#6fa8dc,#cfe2f3);
+  margin:0;padding:15px;
 }
 .card{
-  background:white;
-  padding:15px;
+  background:#fff;
   border-radius:15px;
+  padding:15px;
   margin-bottom:15px;
-  box-shadow:0 5px 10px rgba(0,0,0,0.1);
+  box-shadow:0 4px 10px rgba(0,0,0,0.1);
 }
 button{
   width:100%;
   padding:12px;
   border:none;
   border-radius:10px;
-  margin-top:8px;
-  color:white;
+  margin:5px 0;
+  color:#fff;
   font-weight:bold;
 }
-.green{background:#28a745}
+.green{background:#2ecc71}
 .orange{background:#f39c12}
 .red{background:#e74c3c}
 .blue{background:#3498db}
-
-select,input{
+input,select{
   width:100%;
   padding:10px;
-  border-radius:10px;
-  border:1px solid #ccc;
-  margin-top:8px;
+  border-radius:8px;
+  margin:5px 0;
 }
-.dashboard{
-  display:flex;
-  gap:10px;
-}
-.box{
-  flex:1;
-  padding:15px;
-  border-radius:10px;
-  color:white;
-  text-align:center;
-}
-.b1{background:#2d7be5}
-.b2{background:#1abc9c}
+.flex{display:flex;gap:10px}
+.box{flex:1;padding:10px;border-radius:10px;color:#fff;text-align:center}
+.b1{background:#3498db}
+.b2{background:#2ecc71}
 .b3{background:#f1c40f}
-</style></head><body>
-<div class="container"><div class="card">
-<h2>📋 Absensi PT-AGN</h2>
-<select id="nama"></select>
-<button class="green" onclick="absenMasuk()">Absen Masuk</button>
-<button class="orange" onclick="absenPulang()">Absen Pulang</button>
-<button class="red" onclick="resetData()">Reset Hari Ini</button>
-<button class="blue" onclick="exportExcel()">Export Excel</button>
-<button class="blue" onclick="exportPDF()">Export PDF</button>
+
+/* TOAST */
+#toast{
+  position:fixed;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#333;
+  color:#fff;
+  padding:12px 20px;
+  border-radius:10px;
+  opacity:0;
+  transition:0.3s;
+  z-index:999;
+}
+.show{opacity:1}
+</style></head><body><div id="toast"></div><div class="card">
+<h3>📋 Absensi PT-AGN</h3>
+<select id="nama">
+<option>Agung</option>
+<option>Alda</option>
+<option>Nur</option>
+<option>Hasan</option>
+<option>Hatta</option>
+</select><button class="green" onclick="absenMasuk()">Absen Masuk</button> <button class="orange" onclick="absenPulang()">Absen Pulang</button> <button class="red" onclick="resetHari()">Reset Hari Ini</button> <button class="blue" onclick="exportExcel()">Export Excel</button> <button class="blue" onclick="exportPDF()">Export PDF</button>
+
 </div><div class="card">
-<h3>Filter</h3>
+<h4>Filter</h4>
 <select id="bulan"></select>
-<input type="text" id="search" placeholder="Cari nama..." oninput="render()">
+<input type="text" id="search" placeholder="Cari nama...">
 </div><div class="card">
-<h3>Dashboard</h3>
-<div class="dashboard">
+<h4>Dashboard</h4>
+<div class="flex">
 <div class="box b1" id="total">0</div>
 <div class="box b2" id="hadir">0</div>
 <div class="box b3" id="telat">0</div>
 </div>
 </div><div class="card">
-<h3>Grafik</h3>
+<h4>Grafik</h4>
 <canvas id="chart"></canvas>
-</div><div id="list"></div></div><script>
-// DATA
-const karyawan=["Agung","Alda","Nur","Hasan","Hatta"];
-let data=JSON.parse(localStorage.getItem("absensi"))||[];
+</div><div id="list"></div><script>
+let data = JSON.parse(localStorage.getItem("absensi")) || [];
+const namaSelect = document.getElementById("nama");
 
-// INIT
-let select=document.getElementById("nama");
-karyawan.forEach(n=>select.innerHTML+=`<option>${n}</option>`);
-
-let bulanSelect=document.getElementById("bulan");
+const bulanSelect = document.getElementById("bulan");
 for(let i=1;i<=12;i++){
-  bulanSelect.innerHTML+=`<option value="${i}">Bulan ${i}</option>`;
+  bulanSelect.innerHTML += `<option value="${i}">Bulan ${i}</option>`;
+}
+bulanSelect.value = new Date().getMonth()+1;
+
+bulanSelect.onchange = render;
+document.getElementById("search").oninput = render;
+
+function toast(msg){
+  const t = document.getElementById("toast");
+  t.innerText = msg;
+  t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"),2000);
 }
 
-// ABSEN
 function now(){
- let d=new Date();
- return {
-  tanggal:d.toISOString().slice(0,10),
-  jam:d.toTimeString().slice(0,8),
-  bulan:d.getMonth()+1
- }
-}
-
-function absenMasuk(){
- let n=select.value;
- let t=now();
-
- let cek=data.find(x=>x.nama==n && x.tanggal==t.tanggal);
- if(cek){alert("Sudah absen masuk!");return}
-
- data.push({nama:n,tanggal:t.tanggal,masuk:t.jam,pulang:"",status:"Hadir",bulan:t.bulan});
- save();
-}
-
-function absenPulang(){
- let n=select.value;
- let t=now();
-
- let d=data.find(x=>x.nama==n && x.tanggal==t.tanggal);
- if(!d){alert("Belum absen masuk");return}
- if(d.pulang){alert("Sudah absen pulang");return}
-
- d.pulang=t.jam;
- save();
-}
-
-function resetData(){
- if(confirm("Reset hari ini?")){
-  let today=now().tanggal;
-  data=data.filter(x=>x.tanggal!=today);
-  save();
- }
+  let d=new Date();
+  return {
+    tanggal:d.toISOString().split('T')[0],
+    jam:d.toTimeString().split(' ')[0]
+  }
 }
 
 function save(){
- localStorage.setItem("absensi",JSON.stringify(data));
- render();
+  localStorage.setItem("absensi", JSON.stringify(data));
+  render();
 }
 
-// RENDER
-let chart;
+function absenMasuk(){
+  let n = namaSelect.value;
+  let t = now();
+
+  let cek = data.find(x=>x.nama==n && x.tanggal==t.tanggal);
+  if(cek){toast("⚠️ Sudah absen masuk");return}
+
+  data.push({nama:n,tanggal:t.tanggal,masuk:t.jam,pulang:"-",status:"Hadir",bulan:new Date().getMonth()+1});
+  toast("✅ Absen masuk berhasil");
+  save();
+}
+
+function absenPulang(){
+  let n = namaSelect.value;
+  let t = now();
+
+  let d = data.find(x=>x.nama==n && x.tanggal==t.tanggal);
+  if(!d){toast("❌ Belum absen masuk");return}
+  if(d.pulang!="-"){toast("⚠️ Sudah absen pulang");return}
+
+  d.pulang = t.jam;
+  toast("🏁 Absen pulang berhasil");
+  save();
+}
+
+function resetHari(){
+  let today = now().tanggal;
+  data = data.filter(x=>x.tanggal!=today);
+  toast("🔄 Data hari ini direset");
+  save();
+}
+
 function render(){
- let list=document.getElementById("list");
- list.innerHTML="";
+  let bulan = bulanSelect.value;
+  let search = document.getElementById("search").value.toLowerCase();
 
- let bulan=bulanSelect.value;
- let search=document.getElementById("search").value.toLowerCase();
+  let filtered = data.filter(x=>x.bulan==bulan && x.nama.toLowerCase().includes(search));
 
- let filtered=data.filter(x=>{
-  return (!bulan||x.bulan==bulan) && x.nama.toLowerCase().includes(search);
- });
-
- let hadir=filtered.length;
- let telat=0;
-
- document.getElementById("total").innerText=filtered.length;
- document.getElementById("hadir").innerText=hadir;
- document.getElementById("telat").innerText=telat;
-
- filtered.forEach(x=>{
-  list.innerHTML+=`
-  <div class='card'>
+  document.getElementById("list").innerHTML = filtered.map(x=>`
+  <div class="card">
   <b>${x.nama}</b><br>
   ${x.tanggal}<br>
   Masuk: ${x.masuk}<br>
-  Pulang: ${x.pulang||"-"}<br>
-  Status: ${x.status}
-  </div>`;
- });
+  Pulang: ${x.pulang}<br>
+  <span style="background:#2ecc71;color:#fff;padding:3px 8px;border-radius:5px">${x.status}</span>
+  </div>`).join("");
 
- // CHART
- let ctx=document.getElementById("chart");
- if(chart) chart.destroy();
- chart=new Chart(ctx,{
-  type:'bar',
-  data:{
-    labels:["Hadir"],
-    datasets:[{label:"Jumlah",data:[hadir]}]
-  }
- });
+  document.getElementById("total").innerText = filtered.length;
+  document.getElementById("hadir").innerText = filtered.length;
+  document.getElementById("telat").innerText = 0;
+
+  chart.data.labels = ["Hadir"];
+  chart.data.datasets[0].data = [filtered.length];
+  chart.update();
 }
 
-// EXPORT EXCEL
+const ctx = document.getElementById('chart');
+const chart = new Chart(ctx,{type:'bar',data:{labels:[],datasets:[{label:'Jumlah',data:[]}]}});
+
 function exportExcel(){
- let ws=XLSX.utils.json_to_sheet(data);
- let wb=XLSX.utils.book_new();
- XLSX.utils.book_append_sheet(wb,ws,"Absensi");
- XLSX.writeFile(wb,"absensi.xlsx");
+  let ws = XLSX.utils.json_to_sheet(data);
+  let wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Absensi");
+  XLSX.writeFile(wb, "absensi.xlsx");
+  toast("📊 Export Excel berhasil");
 }
 
-// EXPORT PDF
-function exportPDF(){
- const { jsPDF } = window.jspdf;
- let doc=new jsPDF();
- doc.text("LAPORAN ABSENSI PT-AGN",10,10);
+async function exportPDF(){
+  const { jsPDF } = window.jspdf;
+  let doc = new jsPDF();
+  doc.text("Laporan Absensi PT-AGN", 10,10);
 
- let rows=data.map((x,i)=>[
-  i+1,x.nama,x.tanggal,x.masuk,x.pulang||"-",x.status
- ]);
+  data.forEach((d,i)=>{
+    doc.text(`${i+1}. ${d.nama} ${d.tanggal} ${d.masuk}-${d.pulang}`,10,20+(i*10));
+  });
 
- doc.autoTable({
-  head:[["No","Nama","Tanggal","Masuk","Pulang","Status"]],
-  body:rows
- });
-
- doc.save("absensi.pdf");
+  doc.save("absensi.pdf");
+  toast("📄 Export PDF berhasil");
 }
 
 render();
