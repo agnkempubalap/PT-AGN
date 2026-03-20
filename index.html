@@ -3,92 +3,175 @@
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
 <style>
-body{font-family:sans-serif;background:#a9c4df;padding:10px}
-.card{background:#fff;padding:15px;border-radius:15px;margin-bottom:10px}
-button{width:100%;padding:10px;margin:5px 0;border:none;border-radius:10px;color:#fff}
-.green{background:#2ecc71}.orange{background:#f39c12}.blue{background:#3498db}.red{background:#e74c3c}
-.status{padding:5px 10px;border-radius:10px;color:#fff}
-.hadir{background:#2ecc71}.telat{background:#f39c12}.izin{background:#3498db}.alpa{background:#7f8c8d}
+body{
+ margin:0;
+ font-family:sans-serif;
+ background:linear-gradient(180deg,#6fa8dc,#cfe2f3);
+}
+
+/* CARD */
+.card{
+ background:rgba(255,255,255,0.9);
+ backdrop-filter:blur(10px);
+ padding:15px;
+ margin:10px;
+ border-radius:20px;
+ box-shadow:0 6px 20px rgba(0,0,0,0.1);
+}
+
+/* BUTTON */
+button{
+ width:100%;
+ padding:12px;
+ border:none;
+ border-radius:12px;
+ margin:5px 0;
+ font-weight:bold;
+}
+
+.green{background:#2ecc71;color:#fff}
+.orange{background:#f39c12;color:#fff}
+.red{background:#e74c3c;color:#fff}
+.blue{background:#3498db;color:#fff}
+
+/* INPUT */
+input,select{
+ width:100%;
+ padding:10px;
+ border-radius:10px;
+ border:none;
+ margin:5px 0;
+}
+
+/* TAB */
+.tab{
+ display:none;
+ animation:fade 0.3s;
+ padding-bottom:90px;
+}
+.tab.active{display:block}
+
+@keyframes fade{
+ from{opacity:0;transform:translateY(10px)}
+ to{opacity:1;transform:translateY(0)}
+}
+
+/* NAV */
+.nav{
+ position:fixed;
+ bottom:0;
+ width:100%;
+ display:flex;
+ background:#fff;
+ border-top:1px solid #ddd;
+}
+
+.nav button{
+ flex:1;
+ background:none;
+ padding:12px;
+ font-size:12px;
+}
+
+.nav .activeTab{
+ color:#3498db;
+}
+
+/* DASHBOARD BOX */
+.flex{display:flex;gap:10px}
+.box{
+ flex:1;
+ padding:15px;
+ border-radius:15px;
+ color:#fff;
+ text-align:center;
+ font-weight:bold;
+}
+.b1{background:#3498db}
+.b2{background:#2ecc71}
+.b3{background:#f1c40f}
+
 </style>
 </head>
 
 <body>
 
+<!-- LOGIN -->
 <div id="loginBox" class="card">
-<h3>Login Admin</h3>
-<input type="password" id="pin">
+<h3>🔐 Login Admin</h3>
+<input type="password" id="pin" placeholder="Masukkan PIN">
 <button class="blue" onclick="login()">Login</button>
-</div>
-
-<div id="app" style="display:none">
-
-<div class="card">
-<select id="nama"></select>
-
-<button class="green" onclick="masuk()">Masuk</button>
-<button class="orange" onclick="pulang()">Pulang</button>
-<button class="blue" onclick="izin()">Izin</button>
-<button class="red" onclick="reset()">Reset</button>
-
-<input id="wa" placeholder="Nomor WA">
-<button class="blue" onclick="kirimWA()">WA Harian</button>
-
-<h4>Kelola Karyawan</h4>
-
-<input id="karyawanBaru" placeholder="Tambah nama">
-<button onclick="tambahKaryawan()">Tambah</button>
-
-<select id="hapusNama"></select>
-<button class="red" onclick="hapusKaryawan()">Hapus</button>
-
-<select id="editNama"></select>
-<input id="namaBaru" placeholder="Nama baru">
-<button class="orange" onclick="editKaryawan()">Edit Nama</button>
 
 <h4>Ganti PIN</h4>
 <input type="password" id="pinLama" placeholder="PIN lama">
 <input type="password" id="pinBaru" placeholder="PIN baru">
-<button class="blue" onclick="gantiPin()">Ganti PIN</button>
-
+<button class="orange" onclick="gantiPin()">Ganti PIN</button>
 </div>
 
+<!-- APP -->
+<div id="app" style="display:none">
+
+<!-- DASHBOARD -->
+<div id="tabDashboard" class="tab active">
 <div class="card">
 <h3>Dashboard</h3>
-<div style="display:flex;gap:10px">
-<div class="card" style="flex:1;background:#3498db;color:#fff" id="hadirBox">0</div>
-<div class="card" style="flex:1;background:#2ecc71;color:#fff" id="telatBox">0</div>
-<div class="card" style="flex:1;background:#f1c40f;color:#fff" id="alpaBox">0</div>
+<div class="flex">
+<div class="box b1" id="hadirBox">0</div>
+<div class="box b2" id="telatBox">0</div>
+<div class="box b3" id="alpaBox">0</div>
+</div>
 </div>
 </div>
 
+<!-- ABSENSI -->
+<div id="tabAbsensi" class="tab">
 <div class="card">
-<h3>Grafik Harian</h3>
-<canvas id="chart"></canvas>
+<select id="nama"></select>
+<button class="green" onclick="masuk()">Masuk</button>
+<button class="blue" onclick="izin()">Izin</button>
 </div>
 
 <div id="list"></div>
-
-<div class="card">
-<h3>🏆 Ranking</h3>
-<div id="ranking"></div>
 </div>
 
+<!-- KARYAWAN -->
+<div id="tabKaryawan" class="tab">
 <div class="card">
-<h3>Grafik Per Orang</h3>
-<select id="pilih"></select>
-<canvas id="chart2"></canvas>
+<input id="karyawanBaru" placeholder="Tambah nama">
+<button class="blue" onclick="tambahKaryawan()">Tambah</button>
+
+<select id="hapusNama"></select>
+<button class="red" onclick="hapusKaryawan()">Hapus</button>
+</div>
 </div>
 
+<!-- LAPORAN -->
+<div id="tabLaporan" class="tab">
 <div class="card">
-<h3>📊 Laporan Bulanan</h3>
-<input type="month" id="bulan">
-<button class="blue" onclick="kirimLaporanBulanan()">Kirim WA</button>
-<pre id="previewBulanan"></pre>
+<h3>📊 Laporan</h3>
+(isi nanti)
+</div>
+</div>
+
+<!-- LOG -->
+<div id="tabLog" class="tab">
+<div class="card">
+<h3>📜 Log Aktivitas</h3>
+<div id="logList"></div>
+</div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+<button onclick="showTab('Dashboard',this)" class="activeTab">🏠</button>
+<button onclick="showTab('Absensi',this)">📋</button>
+<button onclick="showTab('Karyawan',this)">👤</button>
+<button onclick="showTab('Laporan',this)">📊</button>
+<button onclick="showTab('Log',this)">🧠</button>
 </div>
 
 </div>
@@ -97,83 +180,38 @@ button{width:100%;padding:10px;margin:5px 0;border:none;border-radius:10px;color
 
 // ===== FIREBASE =====
 const firebaseConfig={
- apiKey:"AIzaSyAu67MAhW8xdmciPi3xOKwdy-uP4u9tXI",
+ apiKey:"AIzaSy...",
  authDomain:"pt-agn.firebaseapp.com",
  databaseURL:"https://pt-agn-default-rtdb.firebaseio.com"
 };
 firebase.initializeApp(firebaseConfig);
 const db=firebase.database();
 
-let data=[],karyawan=[],PIN_GLOBAL="1234";
+let data=[],karyawan=[],PIN_GLOBAL="1234",logs=[];
 let SESSION_ID=Date.now();
 
-// ===== PIN GLOBAL =====
-db.ref("config/pin").on("value",s=>{
- if(s.exists()) PIN_GLOBAL=s.val();
- else db.ref("config/pin").set("1234");
-});
+// ===== TAB =====
+function showTab(n,btn){
+ document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+ document.getElementById("tab"+n).classList.add("active");
 
-// ===== SESSION CHECK =====
-db.ref("config/session").on("value",s=>{
- let server=s.val();
- let local=localStorage.getItem("session");
-
- if(local && server && local!=server){
-  alert("Session berakhir");
-  localStorage.clear();
-  location.reload();
- }
-});
-
-// ===== BACKUP =====
-function backupAll(){
- localStorage.setItem("backup_karyawan",JSON.stringify(karyawan));
- let time=new Date().toISOString();
- db.ref("backup_karyawan_history/"+time).set({karyawan});
+ document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('activeTab'));
+ btn.classList.add("activeTab");
 }
-function restoreBackup(){
- let b=localStorage.getItem("backup_karyawan");
- return b?JSON.parse(b):null;
-}
-
-// ===== LOAD DATA =====
-db.ref("absensi").on("value",s=>{
- data=s.val()||[];
- render();
-});
-
-db.ref("karyawan").on("value",s=>{
- if(!s.exists()||s.val().length===0){
-  let b=restoreBackup();
-  karyawan=b&&b.length?b:["Agung","Alda","Nur","Budi","Siti"];
-  db.ref("karyawan").set(karyawan);
- }else karyawan=s.val();
-
- backupAll();
- updateDrop();
-});
 
 // ===== LOGIN =====
+db.ref("config/pin").on("value",s=>{
+ PIN_GLOBAL=s.val()||"1234";
+});
+
 function login(){
  if(pin.value==PIN_GLOBAL){
-
   localStorage.setItem("login",true);
   localStorage.setItem("session",SESSION_ID);
   db.ref("config/session").set(SESSION_ID);
-
-  db.ref("config/logs/"+Date.now()).set({type:"login_success"});
-
-  navigator.vibrate(200);
-  new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg").play();
-
   loginBox.style.display="none";
   app.style.display="block";
-
- }else{
-  navigator.vibrate([100,50,100]);
-  db.ref("config/logs/"+Date.now()).set({type:"login_failed"});
-  alert("PIN salah");
- }
+ }else alert("PIN salah");
 }
 
 if(localStorage.getItem("login")){
@@ -181,213 +219,93 @@ if(localStorage.getItem("login")){
  app.style.display="block";
 }
 
-// ===== DROPDOWN =====
-function updateDrop(){
- nama.innerHTML=karyawan.map(n=>`<option>${n}</option>`);
- pilih.innerHTML=karyawan.map(n=>`<option>${n}</option>`);
- hapusNama.innerHTML=karyawan.map(n=>`<option>${n}</option>`);
- editNama.innerHTML=karyawan.map(n=>`<option>${n}</option>`);
-}
+// ===== DATA =====
+db.ref("karyawan").on("value",s=>{
+ if(!s.exists() || !Array.isArray(s.val()) || s.val().length===0){
+  karyawan=["Agung","Alda","Nur","Budi","Siti"];
+  db.ref("karyawan").set(karyawan);
+ }else karyawan=s.val();
+ updateDrop();
+});
+
+db.ref("absensi").on("value",s=>{
+ data=s.val()||[];
+ render();
+});
+
+// ===== LOG =====
+db.ref("config/logs").limitToLast(20).on("value",s=>{
+ logs=[];
+ s.forEach(c=>logs.push(c.val()));
+ logs.reverse();
+ renderLogs();
+});
 
 // ===== KARYAWAN =====
+function updateDrop(){
+ nama.innerHTML=karyawan.map(n=>`<option>${n}</option>`);
+ hapusNama.innerHTML=karyawan.map(n=>`<option>${n}</option>`);
+}
+
 function tambahKaryawan(){
  if(!karyawanBaru.value)return;
  karyawan.push(karyawanBaru.value);
  db.ref("karyawan").set(karyawan);
- backupAll();
- karyawanBaru.value="";
 }
 
 function hapusKaryawan(){
  let n=hapusNama.value;
- if(!confirm("Hapus "+n+"?"))return;
-
  karyawan=karyawan.filter(x=>x!==n);
- data=data.filter(x=>x.nama!==n);
-
  db.ref("karyawan").set(karyawan);
- db.ref("absensi").set(data);
- backupAll();
-}
-
-function editKaryawan(){
- let lama=editNama.value;
- let baru=namaBaru.value;
- if(!baru)return;
-
- karyawan=karyawan.map(n=>n===lama?baru:n);
- data=data.map(x=>{
-  if(x.nama===lama)x.nama=baru;
-  return x;
- });
-
- db.ref("karyawan").set(karyawan);
- db.ref("absensi").set(data);
- backupAll();
- namaBaru.value="";
-}
-
-// ===== GANTI PIN =====
-function gantiPin(){
-
- if(pinLama.value!==PIN_GLOBAL){
-  alert("PIN lama salah");
-  navigator.vibrate([100,50,100]);
-  return;
- }
-
- if(pinBaru.value.length<4){
-  alert("Minimal 4 digit");
-  return;
- }
-
- db.ref("config/pin").set(pinBaru.value);
-
- let newSession=Date.now();
- db.ref("config/session").set(newSession);
-
- db.ref("config/logs/"+Date.now()).set({type:"change_pin"});
-
- navigator.vibrate(300);
- new Audio("https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg").play();
-
- alert("PIN diganti, semua device logout");
-
- pinLama.value="";
- pinBaru.value="";
-}
-
-// ===== WAKTU =====
-function now(){
- let d=new Date();
- return {tgl:d.toISOString().split('T')[0],jam:d.toTimeString().split(' ')[0]};
 }
 
 // ===== ABSEN =====
+function now(){
+ let d=new Date();
+ return {tgl:d.toISOString().split('T')[0]};
+}
+
 function masuk(){
- let t=now(),n=nama.value;
- if(data.find(x=>x.nama==n&&x.tgl==t.tgl))return;
- data.push({nama:n,tgl:t.tgl,masuk:t.jam,status:t.jam>"09:00:00"?"Telat":"Hadir"});
- save();
-}
-function pulang(){
  let t=now();
- let d=data.find(x=>x.nama==nama.value&&x.tgl==t.tgl);
- if(d)d.pulang=t.jam;
+ data.push({nama:nama.value,tgl:t.tgl,status:"Hadir"});
  save();
 }
+
 function izin(){
  let t=now();
  data.push({nama:nama.value,tgl:t.tgl,status:"Izin"});
  save();
 }
-function reset(){
- let t=now().tgl;
- data=data.filter(x=>x.tgl!=t);
- save();
-}
+
 function save(){ db.ref("absensi").set(data); }
 
-// ===== AUTO ALPA =====
-setInterval(()=>{
- let t=now();
- if(t.jam>="16:00:00"){
-  karyawan.forEach(n=>{
-   if(!data.find(x=>x.nama==n&&x.tgl==t.tgl)){
-    data.push({nama:n,tgl:t.tgl,status:"Alpa"});
-   }
-  });
-  save();
- }
-},60000);
-
 // ===== RENDER =====
-let chart,chart2;
-
 function render(){
+ list.innerHTML=data.map(x=>`
+ <div class="card">${x.nama} - ${x.status}</div>
+ `).join("");
 
-list.innerHTML=data.map(x=>`
-<div class="card">
-<b>${x.nama}</b><br>
-${x.tgl}<br>
-Masuk:${x.masuk||'-'}<br>
-Pulang:${x.pulang||'-'}<br>
-<span class="status ${x.status.toLowerCase()}">${x.status}</span>
-</div>
-`).join("");
-
-hadirBox.innerText=data.filter(x=>x.status=="Hadir").length;
-telatBox.innerText=data.filter(x=>x.status=="Telat").length;
-alpaBox.innerText=data.filter(x=>x.status=="Alpa").length;
-
-let r={};
-data.forEach(x=>{
- if(!r[x.nama])r[x.nama]={score:0};
- if(x.status=="Hadir")r[x.nama].score+=3;
- if(x.status=="Telat")r[x.nama].score+=1;
- if(x.status=="Alpa")r[x.nama].score-=3;
-});
-ranking.innerHTML=Object.entries(r)
-.map(([n,v])=>({n,...v}))
-.sort((a,b)=>b.score-a.score)
-.map((x,i)=>`#${i+1} ${x.n} (${x.score})`).join("<br>");
-
-let h=data.filter(x=>x.status=="Hadir").length;
-let t=data.filter(x=>x.status=="Telat").length;
-let a=data.filter(x=>x.status=="Alpa").length;
-
-if(chart)chart.destroy();
-chart=new Chart(chart,{type:'bar',data:{labels:["Hadir","Telat","Alpa"],datasets:[{data:[h,t,a]}]}});
-
-let n=pilih.value;
-let d=data.filter(x=>x.nama==n);
-
-if(chart2)chart2.destroy();
-chart2=new Chart(chart2,{type:'bar',data:{labels:["Hadir","Telat","Alpa"],datasets:[{data:[
-d.filter(x=>x.status=="Hadir").length,
-d.filter(x=>x.status=="Telat").length,
-d.filter(x=>x.status=="Alpa").length
-]}]}});
-
-previewBulanan.innerText=generateLaporan();
+ hadirBox.innerText=data.filter(x=>x.status=="Hadir").length;
+ telatBox.innerText=data.filter(x=>x.status=="Telat").length;
+ alpaBox.innerText=data.filter(x=>x.status=="Alpa").length;
 }
 
-// ===== WA =====
-function kirimWA(){
- if(!wa.value)return alert("Isi nomor");
- let txt="Absensi\n";
- data.forEach(d=>txt+=`${d.nama} ${d.status}\n`);
- window.open(`https://wa.me/${wa.value}?text=${encodeURIComponent(txt)}`);
+// ===== LOG VIEW =====
+function renderLogs(){
+ logList.innerHTML=logs.map(l=>`
+ <div class="card">
+ ${l.type} (${l.status})<br>
+ ${l.time}
+ </div>
+ `).join("");
 }
 
-// ===== LAPORAN =====
-function generateLaporan(){
- if(!bulan.value)return "Pilih bulan";
- let hasil={};
-
- data.forEach(x=>{
-  if(!x.tgl.includes(bulan.value))return;
-  if(!hasil[x.nama])hasil[x.nama]={h:0,t:0,a:0,s:0};
-
-  if(x.status=="Hadir"){hasil[x.nama].h++;hasil[x.nama].s+=3;}
-  if(x.status=="Telat"){hasil[x.nama].t++;hasil[x.nama].s+=1;}
-  if(x.status=="Alpa"){hasil[x.nama].a++;hasil[x.nama].s-=3;}
- });
-
- let arr=Object.entries(hasil).map(([n,v])=>({n,...v}))
- .sort((a,b)=>b.s-a.s);
-
- let txt="📊 LAPORAN BULANAN\n\n";
- arr.forEach((x,i)=>{
-  txt+=`#${i+1} ${x.n}\nH:${x.h} T:${x.t} A:${x.a}\nSkor:${x.s}\n\n`;
- });
-
- return txt;
-}
-
-function kirimLaporanBulanan(){
- if(!wa.value)return alert("Isi nomor");
- window.open(`https://wa.me/${wa.value}?text=${encodeURIComponent(generateLaporan())}`);
+// ===== PIN =====
+function gantiPin(){
+ if(pinLama.value!==PIN_GLOBAL){alert("PIN salah");return;}
+ db.ref("config/pin").set(pinBaru.value);
+ db.ref("config/session").set(Date.now());
+ alert("PIN diganti");
 }
 
 </script>
