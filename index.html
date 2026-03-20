@@ -14,18 +14,44 @@
 
 <style>
 body{font-family:sans-serif;background:linear-gradient(to bottom,#6fa8dc,#cfe2f3);margin:0;padding:15px}
-.card{background:#fff;border-radius:15px;padding:15px;margin-bottom:15px}
+.card{background:#fff;border-radius:15px;padding:15px;margin-bottom:15px;transition:0.3s}
 button{width:100%;padding:10px;margin:5px 0;border:none;border-radius:8px;color:#fff}
 .green{background:#2ecc71}.orange{background:#f39c12}.red{background:#e74c3c}.blue{background:#3498db}
+
+#toast{
+ position:fixed;
+ bottom:20px;
+ left:50%;
+ transform:translateX(-50%);
+ background:#333;
+ color:#fff;
+ padding:12px 20px;
+ border-radius:10px;
+ opacity:0;
+ transition:.3s;
+}
+.show{opacity:1}
+
+/* Animasi login */
+.success{
+ animation:pop 0.5s ease;
+}
+@keyframes pop{
+ 0%{transform:scale(0.8);opacity:0}
+ 100%{transform:scale(1);opacity:1}
+}
 </style>
 </head>
 
 <body>
 
+<div id="toast"></div>
+
 <div id="loginBox" class="card">
 <h3>Login Admin</h3>
 <input type="password" id="pinInput" placeholder="PIN">
 <button class="blue" onclick="loginPIN()">Login</button>
+<button class="orange" onclick="gantiPIN()">Ganti PIN</button>
 </div>
 
 <div id="app" style="display:none">
@@ -68,21 +94,84 @@ button{width:100%;padding:10px;margin:5px 0;border:none;border-radius:8px;color:
 
 <script>
 
-// PIN
-let PIN="1234";
+// ====== PIN ======
+let PIN = localStorage.getItem("PIN") || "1234";
+
+// ====== SOUND ======
+function playSound(type){
+ let ctx = new (window.AudioContext || window.webkitAudioContext)();
+ let osc = ctx.createOscillator();
+ osc.type="sine";
+
+ if(type=="success") osc.frequency.value=800;
+ else osc.frequency.value=200;
+
+ osc.connect(ctx.destination);
+ osc.start();
+ setTimeout(()=>osc.stop(),150);
+}
+
+// ====== VIBRATION ======
+function vibrate(type){
+ if(navigator.vibrate){
+   if(type=="success") navigator.vibrate([100,50,100]);
+   else navigator.vibrate([300]);
+ }
+}
+
+// ====== TOAST ======
+function showToast(msg){
+ let t=document.getElementById("toast");
+ t.innerText=msg;
+ t.classList.add("show");
+ setTimeout(()=>t.classList.remove("show"),2000);
+}
+
+// ====== LOGIN ======
 function loginPIN(){
  if(pinInput.value===PIN){
    loginBox.style.display="none";
    app.style.display="block";
+   app.classList.add("success");
+
+   showToast("✅ Login berhasil");
+   playSound("success");
+   vibrate("success");
+ }else{
+   showToast("❌ PIN salah");
+   playSound("error");
+   vibrate("error");
  }
 }
 
-// FIREBASE
-const firebaseConfig = {
-  apiKey: "AIzaSyAu67MAhW8xdmciPi3xOKwdy-uP4u9tXI",
-  authDomain: "pt-agn.firebaseapp.com",
-  databaseURL: "https://pt-agn-default-rtdb.firebaseio.com",
-  projectId: "pt-agn"
+// ====== GANTI PIN ======
+function gantiPIN(){
+ let lama=prompt("PIN lama:");
+ if(lama!==PIN){
+   showToast("❌ PIN salah");
+   playSound("error");
+   return;
+ }
+
+ let baru=prompt("PIN baru:");
+ if(!baru || baru.length<4){
+   showToast("⚠️ Min 4 digit");
+   return;
+ }
+
+ PIN=baru;
+ localStorage.setItem("PIN",baru);
+
+ showToast("✅ PIN diganti");
+ playSound("success");
+}
+
+// ====== FIREBASE ======
+const firebaseConfig={
+ apiKey:"AIzaSy...",
+ authDomain:"pt-agn.firebaseapp.com",
+ databaseURL:"https://pt-agn-default-rtdb.firebaseio.com",
+ projectId:"pt-agn"
 };
 firebase.initializeApp(firebaseConfig);
 const db=firebase.database();
@@ -101,12 +190,16 @@ function now(){
  return {tgl:d.toISOString().split('T')[0],jam:d.toTimeString().split(' ')[0],bulan:d.getMonth()+1}
 }
 
-// ABSEN
+// ====== ABSEN ======
 function absenMasuk(){
  let t=now(),n=nama.value;
- if(data.find(x=>x.nama==n&&x.tgl==t.tgl))return;
+ if(data.find(x=>x.nama==n&&x.tgl==t.tgl)){
+   showToast("Sudah absen");
+   return;
+ }
  data.push({nama:n,tgl:t.tgl,status:t.jam>"09:00:00"?"Telat":"Hadir",bulan:t.bulan});
  save();
+ showToast("Absen masuk ✔");
 }
 
 function absenPulang(){
@@ -114,21 +207,24 @@ function absenPulang(){
  let d=data.find(x=>x.nama==nama.value&&x.tgl==t.tgl);
  if(d)d.pulang=t.jam;
  save();
+ showToast("Absen pulang ✔");
 }
 
 function izin(){
  let t=now();
  data.push({nama:nama.value,tgl:t.tgl,status:"Izin",bulan:t.bulan});
  save();
+ showToast("Izin ✔");
 }
 
 function resetHari(){
  let t=now().tgl;
  data=data.filter(x=>x.tgl!=t);
  save();
+ showToast("Reset ✔");
 }
 
-// AUTO ALPA
+// ====== AUTO ALPA ======
 setInterval(()=>{
  let t=now();
  if(t.jam>="16:00:00"){
@@ -142,7 +238,7 @@ setInterval(()=>{
  }
 },60000);
 
-// RANKING AI
+// ====== RANKING ======
 function rank(){
  let r={};
  data.forEach(x=>{
@@ -154,25 +250,7 @@ function rank(){
  return Object.entries(r).map(([n,v])=>({n,...v})).sort((a,b)=>b.score-a.score);
 }
 
-// WA
-function kirimWA(){
- let txt="Absensi\n";
- data.forEach(d=>txt+=`${d.nama} ${d.status}\n`);
- window.open(`https://wa.me/${waGlobal.value}?text=${encodeURIComponent(txt)}`);
-}
-
-function kirimWAper(){
- let map=waMap.value.split("\n");
- map.forEach(m=>{
-   let [nama,no]=m.split("=");
-   let d=data.filter(x=>x.nama==nama);
-   let txt=`Laporan ${nama}\n`;
-   d.forEach(x=>txt+=`${x.tgl} ${x.status}\n`);
-   window.open(`https://wa.me/${no}?text=${encodeURIComponent(txt)}`);
- });
-}
-
-// CHART
+// ====== CHART ======
 let chart;
 function renderChart(n){
  let d=data.filter(x=>x.nama==n);
@@ -181,13 +259,13 @@ function renderChart(n){
  let a=d.filter(x=>x.status=="Alpa").length;
 
  if(chart)chart.destroy();
- chart=new Chart(chartCanvas,{
+ chart=new Chart(chart,{
   type:'bar',
   data:{labels:["Hadir","Telat","Alpa"],datasets:[{data:[h,t,a]}]}
  });
 }
 
-// RENDER
+// ====== RENDER ======
 function render(){
  list.innerHTML=data.map(x=>`<div>${x.nama} ${x.status}</div>`).join("");
 
@@ -199,6 +277,24 @@ function render(){
 
  renderChart(pilihKaryawan.value);
  pilihKaryawan.onchange=()=>renderChart(pilihKaryawan.value);
+}
+
+// ====== WA ======
+function kirimWA(){
+ let txt="Absensi\n";
+ data.forEach(d=>txt+=`${d.nama} ${d.status}\n`);
+ window.open(`https://wa.me/${waGlobal.value}?text=${encodeURIComponent(txt)}`);
+}
+
+function kirimWAper(){
+ let map=waMap.value.split("\n");
+ map.forEach(m=>{
+   let [nama,no]=m.split("=");
+   let d=data.filter(x=>x.nama==nama);
+   let txt=`${nama}\n`;
+   d.forEach(x=>txt+=`${x.tgl} ${x.status}\n`);
+   window.open(`https://wa.me/${no}?text=${encodeURIComponent(txt)}`);
+ });
 }
 
 </script>
