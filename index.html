@@ -1,8 +1,15 @@
-<!DOCTYPE html><html lang="id">
+<!DOCTYPE html>
+<html lang="id">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Absensi PT-AGN</title><script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><style>
+<title>Absensi PT-AGN</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
 body{font-family:sans-serif;background:linear-gradient(to bottom,#6fa8dc,#cfe2f3);margin:0;padding:15px}
 .card{background:#fff;border-radius:15px;padding:15px;margin-bottom:15px;box-shadow:0 4px 10px rgba(0,0,0,0.1)}
 button{width:100%;padding:12px;border:none;border-radius:10px;margin:5px 0;color:#fff;font-weight:bold}
@@ -13,35 +20,75 @@ input,select{width:100%;padding:10px;border-radius:8px;margin:5px 0}
 .b1{background:#3498db}.b2{background:#2ecc71}.b3{background:#f1c40f}
 #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:12px 20px;border-radius:10px;opacity:0;transition:.3s}
 .show{opacity:1}
-</style></head>
-<body><div id="toast"></div><div class="card">
+</style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<div class="card">
 <h3>📋 Absensi PT-AGN</h3>
+
 <select id="nama">
 <option>Agung</option>
 <option>Alda</option>
 <option>Nur</option>
 <option>Hasan</option>
 <option>Hatta</option>
-</select><button class="green" onclick="absenMasuk()">Absen Masuk</button> <button class="orange" onclick="absenPulang()">Absen Pulang</button> <button class="red" onclick="resetHari()">Reset Hari Ini</button> <button class="blue" onclick="exportExcel()">Export Excel</button> <button class="blue" onclick="exportPDF()">Export PDF</button>
+</select>
 
-</div><div class="card">
+<button class="green" onclick="absenMasuk()">Absen Masuk</button>
+<button class="orange" onclick="absenPulang()">Absen Pulang</button>
+<button class="red" onclick="resetHari()">Reset Hari Ini</button>
+<button class="blue" onclick="exportExcel()">Export Excel</button>
+<button class="blue" onclick="exportPDF()">Export PDF</button>
+</div>
+
+<div class="card">
 <h4>Filter</h4>
 <select id="bulan"></select>
 <input type="text" id="search" placeholder="Cari nama...">
-</div><div class="card">
+</div>
+
+<div class="card">
 <h4>Dashboard</h4>
 <div class="flex">
 <div class="box b1" id="total">0</div>
 <div class="box b2" id="hadir">0</div>
 <div class="box b3" id="telat">0</div>
 </div>
-</div><div class="card">
+</div>
+
+<div class="card">
 <h4>Grafik Harian</h4>
 <canvas id="chart"></canvas>
-</div><div id="list"></div><script>
+</div>
+
+<div id="list"></div>
+
+<script>
 let data = JSON.parse(localStorage.getItem("absensi")) || [];
+
+/* =========================
+   PATCH DATA LAMA (PENTING)
+========================= */
+data = data.map(x => {
+  if (!x.status) {
+    x.status = (x.masuk > "08:00:00") ? "Telat" : "Hadir";
+  }
+  if (!x.bulan) {
+    x.bulan = new Date(x.tanggal).getMonth() + 1;
+  }
+  if (!x.pulang) {
+    x.pulang = "-";
+  }
+  return x;
+});
+localStorage.setItem("absensi", JSON.stringify(data));
+
 const namaSelect = document.getElementById("nama");
 
+/* BULAN */
 const bulanSelect = document.getElementById("bulan");
 for(let i=1;i<=12;i++){
   bulanSelect.innerHTML += `<option value="${i}">Bulan ${i}</option>`;
@@ -51,6 +98,7 @@ bulanSelect.value = new Date().getMonth()+1;
 bulanSelect.onchange = render;
 document.getElementById("search").oninput = render;
 
+/* TOAST */
 function toast(msg){
   const t = document.getElementById("toast");
   t.innerText = msg;
@@ -58,6 +106,7 @@ function toast(msg){
   setTimeout(()=>t.classList.remove("show"),2000);
 }
 
+/* WAKTU */
 function now(){
   let d=new Date();
   return {
@@ -75,6 +124,7 @@ function isTelat(jam){
   return jam > "08:00:00";
 }
 
+/* ABSEN MASUK */
 function absenMasuk(){
   let n = namaSelect.value;
   let t = now();
@@ -84,11 +134,20 @@ function absenMasuk(){
 
   let status = isTelat(t.jam) ? "Telat" : "Hadir";
 
-  data.push({nama:n,tanggal:t.tanggal,masuk:t.jam,pulang:"-",status:status,bulan:new Date().getMonth()+1});
+  data.push({
+    nama:n,
+    tanggal:t.tanggal,
+    masuk:t.jam,
+    pulang:"-",
+    status:status,
+    bulan:new Date().getMonth()+1
+  });
+
   toast(status=="Telat" ? "⏰ Kamu telat!" : "✅ Absen masuk berhasil");
   save();
 }
 
+/* ABSEN PULANG */
 function absenPulang(){
   let n = namaSelect.value;
   let t = now();
@@ -102,6 +161,7 @@ function absenPulang(){
   save();
 }
 
+/* RESET */
 function resetHari(){
   let today = now().tanggal;
   data = data.filter(x=>x.tanggal!=today);
@@ -109,6 +169,7 @@ function resetHari(){
   save();
 }
 
+/* RENDER */
 function render(){
   let bulan = bulanSelect.value;
   let search = document.getElementById("search").value.toLowerCase();
@@ -131,21 +192,40 @@ function render(){
   document.getElementById("hadir").innerText = hadir;
   document.getElementById("telat").innerText = telat;
 
-  // Grafik per tanggal
+  /* GRAFIK BARU (HADIR VS TELAT) */
   let group = {};
   filtered.forEach(x=>{
-    if(!group[x.tanggal]) group[x.tanggal]=0;
-    group[x.tanggal]++;
+    if(!group[x.tanggal]) {
+      group[x.tanggal] = {hadir:0, telat:0};
+    }
+    if(x.status === "Telat") group[x.tanggal].telat++;
+    else group[x.tanggal].hadir++;
   });
 
   chart.data.labels = Object.keys(group);
-  chart.data.datasets[0].data = Object.values(group);
+  chart.data.datasets = [
+    {
+      label: "Hadir",
+      data: Object.values(group).map(x=>x.hadir),
+      backgroundColor: "#2ecc71"
+    },
+    {
+      label: "Telat",
+      data: Object.values(group).map(x=>x.telat),
+      backgroundColor: "#e74c3c"
+    }
+  ];
   chart.update();
 }
 
+/* CHART */
 const ctx = document.getElementById('chart');
-const chart = new Chart(ctx,{type:'bar',data:{labels:[],datasets:[{label:'Absensi Harian',data:[]}]}});
+const chart = new Chart(ctx,{
+  type:'bar',
+  data:{labels:[],datasets:[]}
+});
 
+/* EXPORT */
 function exportExcel(){
   let ws = XLSX.utils.json_to_sheet(data);
   let wb = XLSX.utils.book_new();
@@ -168,5 +248,7 @@ async function exportPDF(){
 }
 
 render();
-</script></body>
+</script>
+
+</body>
 </html>
