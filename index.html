@@ -32,15 +32,14 @@ input,select{width:100%;padding:10px;border-radius:8px;margin:5px 0}
 <h3>🏠 Halaman Utama</h3>
 <p>Selamat datang di sistem PT-AGN</p>
 </div>
-</div><!-- ABSENSI --><div id="absen" class="page">
-<div class="card">
-<h3>📋 Absensi</h3>
-<select id="nama"></select>
-<button class="green" onclick="absenMasuk()">Masuk</button>
-<button class="orange" onclick="absenPulang()">Pulang</button>
-<button class="red" onclick="resetHari()">Reset</button>
-<button class="blue" onclick="exportExcel()">Excel</button>
-<button class="blue" onclick="exportPDF()">PDF</button>
+</div><!-- ABSENSI --><div id="absen" class="page"><div class="card">
+<h3>📋 Absensi PT-AGN</h3>
+<select id="nama"></select><button class="green" onclick="absenMasuk()">Absen Masuk</button> <button class="orange" onclick="absenPulang()">Absen Pulang</button> <button class="red" onclick="resetHari()">Reset Hari Ini</button> <button class="blue" onclick="exportExcel()">Export Excel</button> <button class="blue" onclick="exportPDF()">Export PDF</button>
+
+</div><div class="card">
+<h4>Filter</h4>
+<select id="bulan"></select>
+<input type="text" id="search" placeholder="Cari nama...">
 </div><div class="card">
 <h4>Dashboard</h4>
 <div class="flex">
@@ -48,8 +47,10 @@ input,select{width:100%;padding:10px;border-radius:8px;margin:5px 0}
 <div class="box b2" id="hadir">0</div>
 <div class="box b3" id="telat">0</div>
 </div>
-</div><div id="list"></div>
-</div><!-- STOK --><div id="stok" class="page">
+</div><div class="card">
+<h4>Grafik Harian</h4>
+<canvas id="chart"></canvas>
+</div><div id="list"></div></div><!-- STOK --><div id="stok" class="page">
 <div class="card">
 <h3>📦 Stok Gudang</h3>
 <p>Belum diisi</p>
