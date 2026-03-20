@@ -14,11 +14,28 @@ button{width:100%;padding:10px;margin:5px 0;border:none;border-radius:8px;color:
 .blue{background:#3b82f6}
 input,select{width:100%;padding:10px;margin:5px 0}
 
-.nav{
-position:fixed;bottom:0;width:100%;display:flex;background:#fff;
-box-shadow:0 -2px 10px rgba(0,0,0,0.2)
-}
+/* NAV */
+.nav{position:fixed;bottom:0;width:100%;display:flex;background:#fff}
 .nav button{flex:1;background:none;color:#333}
+
+/* KALENDER */
+.kalender{
+ display:grid;
+ grid-template-columns:repeat(7,1fr);
+ gap:5px;
+ text-align:center;
+}
+.hari{
+ padding:8px;
+ border-radius:8px;
+ background:#e5e7eb;
+ cursor:pointer;
+ font-size:12px;
+}
+.hadir{background:#22c55e;color:#fff}
+.izin{background:#f59e0b;color:#fff}
+.alfa{background:#ef4444;color:#fff}
+.telat{background:#3b82f6;color:#fff}
 </style>
 </head>
 
@@ -32,6 +49,11 @@ Total Karyawan: <b id="dkaryawan">0</b><br>
 Hadir Hari Ini: <b id="dhadir">0</b><br>
 Alfa Hari Ini: <b id="dalfa">0</b><br>
 Aktivitas Hari Ini: <b id="daktif">0</b>
+</div>
+
+<div class="card">
+<h3>🏆 Ranking</h3>
+<div id="ranking"></div>
 </div>
 </div>
 
@@ -52,6 +74,19 @@ Aktivitas Hari Ini: <b id="daktif">0</b>
 </div>
 
 <div id="list"></div>
+
+<!-- KALENDER -->
+<div class="card">
+<h3>📅 Kalender Bulanan</h3>
+<input type="month" id="bulan" onchange="renderKalender()">
+<div id="kalender"></div>
+</div>
+
+<div class="card">
+<h3>📋 Detail Tanggal</h3>
+<div id="detailTanggal">Klik tanggal</div>
+</div>
+
 </div>
 
 <!-- AKTIVITAS -->
@@ -65,9 +100,13 @@ Aktivitas Hari Ini: <b id="daktif">0</b>
 <option>Pangkalan</option>
 <option>Kirim Minyak</option>
 </select>
+
 <div id="cek"></div>
-<button class="blue" onclick="simpanAkt()">Simpan</button>
+
+<button class="blue" onclick="simpanAkt()">Simpan Aktivitas</button>
 </div>
+
+<div id="listAktivitas"></div>
 </div>
 
 <!-- STOK -->
@@ -78,6 +117,7 @@ Aktivitas Hari Ini: <b id="daktif">0</b>
 <button class="green" onclick="stokMasuk()">Masuk</button>
 <button class="red" onclick="stokKeluar()">Keluar</button>
 </div>
+
 <div id="listStok"></div>
 </div>
 
@@ -111,6 +151,7 @@ let stok=JSON.parse(localStorage.getItem("stok"))||{};
 
 const nama=document.getElementById("nama");
 
+// LOAD
 function loadNama(){
  nama.innerHTML=karyawan.map(n=>`<option>${n}</option>`).join("");
  document.getElementById("cek").innerHTML=
@@ -129,10 +170,11 @@ function save(){
 // TAMBAH
 function tambah(){
  let n=namaBaru.value;
- if(!n) return alert("Isi nama");
+ if(!n) return alert("⚠️ Isi nama");
+ if(karyawan.includes(n)) return alert("⚠️ Sudah ada");
  karyawan.push(n);
  namaBaru.value="";
- alert("Berhasil tambah");
+ alert("✅ Ditambahkan");
  save();loadNama();
 }
 
@@ -140,9 +182,9 @@ function tambah(){
 function hapus(){
  let n=nama.value;
  if(confirm("Hapus "+n+"?")){
- karyawan=karyawan.filter(x=>x!=n);
- alert("Dihapus");
- save();loadNama();
+  karyawan=karyawan.filter(x=>x!=n);
+  alert("❌ Dihapus");
+  save();loadNama();
  }
 }
 
@@ -165,12 +207,14 @@ function izin(){
  save();
 }
 
+// RESET
 function resetHari(){
  let t=now().tgl;
  if(confirm("Reset hari ini?")){
- absen=absen.filter(x=>x.tgl!=t);
- aktivitas=aktivitas.filter(x=>x.tgl!=t);
- save();
+  absen=absen.filter(x=>x.tgl!=t);
+  aktivitas=aktivitas.filter(x=>x.tgl!=t);
+  alert("✅ Reset selesai");
+  save();
  }
 }
 
@@ -179,9 +223,9 @@ function alfa(){
  let t=now();
  if(t.jam<"16:00:00") return;
  karyawan.forEach(n=>{
- if(!absen.find(x=>x.nama==n && x.tgl==t.tgl)){
- absen.push({nama:n,tgl:t.tgl,status:"Alfa"});
- }
+  if(!absen.find(x=>x.nama==n && x.tgl==t.tgl)){
+   absen.push({nama:n,tgl:t.tgl,status:"Alfa"});
+  }
  });
 }
 
@@ -190,7 +234,14 @@ function simpanAkt(){
  let t=now();
  let akt=aktifitas.value;
  let orang=[...document.querySelectorAll("#cek input:checked")].map(x=>x.value);
- aktivitas.push({tgl:t.tgl,akt,orang});
+
+ if(orang.length==0) return alert("Pilih karyawan");
+
+ orang.forEach(n=>{
+  aktivitas.push({nama:n,tgl:t.tgl,akt});
+ });
+
+ alert("✅ Aktivitas disimpan");
  save();
 }
 
@@ -204,37 +255,101 @@ function stokKeluar(){
  save();
 }
 
+// KALENDER
+function renderKalender(){
+ let val = bulan.value;
+ if(!val) return;
+
+ let [tahun,bln] = val.split("-");
+ bln = parseInt(bln);
+
+ let first = new Date(tahun,bln-1,1).getDay();
+ let last = new Date(tahun,bln,0).getDate();
+
+ let html='<div class="kalender">';
+ for(let i=0;i<first;i++) html+="<div></div>";
+
+ for(let d=1; d<=last; d++){
+  let tgl=`${tahun}-${String(bln).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+  let data=absen.filter(x=>x.tgl==tgl);
+
+  let cls="hari";
+  if(data.some(x=>x.status=="Alfa")) cls+=" alfa";
+  else if(data.some(x=>x.status=="Izin")) cls+=" izin";
+  else if(data.some(x=>x.status=="Telat")) cls+=" telat";
+  else if(data.some(x=>x.status=="Hadir")) cls+=" hadir";
+
+  html+=`<div class="${cls}" onclick="detailTgl('${tgl}')">${d}</div>`;
+ }
+
+ html+="</div>";
+ kalender.innerHTML=html;
+}
+
+function detailTgl(tgl){
+ let data=absen.filter(x=>x.tgl==tgl);
+ if(data.length==0){
+  detailTanggal.innerHTML="Tidak ada data";
+  return;
+ }
+
+ detailTanggal.innerHTML=data.map(x=>`
+ <div>${x.nama} - ${x.status}</div>
+ `).join("");
+}
+
 // RENDER
 function render(){
 
  alfa();
 
- // dashboard
  let today=now().tgl;
+
  dkaryawan.innerText=karyawan.length;
  dhadir.innerText=absen.filter(x=>x.tgl==today && x.status=="Hadir").length;
  dalfa.innerText=absen.filter(x=>x.tgl==today && x.status=="Alfa").length;
  daktif.innerText=aktivitas.filter(x=>x.tgl==today).length;
 
- // list absen
- list.innerHTML=absen.map(x=>`<div class="card">${x.nama} ${x.tgl} ${x.status}</div>`).join("");
+ list.innerHTML=absen.map(x=>`
+ <div class="card">${x.nama||"-"} | ${x.tgl||"-"} | ${x.status||"-"}</div>
+ `).join("");
 
- // stok
- listStok.innerHTML=Object.keys(stok).map(k=>`<div class="card">${k}: ${stok[k]}</div>`).join("");
+ listAktivitas.innerHTML=aktivitas.map(x=>`
+ <div class="card">${x.nama} - ${x.akt} (${x.tgl})</div>
+ `).join("");
 
- // gaji
+ listStok.innerHTML=Object.keys(stok).map(k=>`
+ <div class="card">${k}: ${stok[k]}</div>
+ `).join("");
+
  listGaji.innerHTML=karyawan.map(n=>{
  let h=absen.filter(x=>x.nama==n && x.status=="Hadir").length;
  let a=absen.filter(x=>x.nama==n && x.status=="Alfa").length;
- let g=(h*100000)-(a*50000);
- return `<div class="card">${n}<br>Gaji: ${g}</div>`;
+ let act=aktivitas.filter(x=>x.nama==n).length;
+
+ let score=(h*2)+(act)-(a*2);
+
+ return `<div class="card">${n}<br>Score: ${score}</div>`;
  }).join("");
 
+ let rank=karyawan.map(n=>{
+ let h=absen.filter(x=>x.nama==n && x.status=="Hadir").length;
+ let a=absen.filter(x=>x.nama==n && x.status=="Alfa").length;
+ let act=aktivitas.filter(x=>x.nama==n).length;
+ return {n,score:(h*2)+(act)-(a*2)};
+ }).sort((a,b)=>b.score-a.score);
+
+ ranking.innerHTML=rank.map((r,i)=>`
+ <div>#${i+1} ${r.n} (${r.score})</div>
+ `).join("");
+
+ renderKalender();
 }
 
 // INIT
 loadNama();
 render();
+bulan.value=new Date().toISOString().slice(0,7);
 
 </script>
 
