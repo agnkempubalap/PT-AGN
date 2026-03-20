@@ -52,11 +52,11 @@ select, button {
 
 <div class="card">
 <select id="nama">
-<option>Agung</option>
-<option>Hasan</option>
-<option>Hata</option>
-<option>Alda</option>
-<option>Nur</option>
+<option value="Agung">Agung</option>
+<option value="Hasan">Hasan</option>
+<option value="Hata">Hata</option>
+<option value="Alda">Alda</option>
+<option value="Nur">Nur</option>
 </select>
 
 <button onclick="absen()">Hadir</button>
@@ -71,7 +71,7 @@ select, button {
 <button onclick="show('absensi')">Absensi</button>
 </div>
 
-<!-- SCRIPT NAV -->
+<!-- NAV SCRIPT -->
 <script>
 function show(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -79,13 +79,12 @@ function show(id){
 }
 </script>
 
-<!-- FIREBASE (WAJIB PALING BAWAH) -->
+<!-- FIREBASE -->
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
-// CONFIG KAMU (SUDAH SAYA ISI)
 const firebaseConfig = {
   apiKey: "AIzaSyAu67MAhW8xdmciPi3xOKwHdy-uP4u9tXI",
   authDomain: "pt-agn.firebaseapp.com",
@@ -95,13 +94,19 @@ const firebaseConfig = {
   appId: "1:810494462386:web:432a3050c054bdd8437cab"
 };
 
-// INIT
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// ABSEN
+// 🔥 ABSEN
 window.absen = async function(){
   let nama = document.getElementById('nama').value;
+
+  console.log("Dipilih:", nama);
+
+  if(!nama){
+    alert("Pilih nama dulu!");
+    return;
+  }
 
   await addDoc(collection(db, "absensi"), {
     nama: nama,
@@ -109,10 +114,12 @@ window.absen = async function(){
     waktu: new Date()
   });
 
+  alert("✅ " + nama + " berhasil absen");
+
   tampilAbsen();
 }
 
-// TAMPIL DATA
+// 🔥 TAMPIL DATA
 async function tampilAbsen(){
   let list = document.getElementById('listAbsen');
   list.innerHTML = "";
@@ -121,8 +128,17 @@ async function tampilAbsen(){
 
   data.forEach(doc=>{
     let d = doc.data();
+
+    let waktu = d.waktu?.seconds 
+      ? new Date(d.waktu.seconds * 1000).toLocaleString()
+      : "-";
+
     let li = document.createElement("li");
-    li.innerText = d.nama + " - " + d.status;
+    li.innerHTML = `
+      <b>${d.nama}</b> - ${d.status}<br>
+      <small>${waktu}</small>
+    `;
+
     list.appendChild(li);
   });
 }
