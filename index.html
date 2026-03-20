@@ -1,117 +1,60 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Absensi PT-AGN</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
 <style>
-body{
- font-family:'Segoe UI',sans-serif;
- background:linear-gradient(135deg,#74b9ff,#dfe6e9);
- margin:0;padding:15px;
-}
-
-.card{
- background:#fff;
- border-radius:18px;
- padding:15px;
- margin-bottom:15px;
- box-shadow:0 8px 20px rgba(0,0,0,0.1);
-}
-
-button{
- width:100%;
- padding:12px;
- margin:6px 0;
- border:none;
- border-radius:12px;
- color:#fff;
- font-weight:bold;
-}
-
-.green{background:#2ecc71}
-.orange{background:#f39c12}
-.red{background:#e74c3c}
-.blue{background:#3498db}
-
-.status{
- padding:5px 10px;
- border-radius:8px;
- color:#fff;
- font-size:12px;
-}
-
-.hadir{background:#2ecc71}
-.telat{background:#f39c12}
-.izin{background:#3498db}
-.alpa{background:#e74c3c}
-
-input,select,textarea{
- width:100%;
- padding:10px;
- margin:5px 0;
- border-radius:10px;
- border:1px solid #ccc;
-}
-
-#toast{
- position:fixed;
- bottom:20px;
- left:50%;
- transform:translateX(-50%);
- background:#333;
- color:#fff;
- padding:10px 20px;
- border-radius:10px;
- opacity:0;
- transition:.3s;
-}
-.show{opacity:1}
+body{font-family:sans-serif;background:#a9c4df;padding:10px}
+.card{background:#fff;padding:15px;border-radius:15px;margin-bottom:10px}
+button{width:100%;padding:10px;margin:5px 0;border:none;border-radius:10px;color:#fff}
+.green{background:#2ecc71}.orange{background:#f39c12}.blue{background:#3498db}.red{background:#e74c3c}
+.status{padding:5px 10px;border-radius:10px;color:#fff}
+.hadir{background:#2ecc71}.telat{background:#f39c12}.izin{background:#3498db}.alpa{background:#7f8c8d}
 </style>
 </head>
 
 <body>
 
-<div id="toast"></div>
-
-<!-- LOGIN -->
 <div id="loginBox" class="card">
 <h3>Login Admin</h3>
-<input type="password" id="pinInput" placeholder="PIN">
-<button class="blue" onclick="loginPIN()">Login</button>
-<button class="orange" onclick="gantiPIN()">Ganti PIN</button>
+<input type="password" id="pin">
+<button class="blue" onclick="login()">Login</button>
 </div>
 
-<!-- APP -->
 <div id="app" style="display:none">
 
 <div class="card">
-<select id="nama">
-<option>Agung</option>
-<option>Alda</option>
-<option>Nur</option>
-</select>
+<select id="nama"></select>
 
-<button class="green" onclick="absenMasuk()">Masuk</button>
-<button class="orange" onclick="absenPulang()">Pulang</button>
+<button class="green" onclick="masuk()">Masuk</button>
+<button class="orange" onclick="pulang()">Pulang</button>
 <button class="blue" onclick="izin()">Izin</button>
-<button class="red" onclick="resetHari()">Reset</button>
-<button class="red" onclick="logout()">Logout</button>
+<button class="red" onclick="reset()">Reset</button>
 
-<input id="waGlobal" placeholder="WA Global">
-<button onclick="kirimWA()">WA Global</button>
+<input id="wa" placeholder="Nomor WA">
+<button class="blue" onclick="kirimWA()">WA Harian</button>
 
-<textarea id="waMap" placeholder="Agung=628xxx"></textarea>
-<button onclick="kirimWAper()">WA Per Orang</button>
+<h4>Karyawan</h4>
+<input id="karyawanBaru">
+<button onclick="tambahKaryawan()">Tambah</button>
+</div>
 
+<div class="card">
+<h3>Dashboard</h3>
+<div style="display:flex;gap:10px">
+<div class="card" style="flex:1;background:#3498db;color:#fff" id="hadirBox">0</div>
+<div class="card" style="flex:1;background:#2ecc71;color:#fff" id="telatBox">0</div>
+<div class="card" style="flex:1;background:#f1c40f;color:#fff" id="alpaBox">0</div>
+</div>
+</div>
+
+<div class="card">
+<h3>Grafik Harian</h3>
+<canvas id="chart"></canvas>
 </div>
 
 <div id="list"></div>
@@ -122,78 +65,22 @@ input,select,textarea{
 </div>
 
 <div class="card">
-<select id="pilihKaryawan"></select>
-<canvas id="chart"></canvas>
+<h3>Grafik Per Orang</h3>
+<select id="pilih"></select>
+<canvas id="chart2"></canvas>
+</div>
+
+<!-- 🔥 LAPORAN BULANAN -->
+<div class="card">
+<h3>📊 Laporan Bulanan</h3>
+<input type="month" id="bulan">
+<button class="blue" onclick="kirimLaporanBulanan()">Kirim WA Laporan</button>
+<pre id="previewBulanan"></pre>
 </div>
 
 </div>
 
 <script>
-
-// ===== PIN =====
-let PIN = localStorage.getItem("PIN") || "1234";
-
-// ===== SESSION =====
-let SESSION_TIMEOUT = 10 * 60 * 1000;
-let sessionTimer;
-
-// ===== TOAST =====
-function showToast(msg){
- let t=document.getElementById("toast");
- t.innerText=msg;
- t.classList.add("show");
- setTimeout(()=>t.classList.remove("show"),2000);
-}
-
-// ===== SESSION =====
-function resetSession(){
- clearTimeout(sessionTimer);
- sessionTimer=setTimeout(logoutAuto,SESSION_TIMEOUT);
-}
-
-function logoutAuto(){
- localStorage.removeItem("login");
- showToast("Session habis");
- setTimeout(()=>location.reload(),1500);
-}
-
-// ===== LOGIN =====
-function loginPIN(){
- if(pinInput.value===PIN){
-  localStorage.setItem("login","true");
-  loginBox.style.display="none";
-  app.style.display="block";
-  showToast("Login berhasil");
-  resetSession();
- }else{
-  showToast("PIN salah");
- }
-}
-
-if(localStorage.getItem("login")==="true"){
- loginBox.style.display="none";
- app.style.display="block";
- resetSession();
-}
-
-["click","touchstart","keypress"].forEach(e=>{
- document.addEventListener(e,resetSession);
-});
-
-function logout(){
- localStorage.removeItem("login");
- location.reload();
-}
-
-function gantiPIN(){
- let lama=prompt("PIN lama:");
- if(lama!==PIN)return showToast("Salah");
- let baru=prompt("PIN baru:");
- if(!baru || baru.length<4)return showToast("Min 4 digit");
- PIN=baru;
- localStorage.setItem("PIN",baru);
- showToast("PIN diganti");
-}
 
 // ===== FIREBASE =====
 const firebaseConfig={
@@ -204,65 +91,88 @@ const firebaseConfig={
 firebase.initializeApp(firebaseConfig);
 const db=firebase.database();
 
-let data=[];
+let data=[],karyawan=[];
 
-db.ref("absensi").on("value",snap=>{
- data=snap.val()||[];
+// ===== LOAD =====
+db.ref("absensi").on("value",s=>{
+ data=s.val()||[];
  render();
 });
 
-function save(){ db.ref("absensi").set(data); }
+db.ref("karyawan").on("value",s=>{
+ karyawan=s.val()||["Agung","Alda","Nur","Budi","Siti"];
+ updateDrop();
+});
 
+// ===== LOGIN =====
+let PIN=localStorage.getItem("PIN")||"1234";
+function login(){
+ if(pin.value==PIN){
+  localStorage.setItem("login",true);
+  loginBox.style.display="none";
+  app.style.display="block";
+ }else alert("PIN salah");
+}
+if(localStorage.getItem("login")){
+ loginBox.style.display="none";
+ app.style.display="block";
+}
+
+// ===== KARYAWAN =====
+function updateDrop(){
+ nama.innerHTML=karyawan.map(n=>`<option>${n}</option>`);
+ pilih.innerHTML=karyawan.map(n=>`<option>${n}</option>`);
+}
+function tambahKaryawan(){
+ if(!karyawanBaru.value)return;
+ karyawan.push(karyawanBaru.value);
+ db.ref("karyawan").set(karyawan);
+ karyawanBaru.value="";
+}
+
+// ===== WAKTU =====
 function now(){
  let d=new Date();
- return {tgl:d.toISOString().split('T')[0],jam:d.toTimeString().split(' ')[0]}
+ return {tgl:d.toISOString().split('T')[0],jam:d.toTimeString().split(' ')[0]};
 }
 
 // ===== ABSEN =====
-function absenMasuk(){
+function masuk(){
  let t=now(),n=nama.value;
- if(data.find(x=>x.nama==n&&x.tgl==t.tgl)) return showToast("Sudah absen");
- data.push({nama:n,tgl:t.tgl,jam:t.jam,status:t.jam>"09:00:00"?"Telat":"Hadir"});
+ if(data.find(x=>x.nama==n&&x.tgl==t.tgl))return;
+ data.push({nama:n,tgl:t.tgl,masuk:t.jam,status:t.jam>"09:00:00"?"Telat":"Hadir"});
  save();
 }
-
-function absenPulang(){
+function pulang(){
  let t=now();
  let d=data.find(x=>x.nama==nama.value&&x.tgl==t.tgl);
  if(d)d.pulang=t.jam;
  save();
 }
-
 function izin(){
  let t=now();
  data.push({nama:nama.value,tgl:t.tgl,status:"Izin"});
  save();
 }
-
-function resetHari(){
+function reset(){
  let t=now().tgl;
  data=data.filter(x=>x.tgl!=t);
  save();
 }
+function save(){ db.ref("absensi").set(data); }
 
 // ===== AUTO ALPA =====
 setInterval(()=>{
- let nowTime=new Date().toTimeString().split(' ')[0];
- if(nowTime>="16:00:00"){
-  let names=["Agung","Alda","Nur"];
-  names.forEach(n=>{
-   if(!data.find(x=>x.nama==n && x.tgl==new Date().toISOString().split('T')[0])){
-    data.push({nama:n,tgl:new Date().toISOString().split('T')[0],status:"Alpa"});
+ let t=now();
+ if(t.jam>="16:00:00"){
+  karyawan.forEach(n=>{
+   if(!data.find(x=>x.nama==n&&x.tgl==t.tgl)){
+    data.push({nama:n,tgl:t.tgl,status:"Alpa"});
    }
   });
   save();
  }
 },60000);
-
-// ===== STATUS CLASS =====
-function getStatusClass(s){
- return s=="Hadir"?"hadir":s=="Telat"?"telat":s=="Izin"?"izin":"alpa";
-}
 
 // ===== RANKING =====
 function rank(){
@@ -276,74 +186,88 @@ function rank(){
  return Object.entries(r).map(([n,v])=>({n,...v})).sort((a,b)=>b.score-a.score);
 }
 
-// ===== CHART =====
-let chart;
-function renderChart(n){
- let d=data.filter(x=>x.nama==n);
- let h=d.filter(x=>x.status=="Hadir").length;
- let t=d.filter(x=>x.status=="Telat").length;
- let a=d.filter(x=>x.status=="Alpa").length;
-
- if(chart)chart.destroy();
- chart=new Chart(chartCanvas,{
-  type:'bar',
-  data:{
-   labels:["Hadir","Telat","Alpa"],
-   datasets:[{
-    label:"Performa",
-    data:[h,t,a],
-    backgroundColor:["#2ecc71","#f39c12","#e74c3c"]
-   }]
-  },
-  options:{plugins:{legend:{display:false}}}
- });
-}
-
 // ===== RENDER =====
+let chart,chart2;
+
 function render(){
 
- list.innerHTML=data.map(x=>`
- <div class="card">
-  <b>${x.nama}</b><br>
-  <small>${x.tgl}</small><br><br>
-  Masuk: ${x.jam||'-'}<br>
-  Pulang: ${x.pulang||'-'}<br><br>
-  <span class="status ${getStatusClass(x.status)}">${x.status}</span>
- </div>
- `).join("");
+list.innerHTML=data.map(x=>`
+<div class="card">
+<b>${x.nama}</b><br>
+${x.tgl}<br>
+Masuk:${x.masuk||'-'}<br>
+Pulang:${x.pulang||'-'}<br>
+<span class="status ${x.status.toLowerCase()}">${x.status}</span>
+</div>
+`).join("");
 
- let r=rank();
- ranking.innerHTML=r.map((x,i)=>`
- <div style="display:flex;justify-content:space-between;padding:10px;border-radius:10px;background:${i==0?'#ffeaa7':'#f1f2f6'}">
-  <b>#${i+1} ${x.n}</b>
-  <span>${x.score}</span>
- </div>
- `).join("");
+hadirBox.innerText=data.filter(x=>x.status=="Hadir").length;
+telatBox.innerText=data.filter(x=>x.status=="Telat").length;
+alpaBox.innerText=data.filter(x=>x.status=="Alpa").length;
 
- let unik=[...new Set(data.map(x=>x.nama))];
- pilihKaryawan.innerHTML=unik.map(n=>`<option>${n}</option>`);
- renderChart(pilihKaryawan.value);
- pilihKaryawan.onchange=()=>renderChart(pilihKaryawan.value);
+let r=rank();
+ranking.innerHTML=r.map((x,i)=>`#${i+1} ${x.n} (${x.score})`).join("<br>");
+
+let h=data.filter(x=>x.status=="Hadir").length;
+let t=data.filter(x=>x.status=="Telat").length;
+let a=data.filter(x=>x.status=="Alpa").length;
+
+if(chart)chart.destroy();
+chart=new Chart(chart,{type:'bar',data:{labels:["Hadir","Telat","Alpa"],datasets:[{label:"Absensi",data:[h,t,a]}]}});
+
+let n=pilih.value;
+let d=data.filter(x=>x.nama==n);
+if(chart2)chart2.destroy();
+chart2=new Chart(chart2,{type:'bar',data:{labels:["Hadir","Telat","Alpa"],datasets:[{label:n,data:[
+d.filter(x=>x.status=="Hadir").length,
+d.filter(x=>x.status=="Telat").length,
+d.filter(x=>x.status=="Alpa").length
+]}]}});
+
+previewBulanan.innerText = generateLaporan();
 }
 
 // ===== WA =====
 function kirimWA(){
- if(!waGlobal.value) return showToast("Isi nomor dulu");
+ if(!wa.value)return alert("Isi nomor");
  let txt="Absensi\n";
  data.forEach(d=>txt+=`${d.nama} ${d.status}\n`);
- window.open(`https://wa.me/${waGlobal.value}?text=${encodeURIComponent(txt)}`);
+ window.open(`https://wa.me/${wa.value}?text=${encodeURIComponent(txt)}`);
 }
 
-function kirimWAper(){
- if(!waMap.value) return showToast("Isi mapping");
- waMap.value.split("\n").forEach(m=>{
-  let [n,no]=m.split("=");
-  if(!n||!no)return;
-  let d=data.filter(x=>x.nama==n.trim());
-  let txt=`${n}\n`;
-  d.forEach(x=>txt+=`${x.tgl} ${x.status}\n`);
-  window.open(`https://wa.me/${no.trim()}?text=${encodeURIComponent(txt)}`);
+// ===== LAPORAN BULANAN PRO =====
+function generateLaporan(){
+ let bulanVal=bulan.value;
+ if(!bulanVal)return "Pilih bulan";
+
+ let hasil={};
+
+ data.forEach(x=>{
+  if(!x.tgl.includes(bulanVal))return;
+
+  if(!hasil[x.nama])hasil[x.nama]={h:0,t:0,a:0,s:0};
+
+  if(x.status=="Hadir"){hasil[x.nama].h++;hasil[x.nama].s+=3;}
+  if(x.status=="Telat"){hasil[x.nama].t++;hasil[x.nama].s+=1;}
+  if(x.status=="Alpa"){hasil[x.nama].a++;hasil[x.nama].s-=3;}
  });
+
+ let arr=Object.entries(hasil).map(([n,v])=>({n,...v}))
+ .sort((a,b)=>b.s-a.s);
+
+ let txt="📊 LAPORAN BULANAN\n\n";
+
+ arr.forEach((x,i)=>{
+  txt+=`#${i+1} ${x.n}\nH:${x.h} T:${x.t} A:${x.a}\nSkor:${x.s}\n\n`;
+ });
+
+ return txt;
+}
+
+function kirimLaporanBulanan(){
+ if(!wa.value)return alert("Isi nomor");
+ let txt=generateLaporan();
+ window.open(`https://wa.me/${wa.value}?text=${encodeURIComponent(txt)}`);
 }
 
 </script>
