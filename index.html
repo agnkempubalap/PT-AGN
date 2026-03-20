@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PT AGN</title>
+<title>Absensi PT AGN</title>
 
 <style>
 body { font-family: Arial; margin:0; background:#eef3ff; }
@@ -43,7 +43,7 @@ select, button {
 <!-- DASHBOARD -->
 <div id="dashboard" class="page active">
 <h2>Dashboard</h2>
-<div class="card">Aplikasi PT AGN</div>
+<div class="card">Aplikasi Absensi PT AGN</div>
 </div>
 
 <!-- ABSENSI -->
@@ -73,6 +73,7 @@ select, button {
 <button onclick="show('absensi')">Absensi</button>
 </div>
 
+<!-- NAV SCRIPT -->
 <script>
 function show(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -80,7 +81,7 @@ function show(id){
 }
 </script>
 
-<!-- FIREBASE -->
+<!-- 🔥 FIREBASE -->
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
@@ -100,11 +101,11 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// 🔥 ABSEN (FIX)
+// ✅ ABSEN (PASTI Nambah, tidak overwrite)
 window.absen = async function(){
   let nama = document.getElementById('nama').value;
 
-  console.log("Kirim ke Firebase:", nama);
+  console.log("Kirim:", nama);
 
   try {
     await addDoc(collection(db, "absensi"), {
@@ -113,7 +114,7 @@ window.absen = async function(){
       waktu: new Date()
     });
 
-    alert("✅ Berhasil masuk Firebase: " + nama);
+    alert("✅ Berhasil: " + nama);
 
     tampilAbsen();
 
@@ -123,14 +124,14 @@ window.absen = async function(){
   }
 }
 
-// 🔥 TAMPIL DATA
+// ✅ TAMPIL DATA
 async function tampilAbsen(){
   let list = document.getElementById('listAbsen');
   list.innerHTML = "";
 
-  const querySnapshot = await getDocs(collection(db, "absensi"));
+  const data = await getDocs(collection(db, "absensi"));
 
-  querySnapshot.forEach((doc) => {
+  data.forEach(doc=>{
     let d = doc.data();
 
     let li = document.createElement("li");
