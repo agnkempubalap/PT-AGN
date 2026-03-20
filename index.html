@@ -1,250 +1,210 @@
-<!DOCTYPE html>
-<html>
+<!DOCTYPE html><html lang="id">
 <head>
-  <title>Absensi PT-AGN</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Absensi PT-AGN Ultimate</title><!-- LIBRARY --><script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script><style>
+body{
+  font-family: sans-serif;
+  margin:0;
+  background: linear-gradient(to bottom,#6ea8dc,#cfe2f3);
+}
+.container{
+  padding:15px;
+}
+.card{
+  background:white;
+  padding:15px;
+  border-radius:15px;
+  margin-bottom:15px;
+  box-shadow:0 5px 10px rgba(0,0,0,0.1);
+}
+button{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  margin-top:8px;
+  color:white;
+  font-weight:bold;
+}
+.green{background:#28a745}
+.orange{background:#f39c12}
+.red{background:#e74c3c}
+.blue{background:#3498db}
 
-  <!-- Firebase VERSI STABIL -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-
-  <!-- Excel -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
-  <!-- PDF -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-  <!-- Chart -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-  <style>
-    body {
-      font-family: sans-serif;
-      background: linear-gradient(to bottom, #dbeafe, #93c5fd);
-      padding: 10px;
-    }
-
-    .card {
-      background: white;
-      border-radius: 15px;
-      padding: 15px;
-      margin-bottom: 15px;
-      box-shadow: 0 5px 10px rgba(0,0,0,0.1);
-    }
-
-    button {
-      width: 100%;
-      padding: 12px;
-      margin: 5px 0;
-      border: none;
-      border-radius: 10px;
-      color: white;
-      font-weight: bold;
-    }
-
-    .green { background: #16a34a; }
-    .orange { background: #f59e0b; }
-    .red { background: #ef4444; }
-    .blue { background: #3b82f6; }
-
-    .status {
-      display: inline-block;
-      padding: 5px 10px;
-      border-radius: 10px;
-      color: white;
-      background: green;
-    }
-  </style>
-</head>
-
-<body>
-
-<div class="card">
-  <h3>📋 Absensi PT-AGN</h3>
-
-  <select id="nama">
-    <option>Agung</option>
-    <option>Alda</option>
-    <option>Nur</option>
-  </select>
-
-  <button class="green" onclick="absenMasuk()">Absen Masuk</button>
-  <button class="orange" onclick="absenPulang()">Absen Pulang</button>
-  <button class="red" onclick="resetHari()">Reset Hari Ini</button>
-  <button class="blue" onclick="exportExcel()">Export Excel</button>
-  <button class="blue" onclick="exportPDF()">Export PDF</button>
+select,input{
+  width:100%;
+  padding:10px;
+  border-radius:10px;
+  border:1px solid #ccc;
+  margin-top:8px;
+}
+.dashboard{
+  display:flex;
+  gap:10px;
+}
+.box{
+  flex:1;
+  padding:15px;
+  border-radius:10px;
+  color:white;
+  text-align:center;
+}
+.b1{background:#2d7be5}
+.b2{background:#1abc9c}
+.b3{background:#f1c40f}
+</style></head><body>
+<div class="container"><div class="card">
+<h2>📋 Absensi PT-AGN</h2>
+<select id="nama"></select>
+<button class="green" onclick="absenMasuk()">Absen Masuk</button>
+<button class="orange" onclick="absenPulang()">Absen Pulang</button>
+<button class="red" onclick="resetData()">Reset Hari Ini</button>
+<button class="blue" onclick="exportExcel()">Export Excel</button>
+<button class="blue" onclick="exportPDF()">Export PDF</button>
+</div><div class="card">
+<h3>Filter</h3>
+<select id="bulan"></select>
+<input type="text" id="search" placeholder="Cari nama..." oninput="render()">
+</div><div class="card">
+<h3>Dashboard</h3>
+<div class="dashboard">
+<div class="box b1" id="total">0</div>
+<div class="box b2" id="hadir">0</div>
+<div class="box b3" id="telat">0</div>
 </div>
+</div><div class="card">
+<h3>Grafik</h3>
+<canvas id="chart"></canvas>
+</div><div id="list"></div></div><script>
+// DATA
+const karyawan=["Agung","Alda","Nur","Hasan","Hatta"];
+let data=JSON.parse(localStorage.getItem("absensi"))||[];
 
-<div class="card">
-  <h3>Filter</h3>
-  <input type="text" id="search" placeholder="Cari nama..." oninput="render()">
-</div>
+// INIT
+let select=document.getElementById("nama");
+karyawan.forEach(n=>select.innerHTML+=`<option>${n}</option>`);
 
-<div class="card">
-  <h3>Dashboard</h3>
-  Total: <span id="total">0</span> |
-  Hadir: <span id="hadir">0</span>
-</div>
-
-<div class="card">
-  <h3>Grafik</h3>
-  <canvas id="chart"></canvas>
-</div>
-
-<div id="list"></div>
-
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyDummyKEY",
-  authDomain: "pt-agn.firebaseapp.com",
-  projectId: "pt-agn"
-};
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-
-let data = [];
-
-function getTanggal() {
-  return new Date().toISOString().split('T')[0];
+let bulanSelect=document.getElementById("bulan");
+for(let i=1;i<=12;i++){
+  bulanSelect.innerHTML+=`<option value="${i}">Bulan ${i}</option>`;
 }
 
-function getJam() {
-  return new Date().toLocaleTimeString();
+// ABSEN
+function now(){
+ let d=new Date();
+ return {
+  tanggal:d.toISOString().slice(0,10),
+  jam:d.toTimeString().slice(0,8),
+  bulan:d.getMonth()+1
+ }
 }
 
-function absenMasuk() {
-  let nama = document.getElementById("nama").value;
-  let tanggal = getTanggal();
+function absenMasuk(){
+ let n=select.value;
+ let t=now();
 
-  db.collection("absensi")
-    .where("nama","==",nama)
-    .where("tanggal","==",tanggal)
-    .get()
-    .then(res=>{
-      if(!res.empty){
-        alert("Sudah absen masuk!");
-        return;
-      }
+ let cek=data.find(x=>x.nama==n && x.tanggal==t.tanggal);
+ if(cek){alert("Sudah absen masuk!");return}
 
-      db.collection("absensi").add({
-        nama,
-        tanggal,
-        masuk: getJam(),
-        pulang: "",
-        status: "Hadir"
-      });
-    });
+ data.push({nama:n,tanggal:t.tanggal,masuk:t.jam,pulang:"",status:"Hadir",bulan:t.bulan});
+ save();
 }
 
 function absenPulang(){
-  let nama = document.getElementById("nama").value;
-  let tanggal = getTanggal();
+ let n=select.value;
+ let t=now();
 
-  db.collection("absensi")
-    .where("nama","==",nama)
-    .where("tanggal","==",tanggal)
-    .get()
-    .then(res=>{
-      res.forEach(doc=>{
-        db.collection("absensi").doc(doc.id).update({
-          pulang: getJam()
-        });
-      });
-    });
+ let d=data.find(x=>x.nama==n && x.tanggal==t.tanggal);
+ if(!d){alert("Belum absen masuk");return}
+ if(d.pulang){alert("Sudah absen pulang");return}
+
+ d.pulang=t.jam;
+ save();
 }
 
-function resetHari(){
-  let tgl = getTanggal();
-
-  db.collection("absensi")
-    .where("tanggal","==",tgl)
-    .get()
-    .then(res=>{
-      res.forEach(doc=>{
-        db.collection("absensi").doc(doc.id).delete();
-      });
-    });
+function resetData(){
+ if(confirm("Reset hari ini?")){
+  let today=now().tanggal;
+  data=data.filter(x=>x.tanggal!=today);
+  save();
+ }
 }
 
+function save(){
+ localStorage.setItem("absensi",JSON.stringify(data));
+ render();
+}
+
+// RENDER
+let chart;
 function render(){
-  let list = document.getElementById("list");
-  let search = document.getElementById("search").value.toLowerCase();
+ let list=document.getElementById("list");
+ list.innerHTML="";
 
-  list.innerHTML = "";
+ let bulan=bulanSelect.value;
+ let search=document.getElementById("search").value.toLowerCase();
 
-  let total=0, hadir=0;
+ let filtered=data.filter(x=>{
+  return (!bulan||x.bulan==bulan) && x.nama.toLowerCase().includes(search);
+ });
 
-  data.forEach(d=>{
-    if(!d.nama.toLowerCase().includes(search)) return;
+ let hadir=filtered.length;
+ let telat=0;
 
-    total++;
-    if(d.status==="Hadir") hadir++;
+ document.getElementById("total").innerText=filtered.length;
+ document.getElementById("hadir").innerText=hadir;
+ document.getElementById("telat").innerText=telat;
 
-    list.innerHTML += `
-      <div class="card">
-        <b>${d.nama}</b><br>
-        ${d.tanggal}<br>
-        Masuk: ${d.masuk}<br>
-        Pulang: ${d.pulang || "-"}<br>
-        <span class="status">${d.status}</span>
-      </div>
-    `;
-  });
+ filtered.forEach(x=>{
+  list.innerHTML+=`
+  <div class='card'>
+  <b>${x.nama}</b><br>
+  ${x.tanggal}<br>
+  Masuk: ${x.masuk}<br>
+  Pulang: ${x.pulang||"-"}<br>
+  Status: ${x.status}
+  </div>`;
+ });
 
-  document.getElementById("total").innerText = total;
-  document.getElementById("hadir").innerText = hadir;
-
-  renderChart();
+ // CHART
+ let ctx=document.getElementById("chart");
+ if(chart) chart.destroy();
+ chart=new Chart(ctx,{
+  type:'bar',
+  data:{
+    labels:["Hadir"],
+    datasets:[{label:"Jumlah",data:[hadir]}]
+  }
+ });
 }
 
-function renderChart(){
-  let ctx = document.getElementById("chart");
-
-  let hadir = data.length;
-
-  new Chart(ctx,{
-    type:'bar',
-    data:{
-      labels:["Hadir"],
-      datasets:[{
-        label:"Absensi",
-        data:[hadir]
-      }]
-    }
-  });
-}
-
+// EXPORT EXCEL
 function exportExcel(){
-  let ws = XLSX.utils.json_to_sheet(data);
-  let wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Absensi");
-  XLSX.writeFile(wb, "absensi.xlsx");
+ let ws=XLSX.utils.json_to_sheet(data);
+ let wb=XLSX.utils.book_new();
+ XLSX.utils.book_append_sheet(wb,ws,"Absensi");
+ XLSX.writeFile(wb,"absensi.xlsx");
 }
 
+// EXPORT PDF
 function exportPDF(){
-  const { jsPDF } = window.jspdf;
-  let doc = new jsPDF();
+ const { jsPDF } = window.jspdf;
+ let doc=new jsPDF();
+ doc.text("LAPORAN ABSENSI PT-AGN",10,10);
 
-  doc.text("Laporan Absensi PT-AGN", 10, 10);
+ let rows=data.map((x,i)=>[
+  i+1,x.nama,x.tanggal,x.masuk,x.pulang||"-",x.status
+ ]);
 
-  let y=20;
+ doc.autoTable({
+  head:[["No","Nama","Tanggal","Masuk","Pulang","Status"]],
+  body:rows
+ });
 
-  data.forEach((d,i)=>{
-    doc.text(`${i+1}. ${d.nama} - ${d.tanggal}`,10,y);
-    y+=7;
-  });
-
-  doc.save("absensi.pdf");
+ doc.save("absensi.pdf");
 }
 
-db.collection("absensi").onSnapshot(snapshot=>{
-  data=[];
-  snapshot.forEach(doc=>{
-    data.push(doc.data());
-  });
-  render();
-});
-</script>
-
-</body>
+render();
+</script></body>
 </html>
