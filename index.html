@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v76.2</title>
+    <title>PT-AGN v76.3 - FULL FIX</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
@@ -18,11 +18,12 @@
         .dark-card{background:var(--c); border-radius:12px; border:1px solid var(--b); padding:10px 15px; display:flex; align-items:center; gap:8px; cursor:pointer}
 
         .card{background:var(--c);padding:18px;border-radius:18px;margin-bottom:12px;border:1px solid var(--b);box-shadow:0 4px 6px -1px rgba(0,0,0,0.2)}
-        h3{margin:0 0 15px;font-size:11px;color:#f59e0b;text-transform:uppercase;letter-spacing:1px;font-weight:800;display:flex;align-items:center;gap:5px}
+        h3{margin:0;font-size:11px;color:#f59e0b;text-transform:uppercase;letter-spacing:1px;font-weight:800;display:flex;align-items:center;gap:5px; margin-bottom:15px}
         
         label{display:block;font-size:10px;margin-bottom:5px;font-weight:600;color:var(--t);opacity:0.8}
         input,button,select{border-radius:12px;font-size:14px;height:52px;border:1px solid var(--b);background:var(--bg);color:var(--t);width:100%;box-sizing:border-box;outline:none}
-        .btn{display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;border:none;color:#fff}
+        .btn{display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;border:none;color:#fff; transition: 0.2s}
+        .btn:active{transform: scale(0.95)}
         
         .table-wrap{overflow:auto;border-radius:12px;border:1px solid var(--b);background:var(--c)}
         .table-web{width:100%;border-collapse:separate;border-spacing:0;font-size:10px}
@@ -30,7 +31,6 @@
         
         .nama-fixed{position:sticky !important;left:0;background-color:var(--c) !important;z-index:10;min-width:120px !important;text-align:left !important;padding-left:15px !important;font-weight:700; border-right: 2px solid var(--p) !important}
         
-        /* WARNA REKAP AKHIR (GELAP) */
         .rekap-akhir{background:#0f172a !important; color:#ffffff !important; font-weight:800; min-width:35px !important}
         .th-rekap{background:#020617 !important; color:#f59e0b !important; font-weight:800}
 
@@ -39,11 +39,7 @@
         .s-off{background:var(--d);color:#fff} .s-a{background:var(--al);color:#fff} .s-l{background:#AA00FF;color:#fff}
         .jam-text{font-size:8px;font-weight:600;display:block;margin-top:2px}
 
-        @media print {
-            header, .card:not(.table-card), .no-print { display: none !important; }
-            .table-web { font-size: 8pt !important; }
-            .rekap-akhir { background: #eee !important; color: #000 !important; border: 1px solid #000 !important; }
-        }
+        @media print { header, .card:not(.table-card), .no-print { display: none !important; } }
     </style>
 </head>
 <body data-theme="dark">
@@ -51,24 +47,25 @@
         <header>
             <div class="logo-box">
                 <img id="mainLogo" src="https://ui-avatars.com/api/?name=AGN&background=000&color=fff">
-                <div><h2 style="margin:0;font-size:1.3rem">PT AGN</h2><span style="font-size:10px;color:var(--p);font-weight:800">SYSTEM v76.2</span></div>
+                <div><h2 style="margin:0;font-size:1.3rem">PT AGN</h2><span style="font-size:10px;color:var(--p);font-weight:800">SYSTEM v76.3</span></div>
             </div>
             <div class="dark-card" onclick="toggleT()">
                 <span id="tIco">☀️</span> <span style="font-size:12px;font-weight:600" id="tTxt">Dark Mode</span>
             </div>
         </header>
 
-        <!-- PENGELOLA -->
+        <!-- PENGELOLA KARYAWAN -->
         <div class="card">
+            <h3>👥 DATA KARYAWAN</h3>
             <div style="display:flex;gap:10px">
-                <input list="lk" id="iNama" placeholder="Pilih Nama...">
+                <input list="lk" id="iNama" placeholder="Ketik/Pilih Nama...">
                 <datalist id="lk"></datalist>
                 <button class="btn" style="background:var(--s);width:60px;font-size:24px" onclick="tKaryawan()">+</button>
                 <button class="btn" style="background:var(--d);width:60px" onclick="hKaryawan()">🗑️</button>
             </div>
         </div>
 
-        <!-- RESET & LIBUR -->
+        <!-- RESET & LIBUR (PERSIS GAMBAR) -->
         <div class="card">
             <h3>🧹 RESET & LIBUR</h3>
             <div style="display:grid;grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px">
@@ -98,10 +95,10 @@
         <!-- REKAP -->
         <div class="card table-card">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px" class="no-print">
-                <input type="month" id="fB" style="width:150px" onchange="rRekap()">
+                <input type="month" id="fB" style="width:160px" onchange="rRekap()">
                 <div style="display:flex;gap:8px">
-                    <button class="btn" style="background:#1d6f42;width:110px;font-size:11px" onclick="doExcel()">📂 EXCEL</button>
-                    <button class="btn" style="background:#b91c1c;width:110px;font-size:11px" onclick="window.print()">📜 PDF</button>
+                    <button class="btn" style="background:#1d6f42;width:100px;font-size:11px" onclick="doExcel()">📂 EXCEL</button>
+                    <button class="btn" style="background:#b91c1c;width:100px;font-size:11px" onclick="window.print()">📜 PDF</button>
                 </div>
             </div>
             <div class="table-wrap">
@@ -111,16 +108,10 @@
     </div>
 
     <script>
+        // CONFIG FIREBASE
         const cfg={apiKey:"AIzaSyAu67MAhWBxdmciPi3xOKWhdy-uP4u9tXI",databaseURL:"https://pt-agn-default-rtdb.asia-southeast1.firebasedatabase.app"};
         firebase.initializeApp(cfg); const db=firebase.database();
         let mk={}, ad={}, hl={}; const TGL_MULAI_SISTEM = "2026-03-21";
-
-        function toggleT(){ 
-            let b=document.body; let nt=b.getAttribute('data-theme')==='dark'?'light':'dark'; 
-            b.setAttribute('data-theme',nt);
-            document.getElementById('tIco').innerText=nt==='dark'?'☀️':'🌙';
-            document.getElementById('tTxt').innerText=nt==='dark'?'Light Mode':'Dark Mode';
-        }
 
         window.onload=()=>{
             document.getElementById('fB').value=new Date().toISOString().slice(0,7);
@@ -138,23 +129,24 @@
         function hKaryawan(){let n=document.getElementById('iNama'); let id=Object.keys(mk).find(k=>mk[k]===n.value); if(id && confirm('Hapus?')) db.ref(`master_karyawan/${id}`).remove();}
 
         function pAbsen(ty){
-            let n=document.getElementById('iNama'), now=new Date(), tgl=now.toISOString().split('T')[0];
-            if(!n.value) return alert("Pilih Nama!");
+            let n=document.getElementById('iNama').value, now=new Date(), tgl=now.toISOString().split('T')[0];
+            if(!n) return alert("Pilih Nama!");
             let jam=now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
             let st="Hadir"; if(ty==='Masuk' && (now.getHours()>9 || (now.getHours()===9 && now.getMinutes()>0))) st="Terlambat";
-            let nt=""; if(ty==='Izin'){nt=prompt("Alasan:"); if(nt===null)return; st="Izin";}
-            db.ref(`absensi/${tgl}/${n.value}/${ty}`).set({waktu:jam, status:st, note:nt}).then(()=>{n.value="";});
+            let nt=""; if(ty==='Izin'){nt=prompt("Alasan Izin:"); if(nt===null)return; st="Izin";}
+            db.ref(`absensi/${tgl}/${n}/${ty}`).set({waktu:jam, status:st, note:nt}).then(()=>{alert(ty + " Berhasil!");});
         }
 
         function resetAbsen(){
             let n=document.getElementById('resetNama').value, d1=document.getElementById('tglAwal').value, d2=document.getElementById('tglAkhir').value;
             if(!n || !d1 || !d2) return alert("Lengkapi Nama & Rentang Tanggal!");
-            if(confirm(`Hapus data ${n} dari ${d1} s/d ${d2}?`)){
+            if(confirm(`Hapus permanen data ${n} dari ${d1} s/d ${d2}?`)){
                 let start = new Date(d1), end = new Date(d2);
                 for(let d = start; d <= end; d.setDate(d.getDate() + 1)){
                     let tgl = d.toISOString().split('T')[0];
                     db.ref(`absensi/${tgl}/${n}`).remove();
                 }
+                alert("Reset Berhasil!");
             }
         }
 
@@ -166,6 +158,7 @@
                 let tgl = d.toISOString().split('T')[0];
                 db.ref(`hari_libur/${tgl}`).set(st?true:null);
             }
+            alert(st?"Libur Diset!":"Libur Dihapus!");
         }
 
         function rRekap(){
@@ -198,6 +191,13 @@
                 b+=`<tr>${row}<td class="rekap-akhir">${cH}</td><td class="rekap-akhir">${cI}</td><td class="rekap-akhir">${cA}</td><td class="rekap-akhir">${cL}</td></tr>`;
             });
             document.getElementById('tbWeb').innerHTML=b;
+        }
+
+        function toggleT(){ 
+            let b=document.body; let nt=b.getAttribute('data-theme')==='dark'?'light':'dark'; 
+            b.setAttribute('data-theme',nt);
+            document.getElementById('tIco').innerText=nt==='dark'?'☀️':'🌙';
+            document.getElementById('tTxt').innerText=nt==='dark'?'Light Mode':'Dark Mode';
         }
 
         function doExcel(){
