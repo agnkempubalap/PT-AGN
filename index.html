@@ -2,14 +2,14 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v77.1 - PRIORITY LOCK</title>
+    <title>PT-AGN v77.2 - PRO EXPORT</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
     <style>
         :root{--p:#2563eb;--s:#00C853;--d:#ef4444;--w:#FFD600;--bg:#0f172a;--c:#1e293b;--t:#f8fafc;--b:#334155;--iz:#f59e0b;--al:#37474F}
         body[data-theme="light"]{--bg:#f1f5f9;--c:#ffffff;--t:#1e293b;--b:#cbd5e1}
-        body{font-family:'Plus Jakarta Sans',sans-serif;margin:0;background:var(--bg);color:var(--t);padding:10px; transition: background 0.3s, color 0.3s}
+        body{font-family:'Plus Jakarta Sans',sans-serif;margin:0;background:var(--bg);color:var(--t);padding:10px; transition: background 0.3s}
         .container{max-width:1450px;margin:0 auto}
         
         header{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px}
@@ -23,10 +23,10 @@
         label{display:block;font-size:10px;margin-bottom:5px;font-weight:600;opacity:0.8}
         input,button,select{border-radius:12px;font-size:14px;height:52px;border:1px solid var(--b);background:var(--bg);color:var(--t);width:100%;box-sizing:border-box;outline:none}
         .btn{display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;border:none;color:#fff}
-        .btn:active{transform: scale(0.96)}
         
-        /* KHUSUS AREA EXCEL: Digeser ke kanan & diberi jarak bawah */
-        .excel-box { display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 25px; }
+        /* TOMBOL EXPORT PRO */
+        .export-group { display: flex; justify-content: flex-end; align-items: flex-end; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
+        .btn-ex { width: 100px; height: 45px; font-size: 11px; border-radius: 10px; }
 
         .table-wrap{overflow-x:auto; border-radius:12px; border:1px solid var(--b); background:var(--c); scroll-behavior: smooth}
         .table-web{width:100%;border-collapse:separate;border-spacing:0;font-size:10px; color:var(--t)}
@@ -34,16 +34,28 @@
         
         .nama-fixed{position:sticky !important;left:0;background-color:var(--c) !important;z-index:10;min-width:130px !important;text-align:left !important;padding-left:15px !important;font-weight:700; border-right: 2px solid var(--p) !important}
         .today-col{background: rgba(37, 99, 235, 0.15) !important;}
-
         .rekap-akhir{background:var(--bg) !important; color:var(--t) !important; font-weight:800; min-width:35px !important}
         .th-rekap{background:var(--bg) !important; color:var(--iz) !important; font-weight:800}
 
         .s-cell{border-radius:6px;width:44px;height:42px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;font-size:11px;margin: 0 auto}
         .s-v{background:var(--s);color:#fff} .s-late{background:var(--w);color:#000} .s-i{background:var(--iz);color:#fff}
         .s-off{background:var(--d);color:#fff} .s-a{background:var(--al);color:#fff} .s-l{background:#AA00FF;color:#fff} .s-mng{background:#64748b;color:#fff}
-        .jam-text{font-size:7.5px;font-weight:600;display:block;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:40px}
+        .jam-text{font-size:7.5px;font-weight:600;display:block;margin-top:2px;max-width:40px}
 
-        @media print { header, .card:not(.table-card), .no-print { display: none !important; } }
+        /* PRINT CONFIG - AGAR PDF FULL TIDAK KEPOTONG */
+        @media print {
+            @page { size: landscape; margin: 5mm; }
+            body { background: #fff !important; color: #000 !important; padding: 0; }
+            .container { max-width: 100%; }
+            header, .card:not(.table-card), .no-print { display: none !important; }
+            .card { border: none !important; padding: 0 !important; }
+            .table-wrap { overflow: visible !important; border: none !important; }
+            .table-web { width: 100% !important; font-size: 8pt !important; color: #000 !important; border: 1px solid #000 !important; }
+            .table-web th, .table-web td { border: 1px solid #ccc !important; color: #000 !important; }
+            .nama-fixed { position: static !important; background: #fff !important; color: #000 !important; border-right: 1px solid #ccc !important; }
+            .s-cell { border: 1px solid #eee !important; color: #000 !important; background: transparent !important; }
+            .s-v, .s-late, .s-i, .s-off, .s-a, .s-l, .s-mng { color: #000 !important; background: none !important; border: 1px solid #ccc !important; }
+        }
     </style>
 </head>
 <body data-theme="dark">
@@ -52,33 +64,32 @@
             <div class="logo-box">
                 <input type="file" id="inpLogo" style="display:none" accept="image/*" onchange="cLogo(event)">
                 <img id="mainLogo" src="https://ui-avatars.com/api/?name=AGN&background=000&color=fff" onclick="document.getElementById('inpLogo').click()">
-                <div><h2 style="margin:0;font-size:1.3rem">PT AGN</h2><span style="font-size:10px;color:var(--p);font-weight:800">SYSTEM v77.1</span></div>
+                <div><h2 style="margin:0;font-size:1.3rem">PT AGN</h2><span style="font-size:10px;color:var(--p);font-weight:800">SYSTEM v77.2 PRO</span></div>
             </div>
             <div class="dark-card" onclick="toggleT()">
                 <span id="tIco">☀️</span> <span style="font-size:12px;font-weight:600" id="tTxt">Light Mode</span>
             </div>
         </header>
 
-        <div class="card">
-            <h3>👥 DATA KARYAWAN (NAMA UTAMA)</h3>
+        <div class="card no-print">
+            <h3>👥 DATA KARYAWAN</h3>
             <div style="display:flex;gap:10px">
-                <input list="lk" id="iNama" placeholder="Ketik/Pilih Nama untuk Presensi & Reset...">
+                <input list="lk" id="iNama" placeholder="Ketik/Pilih Nama...">
                 <datalist id="lk"></datalist>
                 <button class="btn" style="background:var(--s);width:60px;font-size:24px" onclick="tKaryawan()">+</button>
                 <button class="btn" style="background:var(--d);width:60px" onclick="hKaryawan()">🗑️</button>
             </div>
         </div>
 
-        <div class="card">
+        <div class="card no-print">
             <h3>🧹 KONTROL DATA</h3>
             <div style="display:grid;grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px; align-items:end">
-                <div><label>Tanggal Reset (Harian):</label><input type="date" id="resetTgl"></div>
+                <div><label>Tanggal Reset:</label><input type="date" id="resetTgl"></div>
                 <button class="btn" style="background:var(--d)" onclick="resetAbsen()">RESET ABSEN</button>
             </div>
-            <hr style="border:0; border-top:1px solid var(--b); margin-bottom:15px">
             <div style="display:grid;grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:12px">
-                <div><label>Dari Tanggal:</label><input type="date" id="tglAwal"></div>
-                <div><label>Sampai Tanggal (Opsional):</label><input type="date" id="tglAkhir"></div>
+                <div><label>Dari:</label><input type="date" id="tglAwal"></div>
+                <div><label>Sampai:</label><input type="date" id="tglAkhir"></div>
             </div>
             <div style="display:grid;grid-template-columns: 1fr 1fr; gap:10px">
                 <button class="btn" style="background:var(--p)" onclick="sLib(true)">SET LIBUR</button>
@@ -86,7 +97,7 @@
             </div>
         </div>
 
-        <div class="card">
+        <div class="card no-print">
             <h3>⚡ PRESENSI</h3>
             <div style="display:grid;grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px">
                 <button class="btn" style="background:var(--s);height:60px;font-size:18px" onclick="pAbsen('Masuk')">MASUK</button>
@@ -96,17 +107,16 @@
         </div>
 
         <div class="card table-card">
-            <div class="no-print">
-                <label>Pilih Bulan:</label>
-                <input type="month" id="fB" style="width:160px; margin-bottom:10px" onchange="rRekap()">
-                
-                <div class="excel-box">
-                    <button class="btn" style="background:#1d6f42;width:90px;font-size:11px" onclick="doExcel()">EXCEL</button>
-                    <button class="btn" style="background:#b91c1c;width:90px;font-size:11px" onclick="window.print()">PDF</button>
+            <div class="export-group no-print">
+                <div style="flex-grow:1">
+                    <label>Filter Bulan:</label>
+                    <input type="month" id="fB" style="width:160px; height:45px" onchange="rRekap()">
                 </div>
+                <button class="btn btn-ex" style="background:#1d6f42" onclick="doExcel()">📥 EXCEL</button>
+                <button class="btn btn-ex" style="background:#b91c1c" onclick="window.print()">📄 PDF</button>
             </div>
             <div class="table-wrap" id="scrollArea">
-                <table class="table-web"><thead id="thWeb"></thead><tbody id="tbWeb"></tbody></table>
+                <table class="table-web" id="rekapTable"><thead id="thWeb"></thead><tbody id="tbWeb"></tbody></table>
             </div>
         </div>
     </div>
@@ -200,7 +210,6 @@
                     let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t);
                     let isMinggu = (d.getDay()===0), isSetLibur = hl[t];
                     let data=ad[t]?ad[t][n]:null, sW="-", clW="", infoW="";
-                    
                     if(data){
                         if(data.Izin){ sW="I"; clW="s-i"; cI++; infoW = data.Izin.note || "Izin"; }
                         else if(data.Masuk){ 
@@ -209,17 +218,14 @@
                             infoW = data.Masuk.waktu + (data.Pulang ? ` | ${data.Pulang.waktu}` : "");
                         }
                     } 
-                    // PRIORITAS TERBARU: MNG NOMOR SATU
                     else if(isMinggu){ sW="MNG"; clW="s-mng"; }
                     else if(isSetLibur){ sW="OFF"; clW="s-off"; }
                     else if(t < todayFull && t >= TGL_MULAI_SISTEM){ sW="A"; clW="s-a"; cA++; }
-                    
                     row+=`<td class="${i===tglSkrg?'today-col':''}"><div class="s-cell ${clW}">${sW}<span class="jam-text">${infoW}</span></div></td>`;
                 }
                 b+=`<tr>${row}<td class="rekap-akhir">${cH}</td><td class="rekap-akhir">${cI}</td><td class="rekap-akhir">${cA}</td><td class="rekap-akhir">${cL}</td></tr>`;
             });
             document.getElementById('tbWeb').innerHTML=b;
-
             setTimeout(() => {
                 const scrollArea = document.getElementById('scrollArea');
                 const target = document.getElementById(`tgl-${tglSkrg}`);
@@ -231,9 +237,16 @@
         }
 
         function doExcel(){
-            const f=document.getElementById('fB').value; let table = document.querySelector(".table-web").outerHTML;
-            let blob = new Blob([table], {type: "application/vnd.ms-excel"});
-            let url = URL.createObjectURL(blob); let a = document.createElement("a"); a.href = url; a.download = `REKAP_AGN_${f}.xls`; a.click();
+            const f=document.getElementById('fB').value;
+            const table = document.getElementById("rekapTable").outerHTML;
+            const template = `
+                <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+                <head><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Rekap Absensi</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
+                <style>table { border-collapse:collapse; } th, td { border:1px solid black; text-align:center; }</style></head>
+                <body>${table}</body></html>`;
+            const blob = new Blob([template], {type: "application/vnd.ms-excel"});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a"); a.href = url; a.download = `REKAP_AGN_${f}.xls`; a.click();
         }
     </script>
 </body>
