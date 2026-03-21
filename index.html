@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v74.0 - Pro Report Edition</title>
+    <title>PT-AGN v74.1 - Dual Interface</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
@@ -22,36 +22,39 @@
         #toast{position:fixed;bottom:20px;right:20px;padding:12px 20px;border-radius:10px;color:#fff;font-size:13px;z-index:999;display:none}
         #toast.show{display:block}
         
-        /* TABLE STYLES - UPGRADED TO MATCH MAJU JAYA */
+        /* WEB STYLES (v73 STYLE) */
         .table-wrap{overflow:auto;border-radius:12px;border:1px solid var(--b);background:var(--c)}
-        table{width:100%;border-collapse:collapse;font-size:10px;min-width:1400px;border:1px solid #000}
-        th,td{border:1px solid #000;padding:4px 2px;text-align:center}
-        .nama-fixed{position:sticky;left:0;background:var(--c)!important;font-weight:700;text-align:left;width:110px;z-index:4;padding-left:8px}
+        .table-web{width:100%;border-collapse:collapse;font-size:9px;min-width:1400px}
+        .table-web th, .table-web td{border-bottom:1px solid var(--b);padding:6px 2px;text-align:center}
+        .nama-fixed{position:sticky;left:0;background:var(--c)!important;font-weight:700;text-align:left;width:110px;z-index:4;border-right:2px solid var(--b);padding-left:8px}
+        .s-cell{border-radius:4px;width:26px;min-height:26px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;font-size:9px}
+        .s-v{background:#22c55e;color:#fff} .s-late{background:#facc15;color:#000} .s-i{background:#eab308;color:#000} .s-off{background:#ef4444;color:#fff} .s-a{background:#64748b;color:#fff}
+        .col-total{font-weight:bold;background:#f1f5f9;color:#1e293b;width:35px}
+        .jam-text{font-size:6.5px;font-weight:400;display:block;margin-top:1px;line-height:1;max-width:24px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
         
-        /* MATCHING COLORS TO MAJU JAYA EXCEL */
-        .s-cell{width:100%;min-height:30px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;font-size:10px}
-        .s-v{background:#00B050;color:#fff} /* Hadir Hijau Tua */
-        .s-late{background:#92D050;color:#000} /* Terlambat Hijau Muda */
-        .s-i{background:#FFFF00;color:#000} /* Izin Kuning */
-        .s-a{background:#C00000;color:#fff} /* Alpa Merah Tua */
-        .s-off{background:#ff0000;color:#000} /* Minggu Merah */
-        
-        .jam-text{font-size:6.5px;font-weight:400;display:block;margin-top:2px;line-height:1;max-width:30px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-        
-        /* PRINT STYLES FOR PERFECT PDF */
+        /* PRINT WRAPPER (HIDDEN ON WEB) */
+        .print-only { display: none; }
+
+        /* PRINT PDF STYLES (MAJU JAYA STYLE) */
         @page { size: landscape; margin: 10mm; }
         @media print { 
-            body{background:white;} 
+            body { background: white; } 
             .card:not(:last-child), header, .btn, input { display: none !important; } 
             .card:last-child { border: none; box-shadow: none; padding: 0; }
-            .table-wrap { overflow: visible; border: none; }
-            .nama-fixed { position: static; }
-            th, td { border: 1px solid #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .s-v{background-color:#00B050 !important; color:#fff !important;}
-            .s-late{background-color:#92D050 !important; color:#000 !important;}
-            .s-i{background-color:#FFFF00 !important; color:#000 !important;}
-            .s-a{background-color:#C00000 !important; color:#fff !important;}
-            .s-off{background-color:#ff0000 !important; color:#000 !important;}
+            .screen-only { display: none !important; } /* SEMBUNYIKAN TABEL WEB */
+            .print-only { display: block !important; } /* TAMPILKAN TABEL PRINT */
+            
+            .table-print { width: 100%; border-collapse: collapse; font-size: 10px; border: 1px solid #000; }
+            .table-print th, .table-print td { border: 1px solid #000 !important; padding: 4px 2px; text-align: center; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            
+            /* WARNA KHUSUS PRINT */
+            .p-v{background-color:#00B050 !important; color:#fff !important;}
+            .p-late{background-color:#92D050 !important; color:#000 !important;}
+            .p-i{background-color:#FFFF00 !important; color:#000 !important;}
+            .p-a{background-color:#C00000 !important; color:#fff !important;}
+            .p-off{background-color:#ff0000 !important; color:#000 !important;}
+            
+            .jam-print { font-size: 7px; font-weight: normal; display: block; margin-top: 2px; }
         }
     </style>
 </head>
@@ -61,7 +64,7 @@
         <header>
             <div class="logo-box" onclick="gantiLogo()">
                 <img id="mainLogo" src="https://ui-avatars.com/api/?name=AGN&background=2563eb&color=fff">
-                <div><h2 style="margin:0;font-size:1rem">PT AGN</h2><span style="font-size:9px;color:var(--w);font-weight:800">SYSTEM v74.0</span></div>
+                <div><h2 style="margin:0;font-size:1rem">PT AGN</h2><span style="font-size:9px;color:var(--w);font-weight:800">SYSTEM v74.1</span></div>
             </div>
             <button onclick="toggleT()" id="tBtn" style="width:80px;font-size:11px">🌙 Dark</button>
         </header>
@@ -107,13 +110,23 @@
                     <button class="btn" style="background:#b91c1c;width:95px;font-size:10px" onclick="window.print()">📜 PDF</button>
                 </div>
             </div>
-            <!-- STRUKTUR TABEL DIPERBARUI -->
-            <div class="table-wrap">
-                <table>
-                    <thead id="thR"></thead>
-                    <tbody id="tbR"></tbody>
+            
+            <!-- TABEL 1: KHUSUS TAMPILAN WEB (VERSI 73) -->
+            <div class="table-wrap screen-only">
+                <table class="table-web">
+                    <thead><tr id="thWeb"></tr></thead>
+                    <tbody id="tbWeb"></tbody>
                 </table>
             </div>
+
+            <!-- TABEL 2: KHUSUS PRINT PDF (VERSI PRO/MAJU JAYA) -->
+            <div class="print-only">
+                <table class="table-print">
+                    <thead id="thPrint"></thead>
+                    <tbody id="tbPrint"></tbody>
+                </table>
+            </div>
+            
         </div>
     </div>
 
@@ -152,7 +165,6 @@
             db.ref(`absensi/${tgl}/${n.value}/${ty}`).set({waktu:jamFormat, status:status, note:note, timestamp: Date.now()}).then(()=>{ sT(ty + (status === "Terlambat" ? " (Terlambat)" : " Sukses!")); n.value=""; });
         }
 
-        // FUNGSI RENDER WEB DAN PDF (DISAMAKAN DENGAN MAJU JAYA)
         function rRekap(){
             const f=document.getElementById('fB').value; if(!f) return;
             const [y,m]=f.split('-'), last=new Date(y,m,0).getDate();
@@ -160,67 +172,85 @@
             const kList = Object.values(mk).sort();
             const jmlKaryawan = kList.length;
 
-            // BIKIN HEADER MIRIP EXCEL
-            let h1 = `<tr>
-                <th colspan="${last+4}" style="background-color:#FFC000; color:#000; font-size:16px; height:35px;">ABSENSI KARYAWAN PT AGN</th>
-            </tr>
+            /* =========================================
+               1. RENDER TABEL WEB (GAYA LAMA v73)
+               ========================================= */
+            document.getElementById('thWeb').innerHTML=`<th class="nama-fixed">Karyawan</th>${Array.from({length:last},(_,i)=>`<th>${i+1}</th>`).join('')}<th class="col-total">H</th><th class="col-total">I</th><th class="col-total">A</th>`;
+            document.getElementById('tbWeb').innerHTML=kList.map(n=>{
+                let cH=0, cI=0, cA=0, row=`<td class="nama-fixed">${n}</td>`;
+                for(let i=1;i<=last;i++){
+                    let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), s="-", cl="", infoText="";
+                    if(d.getDay()===0){ s="MNG"; cl="s-off"; }
+                    else if(hl[t]){ s="OFF"; cl="s-off"; }
+                    else {
+                        const dataHari = ad[t] ? ad[t][n] : null;
+                        if(dataHari){
+                            if(dataHari.Izin){ s="I"; cl="s-i"; cI++; infoText = dataHari.Izin.note || ""; }
+                            else if(dataHari.Masuk){ s="H"; cl = (dataHari.Masuk.status === "Terlambat") ? "s-late" : "s-v"; cH++; infoText = dataHari.Masuk.waktu; }
+                        } else if(t >= TGL_MULAI_SISTEM && t < todayStr) { s="A"; cl="s-a"; cA++; }
+                    }
+                    row+=`<td><div class="s-cell ${cl}">${s}<span class="jam-text">${infoText}</span></div></td>`;
+                }
+                return `<tr>${row}<td class="col-total">${cH}</td><td class="col-total">${cI}</td><td class="col-total">${cA}</td></tr>`;
+            }).join('');
+
+
+            /* =========================================
+               2. RENDER TABEL PRINT PDF (GAYA MAJU JAYA)
+               ========================================= */
+            let hPrint = `<tr><th colspan="${last+4}" style="background-color:#FFC000; color:#000; font-size:16px; height:35px;">ABSENSI KARYAWAN PT AGN</th></tr>
+            <tr><th colspan="${last+4}" style="background-color:#FFE699; color:#000; font-size:14px; height:25px;">PERIODE ${f}</th></tr>
             <tr>
-                <th colspan="${last+4}" style="background-color:#FFE699; color:#000; font-size:14px; height:25px;">PERIODE ${f}</th>
-            </tr>
-            <tr>
-                <th rowspan="2" class="nama-fixed" style="background:#f2f2f2!important; color:#000;">Nama</th>
+                <th rowspan="2" style="background:#f2f2f2!important; color:#000; text-align:left; padding-left:8px; width:120px;">Nama</th>
                 <th colspan="${last}" style="background:#f2f2f2; color:#000;">Tanggal</th>
                 <th colspan="3" style="background:#f2f2f2; color:#000;">Jumlah Hari Kerja</th>
             </tr><tr>`;
             
             for(let i=1;i<=last;i++){
-                let d = new Date(`${y}-${m}-${String(i).padStart(2,'0')}`);
-                let isOff = (d.getDay()===0 || hl[`${y}-${m}-${String(i).padStart(2,'0')}`]);
+                let isOff = (new Date(`${y}-${m}-${String(i).padStart(2,'0')}`).getDay()===0 || hl[`${y}-${m}-${String(i).padStart(2,'0')}`]);
                 let bg = isOff ? "background:#ff0000;color:#000;" : "background:#f2f2f2;color:#000;";
-                h1 += `<th style="${bg}">${i}</th>`;
+                hPrint += `<th style="${bg}">${i}</th>`;
             }
-            h1 += `<th style="background:#00B050;color:white;width:35px">H</th><th style="background:#FFFF00;color:black;width:35px">I</th><th style="background:#C00000;color:white;width:35px">A</th></tr>`;
-            document.getElementById('thR').innerHTML = h1;
+            hPrint += `<th style="background:#00B050;color:white;width:30px">H</th><th style="background:#FFFF00;color:black;width:30px">I</th><th style="background:#C00000;color:white;width:30px">A</th></tr>`;
+            document.getElementById('thPrint').innerHTML = hPrint;
 
-            // BIKIN BODY TABEL
-            let tbody = "";
+            let bodyPrint = "";
             kList.forEach((n, idx)=>{
-                let cH=0, cI=0, cA=0, row=`<td class="nama-fixed">${n}</td>`;
+                let cH=0, cI=0, cA=0, row=`<td style="text-align:left; padding-left:8px; font-weight:bold;">${n}</td>`;
                 for(let i=1;i<=last;i++){
                     let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), s="-", cl="", infoText="";
                     let isOff = (d.getDay()===0 || hl[t]);
 
                     if(isOff){
-                        if(idx === 0) { // MERGE KOLOM HARI MINGGU/LIBUR KE BAWAH
+                        if(idx === 0) { // MERGE KOLOM HARI LIBUR KE BAWAH
                             let txt = hl[t] ? "Libur Nasional" : "Minggu";
-                            row += `<td rowspan="${jmlKaryawan}" class="s-off" style="width:26px; vertical-align:middle; padding:0;">
+                            row += `<td rowspan="${jmlKaryawan}" class="p-off" style="width:26px; vertical-align:middle; padding:0;">
                                 <div style="writing-mode: vertical-rl; transform: rotate(180deg); margin:auto; font-size:11px; font-weight:800; letter-spacing:2px; height:100%; display:flex; align-items:center; justify-content:center;">${txt}</div>
                             </td>`;
                         }
                     } else {
                         const dataHari = ad[t] ? ad[t][n] : null;
                         if(dataHari){
-                            if(dataHari.Izin){ s="I"; cl="s-i"; cI++; infoText = dataHari.Izin.note || ""; }
-                            else if(dataHari.Masuk){ s="H"; cl = (dataHari.Masuk.status === "Terlambat") ? "s-late" : "s-v"; cH++; infoText = dataHari.Masuk.waktu; }
-                        } else if(t >= TGL_MULAI_SISTEM && t < todayStr) { s="A"; cl="s-a"; cA++; }
-                        row+=`<td style="padding:0;"><div class="s-cell ${cl}">${s}<span class="jam-text">${infoText}</span></div></td>`;
+                            if(dataHari.Izin){ s="I"; cl="p-i"; cI++; infoText = dataHari.Izin.note || ""; }
+                            else if(dataHari.Masuk){ s="H"; cl = (dataHari.Masuk.status === "Terlambat") ? "p-late" : "p-v"; cH++; infoText = dataHari.Masuk.waktu; }
+                        } else if(t >= TGL_MULAI_SISTEM && t < todayStr) { s="A"; cl="p-a"; cA++; }
+                        row+=`<td class="${cl}" style="font-weight:bold; height:30px; padding:0;">${s}<span class="jam-print">${infoText}</span></td>`;
                     }
                 }
-                tbody += `<tr>${row}<td style="background:#E2EFDA;color:#000;font-weight:bold">${cH}</td><td style="background:#FFF2CC;color:#000;font-weight:bold">${cI}</td><td style="background:#F4B084;color:#000;font-weight:bold">${cA}</td></tr>`;
+                bodyPrint += `<tr>${row}<td style="background:#E2EFDA!important;color:#000!important;font-weight:bold">${cH}</td><td style="background:#FFF2CC!important;color:#000!important;font-weight:bold">${cI}</td><td style="background:#F4B084!important;color:#000!important;font-weight:bold">${cA}</td></tr>`;
             });
 
-            // TAMBAH KETERANGAN (LEGEND) DI BAWAH
-            tbody += `
+            bodyPrint += `
                 <tr><td colspan="${last+4}" style="border:none; height:10px;"></td></tr>
-                <tr><td colspan="4" style="text-align:left; font-weight:bold; border:none; background:var(--c);">Keterangan:</td><td colspan="${last}" style="border:none;"></td></tr>
-                <tr><td style="background:#00B050; color:white; font-weight:bold;">H</td><td colspan="3" style="text-align:left; background:var(--c);">Hadir</td><td colspan="${last}" style="border:none;"></td></tr>
-                <tr><td style="background:#FFFF00; color:black; font-weight:bold;">I</td><td colspan="3" style="text-align:left; background:var(--c);">Izin / Sakit</td><td colspan="${last}" style="border:none;"></td></tr>
-                <tr><td style="background:#C00000; color:white; font-weight:bold;">A</td><td colspan="3" style="text-align:left; background:var(--c);">Alpa</td><td colspan="${last}" style="border:none;"></td></tr>
+                <tr><td colspan="4" style="text-align:left; font-weight:bold; border:none; background:white;">Keterangan:</td><td colspan="${last}" style="border:none; background:white;"></td></tr>
+                <tr><td style="background:#00B050!important; color:white!important; font-weight:bold;">H</td><td colspan="3" style="text-align:left; background:white;">Hadir</td><td colspan="${last}" style="border:none; background:white;"></td></tr>
+                <tr><td style="background:#FFFF00!important; color:black!important; font-weight:bold;">I</td><td colspan="3" style="text-align:left; background:white;">Izin / Sakit</td><td colspan="${last}" style="border:none; background:white;"></td></tr>
+                <tr><td style="background:#C00000!important; color:white!important; font-weight:bold;">A</td><td colspan="3" style="text-align:left; background:white;">Alpa</td><td colspan="${last}" style="border:none; background:white;"></td></tr>
             `;
-            document.getElementById('tbR').innerHTML = tbody;
+            document.getElementById('tbPrint').innerHTML = bodyPrint;
         }
 
-        // FUNGSI EXCEL (PERSIS MAJU JAYA)
+        // FUNGSI EXCEL (TETAP SAMA SEPERTI GAYA MAJU JAYA)
         function doExcel(){
             const f=document.getElementById('fB').value; const [y,m]=f.split('-'); const last=new Date(y,m,0).getDate();
             const todayStr = new Date().toISOString().split('T')[0];
@@ -255,7 +285,7 @@
                     let isOff = (d.getDay()===0 || hl[t]);
 
                     if(isOff){
-                        if(idx === 0){ // MENGGABUNGKAN SEL VERTIKAL
+                        if(idx === 0){
                             let label = hl[t] ? "Libur Nasional" : "Minggu";
                             html += `<td rowspan="${jmlKaryawan}" class="vert" style="background-color:#ff0000; color:#000000;">${label}</td>`;
                         }
@@ -270,7 +300,6 @@
                 html+=`<td style="background-color:#E2EFDA; font-weight:bold;">${cH}</td><td style="background-color:#FFF2CC; font-weight:bold;">${cI}</td><td style="background-color:#F4B084; font-weight:bold;">${cA}</td></tr>`;
             });
 
-            // KETERANGAN EXCEL BAWAH
             html += `
                 <tr></tr><tr><td colspan="4" style="text-align:left; font-weight:bold;">Keterangan:</td></tr>
                 <tr><td style="background-color:#00B050; color:white; font-weight:bold;">H</td><td colspan="3" style="text-align:left;">Hadir</td></tr>
