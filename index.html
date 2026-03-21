@@ -2,14 +2,14 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v74.8 - Fix & Stable</title>
+    <title>PT-AGN v74.9 - Fixed Layout</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
     <style>
         :root{--p:#2563eb;--s:#10b981;--d:#ef4444;--w:#f59e0b;--bg:#f1f5f9;--c:#fff;--t:#1e293b;--b:#e2e8f0}
         body[data-theme="dark"]{--bg:#0f172a;--c:#1e293b;--t:#f8fafc;--b:#334155}
-        body{font-family:'Plus Jakarta Sans',sans-serif;margin:0;background:var(--bg);color:var(--t);padding:8px;transition: background 0.3s;}
+        body{font-family:'Plus Jakarta Sans',sans-serif;margin:0;background:var(--bg);color:var(--t);padding:8px}
         .container{max-width:1450px;margin:0 auto}
         header{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px;padding:5px}
         .logo-box img{width:60px;height:60px;border-radius:12px;background:#fff;border:2px solid var(--p);object-fit:contain}
@@ -20,22 +20,35 @@
         .btn-sq{width:55px;flex-shrink:0}
         #toast{position:fixed;bottom:20px;right:20px;padding:12px 20px;border-radius:10px;color:#fff;font-size:13px;z-index:999;display:none}
         #toast.show{display:block}
-        .table-wrap{overflow:auto;border-radius:12px;border:1px solid var(--b);background:var(--c)}
-        .table-web{width:100%;border-collapse:collapse;font-size:9px;min-width:1450px}
-        .table-web th, .table-web td{border-bottom:1px solid var(--b);padding:6px 2px;text-align:center}
-        .nama-fixed{position:sticky;left:0;background:inherit!important;font-weight:700;text-align:left;width:110px;z-index:4;border-right:2px solid var(--b);padding-left:8px}
-        .s-cell{border-radius:4px;width:28px;min-height:30px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;font-size:9px}
+        
+        /* FIX: Table & Frozen Column */
+        .table-wrap{overflow:auto;border-radius:12px;border:1px solid var(--b);background:var(--c);max-height:500px}
+        .table-web{width:100%;border-collapse:separate;border-spacing:0;font-size:10px}
+        .table-web th, .table-web td{border-bottom:1px solid var(--b);border-right:1px solid var(--b);padding:8px 4px;text-align:center;min-width:35px}
+        
+        /* Nama Di-Freeze di sini */
+        .nama-fixed{
+            position: sticky !important;
+            left: 0;
+            background-color: var(--c) !important;
+            z-index: 10;
+            min-width: 120px !important;
+            text-align: left !important;
+            padding-left: 10px !important;
+            border-right: 2px solid var(--p) !important;
+        }
+        thead th.nama-fixed { z-index: 11; top: 0; }
+
+        .s-cell{border-radius:4px;width:32px;height:35px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;font-size:9px}
         .s-v{background:#22c55e;color:#fff} .s-late{background:#facc15;color:#000} .s-i{background:#eab308;color:#000} .s-off{background:#ef4444;color:#fff} .s-a{background:#64748b;color:#fff} .s-l{background:#3b82f6;color:#fff}
-        .jam-text{font-size:6px;font-weight:400;display:block;margin-top:1px;line-height:1}
+        .jam-text{font-size:7px;font-weight:400;display:block;margin-top:2px}
+
         .print-only { display: none; }
         @media print { 
             .screen-only, header, .card:not(:last-child) { display: none !important; }
             .print-only { display: block !important; }
             .table-print { width: 100%; border-collapse: collapse; font-size: 8px; }
-            .table-print th, .table-print td { border: 1px solid #000 !important; padding: 2px 1px; text-align: center; }
-            .p-v{background-color:#00B050 !important; color:#fff !important;}
-            .p-late{background-color:#FFFF00 !important; color:#000 !important;}
-            .p-off{background-color:#FF0000 !important; color:#fff !important;}
+            .table-print th, .table-print td { border: 1px solid #000 !important; padding: 2px; text-align: center; }
         }
     </style>
 </head>
@@ -45,7 +58,7 @@
         <header>
             <div class="logo-box" onclick="gantiLogo()">
                 <img id="mainLogo" src="https://ui-avatars.com/api/?name=AGN&background=2563eb&color=fff">
-                <div><h2 style="margin:0;font-size:1rem">PT AGN</h2><span style="font-size:9px;color:var(--w);font-weight:800">SYSTEM v74.8</span></div>
+                <div><h2 style="margin:0;font-size:1rem">PT AGN</h2><span style="font-size:9px;color:var(--w);font-weight:800">SYSTEM v74.9</span></div>
             </div>
             <button onclick="toggleT()" id="tBtn" style="width:100px;font-size:11px">🌙 Dark Mode</button>
         </header>
@@ -111,21 +124,14 @@
         function sT(m,ty='success'){ const t=document.getElementById('toast'); t.innerText=m; t.className='show'; t.style.background=ty==='success'?'#10b981':'#ef4444'; setTimeout(()=>t.className='',2000); }
         
         function toggleT(){ 
-            let body = document.body;
-            let current = body.getAttribute('data-theme');
-            let newT = current === 'dark' ? 'light' : 'dark';
-            body.setAttribute('data-theme', newT);
-            localStorage.setItem('agn_theme', newT);
-            document.getElementById('tBtn').innerText = newT === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
+            let b=document.body; let nt=b.getAttribute('data-theme')==='dark'?'light':'dark';
+            b.setAttribute('data-theme',nt); localStorage.setItem('agn_theme',nt);
+            document.getElementById('tBtn').innerText=nt==='dark'?'☀️ Light':'🌙 Dark';
         }
 
-        function gantiLogo(){ let l=prompt("Link Logo:"); if(l){document.getElementById('mainLogo').src=l; localStorage.setItem('agn_logo',l);}}
-
         window.onload=()=>{
-            let st=localStorage.getItem('agn_theme')||'light'; 
-            document.body.setAttribute('data-theme',st);
-            document.getElementById('tBtn').innerText = st === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
-            let sl=localStorage.getItem('agn_logo'); if(sl) document.getElementById('mainLogo').src=sl;
+            let st=localStorage.getItem('agn_theme')||'light'; document.body.setAttribute('data-theme',st);
+            document.getElementById('tBtn').innerText=st==='dark'?'☀️ Light':'🌙 Dark';
             document.getElementById('fB').value=new Date().toISOString().slice(0,7);
             db.ref('master_karyawan').on('value',s=>{mk=s.val()||{}; uDl(); rRekap();});
             db.ref('absensi').on('value',s=>{ad=s.val()||{}; rRekap();});
@@ -133,110 +139,98 @@
         };
 
         function uDl(){document.getElementById('lk').innerHTML=Object.values(mk).sort().map(n=>`<option value="${n}">`).join('');}
-        function tKaryawan(){let n=document.getElementById('iNama'); if(n.value) db.ref('master_karyawan').push(n.value).then(()=>{n.value="";});}
+        function tKaryawan(){let n=document.getElementById('iNama'); if(n.value){db.ref('master_karyawan').push(n.value).then(()=>{n.value="";});}}
         function hKaryawan(){let n=document.getElementById('iNama'); let id=Object.keys(mk).find(k=>mk[k]===n.value); if(id && confirm('Hapus?')) db.ref(`master_karyawan/${id}`).remove();}
         
         function resetPerKaryawan(){
             let n=document.getElementById('iNama'), t=document.getElementById('tglReset'); 
-            if(n.value && t.value) {
-                db.ref(`absensi/${t.value}/${n.value}`).remove().then(()=>{
-                    sT("Data Berhasil Dihapus"); n.value = ""; t.value = "";
-                });
-            } else { sT("Pilih Nama & Tanggal!","error"); }
+            if(n.value && t.value) { db.ref(`absensi/${t.value}/${n.value}`).remove().then(()=>{sT("Berhasil Dihapus"); n.value=""; t.value="";}); }
         }
 
         function sLib(st){
-            let m=document.getElementById('tM'), s=document.getElementById('tS'); 
-            if(!m.value) return sT("Pilih Tanggal!","error");
+            let m=document.getElementById('tM'), s=document.getElementById('tS'); if(!m.value) return sT("Pilih Tanggal!","error");
             let curr=new Date(m.value), end=s.value?new Date(s.value):new Date(m.value);
-            while(curr<=end){
-                db.ref(`hari_libur/${curr.toISOString().split('T')[0]}`).set(st?true:null);
-                curr.setDate(curr.getDate()+1);
-            }
-            sT(st?"Berhasil Set Libur":"Berhasil Hapus Libur"); m.value=""; s.value="";
+            while(curr<=end){ db.ref(`hari_libur/${curr.toISOString().split('T')[0]}`).set(st?true:null); curr.setDate(curr.getDate()+1); }
+            sT("Update Libur Berhasil"); m.value=""; s.value="";
         }
 
         function pAbsen(ty){
             let n=document.getElementById('iNama'), now=new Date(), tgl=now.toISOString().split('T')[0];
             if(!n.value) return sT("Pilih Nama!","error");
-            let jamFormat=now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+            let jam=now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
             let st="Hadir"; if(ty==='Masuk' && (now.getHours()>9 || (now.getHours()===9 && now.getMinutes()>0))) st="Terlambat";
-            let nt=""; if(ty==='Izin'){ nt=prompt("Alasan:"); if(nt===null)return; st="Izin";}
-            db.ref(`absensi/${tgl}/${n.value}/${ty}`).set({waktu:jamFormat, status:st, note:nt}).then(()=>{sT(ty+" Berhasil"); n.value="";});
+            let nt=""; if(ty==='Izin'){nt=prompt("Alasan:"); if(nt===null)return; st="Izin";}
+            db.ref(`absensi/${tgl}/${n.value}/${ty}`).set({waktu:jam, status:st, note:nt}).then(()=>{sT(ty+" Berhasil"); n.value="";});
         }
 
         function rRekap(){
             const f=document.getElementById('fB').value; if(!f) return;
             const [y,m]=f.split('-'), last=new Date(y,m,0).getDate(), today=new Date().toISOString().split('T')[0];
             const kList=Object.values(mk).sort();
-            document.getElementById('thWeb').innerHTML = `<tr><th class="nama-fixed">Nama</th>${Array.from({length:last},(_,i)=>`<th>${i+1}</th>`).join('')}<th>H</th><th>I</th><th>A</th><th>L</th></tr>`;
-            let hP = `<tr><th colspan="${last+5}" style="background:#FFC000!important;">REKAP ABSENSI PT AGN</th></tr><tr><th rowspan="2">Nama</th><th colspan="${last}">Tanggal</th><th colspan="4">Total</th></tr><tr>`;
-            for(let i=1;i<=last;i++) hP+=`<th style="width:20px">${i}</th>`;
-            hP+=`<th>H</th><th>I</th><th>A</th><th>L</th></tr>`;
-            document.getElementById('thPrint').innerHTML=hP;
-            let bWeb="", bPrint="";
-            kList.forEach((n, idx)=>{
-                let cH=0, cI=0, cA=0, cL=0, rWeb=`<td class="nama-fixed">${n}</td>`, rPrint=`<td align="left"><b>${n}</b></td>`;
+            
+            let h=`<tr><th class="nama-fixed">Nama</th>`;
+            for(let i=1;i<=last;i++) h+=`<th>${i}</th>`;
+            h+=`<th>H</th><th>I</th><th>A</th><th>L</th></tr>`;
+            document.getElementById('thWeb').innerHTML=h;
+
+            let b="";
+            kList.forEach(n=>{
+                let cH=0, cI=0, cA=0, cL=0, row=`<td class="nama-fixed">${n}</td>`;
                 for(let i=1;i<=last;i++){
                     let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), isOff=(d.getDay()===0 || hl[t]);
                     let data=ad[t]?ad[t][n]:null, sW="-", clW="", infoW="";
+                    
                     if(data){
                         if(data.Izin){ sW="I"; clW="s-i"; cI++; infoW=data.Izin.note||""; }
                         else if(data.Masuk){ 
                             if(isOff) { sW="L"; clW="s-l"; cL++; } 
                             else { sW="H"; clW=(data.Masuk.status==="Terlambat")?"s-late":"s-v"; cH++; }
-                            infoW=data.Masuk.waktu + (data.Pulang ? "-" + data.Pulang.waktu : ""); 
+                            infoW=data.Masuk.waktu + (data.Pulang ? "-" + data.Pulang.waktu : "");
                         }
                     } else if(isOff){ sW=(d.getDay()===0)?"MNG":"OFF"; clW="s-off"; }
                     else if(t>=TGL_MULAI_SISTEM && t<today){ sW="A"; clW="s-a"; cA++; }
-                    rWeb+=`<td><div class="s-cell ${clW}">${sW}<span class="jam-text">${infoW}</span></div></td>`;
-                    if(isOff && !data){
-                        if(idx===0) rPrint+=`<td rowspan="${kList.length}" style="background:#ff0000;color:#fff;">OFF</td>`;
-                    } else {
-                        let clP=""; if(data){ clP=data.Izin?"p-i":(data.Masuk.status==="Terlambat"?"p-late":"p-v");} else if(t>=TGL_MULAI_SISTEM && t<today) clP="p-a";
-                        rPrint+=`<td class="${clP}">${data? (data.Izin?"I":"H"): (t>=TGL_MULAI_SISTEM && t<today?"A":"-")}</td>`;
-                    }
+                    row+=`<td><div class="s-cell ${clW}">${sW}<span class="jam-text">${infoW}</span></div></td>`;
                 }
-                bWeb+=`<tr>${rWeb}<td>${cH}</td><td>${cI}</td><td>${cA}</td><td>${cL}</td></tr>`;
-                bPrint+=`<tr>${rPrint}<td>${cH}</td><td>${cI}</td><td>${cA}</td><td>${cL}</td></tr>`;
+                b+=`<tr>${row}<td>${cH}</td><td>${cI}</td><td>${cA}</td><td>${cL}</td></tr>`;
             });
-            document.getElementById('tbWeb').innerHTML=bWeb; document.getElementById('tbPrint').innerHTML=bPrint;
+            document.getElementById('tbWeb').innerHTML=b;
         }
 
         function doExcel(){
             const f=document.getElementById('fB').value; const [y,m]=f.split('-'); const last=new Date(y,m,0).getDate();
             const kList=Object.values(mk).sort(); const today=new Date().toISOString().split('T')[0];
-            let html=`<html xmlns:x="urn:schemas-microsoft-com:office:excel">
-                <head><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Absensi</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml>
-                <meta charset="UTF-8"></head><body><table border="1">
-                <tr><th colspan="${last+5}" bgcolor="#FFC000" height="40"><b>REKAP ABSENSI PT AGN - ${f}</b></th></tr>
-                <tr bgcolor="#E2E8F0"><th rowspan="2">Nama</th><th colspan="${last}">Tanggal</th><th colspan="4">Total</th></tr><tr>`;
-            for(let i=1;i<=last;i++) html+=`<th bgcolor="#F1F5F9">${i}</th>`;
-            html+=`<th bgcolor="#22C55E">H</th><th bgcolor="#EAB308">I</th><th bgcolor="#EF4444">A</th><th bgcolor="#3B82F6">L</th></tr>`;
-            kList.forEach((n, idx)=>{
-                html+=`<tr><td align="left"><b>${n}</b></td>`;
+            
+            let table=`<table border="1">
+                <tr><th colspan="${last+5}" bgcolor="#FFC000" height="30">REKAP ABSENSI PT AGN - ${f}</th></tr>
+                <tr bgcolor="#E2E8F0"><th>Nama</th>`;
+            for(let i=1;i<=last;i++) table+=`<th>${i}</th>`;
+            table+=`<th>H</th><th>I</th><th>A</th><th>L</th></tr>`;
+
+            kList.forEach(n=>{
+                table+=`<tr><td><b>${n}</b></td>`;
+                let cH=0, cI=0, cA=0, cL=0;
                 for(let i=1;i<=last;i++){
                     let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), isOff=(d.getDay()===0 || hl[t]);
                     let data=ad[t]?ad[t][n]:null;
-                    if(isOff && !data){
-                        if(idx===0) html+=`<td rowspan="${kList.length}" bgcolor="#EF4444" style="color:#FFFFFF" align="center">OFF</td>`;
-                    } else {
-                        let bg="#FFFFFF", txt="-", col="#000000";
-                        if(data){
-                            if(data.Izin){ bg="#EAB308"; txt="I"; }
-                            else if(data.Masuk){ 
-                                bg=(isOff)?"#3B82F6":((data.Masuk.status==="Terlambat")?"#FFFF00":"#22C55E");
-                                txt=(isOff)?"L":"H"; if(bg=="#22C55E" || bg=="#3B82F6") col="#FFFFFF";
-                            }
-                        } else if(t>=TGL_MULAI_SISTEM && t<today){ bg="#EF4444"; txt="A"; col="#FFFFFF"; }
-                        html+=`<td bgcolor="${bg}" style="color:${col}" align="center">${txt}</td>`;
-                    }
+                    let bg="#FFFFFF", txt="-", col="#000000";
+
+                    if(data){
+                        if(data.Izin){ bg="#EAB308"; txt="I"; cI++; }
+                        else if(data.Masuk){ 
+                            if(isOff){ bg="#3B82F6"; txt="L"; cL++; col="#FFFFFF"; }
+                            else { bg=(data.Masuk.status==="Terlambat")?"#FFFF00":"#22C55E"; txt="H"; cH++; if(bg=="#22C55E") col="#FFFFFF"; }
+                        }
+                    } else if(isOff){ bg="#EF4444"; txt="OFF"; col="#FFFFFF"; }
+                    else if(t>=TGL_MULAI_SISTEM && t<today){ bg="#64748B"; txt="A"; col="#FFFFFF"; cA++; }
+                    table+=`<td bgcolor="${bg}" style="color:${col}" align="center">${txt}</td>`;
                 }
-                html+=`<td bgcolor="#DCFCE7" align="center"></td><td bgcolor="#FEF9C3" align="center"></td><td bgcolor="#FEE2E2" align="center"></td><td bgcolor="#DBEAFE" align="center"></td></tr>`;
+                table+=`<td>${cH}</td><td>${cI}</td><td>${cA}</td><td>${cL}</td></tr>`;
             });
-            html+=`</table></body></html>`;
-            const link=document.createElement("a"); link.href='data:application/vnd.ms-excel,' + encodeURIComponent(html);
-            link.download=`REKAP_PTAGN_${f}.xls`; link.click();
+            table+=`</table>`;
+
+            const template = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Absensi</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body>${table}</body></html>`;
+            const link=document.createElement("a"); link.href='data:application/vnd.ms-excel;base64,' + btoa(unescape(encodeURIComponent(template)));
+            link.download=`REKAP_AGN_${f}.xls`; link.click();
         }
     </script>
 </body>
