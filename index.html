@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v48.0 (Final)</title>
+    <title>PT-AGN v49.0</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -39,20 +39,28 @@
             <div class="logo-box" onclick="document.getElementById('fileLogo').click()">
                 <img id="imgLogo" src="https://ui-avatars.com/api/?name=AGN&background=2563eb&color=fff" alt="Logo">
                 <input type="file" id="fileLogo" hidden accept="image/*" onchange="updateLogo(this)">
-                <div><h2 style="margin:0;font-size:1rem">PT AGN</h2><span style="font-size:9px;color:var(--w);font-weight:800">SYSTEM v48.0</span></div>
+                <div><h2 style="margin:0;font-size:1rem">PT AGN</h2><span style="font-size:9px;color:var(--w);font-weight:800">SYSTEM v49.0</span></div>
             </div>
             <button onclick="toggleT()" id="tBtn" style="width:80px;font-size:11px">🌙 Dark</button>
         </header>
 
         <div class="card no-p">
-            <h3>👤 Management & Reset</h3>
-            <div style="display:flex;gap:8px;margin-bottom:10px">
+            <h3>👤 Management Karyawan</h3>
+            <div style="display:flex;gap:8px">
                 <input list="lk" id="iNama" placeholder="Nama Karyawan...">
                 <datalist id="lk"></datalist>
                 <button class="btn btn-sq" style="background:var(--s)" onclick="tKaryawan()">➕</button>
                 <button class="btn btn-sq" style="background:var(--d)" onclick="hKaryawan()">🗑️</button>
             </div>
-            <button class="btn" style="background:var(--d);margin-top:5px;height:38px;font-size:12px" onclick="resetAbsensi()">⚠️ RESET SEMUA DATA ABSENSI</button>
+        </div>
+
+        <div class="card no-p">
+            <h3>🧹 Reset Absensi Spesifik</h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+                <input type="date" id="tglReset" title="Pilih Tanggal">
+                <button class="btn" style="background:var(--d);font-size:12px" onclick="resetPerKaryawan()">HAPUS ABSENSI</button>
+            </div>
+            <p style="font-size:9px;margin:0;color:var(--t);opacity:0.7">*Pilih Nama & Tanggal di atas untuk menghapus absen spesifik.</p>
         </div>
 
         <div class="card no-p">
@@ -127,11 +135,13 @@
         function tKaryawan(){let n=document.getElementById('iNama'); if(!n.value) return sT("Isi Nama!","error"); db.ref('master_karyawan').push(n.value).then(()=>{sT("Berhasil!"); n.value=""});}
         function hKaryawan(){let n=document.getElementById('iNama'); let id=Object.keys(mk).find(k=>mk[k]===n.value); if(id && confirm(`Hapus ${n.value}?`)) db.ref(`master_karyawan/${id}`).remove().then(()=>{sT("Dihapus!"); n.value=""});}
 
-        function resetAbsensi(){
-            if(confirm("PERINGATAN: Semua data absensi di database akan dihapus selamanya! Lanjutkan?")){
-                if(confirm("Klik OK sekali lagi untuk konfirmasi penghapusan TOTAL.")){
-                    db.ref('absensi').remove().then(()=>sT("Semua Absensi Terhapus!","error"));
-                }
+        // FITUR RESET SPESIFIK
+        function resetPerKaryawan(){
+            let n=document.getElementById('iNama').value;
+            let t=document.getElementById('tglReset').value;
+            if(!n || !t) return sT("Pilih Nama & Tanggal!","error");
+            if(confirm(`Hapus data absen ${n} pada tanggal ${t}?`)){
+                db.ref(`absensi/${t}/${n}`).remove().then(()=>sT("Data Terhapus!"));
             }
         }
 
