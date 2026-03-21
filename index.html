@@ -2,10 +2,13 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v53.0 - Locked</title>
+    <title>PT-AGN v54.0 - Pro Report</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
+    <!-- Library Excel & PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root{--p:#2563eb;--s:#10b981;--d:#ef4444;--w:#f59e0b;--bg:#f1f5f9;--c:#fff;--t:#1e293b;--b:#e2e8f0}
@@ -29,37 +32,23 @@
         .s-cell{border-radius:6px;width:32px;min-height:32px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;gap:1px}
         .s-v{background:var(--s);color:#fff}.s-t{background:var(--w);color:#fff}.s-i{background:var(--p);color:#fff}.s-off{background:#ef44441a;color:var(--d)}
         .note-text{font-size:6.5px;font-weight:400;width:30px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-
-        /* PERBAIKAN PDF (PRINT) */
-        @media print {
-            .no-p, #toast, header, .card:not(.rekap-card) { display: none !important; }
-            body { background: #fff; padding: 0; }
-            .container { max-width: 100%; }
-            .card.rekap-card { border: none; box-shadow: none; padding: 0; }
-            .table-wrap { overflow: visible !important; border: none; }
-            table { min-width: 100%; font-size: 8px; border: 1px solid #000; }
-            th, td { border: 1px solid #ccc; padding: 4px 2px; }
-            .nama-fixed { position: static !important; background: #fff !important; border-right: 1px solid #ccc; }
-            .s-cell { border: 1px solid #eee; color: #000 !important; background: transparent !important; }
-            .s-v::after { content: 'V'; }.s-t::after { content: 'T'; }.s-i::after { content: 'I'; }.s-off::after { content: 'L'; }
-            .s-cell span { display: none; } /* Ganti warna dengan huruf saat print hitam putih */
-        }
+        @media print { .no-p { display: none !important; } }
     </style>
 </head>
 <body data-theme="light">
     <div id="toast"></div>
-    <div class="container">
-        <header class="no-p">
+    <div class="container no-p">
+        <header>
             <div class="logo-box" onclick="document.getElementById('fileLogo').click()">
                 <img id="imgLogo" src="https://ui-avatars.com/api/?name=AGN&background=2563eb&color=fff" alt="Logo">
                 <input type="file" id="fileLogo" hidden accept="image/*" onchange="updateLogo(this)">
-                <div><h2 style="margin:0;font-size:1rem">PT AGN</h2><span style="font-size:9px;color:var(--w);font-weight:800">SYSTEM v53.0</span></div>
+                <div><h2 style="margin:0;font-size:1rem">PT AGN</h2><span style="font-size:9px;color:var(--w);font-weight:800">SYSTEM v54.0</span></div>
             </div>
             <button onclick="toggleT()" id="tBtn" style="width:80px;font-size:11px">🌙 Dark</button>
         </header>
 
-        <!-- UI LOCKED SEPERTI PERINTAH -->
-        <div class="card no-p">
+        <!-- INPUT AREA (LOCKED) -->
+        <div class="card">
             <h3>👤 Management Karyawan</h3>
             <div style="display:flex;gap:8px">
                 <input list="lk" id="iNama" placeholder="Nama Karyawan...">
@@ -68,16 +57,14 @@
                 <button class="btn btn-sq" style="background:var(--d)" onclick="hKaryawan()">🗑️</button>
             </div>
         </div>
-
-        <div class="card no-p">
+        <div class="card">
             <h3>🧹 Reset Absensi</h3>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
                 <input type="date" id="tglReset">
                 <button class="btn" style="background:var(--d);font-size:12px" onclick="resetPerKaryawan()">HAPUS ABSENSI</button>
             </div>
         </div>
-
-        <div class="card no-p">
+        <div class="card">
             <h3>🗓️ Jadwal Libur</h3>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
                 <input type="date" id="tM"><input type="date" id="tS">
@@ -87,8 +74,7 @@
                 <button class="btn" style="background:var(--b);color:var(--t);flex:1" onclick="sLib(false)">HAPUS</button>
             </div>
         </div>
-
-        <div class="card no-p">
+        <div class="card">
             <h3>⚡ Presensi</h3>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
                 <button class="btn" style="background:var(--s);height:55px" onclick="pAbsen('Masuk')">MASUK</button>
@@ -97,13 +83,13 @@
             <button class="btn" style="background:var(--w);margin-top:10px;height:42px" onclick="pAbsen('Izin')">📝 IZIN / SAKIT (CATATAN)</button>
         </div>
 
-        <!-- REKAP CARD -->
-        <div class="card rekap-card">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px" class="no-p">
+        <!-- REKAP AREA -->
+        <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px">
                 <input type="month" id="fB" style="width:130px" onchange="rRekap()">
                 <div style="display:flex;gap:5px">
-                    <button class="btn" style="background:#334155;width:80px;font-size:11px" onclick="exportExcelPro()">📥 EXCEL</button>
-                    <button class="btn" style="background:var(--p);width:80px;font-size:11px" onclick="window.print()">🖨️ PDF</button>
+                    <button class="btn" style="background:#1d6f42;width:90px;font-size:11px" onclick="exportExcelHigh()">📁 EXCEL PRO</button>
+                    <button class="btn" style="background:#b91c1c;width:90px;font-size:11px" onclick="exportPDFHigh()">📄 PDF PRO</button>
                 </div>
             </div>
             <div class="table-wrap"><table><thead><tr id="thR"></tr></thead><tbody id="tbR"></tbody></table></div>
@@ -126,8 +112,6 @@
         function resetPerKaryawan(){ let nI=document.getElementById('iNama'), tI=document.getElementById('tglReset'), n=nI.value, t=tI.value; if(!n || !t) return sT("Pilih Nama & Tanggal!","error"); if(confirm(`Hapus data absen ${n} tgl ${t}?`)) { db.ref(`absensi/${t}/${n}`).remove().then(()=> { sT("Data Terhapus!"); nI.value = ""; tI.value = ""; }); } }
         function sLib(st){ let mI=document.getElementById('tM'), sI=document.getElementById('tS'), m=mI.value, s=sI.value; if(!m) return sT("Isi tanggal minimal 1 kotak!","error"); let u={}; if(!s || m === s){ u[m] = st ? true : null; } else { let cur=new Date(m), end=new Date(s); if(cur > end) return sT("Tgl Mulai harus lebih awal!","error"); while(cur <= end){ u[cur.toISOString().split('T')[0]] = st ? true : null; cur.setDate(cur.getDate()+1); } } db.ref('hari_libur').update(u).then(()=>{sT("Update Berhasil!"); mI.value=""; sI.value="";}); }
         function pAbsen(ty){ let n=document.getElementById('iNama'); if(!n.value) return sT("Pilih Nama!","error"); let now=new Date(), tgl=now.toISOString().split('T')[0], jam=now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}); let note = ""; if(ty === 'Izin'){ note = prompt("Alasan Izin/Sakit:"); if(note === null) return; } let st=(ty==='Masuk'&&(now.getHours()>9||(now.getHours()===9&&now.getMinutes()>0)))?"Terlambat":"Hadir"; db.ref(`absensi/${tgl}/${n.value}/${ty}`).set({waktu:jam,status:st,catatan:note}).then(()=>{sT(ty+" Berhasil!"); n.value=""}); }
-
-        // --- REPORTING SYSTEM (THE NEW STUFF) ---
         function rRekap(){
             const f=document.getElementById('fB').value; if(!f) return;
             const [y,m]=f.split('-'), last=new Date(y,m,0).getDate();
@@ -148,29 +132,73 @@
             }).join('');
         }
 
-        // EXCEL PRO: Mengolah Data Mentah, Bukan Tabel HTML
-        function exportExcelPro(){
-            const f=document.getElementById('fB').value;
-            const [y,m]=f.split('-'), last=new Date(y,m,0).getDate();
-            const dataHeader = ["NAMA KARYAWAN", ...Array.from({length:last},(_,i)=>i+1), "HADIR", "TELAT", "IZIN"];
-            const dataRows = Object.values(mk).sort().map(n=>{
-                let cH=0,cT=0,cI=0, row=[n];
+        // --- NEW PROFESSIONAL REPORTING ENGINE ---
+
+        function exportExcelHigh() {
+            const f = document.getElementById('fB').value;
+            const [y, m] = f.split('-'), last = new Date(y, m, 0).getDate();
+            const header = ["NAMA KARYAWAN", ...Array.from({length:last},(_,i)=>i+1), "HADIR", "TELAT", "IZIN"];
+            const rows = Object.values(mk).sort().map(n => {
+                let cH=0, cT=0, cI=0, r = [n];
                 for(let i=1;i<=last;i++){
-                    let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), val="-";
-                    if(d.getDay()===0) val="OFF"; else if(hl[t]) val="LIBUR";
+                    let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), v="-";
+                    if(d.getDay()===0) v="OFF"; else if(hl[t]) v="LIBUR";
                     if(ad[t]&&ad[t][n]){
                         let a=ad[t][n];
-                        if(a.Izin) { val="IZIN"; cI++; }
-                        else if(a.Masuk) { val=(a.Masuk.status==="Terlambat")?"TELAT":"HADIR"; if(val==="TELAT") cT++; else cH++; }
+                        if(a.Izin){ v="IZIN"; cI++; }
+                        else if(a.Masuk){ if(a.Masuk.status==="Terlambat"){v="TELAT";cT++;}else{v="HADIR";cH++;} }
                     }
-                    row.push(val);
+                    r.push(v);
                 }
-                row.push(cH, cT, cI);
-                return row;
+                r.push(cH, cT, cI); return r;
             });
-            const ws = XLSX.utils.aoa_to_sheet([["LAPORAN ABSENSI PT AGN - PERIODE "+f], [], dataHeader, ...dataRows]);
-            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Rekap");
-            XLSX.writeFile(wb, `Rekap_Professional_${f}.xlsx`);
+
+            const ws = XLSX.utils.aoa_to_sheet([["LAPORAN ABSENSI PT AGN - "+f], [], header, ...rows]);
+            
+            // Auto Width & Style
+            const wscols = [{wch:20}, ...Array(last).fill({wch:6}), {wch:8}, {wch:8}, {wch:8}];
+            ws['!cols'] = wscols;
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Rekap");
+            XLSX.writeFile(wb, `AGN_REKAP_${f}.xlsx`);
+        }
+
+        function exportPDFHigh() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('l', 'mm', 'a4');
+            const f = document.getElementById('fB').value;
+            const [y, m] = f.split('-'), last = new Date(y, m, 0).getDate();
+            
+            const head = [["NAMA", ...Array.from({length:last},(_,i)=>i+1), "H", "T", "I"]];
+            const body = Object.values(mk).sort().map(n => {
+                let cH=0, cT=0, cI=0, r = [n];
+                for(let i=1;i<=last;i++){
+                    let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), v="-";
+                    if(d.getDay()===0) v="O"; else if(hl[t]) v="L";
+                    if(ad[t]&&ad[t][n]){
+                        let a=ad[t][n];
+                        if(a.Izin){ v="I"; cI++; }
+                        else if(a.Masuk){ if(a.Masuk.status==="Terlambat"){v="T";cT++;}else{v="V";cH++;} }
+                    }
+                    r.push(v);
+                }
+                r.push(cH, cT, cI); return r;
+            });
+
+            doc.text(`LAPORAN ABSENSI PT AGN - PERIODE ${f}`, 14, 15);
+            doc.autoTable({
+                head: head,
+                body: body,
+                startY: 20,
+                theme: 'grid',
+                styles: { fontSize: 6, cellPadding: 1, halign: 'center' },
+                columnStyles: { 0: { halign: 'left', cellWidth: 30 } },
+                headStyles: { fillColor: [37, 99, 235], textColor: 255 },
+                alternateRowStyles: { fillColor: [245, 247, 250] }
+            });
+
+            doc.save(`AGN_REKAP_${f}.pdf`);
         }
     </script>
 </body>
