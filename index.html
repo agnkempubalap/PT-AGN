@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v50.0</title>
+    <title>PT-AGN v52.0</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -39,7 +39,7 @@
             <div class="logo-box" onclick="document.getElementById('fileLogo').click()">
                 <img id="imgLogo" src="https://ui-avatars.com/api/?name=AGN&background=2563eb&color=fff" alt="Logo">
                 <input type="file" id="fileLogo" hidden accept="image/*" onchange="updateLogo(this)">
-                <div><h2 style="margin:0;font-size:1rem">PT AGN</h2><span style="font-size:9px;color:var(--w);font-weight:800">SYSTEM v50.0</span></div>
+                <div><h2 style="margin:0;font-size:1rem">PT AGN</h2><span style="font-size:9px;color:var(--w);font-weight:800">SYSTEM v52.0</span></div>
             </div>
             <button onclick="toggleT()" id="tBtn" style="width:80px;font-size:11px">🌙 Dark</button>
         </header>
@@ -55,23 +55,21 @@
         </div>
 
         <div class="card no-p">
-            <h3>🗓️ Jadwal Libur (Hybrid)</h3>
+            <h3>🧹 Reset Absensi</h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <input type="date" id="tglReset">
+                <button class="btn" style="background:var(--d);font-size:12px" onclick="resetPerKaryawan()">HAPUS ABSENSI</button>
+            </div>
+        </div>
+
+        <div class="card no-p">
+            <h3>🗓️ Jadwal Libur</h3>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-                <input type="date" id="tM" placeholder="Mulai / Tgl Tunggal">
-                <input type="date" id="tS" placeholder="Sampai (Opsional)">
+                <input type="date" id="tM"><input type="date" id="tS">
             </div>
             <div style="display:flex;gap:8px">
                 <button class="btn" style="background:var(--p);flex:1" onclick="sLib(true)">SET LIBUR</button>
                 <button class="btn" style="background:var(--b);color:var(--t);flex:1" onclick="sLib(false)">HAPUS</button>
-            </div>
-            <p style="font-size:9px;margin:5px 0 0;opacity:0.7">*Isi kotak pertama saja untuk libur 1 hari. Isi keduanya untuk rentang hari.</p>
-        </div>
-
-        <div class="card no-p">
-            <h3>🧹 Reset Absensi Spesifik</h3>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-                <input type="date" id="tglReset">
-                <button class="btn" style="background:var(--d);font-size:12px" onclick="resetPerKaryawan()">HAPUS ABSENSI</button>
             </div>
         </div>
 
@@ -137,30 +135,30 @@
         function hKaryawan(){let n=document.getElementById('iNama'); let id=Object.keys(mk).find(k=>mk[k]===n.value); if(id && confirm(`Hapus ${n.value}?`)) db.ref(`master_karyawan/${id}`).remove().then(()=>{sT("Dihapus!"); n.value=""});}
 
         function resetPerKaryawan(){
-            let n=document.getElementById('iNama').value, t=document.getElementById('tglReset').value;
+            let nI=document.getElementById('iNama'), tI=document.getElementById('tglReset');
+            let n=nI.value, t=tI.value;
             if(!n || !t) return sT("Pilih Nama & Tanggal!","error");
-            if(confirm(`Hapus data absen ${n} tgl ${t}?`)) db.ref(`absensi/${t}/${n}`).remove().then(()=>sT("Terhapus!"));
+            if(confirm(`Hapus data absen ${n} tgl ${t}?`)) {
+                db.ref(`absensi/${t}/${n}`).remove().then(()=> {
+                    sT("Data Terhapus!");
+                    nI.value = ""; // Bersihkan nama
+                    tI.value = ""; // Bersihkan tanggal
+                });
+            }
         }
 
-        // LOGIKA HYBRID HARI LIBUR
         function sLib(st){
-            let m=document.getElementById('tM').value, s=document.getElementById('tS').value; 
+            let mI=document.getElementById('tM'), sI=document.getElementById('tS');
+            let m=mI.value, s=sI.value; 
             if(!m) return sT("Isi tanggal minimal 1 kotak!","error");
-            
             let u={};
-            if(!s || m === s){
-                // Satu Hari Saja
-                u[m] = st ? true : null;
-            } else {
-                // Rentang Hari
+            if(!s || m === s){ u[m] = st ? true : null; } 
+            else {
                 let cur=new Date(m), end=new Date(s);
                 if(cur > end) return sT("Tgl Mulai harus lebih awal!","error");
-                while(cur <= end){
-                    u[cur.toISOString().split('T')[0]] = st ? true : null;
-                    cur.setDate(cur.getDate()+1);
-                }
+                while(cur <= end){ u[cur.toISOString().split('T')[0]] = st ? true : null; cur.setDate(cur.getDate()+1); }
             }
-            db.ref('hari_libur').update(u).then(()=>{sT("Update Berhasil!"); document.getElementById('tM').value=""; document.getElementById('tS').value="";});
+            db.ref('hari_libur').update(u).then(()=>{sT("Update Berhasil!"); mI.value=""; sI.value="";});
         }
 
         function pAbsen(ty){
