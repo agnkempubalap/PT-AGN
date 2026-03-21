@@ -2,12 +2,12 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v74.5 - Fix Libur</title>
+    <title>PT-AGN v74.7 - WPS Compatible</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
     <style>
-        :root{--p:#2563eb;--s:#10b981;--d:#ef4444;--w:#f59e0b;--l:#3b82f6;--bg:#f1f5f9;--c:#fff;--t:#1e293b;--b:#e2e8f0}
+        :root{--p:#2563eb;--s:#10b981;--d:#ef4444;--w:#f59e0b;--bg:#f1f5f9;--c:#fff;--t:#1e293b;--b:#e2e8f0}
         [data-theme="dark"]{--bg:#0f172a;--c:#1e293b;--t:#f8fafc;--b:#334155}
         body{font-family:'Plus Jakarta Sans',sans-serif;margin:0;background:var(--bg);color:var(--t);padding:8px}
         .container{max-width:1450px;margin:0 auto}
@@ -21,8 +21,6 @@
         .btn-sq{width:55px;flex-shrink:0}
         #toast{position:fixed;bottom:20px;right:20px;padding:12px 20px;border-radius:10px;color:#fff;font-size:13px;z-index:999;display:none}
         #toast.show{display:block}
-        
-        /* TABLE WEB */
         .table-wrap{overflow:auto;border-radius:12px;border:1px solid var(--b);background:var(--c)}
         .table-web{width:100%;border-collapse:collapse;font-size:9px;min-width:1450px}
         .table-web th, .table-web td{border-bottom:1px solid var(--b);padding:6px 2px;text-align:center}
@@ -30,8 +28,6 @@
         .s-cell{border-radius:4px;width:28px;min-height:30px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;font-size:9px}
         .s-v{background:#22c55e;color:#fff} .s-late{background:#facc15;color:#000} .s-i{background:#eab308;color:#000} .s-off{background:#ef4444;color:#fff} .s-a{background:#64748b;color:#fff} .s-l{background:#3b82f6;color:#fff}
         .jam-text{font-size:6px;font-weight:400;display:block;margin-top:1px;line-height:1}
-
-        /* PRINT PDF */
         .print-only { display: none; }
         @media print { 
             body { background: white; } 
@@ -57,7 +53,7 @@
         <header>
             <div class="logo-box" onclick="gantiLogo()">
                 <img id="mainLogo" src="https://ui-avatars.com/api/?name=AGN&background=2563eb&color=fff">
-                <div><h2 style="margin:0;font-size:1rem">PT AGN</h2><span style="font-size:9px;color:var(--w);font-weight:800">SYSTEM v74.5</span></div>
+                <div><h2 style="margin:0;font-size:1rem">PT AGN</h2><span style="font-size:9px;color:var(--w);font-weight:800">SYSTEM v74.7</span></div>
             </div>
             <button onclick="toggleT()" id="tBtn" style="width:80px;font-size:11px">🌙 Dark</button>
         </header>
@@ -83,8 +79,8 @@
                 <div><label style="font-size:9px">Sampai:</label><input type="date" id="tS"></div>
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-                <button class="btn" style="background:var(--p)" onclick="sLib(true)">✅ SET LIBUR</button>
-                <button class="btn" style="background:var(--d)" onclick="sLib(false)">❌ HAPUS LIBUR</button>
+                <button class="btn" style="background:var(--p)" onclick="sLib(true)">SET LIBUR</button>
+                <button class="btn" style="background:var(--d)" onclick="sLib(false)">HAPUS LIBUR</button>
             </div>
         </div>
 
@@ -105,19 +101,11 @@
                     <button class="btn" style="background:#b91c1c;width:90px;font-size:10px" onclick="window.print()">📜 PDF</button>
                 </div>
             </div>
-            
             <div class="table-wrap screen-only">
-                <table class="table-web">
-                    <thead><tr id="thWeb"></tr></thead>
-                    <tbody id="tbWeb"></tbody>
-                </table>
+                <table class="table-web"><thead id="thWeb"></thead><tbody id="tbWeb"></tbody></table>
             </div>
-
             <div class="print-only">
-                <table class="table-print">
-                    <thead id="thPrint"></thead>
-                    <tbody id="tbPrint"></tbody>
-                </table>
+                <table class="table-print"><thead id="thPrint"></thead><tbody id="tbPrint"></tbody></table>
             </div>
         </div>
     </div>
@@ -144,14 +132,23 @@
         function uDl(){document.getElementById('lk').innerHTML=Object.values(mk).sort().map(n=>`<option value="${n}">`).join('');}
         function tKaryawan(){let n=document.getElementById('iNama'); if(n.value) db.ref('master_karyawan').push(n.value).then(()=>{n.value="";});}
         function hKaryawan(){let n=document.getElementById('iNama'); let id=Object.keys(mk).find(k=>mk[k]===n.value); if(id && confirm('Hapus?')) db.ref(`master_karyawan/${id}`).remove();}
-        function resetPerKaryawan(){let n=document.getElementById('iNama'), t=document.getElementById('tglReset'); if(n.value && t.value) db.ref(`absensi/${t.value}/${n.value}`).remove();}
+        
+        function resetPerKaryawan(){
+            let n=document.getElementById('iNama'), t=document.getElementById('tglReset'); 
+            if(n.value && t.value) {
+                db.ref(`absensi/${t.value}/${n.value}`).remove().then(()=>{
+                    sT("Data Berhasil Dihapus");
+                    n.value = ""; t.value = "";
+                });
+            } else { sT("Pilih Nama & Tanggal!","error"); }
+        }
+
         function sLib(st){
             let m=document.getElementById('tM'), s=document.getElementById('tS'); 
             if(!m.value) return sT("Pilih Tanggal!","error");
             let curr=new Date(m.value), end=s.value?new Date(s.value):new Date(m.value);
             while(curr<=end){
-                let tKey = curr.toISOString().split('T')[0];
-                db.ref(`hari_libur/${tKey}`).set(st?true:null);
+                db.ref(`hari_libur/${curr.toISOString().split('T')[0]}`).set(st?true:null);
                 curr.setDate(curr.getDate()+1);
             }
             sT(st?"Berhasil Set Libur":"Berhasil Hapus Libur");
@@ -171,23 +168,19 @@
             const f=document.getElementById('fB').value; if(!f) return;
             const [y,m]=f.split('-'), last=new Date(y,m,0).getDate(), today=new Date().toISOString().split('T')[0];
             const kList=Object.values(mk).sort();
-
-            document.getElementById('thWeb').innerHTML = `<th class="nama-fixed">Nama</th>${Array.from({length:last},(_,i)=>`<th>${i+1}</th>`).join('')}<th>H</th><th>I</th><th>A</th><th>L</th>`;
+            document.getElementById('thWeb').innerHTML = `<tr><th class="nama-fixed">Nama</th>${Array.from({length:last},(_,i)=>`<th>${i+1}</th>`).join('')}<th>H</th><th>I</th><th>A</th><th>L</th></tr>`;
             let hP = `<tr><th colspan="${last+5}" style="background:#FFC000!important; height:25px; font-size:14px;">ABSENSI PT AGN</th></tr>
                       <tr><th colspan="${last+5}" style="background:#FFE699!important;">PERIODE ${f}</th></tr>
                       <tr><th rowspan="2" style="width:100px">Nama</th><th colspan="${last}">Tanggal</th><th colspan="4">Total</th></tr><tr>`;
             for(let i=1;i<=last;i++) hP+=`<th style="width:22px">${i}</th>`;
             hP+=`<th>H</th><th>I</th><th>A</th><th>L</th></tr>`;
             document.getElementById('thPrint').innerHTML=hP;
-
             let bWeb="", bPrint="";
             kList.forEach((n, idx)=>{
                 let cH=0, cI=0, cA=0, cL=0, rWeb=`<td class="nama-fixed">${n}</td>`, rPrint=`<td style="text-align:left; font-weight:bold;">${n}</td>`;
                 for(let i=1;i<=last;i++){
                     let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), isOff=(d.getDay()===0 || hl[t]);
-                    let data=ad[t]?ad[t][n]:null;
-                    
-                    let sW="-", clW="", infoW="";
+                    let data=ad[t]?ad[t][n]:null, sW="-", clW="", infoW="";
                     if(data){
                         if(data.Izin){ sW="I"; clW="s-i"; cI++; infoW=data.Izin.note||""; }
                         else if(data.Masuk){ 
@@ -198,7 +191,6 @@
                     } else if(isOff){ sW=(d.getDay()===0)?"MNG":"OFF"; clW="s-off"; }
                     else if(t>=TGL_MULAI_SISTEM && t<today){ sW="A"; clW="s-a"; cA++; }
                     rWeb+=`<td><div class="s-cell ${clW}">${sW}<span class="jam-text">${infoW}</span></div></td>`;
-
                     if(isOff && !data){
                         if(idx===0){
                             let txt=(hl[t]?"LIBUR":"MINGGU").split('').map(c=>`<span class="lbl-off">${c}</span>`).join('');
@@ -227,47 +219,39 @@
         function doExcel(){
             const f=document.getElementById('fB').value; const [y,m]=f.split('-'); const last=new Date(y,m,0).getDate();
             const kList=Object.values(mk).sort(); const today=new Date().toISOString().split('T')[0];
-            
             let html=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
                 <head><meta charset="UTF-8"></head><body><table border="1">
-                <tr><th colspan="${last+5}" style="background:#FFC000; height:35px; font-size:16px;">REKAP ABSENSI PT AGN - ${f}</th></tr>
-                <tr><th rowspan="2" style="background:#f2f2f2; width:120px;">Nama</th><th colspan="${last}" style="background:#f2f2f2;">Tanggal</th><th colspan="4" style="background:#f2f2f2;">Total</th></tr><tr>`;
-            
-            for(let i=1;i<=last;i++) html+=`<th width="35" style="background:#f2f2f2;">${i}</th>`;
-            html+=`<th style="background:#00B050; color:white;">H</th><th style="background:#FFFF00;">I</th><th style="background:#C00000; color:white;">A</th><th style="background:#0070C0; color:white;">L</th></tr>`;
-
+                <tr><th colspan="${last+5}" bgcolor="#FFC000" height="40" style="font-size:16px;"><b>REKAP ABSENSI PT AGN - ${f}</b></th></tr>
+                <tr><th rowspan="2" bgcolor="#E2E8F0">Nama</th><th colspan="${last}" bgcolor="#E2E8F0">Tanggal</th><th colspan="4" bgcolor="#E2E8F0">Total</th></tr><tr>`;
+            for(let i=1;i<=last;i++) html+=`<th bgcolor="#F8FAFC">${i}</th>`;
+            html+=`<th bgcolor="#22C55E">H</th><th bgcolor="#EAB308">I</th><th bgcolor="#EF4444">A</th><th bgcolor="#3B82F6">L</th></tr>`;
             kList.forEach((n, idx)=>{
-                html+=`<tr><td style="text-align:left;"><b>${n}</b></td>`;
+                html+=`<tr><td align="left"><b>${n}</b></td>`;
                 let cH=0, cI=0, cA=0, cL=0;
                 for(let i=1;i<=last;i++){
                     let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), isOff=(d.getDay()===0 || hl[t]);
                     let data=ad[t]?ad[t][n]:null;
                     if(isOff && !data){
-                        if(idx===0) html+=`<td rowspan="${kList.length}" style="background:#FF0000; color:#FFFFFF; text-align:center;">OFF</td>`;
+                        if(idx===0) html+=`<td rowspan="${kList.length}" bgcolor="#EF4444" align="center" style="color:#FFFFFF">OFF</td>`;
                     } else {
                         let bg="#FFFFFF", txt="-", col="#000000", info="";
                         if(data){
-                            if(data.Izin){ bg="#FFFF00"; txt="I"; cI++; info=data.Izin.note||""; }
+                            if(data.Izin){ bg="#EAB308"; txt="I"; cI++; info=data.Izin.note||""; }
                             else if(data.Masuk){ 
-                                if(isOff) { bg="#0070C0"; txt="L"; cL++; col="#FFFFFF"; }
-                                else { bg=(data.Masuk.status==="Terlambat")?"#92D050":"#00B050"; txt="H"; cH++; if(bg=="#00B050") col="#FFFFFF"; }
+                                if(isOff) { bg="#3B82F6"; txt="L"; cL++; col="#FFFFFF"; }
+                                else { bg=(data.Masuk.status==="Terlambat")?"#FACC15":"#22C55E"; txt="H"; cH++; if(bg=="#22C55E") col="#FFFFFF"; }
                                 info = data.Masuk.waktu + (data.Pulang ? "-" + data.Pulang.waktu : "");
                             }
-                        } else if(t>=TGL_MULAI_SISTEM && t<today){ bg="#C00000"; txt="A"; cA++; col="#FFFFFF"; }
-                        html+=`<td style="background:${bg}; color:${col}; text-align:center; font-size:8px;">${txt}<br>${info}</td>`;
+                        } else if(t>=TGL_MULAI_SISTEM && t<today){ bg="#EF4444"; txt="A"; cA++; col="#FFFFFF"; }
+                        html+=`<td bgcolor="${bg}" align="center" style="color:${col};font-size:8px;">${txt}<br>${info}</td>`;
                     }
                 }
-                html+=`<td style="background:#E2EFDA; text-align:center;"><b>${cH}</b></td><td style="background:#FFF2CC; text-align:center;"><b>${cI}</b></td><td style="background:#F4B084; text-align:center;"><b>${cA}</b></td><td style="background:#DDEBF7; text-align:center;"><b>${cL}</b></td></tr>`;
+                html+=`<td bgcolor="#DCFCE7" align="center"><b>${cH}</b></td><td bgcolor="#FEF9C3" align="center"><b>${cI}</b></td><td bgcolor="#FEE2E2" align="center"><b>${cA}</b></td><td bgcolor="#DBEAFE" align="center"><b>${cL}</b></td></tr>`;
             });
             html+=`</table></body></html>`;
-
             const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
             const url = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.href = url;
-            link.download = `REKAP_PTAGN_${f}.xls`;
-            link.click();
-            URL.revokeObjectURL(url);
+            const link = document.createElement("a"); link.href = url; link.download = `REKAP_PTAGN_${f}.xls`; link.click();
         }
     </script>
 </body>
