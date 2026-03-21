@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v76.1 - Final Match</title>
+    <title>PT-AGN v76.2</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
@@ -27,8 +27,13 @@
         .table-wrap{overflow:auto;border-radius:12px;border:1px solid var(--b);background:var(--c)}
         .table-web{width:100%;border-collapse:separate;border-spacing:0;font-size:10px}
         .table-web th, .table-web td{border-bottom:1px solid var(--b);border-right:1px solid var(--b);padding:10px 4px;text-align:center;min-width:45px}
-        .nama-fixed{position:sticky !important;left:0;background-color:var(--c) !important;z-index:10;min-width:120px !important;text-align:left !important;padding-left:15px !important;font-weight:700}
         
+        .nama-fixed{position:sticky !important;left:0;background-color:var(--c) !important;z-index:10;min-width:120px !important;text-align:left !important;padding-left:15px !important;font-weight:700; border-right: 2px solid var(--p) !important}
+        
+        /* WARNA REKAP AKHIR (GELAP) */
+        .rekap-akhir{background:#0f172a !important; color:#ffffff !important; font-weight:800; min-width:35px !important}
+        .th-rekap{background:#020617 !important; color:#f59e0b !important; font-weight:800}
+
         .s-cell{border-radius:6px;width:42px;height:40px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;font-size:11px}
         .s-v{background:var(--s);color:#fff} .s-late{background:var(--w);color:#000} .s-i{background:var(--iz);color:#fff}
         .s-off{background:var(--d);color:#fff} .s-a{background:var(--al);color:#fff} .s-l{background:#AA00FF;color:#fff}
@@ -37,6 +42,7 @@
         @media print {
             header, .card:not(.table-card), .no-print { display: none !important; }
             .table-web { font-size: 8pt !important; }
+            .rekap-akhir { background: #eee !important; color: #000 !important; border: 1px solid #000 !important; }
         }
     </style>
 </head>
@@ -45,7 +51,7 @@
         <header>
             <div class="logo-box">
                 <img id="mainLogo" src="https://ui-avatars.com/api/?name=AGN&background=000&color=fff">
-                <div><h2 style="margin:0;font-size:1.3rem">PT AGN</h2><span style="font-size:10px;color:var(--p);font-weight:800">SYSTEM v76.1</span></div>
+                <div><h2 style="margin:0;font-size:1.3rem">PT AGN</h2><span style="font-size:10px;color:var(--p);font-weight:800">SYSTEM v76.2</span></div>
             </div>
             <div class="dark-card" onclick="toggleT()">
                 <span id="tIco">☀️</span> <span style="font-size:12px;font-weight:600" id="tTxt">Dark Mode</span>
@@ -62,7 +68,7 @@
             </div>
         </div>
 
-        <!-- RESET & LIBUR (PERSIS GAMBAR) -->
+        <!-- RESET & LIBUR -->
         <div class="card">
             <h3>🧹 RESET & LIBUR</h3>
             <div style="display:grid;grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px">
@@ -169,26 +175,27 @@
             
             let h=`<tr><th class="nama-fixed">Nama</th>`;
             for(let i=1;i<=last;i++) h+=`<th>${i}</th>`;
-            h+=`</tr>`; document.getElementById('thWeb').innerHTML=h;
+            h+=`<th class="th-rekap">H</th><th class="th-rekap">I</th><th class="th-rekap">A</th><th class="th-rekap">L</th></tr>`;
+            document.getElementById('thWeb').innerHTML=h;
 
             let b="";
             kList.forEach(n=>{
-                let row=`<td class="nama-fixed">${n}</td>`;
+                let cH=0, cI=0, cA=0, cL=0, row=`<td class="nama-fixed">${n}</td>`;
                 for(let i=1;i<=last;i++){
                     let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), isOff=(d.getDay()===0 || hl[t]);
                     let data=ad[t]?ad[t][n]:null, sW="-", clW="", infoW="";
                     if(data){
-                        if(data.Izin){ sW="I"; clW="s-i"; }
+                        if(data.Izin){ sW="I"; clW="s-i"; cI++; }
                         else if(data.Masuk){ 
-                            if(isOff) { sW="L"; clW="s-l"; } 
-                            else { sW="H"; clW=(data.Masuk.status==="Terlambat")?"s-late":"s-v"; }
+                            if(isOff) { sW="L"; clW="s-l"; cL++; } 
+                            else { sW="H"; clW=(data.Masuk.status==="Terlambat")?"s-late":"s-v"; cH++; }
                             infoW=data.Masuk.waktu;
                         }
                     } else if(isOff){ sW="MNG"; clW="s-off"; }
-                    else if(t < todayFull && t >= TGL_MULAI_SISTEM){ sW="A"; clW="s-a"; }
+                    else if(t < todayFull && t >= TGL_MULAI_SISTEM){ sW="A"; clW="s-a"; cA++; }
                     row+=`<td><div class="s-cell ${clW}">${sW}<span class="jam-text">${infoW}</span></div></td>`;
                 }
-                b+=`<tr>${row}</tr>`;
+                b+=`<tr>${row}<td class="rekap-akhir">${cH}</td><td class="rekap-akhir">${cI}</td><td class="rekap-akhir">${cA}</td><td class="rekap-akhir">${cL}</td></tr>`;
             });
             document.getElementById('tbWeb').innerHTML=b;
         }
