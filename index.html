@@ -2,43 +2,43 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v76.6 - FINAL REVISION</title>
+    <title>PT-AGN v76.7 - STABLE</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
     <style>
         :root{--p:#2563eb;--s:#00C853;--d:#ef4444;--w:#FFD600;--bg:#0f172a;--c:#1e293b;--t:#f8fafc;--b:#334155;--iz:#f59e0b;--al:#37474F}
-        body[data-theme="light"]{--bg:#f1f5f9;--c:#fff;--t:#1e293b;--b:#e2e8f0}
-        body{font-family:'Plus Jakarta Sans',sans-serif;margin:0;background:var(--bg);color:var(--t);padding:10px; transition: 0.3s}
+        body[data-theme="light"]{--bg:#f1f5f9;--c:#ffffff;--t:#1e293b;--b:#cbd5e1}
+        body{font-family:'Plus Jakarta Sans',sans-serif;margin:0;background:var(--bg);color:var(--t);padding:10px; transition: background 0.3s, color 0.3s}
         .container{max-width:1450px;margin:0 auto}
         
         header{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px}
         .logo-box{display:flex;align-items:center;gap:12px}
         .logo-box img{width:70px;height:70px;border-radius:50%;background:#000;border:3px solid var(--p);object-fit:cover;cursor:pointer}
-        .dark-card{background:var(--c); border-radius:12px; border:1px solid var(--b); padding:10px 15px; display:flex; align-items:center; gap:8px; cursor:pointer}
+        .dark-card{background:var(--c); border-radius:12px; border:1px solid var(--b); padding:10px 15px; display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--t)}
 
-        .card{background:var(--c);padding:18px;border-radius:18px;margin-bottom:12px;border:1px solid var(--b);box-shadow:0 4px 6px -1px rgba(0,0,0,0.2)}
-        h3{margin:0 0 15px;font-size:11px;color:#f59e0b;text-transform:uppercase;letter-spacing:1px;font-weight:800;display:flex;align-items:center;gap:5px}
+        .card{background:var(--c);padding:18px;border-radius:18px;margin-bottom:12px;border:1px solid var(--b);box-shadow:0 4px 6px -1px rgba(0,0,0,0.1)}
+        h3{margin:0 0 15px;font-size:11px;color:var(--iz);text-transform:uppercase;letter-spacing:1px;font-weight:800}
         
-        label{display:block;font-size:10px;margin-bottom:5px;font-weight:600;color:var(--t);opacity:0.8}
+        label{display:block;font-size:10px;margin-bottom:5px;font-weight:600;opacity:0.8}
         input,button,select{border-radius:12px;font-size:14px;height:52px;border:1px solid var(--b);background:var(--bg);color:var(--t);width:100%;box-sizing:border-box;outline:none}
-        .btn{display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;border:none;color:#fff; transition: 0.2s}
-        .btn:active{transform: scale(0.95)}
+        .btn{display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;border:none;color:#fff}
+        .btn:active{transform: scale(0.96)}
         
-        .table-wrap{overflow-x:auto; border-radius:12px; border:1px solid var(--b); background:var(--c); scroll-behavior: smooth; position: relative;}
-        .table-web{width:100%;border-collapse:separate;border-spacing:0;font-size:10px}
-        .table-web th, .table-web td{border-bottom:1px solid var(--b);border-right:1px solid var(--b);padding:10px 4px;text-align:center;min-width:48px}
+        .table-wrap{overflow-x:auto; border-radius:12px; border:1px solid var(--b); background:var(--c); scroll-behavior: smooth}
+        .table-web{width:100%;border-collapse:separate;border-spacing:0;font-size:10px; color:var(--t)}
+        .table-web th, .table-web td{border-bottom:1px solid var(--b);border-right:1px solid var(--b);padding:8px 2px;text-align:center;min-width:50px}
         
-        .nama-fixed{position:sticky !important;left:0;background-color:var(--c) !important;z-index:10;min-width:120px !important;text-align:left !important;padding-left:15px !important;font-weight:700; border-right: 2px solid var(--p) !important}
+        .nama-fixed{position:sticky !important;left:0;background-color:var(--c) !important;z-index:10;min-width:130px !important;text-align:left !important;padding-left:15px !important;font-weight:700; border-right: 2px solid var(--p) !important}
         .today-col{background: rgba(37, 99, 235, 0.15) !important;}
 
-        .rekap-akhir{background:#0f172a !important; color:#ffffff !important; font-weight:800; min-width:35px !important}
-        .th-rekap{background:#020617 !important; color:#f59e0b !important; font-weight:800}
+        .rekap-akhir{background:var(--bg) !important; color:var(--t) !important; font-weight:800; min-width:35px !important}
+        .th-rekap{background:var(--bg) !important; color:var(--iz) !important; font-weight:800}
 
-        .s-cell{border-radius:6px;width:42px;height:40px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;font-size:11px}
+        .s-cell{border-radius:6px;width:44px;height:42px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;font-size:11px;margin: 0 auto}
         .s-v{background:var(--s);color:#fff} .s-late{background:var(--w);color:#000} .s-i{background:var(--iz);color:#fff}
-        .s-off{background:var(--d);color:#fff} .s-a{background:var(--al);color:#fff} .s-l{background:#AA00FF;color:#fff} .s-mng{background:#757575;color:#fff}
-        .jam-text{font-size:8px;font-weight:600;display:block;margin-top:2px}
+        .s-off{background:var(--d);color:#fff} .s-a{background:var(--al);color:#fff} .s-l{background:#AA00FF;color:#fff} .s-mng{background:#64748b;color:#fff}
+        .jam-text{font-size:7.5px;font-weight:600;display:block;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:40px}
 
         @media print { header, .card:not(.table-card), .no-print { display: none !important; } }
     </style>
@@ -49,16 +49,16 @@
             <div class="logo-box">
                 <input type="file" id="inpLogo" style="display:none" accept="image/*" onchange="cLogo(event)">
                 <img id="mainLogo" src="https://ui-avatars.com/api/?name=AGN&background=000&color=fff" onclick="document.getElementById('inpLogo').click()">
-                <div><h2 style="margin:0;font-size:1.3rem">PT AGN</h2><span style="font-size:10px;color:var(--p);font-weight:800">SYSTEM v76.6</span></div>
+                <div><h2 style="margin:0;font-size:1.3rem">PT AGN</h2><span style="font-size:10px;color:var(--p);font-weight:800">SYSTEM v76.7</span></div>
             </div>
             <div class="dark-card" onclick="toggleT()">
-                <span id="tIco">☀️</span> <span style="font-size:12px;font-weight:600" id="tTxt">Dark Mode</span>
+                <span id="tIco">☀️</span> <span style="font-size:12px;font-weight:600" id="tTxt">Light Mode</span>
             </div>
         </header>
 
-        <!-- NAMA UTAMA -->
+        <!-- DATA KARYAWAN -->
         <div class="card">
-            <h3>👥 DATA KARYAWAN</h3>
+            <h3>👥 DATA KARYAWAN (NAMA UTAMA)</h3>
             <div style="display:flex;gap:10px">
                 <input list="lk" id="iNama" placeholder="Ketik/Pilih Nama untuk Presensi & Reset...">
                 <datalist id="lk"></datalist>
@@ -70,7 +70,7 @@
         <!-- RESET & LIBUR -->
         <div class="card">
             <h3>🧹 KONTROL DATA</h3>
-            <div style="display:grid;grid-template-columns: 1.2fr 1fr; gap:10px; margin-bottom:15px; align-items:end">
+            <div style="display:grid;grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px; align-items:end">
                 <div><label>Tanggal Reset (Harian):</label><input type="date" id="resetTgl"></div>
                 <button class="btn" style="background:var(--d)" onclick="resetAbsen()">RESET ABSEN</button>
             </div>
@@ -119,16 +119,28 @@
             const m = new Date().toISOString().slice(0,7);
             document.getElementById('fB').value=m;
             if(localStorage.getItem('agnLogo')) document.getElementById('mainLogo').src=localStorage.getItem('agnLogo');
+            
+            // Simpan preference mode
+            const savedTheme = localStorage.getItem('agnTheme') || 'dark';
+            document.body.setAttribute('data-theme', savedTheme);
+            updateThemeUI(savedTheme);
+
             db.ref('master_karyawan').on('value',s=>{mk=s.val()||{}; uDl(); rRekap();});
             db.ref('absensi').on('value',s=>{ad=s.val()||{}; rRekap();});
             db.ref('hari_libur').on('value',s=>{hl=s.val()||{}; rRekap();});
         };
 
         function toggleT(){ 
-            let b=document.body; let nt=b.getAttribute('data-theme')==='dark'?'light':'dark'; 
+            let b=document.body; 
+            let nt=b.getAttribute('data-theme')==='dark'?'light':'dark'; 
             b.setAttribute('data-theme',nt);
-            document.getElementById('tIco').innerText=nt==='dark'?'☀️':'🌙';
-            document.getElementById('tTxt').innerText=nt==='dark'?'Light Mode':'Dark Mode';
+            localStorage.setItem('agnTheme', nt);
+            updateThemeUI(nt);
+        }
+
+        function updateThemeUI(t){
+            document.getElementById('tIco').innerText=t==='dark'?'☀️':'🌙';
+            document.getElementById('tTxt').innerText=t==='dark'?'Light Mode':'Dark Mode';
         }
 
         function cLogo(e){
@@ -145,13 +157,13 @@
 
         function tKaryawan(){
             let n=document.getElementById('iNama'); 
-            if(n.value){db.ref('master_karyawan').push(n.value).then(()=>{n.value=""; alert("Karyawan Ditambah!");});}
+            if(n.value){db.ref('master_karyawan').push(n.value).then(()=>{n.value=""; alert("Ditambah!");});}
         }
 
         function hKaryawan(){
             let n=document.getElementById('iNama'); 
             let id=Object.keys(mk).find(k=>mk[k]===n.value); 
-            if(id && confirm('Hapus Karyawan ini?')) db.ref(`master_karyawan/${id}`).remove().then(()=>n.value="");
+            if(id && confirm('Hapus Karyawan?')) db.ref(`master_karyawan/${id}`).remove().then(()=>n.value="");
         }
 
         function pAbsen(ty){
@@ -162,17 +174,17 @@
             let nt=""; if(ty==='Izin'){nt=prompt("Alasan Izin:"); if(nt===null)return; st="Izin";}
             
             db.ref(`absensi/${tgl}/${n}/${ty}`).set({waktu:jam, status:st, note:nt}).then(()=>{
-                alert(`${ty} Berhasil Jam: ${jam}`);
+                alert(`${ty} Sukses!`);
                 inp.value="";
             });
         }
 
         function resetAbsen(){
             let n=document.getElementById('iNama'), tgl=document.getElementById('resetTgl');
-            if(!n.value || !tgl.value) return alert("Pilih Nama & Tanggal Reset!");
-            if(confirm(`Hapus data ${n.value} tanggal ${tgl.value}?`)){
+            if(!n.value || !tgl.value) return alert("Pilih Nama & Tanggal!");
+            if(confirm(`Reset data ${n.value}?`)){
                 db.ref(`absensi/${tgl.value}/${n.value}`).remove().then(()=>{
-                    alert("Data Direset!");
+                    alert("Direset!");
                     tgl.value=""; n.value="";
                 });
             }
@@ -180,17 +192,14 @@
 
         function sLib(st){
             let d1=document.getElementById('tglAwal'), d2=document.getElementById('tglAkhir');
-            if(!d1.value) return alert("Pilih minimal tanggal 'Dari'!");
-            
+            if(!d1.value) return alert("Isi tanggal!");
             let start = new Date(d1.value);
             let end = d2.value ? new Date(d2.value) : new Date(d1.value);
-
             while(start <= end){
-                let tgl = start.toISOString().split('T')[0];
-                db.ref(`hari_libur/${tgl}`).set(st?true:null);
+                db.ref(`hari_libur/${start.toISOString().split('T')[0]}`).set(st?true:null);
                 start.setDate(start.getDate() + 1);
             }
-            alert(st?"Libur Diset!":"Libur Dihapus!");
+            alert(st?"Set Libur!":"Hapus Libur!");
             d1.value=""; d2.value="";
         }
 
@@ -209,30 +218,32 @@
                 let cH=0, cI=0, cA=0, cL=0, row=`<td class="nama-fixed">${n}</td>`;
                 for(let i=1;i<=last;i++){
                     let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t);
-                    let isMinggu = (d.getDay()===0);
-                    let isSetLibur = hl[t];
+                    let isMinggu = (d.getDay()===0), isSetLibur = hl[t];
                     let data=ad[t]?ad[t][n]:null, sW="-", clW="", infoW="";
                     
                     if(data){
-                        if(data.Izin){ sW="I"; clW="s-i"; cI++; }
+                        if(data.Izin){ 
+                            sW="I"; clW="s-i"; cI++; 
+                            infoW = data.Izin.note || "Izin"; 
+                        }
                         else if(data.Masuk){ 
-                            if(isMinggu || isSetLibur) { sW="L"; clW="s-l"; cL++; } 
+                            if(isSetLibur || isMinggu) { sW="L"; clW="s-l"; cL++; } 
                             else { sW="H"; clW=(data.Masuk.status==="Terlambat")?"s-late":"s-v"; cH++; }
-                            infoW = data.Masuk.waktu;
-                            if(data.Pulang) infoW += ` | ${data.Pulang.waktu}`;
+                            infoW = data.Masuk.waktu + (data.Pulang ? ` | ${data.Pulang.waktu}` : "");
                         }
                     } 
+                    // PRIORITAS: Cek Set Libur Dulu Baru Cek Minggu
                     else if(isSetLibur){ sW="OFF"; clW="s-off"; }
                     else if(isMinggu){ sW="MNG"; clW="s-mng"; }
                     else if(t < todayFull && t >= TGL_MULAI_SISTEM){ sW="A"; clW="s-a"; cA++; }
                     
-                    row+=`<td class="${i===tglSkrg?'today-col':''}"><div class="s-cell ${clW}">${sW}<span class="jam-text">${infoW}</span></div></td>`;
+                    row+=`<td class="${i===tglSkrg?'today-col':''}"><div class="s-cell ${clW}">${sW}<span class="jam-text" title="${infoW}">${infoW}</span></div></td>`;
                 }
                 b+=`<tr>${row}<td class="rekap-akhir">${cH}</td><td class="rekap-akhir">${cI}</td><td class="rekap-akhir">${cA}</td><td class="rekap-akhir">${cL}</td></tr>`;
             });
             document.getElementById('tbWeb').innerHTML=b;
 
-            // SCROLL HORIZONTAL TANPA MENARIK LAYAR KE BAWAH
+            // SCROLL HORIZONTAL TANPA MENARIK LAYAR
             setTimeout(() => {
                 const scrollArea = document.getElementById('scrollArea');
                 const target = document.getElementById(`tgl-${tglSkrg}`);
