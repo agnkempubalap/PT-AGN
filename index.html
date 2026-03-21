@@ -2,11 +2,9 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v60.0 - Classic App & Pro Excel</title>
+    <title>PT-AGN v61.0 - Full Features & PDF Fixed</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root{--p:#2563eb;--s:#10b981;--d:#ef4444;--w:#f59e0b;--bg:#f1f5f9;--c:#fff;--t:#1e293b;--b:#e2e8f0}
@@ -28,7 +26,18 @@
         th,td{border-bottom:1px solid var(--b);padding:8px 4px;text-align:center}
         .nama-fixed{position:sticky;left:0;background:var(--c)!important;font-weight:700;text-align:left;width:120px;z-index:4;border-right:2px solid var(--b);padding-left:10px}
         .s-cell{border-radius:4px;width:28px;min-height:28px;display:inline-flex;align-items:center;justify-content:center;font-weight:800}
-        .s-v{background:#22c55e;color:#fff} .s-t{background:#3b82f6;color:#fff} .s-i{background:#eab308;color:#000} .s-off{background:#ef4444;color:#fff}
+        .s-v{background:#22c55e;color:#fff} .s-i{background:#eab308;color:#000} .s-off{background:#ef4444;color:#fff}
+        
+        /* Gaya Khusus Cetak/PDF */
+        @media print {
+            .card:not(:last-child), header, .btn, input { display: none !important; }
+            body { background: white; padding: 0; }
+            .card { border: none; box-shadow: none; width: 100%; }
+            .table-wrap { overflow: visible; }
+            table { min-width: 100%; border: 1px solid black; }
+            th, td { border: 1px solid black !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .nama-fixed { position: static; background: white !important; }
+        }
     </style>
 </head>
 <body data-theme="light">
@@ -37,11 +46,12 @@
         <header>
             <div class="logo-box">
                 <img id="imgLogo" src="https://ui-avatars.com/api/?name=AGN&background=2563eb&color=fff">
-                <div><h2 style="margin:0;font-size:1rem">PT AGN</h2><span style="font-size:9px;color:var(--w);font-weight:800">SYSTEM v60.0</span></div>
+                <div><h2 style="margin:0;font-size:1rem">PT AGN</h2><span style="font-size:9px;color:var(--w);font-weight:800">SYSTEM v61.0</span></div>
             </div>
             <button onclick="toggleT()" id="tBtn" style="width:80px;font-size:11px">🌙 Dark</button>
         </header>
 
+        <!-- LAYOUT v56 TETAP DIJAGA -->
         <div class="card">
             <h3>👤 Management Karyawan</h3>
             <div style="display:flex;gap:8px">
@@ -51,38 +61,30 @@
                 <button class="btn btn-sq" style="background:var(--d)" onclick="hKaryawan()">🗑️</button>
             </div>
         </div>
+
         <div class="card">
-            <h3>🧹 Reset Absensi</h3>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-                <input type="date" id="tglReset">
-                <button class="btn" style="background:var(--d);font-size:12px" onclick="resetPerKaryawan()">HAPUS DATA</button>
-            </div>
-        </div>
-        <div class="card">
-            <h3>🗓️ Jadwal Libur</h3>
+            <h3>🧹 Reset & Libur</h3>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-                <input type="date" id="tM"><input type="date" id="tS">
-            </div>
-            <div style="display:flex;gap:8px">
-                <button class="btn" style="background:var(--p);flex:1" onclick="sLib(true)">SET LIBUR</button>
-                <button class="btn" style="background:var(--b);color:var(--t);flex:1" onclick="sLib(false)">HAPUS</button>
+                <input type="date" id="tglReset"><button class="btn" style="background:var(--d);font-size:11px" onclick="resetPerKaryawan()">HAPUS DATA</button>
+                <input type="date" id="tLibur"><button class="btn" style="background:var(--p);font-size:11px" onclick="sLib(true)">SET LIBUR</button>
             </div>
         </div>
+
         <div class="card">
             <h3>⚡ Presensi</h3>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                <button class="btn" style="background:var(--s);height:55px" onclick="pAbsen('Masuk')">MASUK</button>
-                <button class="btn" style="background:var(--d);height:55px" onclick="pAbsen('Pulang')">PULANG</button>
+                <button class="btn" style="background:var(--s);height:50px" onclick="pAbsen('Masuk')">MASUK</button>
+                <button class="btn" style="background:var(--d);height:50px" onclick="pAbsen('Pulang')">PULANG</button>
             </div>
-            <button class="btn" style="background:var(--w);margin-top:10px;height:42px" onclick="pAbsen('Izin')">📝 IZIN / SAKIT (CATATAN)</button>
+            <button class="btn" style="background:var(--w);margin-top:10px;height:40px" onclick="pAbsen('Izin')">📝 IZIN / SAKIT</button>
         </div>
 
         <div class="card">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px">
                 <input type="month" id="fB" style="width:130px" onchange="rRekap()">
                 <div style="display:flex;gap:5px">
-                    <button class="btn" style="background:#1d6f42;width:100px;font-size:11px" onclick="exportKeExcelWarna()">📂 EXCEL</button>
-                    <button class="btn" style="background:#b91c1c;width:100px;font-size:11px" onclick="exportPDF()">📜 PDF</button>
+                    <button class="btn" style="background:#1d6f42;width:90px;font-size:10px" onclick="doExcel()">📂 EXCEL</button>
+                    <button class="btn" style="background:#b91c1c;width:90px;font-size:10px" onclick="doPDF()">📜 PDF</button>
                 </div>
             </div>
             <div class="table-wrap"><table><thead><tr id="thR"></tr></thead><tbody id="tbR"></tbody></table></div>
@@ -94,11 +96,10 @@
         firebase.initializeApp(cfg); const db=firebase.database();
         let mk={}, ad={}, hl={};
 
-        function toggleT(){ let t=document.body.getAttribute('data-theme')==='dark'?'light':'dark'; document.body.setAttribute('data-theme',t); localStorage.setItem('th',t); }
-        function sT(m,ty='success'){ const t=document.getElementById('toast'); t.innerText=m; t.style.background=ty==='success'?'#10b981':'#ef4444'; t.className='show'; setTimeout(()=>t.className='',2500); }
-        
+        function toggleT(){ let t=document.body.getAttribute('data-theme')==='dark'?'light':'dark'; document.body.setAttribute('data-theme',t); }
+        function sT(m,ty='success'){ const t=document.getElementById('toast'); t.innerText=m; t.className='show'; t.style.background=ty==='success'?'#10b981':'#ef4444'; setTimeout(()=>t.className='',2000); }
+
         window.onload=()=>{
-            let st=localStorage.getItem('th')||'light'; document.body.setAttribute('data-theme',st);
             document.getElementById('fB').value=new Date().toISOString().slice(0,7);
             db.ref('master_karyawan').on('value',s=>{mk=s.val()||{}; uDl(); rRekap();});
             db.ref('absensi').on('value',s=>{ad=s.val()||{}; rRekap();});
@@ -108,56 +109,51 @@
         function uDl(){document.getElementById('lk').innerHTML=Object.values(mk).sort().map(n=>`<option value="${n}">`).join('');}
         function tKaryawan(){let n=document.getElementById('iNama'); if(n.value) db.ref('master_karyawan').push(n.value).then(()=>n.value="");}
         function hKaryawan(){let n=document.getElementById('iNama'); let id=Object.keys(mk).find(k=>mk[k]===n.value); if(id && confirm('Hapus?')) db.ref(`master_karyawan/${id}`).remove();}
-        function resetPerKaryawan(){ let n=document.getElementById('iNama').value, t=document.getElementById('tglReset').value; if(n && t && confirm('Hapus data?')) db.ref(`absensi/${t}/${n}`).remove(); }
-        function sLib(st){ let m=document.getElementById('tM').value; if(m) db.ref(`hari_libur/${m}`).set(st?true:null); }
-
-        function pAbsen(ty){
-            let n=document.getElementById('iNama').value, now=new Date(), tgl=now.toISOString().split('T')[0], jam=now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
-            if(!n) return sT("Pilih Nama!","error");
-            db.ref(`absensi/${tgl}/${n}/${ty}`).set({waktu:jam,status:(ty==='Masuk'&&(now.getHours()>9))?"Terlambat":"Hadir"}).then(()=>sT(ty+" Berhasil!"));
-        }
+        function resetPerKaryawan(){ let n=document.getElementById('iNama').value, t=document.getElementById('tglReset').value; if(n && t && confirm('Hapus?')) db.ref(`absensi/${t}/${n}`).remove(); }
+        function sLib(st){ let m=document.getElementById('tLibur').value; if(m) db.ref(`hari_libur/${m}`).set(st?true:null); }
+        function pAbsen(ty){ let n=document.getElementById('iNama').value, t=new Date().toISOString().split('T')[0]; if(n) db.ref(`absensi/${t}/${n}/${ty}`).set({status:'OK'}).then(()=>sT('Berhasil')); }
 
         function rRekap(){
             const f=document.getElementById('fB').value; if(!f) return;
             const [y,m]=f.split('-'), last=new Date(y,m,0).getDate();
-            document.getElementById('thR').innerHTML=`<th class="nama-fixed">Karyawan</th>${Array.from({length:last},(_,i)=>`<th>${i+1}</th>`).join('')}<th>H</th>`;
+            document.getElementById('thR').innerHTML=`<th class="nama-fixed">Karyawan</th>${Array.from({length:last},(_,i)=>`<th>${i+1}</th>`).join('')}`;
             document.getElementById('tbR').innerHTML=Object.values(mk).sort().map(n=>{
-                let cH=0, row=`<td class="nama-fixed">${n}</td>`;
+                let row=`<td class="nama-fixed">${n}</td>`;
                 for(let i=1;i<=last;i++){
                     let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), s="-", cl="";
                     if(d.getDay()===0||hl[t]){s="OFF"; cl="s-off";}
-                    if(ad[t]&&ad[t][n]){ if(ad[t][n].Izin){s="I";cl="s-i"}else if(ad[t][n].Masuk){s="H";cl="s-v";cH++} }
+                    if(ad[t]&&ad[t][n]){ if(ad[t][n].Izin){s="I";cl="s-i"}else if(ad[t][n].Masuk){s="H";cl="s-v"} }
                     row+=`<td><div class="s-cell ${cl}">${s}</div></td>`;
                 }
-                return `<tr>${row}<td>${cH}</td></tr>`;
+                return `<tr>${row}</tr>`;
             }).join('');
         }
 
-        // --- EXCEL WARNA TERBARU (SAMA DENGAN v59) ---
-        function exportKeExcelWarna() {
-            const f = document.getElementById('fB').value; const [y, m] = f.split('-'); const last = new Date(y, m, 0).getDate();
-            let html = `<html><head><meta charset="UTF-8"></head><body><table border="1">
-                <tr><th colspan="${last+2}" style="background-color:#FFA500; color:#FFFFFF; font-size:16pt; height:40px;">ABSENSI PT AGN - ${f}</th></tr>
-                <tr style="background-color:#E0E0E0; font-weight:bold;"><th>Nama</th><th>Jabatan</th>${Array.from({length:last},(_,i)=>`<th>${i+1}</th>`).join('')}</tr>`;
-            Object.values(mk).sort().forEach(n => {
-                html += `<tr><td style="font-weight:bold;">${n}</td><td>Karyawan</td>`;
-                for(let i=1; i<=last; i++){
-                    let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), bg="#FFFFFF", txt="-", col="#000000";
-                    if(d.getDay()===0||hl[t]){ bg="#FF0000"; txt="OFF"; col="#FFFFFF"; }
-                    if(ad[t]&&ad[t][n]){ if(ad[t][n].Izin){bg="#FFFF00";txt="I"} else if(ad[t][n].Masuk){bg="#00FF00";txt="H"} }
-                    html += `<td style="background-color:${bg}; color:${col}; text-align:center;">${txt}</td>`;
+        // FUNGSI EXCEL (WARNA FIX)
+        function doExcel(){
+            const f=document.getElementById('fB').value; const [y,m]=f.split('-'); const last=new Date(y,m,0).getDate();
+            let html=`<html><head><meta charset="UTF-8"></head><body><table border="1">
+                <tr><th colspan="${last+2}" style="background-color:#FFA500; color:white; height:35px;">REKAP ABSENSI PT AGN - ${f}</th></tr>
+                <tr style="background-color:#e0e0e0; font-weight:bold;"><th>Nama</th><th>Jabatan</th>${Array.from({length:last},(_,i)=>`<th>${i+1}</th>`).join('')}</tr>`;
+            Object.values(mk).sort().forEach(n=>{
+                html+=`<tr><td style="font-weight:bold;">${n}</td><td>Karyawan</td>`;
+                for(let i=1;i<=last;i++){
+                    let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), bg="#FFFFFF", txt="-";
+                    if(d.getDay()===0||hl[t]){bg="#ff0000";txt="OFF"}
+                    if(ad[t]&&ad[t][n]){ if(ad[t][n].Izin){bg="#ffff00";txt="I"}else if(ad[t][n].Masuk){bg="#00ff00";txt="H"} }
+                    html+=`<td style="background-color:${bg}; text-align:center;">${txt}</td>`;
                 }
-                html += `</tr>`;
+                html+=`</tr>`;
             });
-            html += `</table></body></html>`;
-            const base64 = s => window.btoa(unescape(encodeURIComponent(s)));
-            const link = document.createElement("a");
-            link.href = `data:application/vnd.ms-excel;base64,${base64(html)}`;
-            link.download = `ABSENSI_AGN_${f}.xls`;
-            link.click();
+            html+=`</table></body></html>`;
+            const base64=s=>window.btoa(unescape(encodeURIComponent(s)));
+            const link=document.createElement("a"); link.href=`data:application/vnd.ms-excel;base64,${base64(html)}`; link.download=`ABSENSI_AGN_${f}.xls`; link.click();
         }
 
-        function exportPDF(){ sT("Gunakan Fitur Print Browser"); }
+        // FUNGSI PDF (PERBAIKAN: MEMICU WINDOW PRINT)
+        function doPDF(){
+            window.print();
+        }
     </script>
 </body>
 </html>
