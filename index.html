@@ -2,89 +2,92 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v75.4 - Final Contrast</title>
+    <title>PT-AGN v75.6 - PDF Fixed</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
     <style>
-        :root{--p:#1e40af;--s:#10b981;--d:#ef4444;--w:#f59e0b;--bg:#f8fafc;--c:#fff;--t:#0f172a;--b:#cbd5e1}
+        :root{--p:#2563eb;--s:#00C853;--d:#FF1744;--w:#FFD600;--bg:#f1f5f9;--c:#fff;--t:#1e293b;--b:#e2e8f0;--iz:#00B0FF;--al:#37474F}
         body{font-family:'Plus Jakarta Sans',sans-serif;margin:0;background:var(--bg);color:var(--t);padding:8px}
         .container{max-width:1450px;margin:0 auto}
-        
-        /* Logo & Header */
-        header{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px}
-        .logo-box img{width:60px;height:60px;border-radius:50%;border:3px solid var(--p);cursor:pointer;object-fit:cover}
-
-        .card{background:var(--c);padding:15px;border-radius:12px;margin-bottom:10px;border:1px solid var(--b);box-shadow:0 2px 4px rgba(0,0,0,0.05)}
-        h3{margin:0 0 10px;font-size:10px;color:var(--p);text-transform:uppercase;font-weight:800}
-        
-        input,button{border-radius:8px;font-size:14px;height:42px;border:1px solid var(--b);padding:0 10px;outline:none;width:100%;box-sizing:border-box}
+        header{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px;padding:5px}
+        .logo-box img{width:65px;height:65px;border-radius:50%;background:#fff;border:3px solid var(--p);object-fit:cover;cursor:pointer}
+        .card{background:var(--c);padding:15px;border-radius:15px;margin-bottom:10px;border:1px solid var(--b);box-shadow:0 4px 6px -1px rgba(0,0,0,0.1)}
+        h3{margin:0 0 10px;font-size:10px;color:var(--p);text-transform:uppercase;letter-spacing:1px;font-weight:800}
+        input,button{border-radius:10px;font-size:14px;height:45px;border:1px solid var(--b);background:var(--c);color:var(--t);width:100%;box-sizing:border-box;outline:none}
         .btn{display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;border:none;color:#fff}
         
-        /* Table Layout */
-        .table-wrap{overflow:auto;border-radius:8px;border:2px solid var(--p);background:#fff;max-height:550px}
-        .table-web{width:100%;border-collapse:separate;border-spacing:0;font-size:11px}
-        .table-web th, .table-web td{border-bottom:1px solid #e2e8f0;border-right:1px solid #e2e8f0;padding:6px 2px;text-align:center;min-width:40px}
+        .table-wrap{overflow:auto;border-radius:12px;border:1px solid var(--b);background:var(--c);max-height:500px}
+        .table-web{width:100%;border-collapse:separate;border-spacing:0;font-size:10px}
+        .table-web th, .table-web td{border-bottom:1px solid var(--b);border-right:1px solid var(--b);padding:8px 4px;text-align:center;min-width:45px}
         
-        /* Frozen Name Column */
-        .nama-fixed{position:sticky !important;left:0;background:#f1f5f9 !important;z-index:10;min-width:120px !important;text-align:left !important;padding-left:10px !important;border-right:4px solid var(--p) !important;font-weight:800;color:var(--p)}
+        .nama-fixed{position:sticky !important;left:0;background-color:var(--c) !important;z-index:10;min-width:115px !important;text-align:left !important;padding-left:10px !important;border-right:3px solid var(--p) !important;font-weight:800}
         
-        /* STYLES HARIAN (WARNA TERANG) */
-        .s-cell{border-radius:4px;width:36px;height:34px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800}
-        .s-v{background:#22c55e;color:#fff} /* Hadir */
-        .s-i{background:#3b82f6;color:#fff} /* Izin */
-        .s-a{background:#475569;color:#fff} /* Alfa */
-        .s-off{background:#f43f5e;color:#fff}/* Libur */
-        .s-late{background:#fbbf24;color:#000}/* Telat */
-        .jam-text{font-size:7px;font-weight:600;display:block}
+        .s-cell{border-radius:6px;width:40px;height:38px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;font-size:11px}
+        .s-v{background:var(--s);color:#fff}
+        .s-late{background:var(--w);color:#000}
+        .s-i{background:var(--iz);color:#fff}
+        .s-off{background:var(--d);color:#fff}
+        .s-a{background:var(--al);color:#fff}
+        .s-l{background:#AA00FF;color:#fff}
+        .jam-text{font-size:8px;font-weight:600;display:block;margin-top:2px}
 
-        /* PEMBATAS & WARNA REKAP AKHIR (Berbeda dengan Harian) */
-        .col-rekap{border-left:4px double var(--p) !important} /* Garis Ganda Pemisah */
-        .rekap-val{background:#f8fafc;font-weight:800;font-size:13px;color:#1e293b}
-        
-        /* Label Header Rekap */
-        .h-h{background:#dcfce7 !important; color:#166534 !important}
-        .h-i{background:#dbeafe !important; color:#1e40af !important}
-        .h-a{background:#f1f5f9 !important; color:#334155 !important}
-        .h-l{background:#fef9c3 !important; color:#854d0e !important}
+        /* WARNA PEMBATAS REKAP AKHIR */
+        .rekap-akhir{background:#334155 !important; color:#ffffff !important; font-weight:800; border-left: 2px solid #000 !important;}
+        .th-rekap{background:#1e293b !important; color:#fff !important}
 
-        .today-col{background:#eff6ff !important; border-left:1px solid var(--p); border-right:1px solid var(--p)}
-        #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:20px;color:#fff;display:none;z-index:100}
+        /* PERBAIKAN TOTAL MODE PDF */
+        @media print {
+            body { background: white !important; padding: 0 !important; }
+            header, .card:not(.table-card), .no-print { display: none !important; }
+            .container { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
+            .card.table-card { border: none !important; box-shadow: none !important; padding: 0 !important; width: 100% !important; }
+            .table-wrap { overflow: visible !important; max-height: none !important; }
+            .table-web { width: 100% !important; border: 1px solid #000 !important; }
+            .nama-fixed { position: static !important; background: white !important; color: black !important; border: 1px solid #000 !important; }
+            .rekap-akhir { background: #ddd !important; color: black !important; border: 1px solid #000 !important; }
+            @page { size: landscape; margin: 5mm; }
+        }
     </style>
 </head>
 <body>
-    <div id="toast"></div>
     <div class="container">
         <header>
-            <div style="display:flex;align-items:center;gap:12px">
-                <input type="file" id="fLogo" style="display:none" onchange="upLogo(event)">
-                <img id="viewLogo" src="https://ui-avatars.com/api/?name=AGN&background=1e40af&color=fff" onclick="document.getElementById('fLogo').click()">
-                <h2 style="margin:0;font-size:1.2rem;color:var(--p)">PT AGN <small style="font-size:10px;display:block">Absensi v75.4</small></h2>
+            <div class="logo-box">
+                <input type="file" id="fileLogo" accept="image/*" style="display:none" onchange="loadLogo(event)">
+                <img id="mainLogo" src="https://ui-avatars.com/api/?name=AGN&background=2563eb&color=fff" onclick="document.getElementById('fileLogo').click()">
+                <div><h2 style="margin:0;font-size:1.1rem">PT AGN</h2><span style="font-size:9px;color:var(--p);font-weight:800">SYSTEM v75.6</span></div>
             </div>
-            <button onclick="window.print()" style="width:70px;background:#fff;border:1px solid var(--p);color:var(--p);font-weight:800">CETAK</button>
         </header>
 
         <div class="card">
-            <div style="display:flex;gap:5px">
-                <input list="lk" id="iNama" placeholder="Nama Karyawan...">
+            <div style="display:flex;gap:8px">
+                <input list="lk" id="iNama" placeholder="Pilih Nama...">
                 <datalist id="lk"></datalist>
-                <button class="btn" style="background:var(--s);width:50px" onclick="tKar()">➕</button>
+                <button class="btn" style="background:var(--s);width:55px" onclick="tKaryawan()">➕</button>
+                <button class="btn" style="background:var(--d);width:55px" onclick="hKaryawan()">🗑️</button>
             </div>
-        </div>
-
-        <div class="card" style="display:grid;grid-template-columns: 1fr 1fr; gap:10px">
-            <button class="btn" style="background:var(--s);height:60px;font-size:18px" onclick="pAbsen('Masuk')">MASUK</button>
-            <button class="btn" style="background:var(--d);height:60px;font-size:18px" onclick="pAbsen('Pulang')">PULANG</button>
-            <button class="btn" style="background:var(--w);grid-column: span 2" onclick="pAbsen('Izin')">IZIN / KETERANGAN</button>
         </div>
 
         <div class="card">
-            <div style="display:flex;justify-content:space-between;margin-bottom:10px">
-                <input type="month" id="fB" style="width:140px" onchange="rRekap()">
-                <button class="btn" style="background:#15803d;width:100px" onclick="doExcel()">EXCEL</button>
+            <h3>⚡ Presensi</h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <button class="btn" style="background:var(--s);height:55px;font-size:16px" onclick="pAbsen('Masuk')">MASUK</button>
+                <button class="btn" style="background:var(--d);height:55px;font-size:16px" onclick="pAbsen('Pulang')">PULANG</button>
             </div>
-            <div class="table-wrap" id="scr">
-                <table class="table-web"><thead id="th"></thead><tbody id="tb"></tbody></table>
+            <button class="btn" style="background:var(--iz);margin-top:10px" onclick="pAbsen('Izin')">📝 IZIN / NOTE</button>
+        </div>
+
+        <div class="card table-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px" class="no-print">
+                <input type="month" id="fB" style="width:130px" onchange="rRekap()">
+                <div style="display:flex;gap:5px">
+                    <button class="btn" style="background:#1d6f42;width:80px;font-size:10px" onclick="doExcel()">📂 EXCEL</button>
+                    <button class="btn" style="background:#b91c1c;width:80px;font-size:10px" onclick="window.print()">📜 PDF</button>
+                </div>
+            </div>
+            <div class="table-wrap" id="scrollContainer">
+                <table class="table-web"><thead id="thWeb"></thead><tbody id="tbWeb"></tbody></table>
             </div>
         </div>
     </div>
@@ -93,70 +96,64 @@
         const cfg={apiKey:"AIzaSyAu67MAhWBxdmciPi3xOKWhdy-uP4u9tXI",databaseURL:"https://pt-agn-default-rtdb.asia-southeast1.firebasedatabase.app"};
         firebase.initializeApp(cfg); const db=firebase.database();
         let mk={}, ad={}, hl={};
-        const START_DATE = "2026-03-21";
+        const TGL_MULAI_SISTEM = "2026-03-21";
 
-        function showT(m){ const t=document.getElementById('toast'); t.innerText=m; t.style.display='block'; t.style.background='#1e293b'; setTimeout(()=>t.style.display='none',2000); }
-        function upLogo(e){ const r=new FileReader(); r.onload=()=>{document.getElementById('viewLogo').src=r.result; localStorage.setItem('agn_logo',r.result)}; r.readAsDataURL(e.target.files[0]);}
+        function loadLogo(event) {
+            const reader = new FileReader();
+            reader.onload = () => { document.getElementById('mainLogo').src = reader.result; localStorage.setItem('agn_logo_local', reader.result); };
+            reader.readAsDataURL(event.target.files[0]);
+        }
 
         window.onload=()=>{
-            const saved=localStorage.getItem('agn_logo'); if(saved) document.getElementById('viewLogo').src=saved;
+            let savedLogo = localStorage.getItem('agn_logo_local'); if(savedLogo) document.getElementById('mainLogo').src = savedLogo;
             document.getElementById('fB').value=new Date().toISOString().slice(0,7);
-            db.ref('master_karyawan').on('value',s=>{mk=s.val()||{}; uL(); rRekap();});
+            db.ref('master_karyawan').on('value',s=>{mk=s.val()||{}; uDl(); rRekap();});
             db.ref('absensi').on('value',s=>{ad=s.val()||{}; rRekap();});
         };
 
-        function uL(){document.getElementById('lk').innerHTML=Object.values(mk).sort().map(n=>`<option value="${n}">`).join('');}
-        function tKar(){let n=document.getElementById('iNama'); if(n.value) db.ref('master_karyawan').push(n.value).then(()=>n.value="");}
+        function uDl(){document.getElementById('lk').innerHTML=Object.values(mk).sort().map(n=>`<option value="${n}">`).join('');}
+        function tKaryawan(){let n=document.getElementById('iNama'); if(n.value){db.ref('master_karyawan').push(n.value).then(()=>{n.value="";});}}
+        function hKaryawan(){let n=document.getElementById('iNama'); let id=Object.keys(mk).find(k=>mk[k]===n.value); if(id && confirm('Hapus?')) db.ref(`master_karyawan/${id}`).remove();}
 
         function pAbsen(ty){
             let n=document.getElementById('iNama'), now=new Date(), tgl=now.toISOString().split('T')[0];
             if(!n.value) return alert("Pilih Nama!");
             let jam=now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
             let st="Hadir"; if(ty==='Masuk' && (now.getHours()>9 || (now.getHours()===9 && now.getMinutes()>0))) st="Terlambat";
-            let nt=""; if(ty==='Izin'){nt=prompt("Alasan:"); if(!nt)return; st="Izin";}
-            db.ref(`absensi/${tgl}/${n.value}/${ty}`).set({waktu:jam, status:st, note:nt}).then(()=>{showT("Berhasil!"); n.value="";});
+            let nt=""; if(ty==='Izin'){nt=prompt("Alasan:"); if(nt===null)return; st="Izin";}
+            db.ref(`absensi/${tgl}/${n.value}/${ty}`).set({waktu:jam, status:st, note:nt}).then(()=>{n.value="";});
         }
 
         function rRekap(){
             const f=document.getElementById('fB').value; if(!f) return;
-            const [y,m]=f.split('-'), last=new Date(y,m,0).getDate(), tdy=new Date().getDate(), tdyF=new Date().toISOString().split('T')[0];
+            const [y,m]=f.split('-'), last=new Date(y,m,0).getDate(), todayFull = new Date().toISOString().split('T')[0];
             const kList=Object.values(mk).sort();
             
-            // Header
-            let h=`<tr><th class="nama-fixed">KARYAWAN</th>`;
-            for(let i=1;i<=last;i++) h+=`<th id="c-${i}" class="${(i===tdy && f===new Date().toISOString().slice(0,7))?'today-col':''}">${i}</th>`;
-            h+=`<th class="col-rekap h-h">H</th><th class="h-i">I</th><th class="h-a">A</th><th class="h-l">L</th></tr>`;
-            document.getElementById('th').innerHTML=h;
+            let h=`<tr><th class="nama-fixed">Nama</th>`;
+            for(let i=1;i<=last;i++) h+=`<th>${i}</th>`;
+            h+=`<th class="th-rekap">H</th><th class="th-rekap">I</th><th class="th-rekap">A</th><th class="th-rekap">L</th></tr>`;
+            document.getElementById('thWeb').innerHTML=h;
 
-            // Body
             let b="";
             kList.forEach(n=>{
                 let cH=0, cI=0, cA=0, cL=0, row=`<td class="nama-fixed">${n}</td>`;
                 for(let i=1;i<=last;i++){
                     let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), isOff=(d.getDay()===0);
-                    let data=ad[t]?ad[t][n]:null, sW="-", clW="", info="";
-                    
+                    let data=ad[t]?ad[t][n]:null, sW="-", clW="", infoW="";
                     if(data){
                         if(data.Izin){ sW="I"; clW="s-i"; cI++; }
                         else if(data.Masuk){ 
-                            if(isOff){ sW="L"; clW="s-l"; cL++; }
+                            if(isOff) { sW="L"; clW="s-l"; cL++; } 
                             else { sW="H"; clW=(data.Masuk.status==="Terlambat")?"s-late":"s-v"; cH++; }
-                            info=data.Masuk.waktu;
+                            infoW=data.Masuk.waktu;
                         }
                     } else if(isOff){ sW="OFF"; clW="s-off"; }
-                    else if(t < tdyF && t >= START_DATE){ sW="A"; clW="s-a"; cA++; }
-                    
-                    row+=`<td class="${(i===tdy && f===new Date().toISOString().slice(0,7))?'today-col':''}"><div class="s-cell ${clW}">${sW}<span class="jam-text">${info}</span></div></td>`;
+                    else if(t < todayFull && t >= TGL_MULAI_SISTEM){ sW="A"; clW="s-a"; cA++; }
+                    row+=`<td><div class="s-cell ${clW}">${sW}<span class="jam-text">${infoW}</span></div></td>`;
                 }
-                b+=`<tr>${row}<td class="col-rekap rekap-val">${cH}</td><td class="rekap-val">${cI}</td><td class="rekap-val">${cA}</td><td class="rekap-val">${cL}</td></tr>`;
+                b+=`<tr>${row}<td class="rekap-akhir">${cH}</td><td class="rekap-akhir">${cI}</td><td class="rekap-akhir">${cA}</td><td class="rekap-akhir">${cL}</td></tr>`;
             });
-            document.getElementById('tb').innerHTML=b;
-
-            // Auto-scroll
-            setTimeout(() => {
-                const el = document.getElementById(`c-${tdy}`);
-                if(el && f===new Date().toISOString().slice(0,7)) document.getElementById('scr').scrollLeft = el.offsetLeft - 150;
-            }, 500);
+            document.getElementById('tbWeb').innerHTML=b;
         }
 
         function doExcel(){
