@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN Management v6.0</title>
-    <!-- Firebase SDK -->
+    <title>PT-AGN Management v9.0</title>
+    
+    <!-- SDK Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     
@@ -12,57 +13,36 @@
         body { font-family: 'Segoe UI', Arial, sans-serif; margin: 15px; background: #f0f2f5; color: #333; }
         .card { background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
         h2, h3 { margin-top: 0; color: #0056b3; border-bottom: 2px solid #eee; padding-bottom: 8px; font-size: 1.1rem; }
-        
         label { font-weight: bold; font-size: 13px; display: block; margin-bottom: 5px; color: #666; }
-        input, select, button { 
-            width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; 
-            border: 1px solid #ccc; box-sizing: border-box; font-size: 16px; 
-        }
-        
+        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; font-size: 16px; }
         button { background: #007bff; color: white; border: none; font-weight: bold; cursor: pointer; }
         button:active { transform: scale(0.96); }
-        
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .btn-masuk { background: #28a745; }
         .btn-pulang { background: #dc3545; }
         .btn-izin { background: #ffc107; color: black; }
         .btn-tambah { background: #6f42c1; margin: 0; width: auto; }
-        .btn-pdf { background: #6c757d; margin-top: 10px; }
-        
-        /* Table Styling */
         .table-container { overflow-x: auto; margin-top: 15px; border-radius: 8px; border: 1px solid #ddd; }
         table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 900px; }
         th, td { border: 1px solid #ddd; padding: 6px; text-align: center; }
         th { background: #f8f9fa; }
-        
-        /* Status Colors */
         .status-hadir { background: #d4edda; color: #155724; }
         .status-terlambat { background: #fff3cd; color: #856404; }
         .status-izin { background: #d1ecf1; color: #0c5460; }
         .status-alpa { background: #f8d7da; color: #721c24; }
         .nama-kolom { background: #f8f9fa; font-weight: bold; position: sticky; left: 0; z-index: 2; text-align: left; padding-left: 10px; width: 120px; }
-        
         .manage-row { display: flex; gap: 8px; align-items: center; margin-bottom: 15px; background: #f9f9f9; padding: 10px; border-radius: 8px; border: 1px dashed #ccc; }
-        #notif { text-align: center; font-weight: bold; margin-top: 5px; height: 20px; }
-
-        @media print {
-            .card:not(#rekap-card) { display: none; }
-            body { background: white; margin: 0; }
-            .table-container { overflow: visible; }
-            table { min-width: 100%; font-size: 9px; }
-        }
+        #notif { text-align: center; font-weight: bold; margin-top: 5px; min-height: 20px; }
     </style>
 </head>
 <body>
 
     <h2>📦 PT-AGN System</h2>
 
-    <!-- PANEL 1: KELOLA & ABSEN -->
     <div class="card">
-        <h3>1. Presensi & Karyawan</h3>
-        
+        <h3>1. Presensi & Kelola Karyawan</h3>
         <div class="manage-row">
-            <input type="text" id="inputNamaBaru" placeholder="Nama Karyawan Baru..." style="margin:0; flex-grow:1;">
+            <input type="text" id="inputNamaBaru" placeholder="Ketik Nama Baru..." style="margin:0; flex-grow:1;">
             <button class="btn-tambah" onclick="tambahKaryawan()">Tambah</button>
         </div>
 
@@ -80,44 +60,37 @@
         <div id="notif"></div>
     </div>
 
-    <!-- PANEL 2: REKAP -->
-    <div id="rekap-card" class="card">
+    <div class="card">
         <h3>2. Laporan Bulanan PT-AGN</h3>
-        <label>Pilih Periode:</label>
-        <div class="grid">
-            <input type="month" id="filterBulan" style="margin:0;">
-            <button onclick="renderRekap()" style="margin:0;">Cek Rekap</button>
-        </div>
-        
+        <input type="month" id="filterBulan">
+        <button onclick="renderRekap()">Tampilkan Rekap</button>
         <div class="table-container">
             <table id="tabelRekap">
                 <thead><tr id="theadRekap"></tr></thead>
                 <tbody id="tbodyRekap"></tbody>
             </table>
         </div>
-        <button class="btn-pdf" onclick="window.print()">Cetak / Simpan PDF</button>
-        <div style="margin-top:10px; font-size:10px; color:#777;">
-            Ket: <b>V</b>: Hadir | <b>T</b>: Terlambat | <b>I</b>: Izin | <b>A</b>: Alpa
-        </div>
+        <button onclick="window.print()" style="background:#6c757d; margin-top:10px;">Cetak PDF</button>
     </div>
 
     <script>
-        // === KONFIGURASI FIREBASE PT-AGN ===
+        // DATA FIREBASE DIAMBIL DARI SCREENSHOT ANDA
         const firebaseConfig = {
-            apiKey: "AIzaSyB-T-Your-Actual-Key-From-Console", 
+            apiKey: "AIzaSyAu67MAhWBxdmciPi3xOKWhdy-uP4u9tXI",
             authDomain: "pt-agn.firebaseapp.com",
-            databaseURL: "https://pt-agn-default-rtdb.firebaseio.com",
+            databaseURL: "https://pt-agn-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "pt-agn",
             storageBucket: "pt-agn.appspot.com",
-            messagingSenderId: "125433246356", 
-            appId: "1:125433246356:web:your-app-id"
+            messagingSenderId: "810494462386",
+            appId: "1:810494462386:web:432a3050c054bdd8437cab",
+            measurementId: "G-N6S12LYQLD"
         };
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         let masterKaryawan = {};
 
-        // Sinkronisasi Data Karyawan
+        // Pantau data karyawan secara realtime
         db.ref('master_karyawan').on('value', snap => {
             masterKaryawan = snap.val() || {};
             let options = '<option value="">-- Pilih Nama --</option>';
@@ -125,6 +98,9 @@
                 options += `<option value="${masterKaryawan[id]}" data-id="${id}">${masterKaryawan[id]}</option>`;
             }
             document.getElementById('pilihKaryawan').innerHTML = options;
+        }, err => {
+            document.getElementById('notif').innerText = "Cek Rules Realtime Database Anda!";
+            document.getElementById('notif').style.color = "red";
         });
 
         function tambahKaryawan() {
@@ -132,20 +108,21 @@
             if(!nama) return alert("Isi nama karyawan!");
             db.ref('master_karyawan').push(nama).then(() => {
                 document.getElementById('inputNamaBaru').value = "";
-            });
+                document.getElementById('notif').innerText = "✅ " + nama + " Berhasil Ditambah!";
+                document.getElementById('notif').style.color = "green";
+            }).catch(e => alert("Error: " + e.message));
         }
 
         function hapusKaryawan() {
             const el = document.getElementById('pilihKaryawan');
             const id = el.options[el.selectedIndex].getAttribute('data-id');
             if(!id) return alert("Pilih nama!");
-            if(confirm("Hapus " + el.value + "?")) db.ref('master_karyawan/' + id).remove();
+            if(confirm("Hapus " + el.value + " dari daftar?")) db.ref('master_karyawan/' + id).remove();
         }
 
         function prosesAbsen(tipe) {
             const nama = document.getElementById('pilihKaryawan').value;
             if(!nama) return alert("Pilih nama!");
-
             const skrg = new Date();
             const tglKey = skrg.toISOString().split('T')[0];
             const jam = skrg.getHours();
@@ -158,14 +135,11 @@
                 else if(jam > 9 || (jam === 9 && menit > 0)) status = "Terlambat";
             }
 
-            db.ref(`absensi/${tglKey}/${nama}/${tipe}`).set({
-                waktu: waktuStr,
-                status: status
-            }).then(() => {
-                const n = document.getElementById('notif');
-                n.innerText = `✅ Berhasil ${tipe}!`;
-                setTimeout(() => n.innerText = "", 3000);
-            });
+            db.ref(`absensi/${tglKey}/${nama}/${tipe}`).set({ waktu: waktuStr, status: status })
+                .then(() => {
+                    document.getElementById('notif').innerText = `✅ ${nama}: ${tipe} Berhasil!`;
+                    setTimeout(() => document.getElementById('notif').innerText = "", 3000);
+                });
         }
 
         function renderRekap() {
@@ -189,8 +163,7 @@
                     for(let h=1; h<=jmlHari; h++) {
                         const tglKey = `${th}-${bl}-${String(h).padStart(2,'0')}`;
                         const tglObj = new Date(tglKey);
-                        let simbol = "-";
-                        let kls = "";
+                        let simbol = "-"; let kls = "";
                         if(data[tglKey] && data[tglKey][nama]) {
                             const d = data[tglKey][nama];
                             if(d.Izin) { simbol = "I"; kls = "status-izin"; }
@@ -201,9 +174,7 @@
                                     kls = d.Masuk.status === "Terlambat" ? "status-terlambat" : "status-hadir";
                                 }
                             }
-                        } else if(tglObj < hariIni) {
-                            simbol = "A"; kls = "status-alpa";
-                        }
+                        } else if(tglObj < hariIni) { simbol = "A"; kls = "status-alpa"; }
                         bHtml += `<td class="${kls}">${simbol}</td>`;
                     }
                     bHtml += `</tr>`;
