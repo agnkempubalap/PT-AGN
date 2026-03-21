@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v70.0 - Full Features</title>
+    <title>PT-AGN v72.0 - Stable System</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700&display=swap" rel="stylesheet">
@@ -14,7 +14,6 @@
         header{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px;padding:5px}
         .logo-box{display:flex;align-items:center;gap:10px;cursor:pointer}
         .logo-box img{width:60px;height:60px;border-radius:12px;background:#fff;border:2px solid var(--p);object-fit:contain;transition:0.3s}
-        .logo-box img:hover{transform:scale(1.05);border-color:var(--w)}
         .card{background:var(--c);padding:15px;border-radius:15px;margin-bottom:10px;border:1px solid var(--b);box-shadow:0 4px 6px -1px rgba(0,0,0,0.1)}
         h3{margin:0 0 10px;font-size:10px;color:var(--w);text-transform:uppercase;letter-spacing:1px}
         input,button{border-radius:10px;font-size:14px;height:45px;border:1px solid var(--b);background:var(--c);color:var(--t);width:100%;box-sizing:border-box;outline:none}
@@ -29,9 +28,8 @@
         .s-cell{border-radius:4px;width:26px;min-height:26px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;font-size:9px}
         .s-v{background:#22c55e;color:#fff} .s-late{background:#facc15;color:#000} .s-i{background:#eab308;color:#000} .s-off{background:#ef4444;color:#fff} .s-a{background:#64748b;color:#fff}
         .col-total{font-weight:bold;background:#f1f5f9;color:#1e293b;width:35px}
-        [data-theme="dark"] .col-total{background:#334155;color:#fff}
-        .jam-text{font-size:7px;font-weight:400;display:block;margin-top:1px}
-        @media print { .card:not(:last-child), header, .btn, input { display: none !important; } body { background: white; } table { border: 1px solid #000; } th, td { border: 1px solid #000 !important; -webkit-print-color-adjust: exact; } }
+        .jam-text{font-size:6.5px;font-weight:400;display:block;margin-top:1px;line-height:1;max-width:24px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        @media print { .card:not(:last-child), header, .btn, input { display: none !important; } }
     </style>
 </head>
 <body data-theme="light">
@@ -39,8 +37,8 @@
     <div class="container">
         <header>
             <div class="logo-box" onclick="gantiLogo()">
-                <img id="mainLogo" src="https://ui-avatars.com/api/?name=AGN&background=2563eb&color=fff" title="Klik untuk ganti foto">
-                <div><h2 style="margin:0;font-size:1rem">PT AGN</h2><span style="font-size:9px;color:var(--w);font-weight:800">SYSTEM v70.0</span></div>
+                <img id="mainLogo" src="https://ui-avatars.com/api/?name=AGN&background=2563eb&color=fff">
+                <div><h2 style="margin:0;font-size:1rem">PT AGN</h2><span style="font-size:9px;color:var(--w);font-weight:800">SYSTEM v72.0</span></div>
             </div>
             <button onclick="toggleT()" id="tBtn" style="width:80px;font-size:11px">🌙 Dark</button>
         </header>
@@ -94,22 +92,16 @@
         const cfg={apiKey:"AIzaSyAu67MAhWBxdmciPi3xOKWhdy-uP4u9tXI",databaseURL:"https://pt-agn-default-rtdb.asia-southeast1.firebasedatabase.app"};
         firebase.initializeApp(cfg); const db=firebase.database();
         let mk={}, ad={}, hl={};
-
         const TGL_MULAI_SISTEM = "2026-03-21";
 
         function gantiLogo(){
             let link = prompt("Masukkan Link Foto/Logo Baru:");
-            if(link) {
-                document.getElementById('mainLogo').src = link;
-                localStorage.setItem('agn_logo', link);
-                sT("Logo Diperbarui!");
-            }
+            if(link) { document.getElementById('mainLogo').src = link; localStorage.setItem('agn_logo', link); sT("Logo Diperbarui!"); }
         }
 
         function toggleT(){ 
             let t = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; 
-            document.body.setAttribute('data-theme', t); 
-            localStorage.setItem('agn_theme', t);
+            document.body.setAttribute('data-theme', t); localStorage.setItem('agn_theme', t);
             document.getElementById('tBtn').innerText = t === 'dark' ? '☀️ Light' : '🌙 Dark';
         }
 
@@ -118,11 +110,8 @@
         window.onload=()=>{
             let savedTheme = localStorage.getItem('agn_theme') || 'light';
             document.body.setAttribute('data-theme', savedTheme);
-            document.getElementById('tBtn').innerText = savedTheme === 'dark' ? '☀️ Light' : '🌙 Dark';
-            
             let savedLogo = localStorage.getItem('agn_logo');
             if(savedLogo) document.getElementById('mainLogo').src = savedLogo;
-
             document.getElementById('fB').value=new Date().toISOString().slice(0,7);
             db.ref('master_karyawan').on('value',s=>{mk=s.val()||{}; uDl(); rRekap();});
             db.ref('absensi').on('value',s=>{ad=s.val()||{}; rRekap();});
@@ -148,7 +137,7 @@
             if(!n.value) return sT("Pilih Nama!","error");
             let status = "Hadir";
             if(ty==='Masuk' && (jam > 9 || (jam === 9 && menit > 0))) status = "Terlambat";
-            let note = ""; if(ty==='Izin') { note = prompt("Isi keterangan:"); if(note === null) return; status="Izin"; }
+            let note = ""; if(ty==='Izin') { note = prompt("Isi alasan (Misal: Sakit Gigi):"); if(note === null) return; status="Izin"; }
             db.ref(`absensi/${tgl}/${n.value}/${ty}`).set({waktu:jamFormat, status:status, note:note, timestamp: Date.now()}).then(()=>{
                 sT(ty + (status === "Terlambat" ? " (Terlambat)" : " Sukses!")); n.value="";
             });
@@ -157,32 +146,27 @@
         function rRekap(){
             const f=document.getElementById('fB').value; if(!f) return;
             const [y,m]=f.split('-'), last=new Date(y,m,0).getDate();
-            const now = new Date();
-            const todayStr = now.toISOString().split('T')[0];
+            const todayStr = new Date().toISOString().split('T')[0];
             
             document.getElementById('thR').innerHTML=`<th class="nama-fixed">Karyawan</th>${Array.from({length:last},(_,i)=>`<th>${i+1}</th>`).join('')}<th class="col-total">H</th><th class="col-total">I</th><th class="col-total">A</th>`;
             
             document.getElementById('tbR').innerHTML=Object.values(mk).sort().map(n=>{
                 let cH=0, cI=0, cA=0, row=`<td class="nama-fixed">${n}</td>`;
                 for(let i=1;i<=last;i++){
-                    let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), s="-", cl="", jamWkt="", tip="";
-                    
+                    let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), s="-", cl="", infoText="";
                     if(d.getDay()===0||hl[t]){ s="OFF"; cl="s-off"; }
                     else {
                         const dataHari = ad[t] ? ad[t][n] : null;
                         if(dataHari){
-                            if(dataHari.Izin){ s="I"; cl="s-i"; cI++; tip=dataHari.Izin.note; }
-                            else if(dataHari.Masuk){
+                            if(dataHari.Izin){ 
+                                s="I"; cl="s-i"; cI++; infoText = dataHari.Izin.note || "";
+                            } else if(dataHari.Masuk){
                                 s="H"; cl = (dataHari.Masuk.status === "Terlambat") ? "s-late" : "s-v";
-                                cH++; jamWkt = dataHari.Masuk.waktu;
+                                cH++; infoText = dataHari.Masuk.waktu;
                             }
-                        } else {
-                            if(t >= TGL_MULAI_SISTEM && t < todayStr) {
-                                s="A"; cl="s-a"; cA++;
-                            }
-                        }
+                        } else if(t >= TGL_MULAI_SISTEM && t < todayStr) { s="A"; cl="s-a"; cA++; }
                     }
-                    row+=`<td><div class="s-cell ${cl}" title="${tip}">${s}${jamWkt?`<span class="jam-text">${jamWkt}</span>`:''}</div></td>`;
+                    row+=`<td><div class="s-cell ${cl}">${s}<span class="jam-text">${infoText}</span></div></td>`;
                 }
                 return `<tr>${row}<td class="col-total">${cH}</td><td class="col-total">${cI}</td><td class="col-total">${cA}</td></tr>`;
             }).join('');
@@ -193,14 +177,14 @@
             const todayStr = new Date().toISOString().split('T')[0];
             let html=`<html><head><meta charset="UTF-8"></head><body><table border="1">
                 <tr><th colspan="${last+4}" style="background-color:#FFA500; color:white; height:35px;">REKAP ABSENSI PT AGN - ${f}</th></tr>
-                <tr style="background-color:#e0e0e0; font-weight:bold;"><th>Nama</th>${Array.from({length:last},(_,i)=>`<th>${i+1}</th>`).join('')}<th>H</th><th>I</th><th>A</th></tr>`;
+                <tr style="background-color:#e2e2e2; font-weight:bold;"><th>Nama</th>${Array.from({length:last},(_,i)=>`<th>${i+1}</th>`).join('')}<th>H</th><th>I</th><th>A</th></tr>`;
             Object.values(mk).sort().forEach(n=>{
                 let cH=0, cI=0, cA=0; html+=`<tr><td style="font-weight:bold;">${n}</td>`;
                 for(let i=1; i<=last; i++){
                     let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), bg="#FFFFFF", txt="-";
                     if(d.getDay()===0||hl[t]){ bg="#ff0000"; txt="OFF"; }
                     else if(ad[t] && ad[t][n]){
-                        if(ad[t][n].Izin){ bg="#ffff00"; txt="I"; cI++; }
+                        if(ad[t][n].Izin){ bg="#ffff00"; txt="I ("+(ad[t][n].Izin.note||"")+")"; cI++; }
                         else if(ad[t][n].Masuk){ bg = (ad[t][n].Masuk.status === "Terlambat") ? "#facc15" : "#00ff00"; txt="H ("+ad[t][n].Masuk.waktu+")"; cH++; }
                     } else if(t >= TGL_MULAI_SISTEM && t < todayStr){ bg="#64748b"; txt="A"; cA++; }
                     html+=`<td style="background-color:${bg}; text-align:center;">${txt}</td>`;
