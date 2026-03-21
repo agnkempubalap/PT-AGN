@@ -3,181 +3,172 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN Management v38.0</title>
-    
+    <title>PT-AGN Management v40.0</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        :root { 
-            --primary: #1e40af; --primary-dark: #1e3a8a; 
-            --success: #10b981; --danger: #ef4444; 
-            --warning: #f59e0b; --dark: #1e293b; 
-            --bg: #f8fafc; --gray: #94a3b8; 
-            --card-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        :root {
+            --primary: #2563eb; --success: #10b981; --danger: #ef4444; --warning: #f59e0b;
+            --bg: #f1f5f9; --card-bg: #ffffff; --text: #1e293b; --border: #e2e8f0;
+            --nama-bg: #ffffff; --shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --bg: #0f172a; --card-bg: #1e293b; --text: #f8fafc; --border: #334155;
+            --nama-bg: #1e293b; --shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
         }
 
         body { 
-            font-family: 'Inter', sans-serif; 
-            margin: 0; background: var(--bg); color: var(--dark); 
-            padding: 10px 15px 30px 15px; 
+            font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; background: var(--bg); 
+            color: var(--text); padding: 10px; transition: all 0.3s ease; 
         }
 
         .container { max-width: 1400px; margin: 0 auto; }
 
-        /* HEADER FIX */
-        header {
-            display: flex; align-items: center; gap: 15px;
-            padding: 15px 0; margin-bottom: 5px;
+        header { 
+            display: flex; align-items: center; justify-content: space-between; 
+            padding: 15px 5px; margin-bottom: 5px;
         }
-        .logo-box img { height: 55px; width: auto; border-radius: 6px; object-fit: contain; }
-        .logo-box h2 { margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--primary-dark); line-height: 1.2; }
-        .logo-box span { font-size: 10px; color: var(--gray); font-weight: 600; display: block; margin-top: 2px; }
 
-        /* CARD STYLE */
+        .logo-box { display: flex; align-items: center; gap: 12px; }
+        .logo-box img { height: 50px; width: auto; border-radius: 8px; box-shadow: var(--shadow); }
+        .logo-box h2 { margin: 0; font-size: 1.1rem; letter-spacing: -0.5px; }
+
+        /* THEME TOGGLE */
+        .theme-btn {
+            background: var(--card-bg); border: 1px solid var(--border);
+            padding: 8px 12px; border-radius: 10px; cursor: pointer; color: var(--text);
+            font-weight: 600; font-size: 12px; display: flex; align-items: center; gap: 5px;
+        }
+
         .card { 
-            background: white; padding: 20px; border-radius: 16px; 
-            margin-bottom: 15px; border: 1px solid #f1f5f9;
-            box-shadow: var(--card-shadow);
-        }
-        h3 { 
-            margin: 0 0 15px 0; font-size: 0.75rem; color: var(--gray); 
-            text-transform: uppercase; font-weight: 700; display: flex; align-items: center; gap: 8px;
+            background: var(--card-bg); padding: 20px; border-radius: 20px; 
+            margin-bottom: 15px; border: 1px solid var(--border); box-shadow: var(--shadow);
         }
 
-        /* INPUTS & BUTTONS */
-        input, select, button, textarea { border-radius: 12px; font-size: 14px; transition: all 0.2s; outline: none; }
-        input, select { 
-            width: 100%; padding: 12px; border: 1.5px solid #e2e8f0; 
-            background: #fff; height: 50px; box-sizing: border-box;
+        h3 { 
+            margin: 0 0 15px 0; font-size: 10px; color: var(--warning); 
+            text-transform: uppercase; letter-spacing: 1px; font-weight: 800;
         }
-        input:focus { border-color: var(--primary); }
-        
+
+        input, select, button { 
+            border-radius: 12px; font-size: 14px; height: 48px; 
+            border: 1px solid var(--border); outline: none; transition: 0.2s;
+            background: var(--card-bg); color: var(--text);
+        }
+
+        input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+
         .btn { 
             display: flex; align-items: center; justify-content: center; 
-            font-weight: 700; cursor: pointer; border: none; gap: 8px; color: white;
+            font-weight: 700; cursor: pointer; border: none; color: white;
+            transition: transform 0.1s active;
         }
-        .btn-success { background: var(--success); }
-        .btn-danger { background: var(--danger); }
-        .btn-warning { background: var(--warning); }
-        .btn-gray { background: #e2e8f0; color: #64748b; }
+        .btn:active { transform: scale(0.95); }
 
-        /* MANAGEMENT ROW FIX */
-        .management-row { display: flex; gap: 10px; margin-bottom: 15px; align-items: center; }
-        .management-row input { flex: 1; height: 50px; }
-        .btn-sq { width: 55px; height: 50px; border-radius: 12px; flex-shrink: 0; }
+        .management-row { display: flex; gap: 8px; margin-bottom: 12px; }
+        .management-row input { flex: 1; }
+        .btn-sq { width: 50px; flex-shrink: 0; }
 
         .libur-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
 
-        /* TABLE UI */
-        .table-wrap { overflow: auto; border-radius: 12px; border: 1px solid #e2e8f0; background: white; margin-bottom: 15px; }
-        table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 1100px; }
-        th, td { border-bottom: 1px solid #f1f5f9; padding: 12px 6px; text-align: center; }
-        th { background: #f8fafc; color: var(--gray); font-weight: 700; position: sticky; top: 0; z-index: 5; }
-        .nama-fixed { 
-            position: sticky; left: 0; background: white !important; 
-            font-weight: 700; text-align: left; width: 140px; 
-            z-index: 4; border-right: 2px solid #f1f5f9; padding-left: 15px; 
+        /* TABLE STYLING */
+        .table-wrap { 
+            overflow: auto; border-radius: 15px; border: 1px solid var(--border); 
+            background: var(--card-bg); margin-bottom: 15px; 
         }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 1000px; }
+        th, td { border-bottom: 1px solid var(--border); padding: 12px 6px; text-align: center; }
+        th { background: rgba(0,0,0,0.02); color: var(--gray); font-weight: 700; }
         
-        .status-cell { border-radius: 6px; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; margin: auto; }
-        .status-v { background: #22c55e; color: white; font-weight: bold; } 
-        .status-t { background: #eab308; color: white; font-weight: bold; } 
-        .status-i { background: #06b6d4; color: white; font-weight: bold; } 
-        .status-off { background: #fee2e2; color: #ef4444; font-size: 9px; } 
-        .status-lbr { background: #f1f5f9; color: #94a3b8; font-style: italic; font-size: 9px; }
+        .nama-fixed { 
+            position: sticky; left: 0; background: var(--nama-bg) !important; 
+            font-weight: 700; text-align: left; width: 130px; 
+            z-index: 4; border-right: 2px solid var(--border); padding-left: 15px; 
+        }
 
-        #kop-surat { display: none; align-items: center; justify-content: center; border-bottom: 4px solid #000; padding-bottom: 15px; margin-bottom: 25px; gap: 20px; }
-        #kop-surat img { height: 100px; }
+        .status-cell { 
+            border-radius: 8px; width: 28px; height: 28px; 
+            display: inline-flex; align-items: center; justify-content: center; 
+            margin: auto; font-weight: 800; font-size: 10px;
+        }
+        .status-v { background: var(--success); color: white; } 
+        .status-t { background: var(--warning); color: white; } 
+        .status-i { background: var(--primary); color: white; } 
+        .status-off { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+        .status-lbr { background: var(--border); color: var(--text); opacity: 0.5; }
 
         @media print { 
             .no-print { display: none !important; } 
-            #kop-surat { display: flex !important; } 
-            @page { size: landscape; margin: 1cm; } 
+            body { background: white !important; color: black !important; }
+            .card { border: none; box-shadow: none; }
+            #kop-surat { display: flex !important; align-items: center; justify-content: center; border-bottom: 4px solid #000; padding-bottom: 15px; margin-bottom: 25px; gap: 20px; }
+            #kop-surat img { height: 90px; }
+            .nama-fixed { background: white !important; color: black !important; }
         }
     </style>
 </head>
-<body>
-
+<body data-theme="light">
     <div class="container">
-        <!-- APP HEADER -->
         <header class="no-print">
-            <div class="logo-box" style="display:flex; align-items:center; gap:15px;">
-                <!-- LINK LOGO STABIL -->
-                <img src="https://i.ibb.co.com/m50YkM4v/AGN-Logo.jpg" alt="Logo PT AGN">
+            <div class="logo-box">
+                <img src="https://i.ibb.co.com/m50YkM4v/AGN-Logo.jpg" alt="Logo AGN">
                 <div>
                     <h2>PT ATHA GHANIA NUGRAHA</h2>
-                    <span>PRESENSI SYSTEM v38.0</span>
+                    <span style="font-size: 9px; color: var(--warning); font-weight: 700;">SYSTEM v40.0</span>
                 </div>
             </div>
+            <button class="theme-btn" onclick="toggleTheme()" id="tBtn">🌙 Dark Mode</button>
         </header>
 
-        <!-- PRINT HEADER (PDF) -->
-        <div id="kop-surat">
-            <img src="https://i.ibb.co.com/m50YkM4v/AGN-Logo.jpg" alt="Logo">
+        <!-- KOP SURAT PRINT -->
+        <div id="kop-surat" style="display:none;">
+            <img src="https://i.ibb.co.com/m50YkM4v/AGN-Logo.jpg">
             <div style="text-align: left;">
-                <h1 style="margin:0; font-size: 28px;">PT ATHA GHANIA NUGRAHA</h1>
-                <p style="margin:5px 0; font-size: 16px;">Laporan Rekapitulasi Presensi Karyawan</p>
+                <h1 style="margin:0; font-size: 26px;">PT ATHA GHANIA NUGRAHA</h1>
+                <p style="margin:5px 0; font-size: 16px; font-weight: 600;">LAPORAN REKAPITULASI PRESENSI</p>
             </div>
         </div>
 
-        <!-- MANAJEMEN KARYAWAN -->
         <div class="card no-print">
-            <h3>👤 Manajemen Karyawan</h3>
+            <h3>👤 Management Team</h3>
             <div class="management-row">
-                <input list="listKaryawan" id="inputPilihNama" placeholder="Ketik nama baru / pilih nama...">
+                <input list="listKaryawan" id="inputPilihNama" placeholder="Ketik nama karyawan...">
                 <datalist id="listKaryawan"></datalist>
-                <button class="btn btn-success btn-sq" onclick="tambahKaryawan()">➕</button>
-                <button class="btn btn-sq" style="background: #fee2e2; color: #ef4444;" onclick="hapusKaryawan()">🗑️</button>
+                <button class="btn btn-sq" style="background:var(--success);" onclick="tambahKaryawan()">➕</button>
+                <button class="btn btn-sq" style="background:var(--danger);" onclick="hapusKaryawan()">🗑️</button>
             </div>
-            
-            <h3>🗓️ Atur Libur Masal</h3>
-            <div class="libur-group">
-                <input type="date" id="tglMulaiLibur">
-                <input type="date" id="tglSelesaiLibur">
-            </div>
-            <div style="display: flex; gap:10px;">
-                <button class="btn btn-gray" style="flex:1; height:45px;" onclick="setRentangLibur(true)">SET LIBUR</button>
-                <button class="btn" style="flex:1; border:1px solid #e2e8f0; color:#64748b;" onclick="setRentangLibur(false)">HAPUS JADWAL</button>
+            <h3>🗓️ Hari Libur</h3>
+            <div class="libur-group"><input type="date" id="tglMulaiLibur"><input type="date" id="tglSelesaiLibur"></div>
+            <div style="display:flex; gap:8px;">
+                <button class="btn" style="background:var(--primary); flex:1;" onclick="setRentangLibur(true)">SIMPAN LIBUR</button>
+                <button class="btn" style="background:var(--border); color:var(--text); flex:1;" onclick="setRentangLibur(false)">HAPUS</button>
             </div>
         </div>
 
-        <!-- PRESENSI BUTTONS -->
-        <div class="card no-print">
-            <h3>⚡ Presensi Cepat</h3>
+        <div class="card no-print" style="background: linear-gradient(145deg, var(--card-bg), rgba(37,99,235,0.05));">
+            <h3>⚡ Quick Presence</h3>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                <button class="btn btn-success" style="height: 60px; font-size: 18px;" onclick="prosesAbsen('Masuk')">MASUK</button>
-                <button class="btn btn-danger" style="height: 60px; font-size: 18px;" onclick="prosesAbsen('Pulang')">PULANG</button>
+                <button class="btn" style="background:var(--success); height: 65px; font-size: 18px; box-shadow: 0 4px 10px rgba(16,185,129,0.3);" onclick="prosesAbsen('Masuk')">MASUK</button>
+                <button class="btn" style="background:var(--danger); height: 65px; font-size: 18px; box-shadow: 0 4px 10px rgba(239,68,68,0.3);" onclick="prosesAbsen('Pulang')">PULANG</button>
             </div>
-            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-top: 12px;">
-                <button class="btn btn-warning" style="height: 50px;" onclick="prosesAbsen('Izin')">📝 IZIN / SAKIT</button>
-                <button class="btn btn-gray" style="height: 50px;" onclick="resetAbsen()">♻️ RESET</button>
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px; margin-top: 10px;">
+                <button class="btn" style="background:var(--warning); height: 45px;" onclick="prosesAbsen('Izin')">📝 IZIN / SAKIT</button>
+                <button class="btn" style="background:var(--border); color:var(--text); height: 45px;" onclick="resetAbsen()">♻️ RESET</button>
             </div>
         </div>
 
-        <!-- REKAPITULASI -->
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;" class="no-print">
-                <input type="month" id="filterBulan" style="width: 170px;" onchange="renderRekap()">
-                <div style="display: flex; gap: 5px;">
-                    <button class="btn btn-primary" style="background:var(--dark); height: 50px; padding: 0 15px;" onclick="exportToExcel()">📊 EXCEL</button>
-                    <button class="btn btn-primary" style="background:var(--primary); height: 50px; padding: 0 15px;" onclick="siapkanCetak()">📄 PDF</button>
+                <input type="month" id="filterBulan" style="width: 160px;" onchange="renderRekap()">
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn" style="background:#334155; height: 48px; padding: 0 15px;" onclick="exportToExcel()">📊 EXCEL</button>
+                    <button class="btn" style="background:var(--primary); height: 48px; padding: 0 15px;" onclick="window.print()">📄 PDF</button>
                 </div>
             </div>
-
-            <div class="table-wrap">
-                <table id="tabelUtama">
-                    <thead><tr id="theadRekap"></tr></thead>
-                    <tbody id="tbodyRekap"></tbody>
-                </table>
-            </div>
-
-            <div class="no-print">
-                <h3>📝 Catatan Admin</h3>
-                <textarea id="catatanAdmin" style="width:100%; height:80px; padding:15px; border:1.5px solid #e2e8f0; border-radius:12px;" placeholder="Contoh: Budi izin sakit..."></textarea>
-            </div>
+            <div class="table-wrap"><table id="tabelUtama"><thead><tr id="theadRekap"></tr></thead><tbody id="tbodyRekap"></tbody></table></div>
         </div>
     </div>
 
@@ -194,6 +185,13 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         let masterKaryawan = {}, absensiData = {}, hariLibur = {};
+
+        function toggleTheme() {
+            const b = document.body;
+            const isDark = b.getAttribute('data-theme') === 'dark';
+            b.setAttribute('data-theme', isDark ? 'light' : 'dark');
+            document.getElementById('tBtn').innerHTML = isDark ? '🌙 Dark Mode' : '☀️ Light Mode';
+        }
 
         window.onload = () => {
             const s = new Date();
@@ -212,50 +210,45 @@
 
         function tambahKaryawan() {
             const n = document.getElementById('inputPilihNama');
-            const namaBaru = n.value.trim();
-            if(!namaBaru) return alert("Ketik nama!");
-            db.ref('master_karyawan').push(namaBaru).then(() => { n.value = ""; });
+            if(!n.value.trim()) return alert("Isi Nama!");
+            db.ref('master_karyawan').push(n.value.trim()).then(() => n.value = "");
         }
 
         function hapusKaryawan() {
-            const n = document.getElementById('inputPilihNama');
-            const namaCari = n.value.trim();
-            const idHapus = Object.keys(masterKaryawan).find(key => masterKaryawan[key] === namaCari);
-            if(!idHapus) return alert("Pilih nama!");
-            if(confirm(`Hapus ${namaCari}?`)) db.ref(`master_karyawan/${idHapus}`).remove().then(() => n.value = "");
+            const n = document.getElementById('inputPilihNama').value;
+            const id = Object.keys(masterKaryawan).find(k => masterKaryawan[k] === n);
+            if(id && confirm(`Hapus permanen ${n}?`)) db.ref(`master_karyawan/${id}`).remove();
         }
 
         function setRentangLibur(isSet) {
             const m = document.getElementById('tglMulaiLibur').value, s = document.getElementById('tglSelesaiLibur').value;
             if(!m || !s) return alert("Pilih tanggal!");
-            let u = {}; let curr = new Date(m), end = new Date(s);
+            let u = {}, curr = new Date(m), end = new Date(s);
             while(curr <= end) { u[curr.toISOString().split('T')[0]] = isSet ? true : null; curr.setDate(curr.getDate()+1); }
             db.ref('hari_libur').update(u);
         }
 
         function prosesAbsen(tipe) {
-            const nama = document.getElementById('inputPilihNama').value;
-            if(!nama) return alert("Pilih nama!");
-            const s = new Date();
-            const tgl = s.toISOString().split('T')[0];
+            const n = document.getElementById('inputPilihNama').value;
+            if(!n) return alert("Pilih Karyawan!");
+            const s = new Date(), tgl = s.toISOString().split('T')[0];
             const jam = s.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
             let status = (tipe==='Masuk' && (s.getHours()>9 || (s.getHours()===9 && s.getMinutes()>0))) ? "Terlambat" : "Hadir";
-            db.ref(`absensi/${tgl}/${nama}/${tipe}`).set({ waktu: jam, status: status });
+            db.ref(`absensi/${tgl}/${n}/${tipe}`).set({ waktu: jam, status: status });
         }
 
         function renderRekap() {
             const f = document.getElementById('filterBulan').value;
             const [y, m] = f.split('-');
             const totalH = new Date(y, m, 0).getDate();
-            let h = `<th class="nama-fixed">Nama</th>`;
+            let h = `<th class="nama-fixed">Karyawan</th>`;
             for(let i=1; i<=totalH; i++) h += `<th>${i}</th>`;
             h += `<th>H</th><th>T</th><th>I</th>`;
             document.getElementById('theadRekap').innerHTML = h;
 
             let b = "";
             Object.values(masterKaryawan).sort().forEach(nama => {
-                let cH=0, cT=0, cI=0;
-                let r = `<td class="nama-fixed">${nama}</td>`;
+                let cH=0, cT=0, cI=0, r = `<td class="nama-fixed">${nama}</td>`;
                 for(let i=1; i<=totalH; i++) {
                     const tgl = `${y}-${m}-${String(i).padStart(2,'0')}`, dObj = new Date(tgl);
                     let sim = "-", cls = "";
@@ -276,17 +269,13 @@
             document.getElementById('tbodyRekap').innerHTML = b;
         }
 
-        function siapkanCetak() { window.print(); }
         function exportToExcel() {
             const t = document.getElementById("tabelUtama");
-            const wb = XLSX.utils.table_to_book(t);
-            XLSX.writeFile(wb, `Absensi_AGN_${document.getElementById('filterBulan').value}.xlsx`);
+            XLSX.writeFile(XLSX.utils.table_to_book(t), `Presensi_AGN_${document.getElementById('filterBulan').value}.xlsx`);
         }
         function resetAbsen() {
             const n = document.getElementById('inputPilihNama').value;
-            if(!n) return;
-            const t = new Date().toISOString().split('T')[0];
-            if(confirm(`Reset ${n} hari ini?`)) db.ref(`absensi/${t}/${n}`).remove();
+            if(n && confirm(`Reset data ${n} hari ini?`)) db.ref(`absensi/${new Date().toISOString().split('T')[0]}/${n}`).remove();
         }
     </script>
 </body>
