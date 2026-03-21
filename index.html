@@ -2,10 +2,10 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v73.0 - Minggu Label</title>
+    <title>PT-AGN v74.0 - Pro Report Edition</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
     <style>
         :root{--p:#2563eb;--s:#10b981;--d:#ef4444;--w:#f59e0b;--bg:#f1f5f9;--c:#fff;--t:#1e293b;--b:#e2e8f0}
         [data-theme="dark"]{--bg:#0f172a;--c:#1e293b;--t:#f8fafc;--b:#334155}
@@ -21,15 +21,38 @@
         .btn-sq{width:55px;flex-shrink:0}
         #toast{position:fixed;bottom:20px;right:20px;padding:12px 20px;border-radius:10px;color:#fff;font-size:13px;z-index:999;display:none}
         #toast.show{display:block}
+        
+        /* TABLE STYLES - UPGRADED TO MATCH MAJU JAYA */
         .table-wrap{overflow:auto;border-radius:12px;border:1px solid var(--b);background:var(--c)}
-        table{width:100%;border-collapse:collapse;font-size:9px;min-width:1400px}
-        th,td{border-bottom:1px solid var(--b);padding:6px 2px;text-align:center}
-        .nama-fixed{position:sticky;left:0;background:var(--c)!important;font-weight:700;text-align:left;width:110px;z-index:4;border-right:2px solid var(--b);padding-left:8px}
-        .s-cell{border-radius:4px;width:26px;min-height:26px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;font-size:9px}
-        .s-v{background:#22c55e;color:#fff} .s-late{background:#facc15;color:#000} .s-i{background:#eab308;color:#000} .s-off{background:#ef4444;color:#fff} .s-a{background:#64748b;color:#fff}
-        .col-total{font-weight:bold;background:#f1f5f9;color:#1e293b;width:35px}
-        .jam-text{font-size:6.5px;font-weight:400;display:block;margin-top:1px;line-height:1;max-width:24px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-        @media print { .card:not(:last-child), header, .btn, input { display: none !important; } }
+        table{width:100%;border-collapse:collapse;font-size:10px;min-width:1400px;border:1px solid #000}
+        th,td{border:1px solid #000;padding:4px 2px;text-align:center}
+        .nama-fixed{position:sticky;left:0;background:var(--c)!important;font-weight:700;text-align:left;width:110px;z-index:4;padding-left:8px}
+        
+        /* MATCHING COLORS TO MAJU JAYA EXCEL */
+        .s-cell{width:100%;min-height:30px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;font-size:10px}
+        .s-v{background:#00B050;color:#fff} /* Hadir Hijau Tua */
+        .s-late{background:#92D050;color:#000} /* Terlambat Hijau Muda */
+        .s-i{background:#FFFF00;color:#000} /* Izin Kuning */
+        .s-a{background:#C00000;color:#fff} /* Alpa Merah Tua */
+        .s-off{background:#ff0000;color:#000} /* Minggu Merah */
+        
+        .jam-text{font-size:6.5px;font-weight:400;display:block;margin-top:2px;line-height:1;max-width:30px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        
+        /* PRINT STYLES FOR PERFECT PDF */
+        @page { size: landscape; margin: 10mm; }
+        @media print { 
+            body{background:white;} 
+            .card:not(:last-child), header, .btn, input { display: none !important; } 
+            .card:last-child { border: none; box-shadow: none; padding: 0; }
+            .table-wrap { overflow: visible; border: none; }
+            .nama-fixed { position: static; }
+            th, td { border: 1px solid #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .s-v{background-color:#00B050 !important; color:#fff !important;}
+            .s-late{background-color:#92D050 !important; color:#000 !important;}
+            .s-i{background-color:#FFFF00 !important; color:#000 !important;}
+            .s-a{background-color:#C00000 !important; color:#fff !important;}
+            .s-off{background-color:#ff0000 !important; color:#000 !important;}
+        }
     </style>
 </head>
 <body data-theme="light">
@@ -38,7 +61,7 @@
         <header>
             <div class="logo-box" onclick="gantiLogo()">
                 <img id="mainLogo" src="https://ui-avatars.com/api/?name=AGN&background=2563eb&color=fff">
-                <div><h2 style="margin:0;font-size:1rem">PT AGN</h2><span style="font-size:9px;color:var(--w);font-weight:800">SYSTEM v73.0</span></div>
+                <div><h2 style="margin:0;font-size:1rem">PT AGN</h2><span style="font-size:9px;color:var(--w);font-weight:800">SYSTEM v74.0</span></div>
             </div>
             <button onclick="toggleT()" id="tBtn" style="width:80px;font-size:11px">🌙 Dark</button>
         </header>
@@ -84,7 +107,13 @@
                     <button class="btn" style="background:#b91c1c;width:95px;font-size:10px" onclick="window.print()">📜 PDF</button>
                 </div>
             </div>
-            <div class="table-wrap"><table><thead><tr id="thR"></tr></thead><tbody id="tbR"></tbody></table></div>
+            <!-- STRUKTUR TABEL DIPERBARUI -->
+            <div class="table-wrap">
+                <table>
+                    <thead id="thR"></thead>
+                    <tbody id="tbR"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -94,24 +123,13 @@
         let mk={}, ad={}, hl={};
         const TGL_MULAI_SISTEM = "2026-03-21";
 
-        function gantiLogo(){
-            let link = prompt("Masukkan Link Foto/Logo Baru:");
-            if(link) { document.getElementById('mainLogo').src = link; localStorage.setItem('agn_logo', link); sT("Logo Diperbarui!"); }
-        }
-
-        function toggleT(){ 
-            let t = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; 
-            document.body.setAttribute('data-theme', t); localStorage.setItem('agn_theme', t);
-            document.getElementById('tBtn').innerText = t === 'dark' ? '☀️ Light' : '🌙 Dark';
-        }
-
+        function gantiLogo(){ let link = prompt("Masukkan Link Foto/Logo Baru:"); if(link) { document.getElementById('mainLogo').src = link; localStorage.setItem('agn_logo', link); sT("Logo Diperbarui!"); } }
+        function toggleT(){ let t = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; document.body.setAttribute('data-theme', t); localStorage.setItem('agn_theme', t); document.getElementById('tBtn').innerText = t === 'dark' ? '☀️ Light' : '🌙 Dark'; }
         function sT(m,ty='success'){ const t=document.getElementById('toast'); t.innerText=m; t.className='show'; t.style.background=ty==='success'?'#10b981':'#ef4444'; setTimeout(()=>t.className='',2000); }
 
         window.onload=()=>{
-            let savedTheme = localStorage.getItem('agn_theme') || 'light';
-            document.body.setAttribute('data-theme', savedTheme);
-            let savedLogo = localStorage.getItem('agn_logo');
-            if(savedLogo) document.getElementById('mainLogo').src = savedLogo;
+            let savedTheme = localStorage.getItem('agn_theme') || 'light'; document.body.setAttribute('data-theme', savedTheme);
+            let savedLogo = localStorage.getItem('agn_logo'); if(savedLogo) document.getElementById('mainLogo').src = savedLogo;
             document.getElementById('fB').value=new Date().toISOString().slice(0,7);
             db.ref('master_karyawan').on('value',s=>{mk=s.val()||{}; uDl(); rRekap();});
             db.ref('absensi').on('value',s=>{ad=s.val()||{}; rRekap();});
@@ -122,14 +140,7 @@
         function tKaryawan(){let n=document.getElementById('iNama'); if(n.value) db.ref('master_karyawan').push(n.value).then(()=>{n.value=""; sT("Berhasil");});}
         function hKaryawan(){let n=document.getElementById('iNama'); let id=Object.keys(mk).find(k=>mk[k]===n.value); if(id && confirm('Hapus Karyawan?')) db.ref(`master_karyawan/${id}`).remove().then(()=>{n.value="";});}
         function resetPerKaryawan(){ let n=document.getElementById('iNama'), t=document.getElementById('tglReset'); if(n.value && t.value && confirm('Hapus data absen?')) db.ref(`absensi/${t.value}/${n.value}`).remove().then(()=>{t.value=""; n.value=""; sT("Data Dihapus");}); }
-        
-        function sLib(st){ 
-            let m=document.getElementById('tM'), s=document.getElementById('tS'); if(!m.value) return;
-            let start=new Date(m.value), end=s.value ? new Date(s.value) : start;
-            let curr=new Date(start);
-            while(curr <= end){ db.ref(`hari_libur/${curr.toISOString().split('T')[0]}`).set(st?true:null); curr.setDate(curr.getDate()+1); }
-            m.value=""; s.value=""; sT("Jadwal Diupdate");
-        }
+        function sLib(st){ let m=document.getElementById('tM'), s=document.getElementById('tS'); if(!m.value) return; let start=new Date(m.value), end=s.value ? new Date(s.value) : start; let curr=new Date(start); while(curr <= end){ db.ref(`hari_libur/${curr.toISOString().split('T')[0]}`).set(st?true:null); curr.setDate(curr.getDate()+1); } m.value=""; s.value=""; sT("Jadwal Diupdate"); }
 
         function pAbsen(ty){
             let n=document.getElementById('iNama'), now=new Date(), tgl=now.toISOString().split('T')[0], jam=now.getHours(), menit=now.getMinutes();
@@ -138,63 +149,135 @@
             let status = "Hadir";
             if(ty==='Masuk' && (jam > 9 || (jam === 9 && menit > 0))) status = "Terlambat";
             let note = ""; if(ty==='Izin') { note = prompt("Isi alasan (Misal: Sakit Gigi):"); if(note === null) return; status="Izin"; }
-            db.ref(`absensi/${tgl}/${n.value}/${ty}`).set({waktu:jamFormat, status:status, note:note, timestamp: Date.now()}).then(()=>{
-                sT(ty + (status === "Terlambat" ? " (Terlambat)" : " Sukses!")); n.value="";
-            });
+            db.ref(`absensi/${tgl}/${n.value}/${ty}`).set({waktu:jamFormat, status:status, note:note, timestamp: Date.now()}).then(()=>{ sT(ty + (status === "Terlambat" ? " (Terlambat)" : " Sukses!")); n.value=""; });
         }
 
+        // FUNGSI RENDER WEB DAN PDF (DISAMAKAN DENGAN MAJU JAYA)
         function rRekap(){
             const f=document.getElementById('fB').value; if(!f) return;
             const [y,m]=f.split('-'), last=new Date(y,m,0).getDate();
             const todayStr = new Date().toISOString().split('T')[0];
+            const kList = Object.values(mk).sort();
+            const jmlKaryawan = kList.length;
+
+            // BIKIN HEADER MIRIP EXCEL
+            let h1 = `<tr>
+                <th colspan="${last+4}" style="background-color:#FFC000; color:#000; font-size:16px; height:35px;">ABSENSI KARYAWAN PT AGN</th>
+            </tr>
+            <tr>
+                <th colspan="${last+4}" style="background-color:#FFE699; color:#000; font-size:14px; height:25px;">PERIODE ${f}</th>
+            </tr>
+            <tr>
+                <th rowspan="2" class="nama-fixed" style="background:#f2f2f2!important; color:#000;">Nama</th>
+                <th colspan="${last}" style="background:#f2f2f2; color:#000;">Tanggal</th>
+                <th colspan="3" style="background:#f2f2f2; color:#000;">Jumlah Hari Kerja</th>
+            </tr><tr>`;
             
-            document.getElementById('thR').innerHTML=`<th class="nama-fixed">Karyawan</th>${Array.from({length:last},(_,i)=>`<th>${i+1}</th>`).join('')}<th class="col-total">H</th><th class="col-total">I</th><th class="col-total">A</th>`;
-            
-            document.getElementById('tbR').innerHTML=Object.values(mk).sort().map(n=>{
+            for(let i=1;i<=last;i++){
+                let d = new Date(`${y}-${m}-${String(i).padStart(2,'0')}`);
+                let isOff = (d.getDay()===0 || hl[`${y}-${m}-${String(i).padStart(2,'0')}`]);
+                let bg = isOff ? "background:#ff0000;color:#000;" : "background:#f2f2f2;color:#000;";
+                h1 += `<th style="${bg}">${i}</th>`;
+            }
+            h1 += `<th style="background:#00B050;color:white;width:35px">H</th><th style="background:#FFFF00;color:black;width:35px">I</th><th style="background:#C00000;color:white;width:35px">A</th></tr>`;
+            document.getElementById('thR').innerHTML = h1;
+
+            // BIKIN BODY TABEL
+            let tbody = "";
+            kList.forEach((n, idx)=>{
                 let cH=0, cI=0, cA=0, row=`<td class="nama-fixed">${n}</td>`;
                 for(let i=1;i<=last;i++){
                     let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), s="-", cl="", infoText="";
-                    
-                    if(d.getDay()===0){ s="MNG"; cl="s-off"; } // HARI MINGGU
-                    else if(hl[t]){ s="OFF"; cl="s-off"; } // HARI LIBUR TAMBAHAN
-                    else {
+                    let isOff = (d.getDay()===0 || hl[t]);
+
+                    if(isOff){
+                        if(idx === 0) { // MERGE KOLOM HARI MINGGU/LIBUR KE BAWAH
+                            let txt = hl[t] ? "Libur Nasional" : "Minggu";
+                            row += `<td rowspan="${jmlKaryawan}" class="s-off" style="width:26px; vertical-align:middle; padding:0;">
+                                <div style="writing-mode: vertical-rl; transform: rotate(180deg); margin:auto; font-size:11px; font-weight:800; letter-spacing:2px; height:100%; display:flex; align-items:center; justify-content:center;">${txt}</div>
+                            </td>`;
+                        }
+                    } else {
                         const dataHari = ad[t] ? ad[t][n] : null;
                         if(dataHari){
-                            if(dataHari.Izin){ 
-                                s="I"; cl="s-i"; cI++; infoText = dataHari.Izin.note || "";
-                            } else if(dataHari.Masuk){
-                                s="H"; cl = (dataHari.Masuk.status === "Terlambat") ? "s-late" : "s-v";
-                                cH++; infoText = dataHari.Masuk.waktu;
-                            }
+                            if(dataHari.Izin){ s="I"; cl="s-i"; cI++; infoText = dataHari.Izin.note || ""; }
+                            else if(dataHari.Masuk){ s="H"; cl = (dataHari.Masuk.status === "Terlambat") ? "s-late" : "s-v"; cH++; infoText = dataHari.Masuk.waktu; }
                         } else if(t >= TGL_MULAI_SISTEM && t < todayStr) { s="A"; cl="s-a"; cA++; }
+                        row+=`<td style="padding:0;"><div class="s-cell ${cl}">${s}<span class="jam-text">${infoText}</span></div></td>`;
                     }
-                    row+=`<td><div class="s-cell ${cl}">${s}<span class="jam-text">${infoText}</span></div></td>`;
                 }
-                return `<tr>${row}<td class="col-total">${cH}</td><td class="col-total">${cI}</td><td class="col-total">${cA}</td></tr>`;
-            }).join('');
+                tbody += `<tr>${row}<td style="background:#E2EFDA;color:#000;font-weight:bold">${cH}</td><td style="background:#FFF2CC;color:#000;font-weight:bold">${cI}</td><td style="background:#F4B084;color:#000;font-weight:bold">${cA}</td></tr>`;
+            });
+
+            // TAMBAH KETERANGAN (LEGEND) DI BAWAH
+            tbody += `
+                <tr><td colspan="${last+4}" style="border:none; height:10px;"></td></tr>
+                <tr><td colspan="4" style="text-align:left; font-weight:bold; border:none; background:var(--c);">Keterangan:</td><td colspan="${last}" style="border:none;"></td></tr>
+                <tr><td style="background:#00B050; color:white; font-weight:bold;">H</td><td colspan="3" style="text-align:left; background:var(--c);">Hadir</td><td colspan="${last}" style="border:none;"></td></tr>
+                <tr><td style="background:#FFFF00; color:black; font-weight:bold;">I</td><td colspan="3" style="text-align:left; background:var(--c);">Izin / Sakit</td><td colspan="${last}" style="border:none;"></td></tr>
+                <tr><td style="background:#C00000; color:white; font-weight:bold;">A</td><td colspan="3" style="text-align:left; background:var(--c);">Alpa</td><td colspan="${last}" style="border:none;"></td></tr>
+            `;
+            document.getElementById('tbR').innerHTML = tbody;
         }
 
+        // FUNGSI EXCEL (PERSIS MAJU JAYA)
         function doExcel(){
             const f=document.getElementById('fB').value; const [y,m]=f.split('-'); const last=new Date(y,m,0).getDate();
             const todayStr = new Date().toISOString().split('T')[0];
-            let html=`<html><head><meta charset="UTF-8"></head><body><table border="1">
-                <tr><th colspan="${last+4}" style="background-color:#FFA500; color:white; height:35px;">REKAP ABSENSI PT AGN - ${f}</th></tr>
-                <tr style="background-color:#e2e2e2; font-weight:bold;"><th>Nama</th>${Array.from({length:last},(_,i)=>`<th>${i+1}</th>`).join('')}<th>H</th><th>I</th><th>A</th></tr>`;
-            Object.values(mk).sort().forEach(n=>{
-                let cH=0, cI=0, cA=0; html+=`<tr><td style="font-weight:bold;">${n}</td>`;
+            const kList = Object.values(mk).sort();
+            const jmlKaryawan = kList.length;
+
+            let html=`<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"><style>
+                table { border-collapse: collapse; font-family: Arial, sans-serif; font-size: 11px; text-align: center; }
+                th, td { border: 1px solid #000000; }
+                .vert { mso-rotate: 90; text-align: center; vertical-align: middle; white-space: nowrap; font-weight: bold; }
+            </style></head><body><table>
+                <tr><th colspan="${last+4}" style="background-color:#FFC000; color:#000000; font-size:16px; height:30px; font-weight:bold;">ABSENSI KARYAWAN PT AGN</th></tr>
+                <tr><th colspan="${last+4}" style="background-color:#FFE699; color:#000000; font-size:14px; height:25px; font-weight:bold;">PERIODE ${f}</th></tr>
+                <tr>
+                    <th rowspan="2" style="background-color:#f2f2f2; width:120px; font-weight:bold;">Nama</th>
+                    <th colspan="${last}" style="background-color:#f2f2f2; font-weight:bold;">Tanggal</th>
+                    <th colspan="3" style="background-color:#f2f2f2; font-weight:bold;">Jumlah Hari Kerja</th>
+                </tr><tr>`;
+
+            for(let i=1; i<=last; i++){
+                let isOff = (new Date(`${y}-${m}-${String(i).padStart(2,'0')}`).getDay()===0 || hl[`${y}-${m}-${String(i).padStart(2,'0')}`]);
+                let bg = isOff ? "#ff0000" : "#f2f2f2";
+                html += `<th style="background-color:${bg}; color:#000000; width:35px;">${i}</th>`;
+            }
+            html += `<th style="background-color:#00B050; color:white; width:40px;">H</th><th style="background-color:#FFFF00; color:black; width:40px;">I</th><th style="background-color:#C00000; color:white; width:40px;">A</th></tr>`;
+
+            kList.forEach((n, idx)=>{
+                let cH=0, cI=0, cA=0;
+                html += `<tr><td style="text-align:left; font-weight:bold;">${n}</td>`;
                 for(let i=1; i<=last; i++){
-                    let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), bg="#FFFFFF", txt="-";
-                    if(d.getDay()===0){ bg="#ff0000"; txt="MINGGU"; }
-                    else if(hl[t]){ bg="#ff0000"; txt="OFF"; }
-                    else if(ad[t] && ad[t][n]){
-                        if(ad[t][n].Izin){ bg="#ffff00"; txt="I ("+(ad[t][n].Izin.note||"")+")"; cI++; }
-                        else if(ad[t][n].Masuk){ bg = (ad[t][n].Masuk.status === "Terlambat") ? "#facc15" : "#00ff00"; txt="H ("+ad[t][n].Masuk.waktu+")"; cH++; }
-                    } else if(t >= TGL_MULAI_SISTEM && t < todayStr){ bg="#64748b"; txt="A"; cA++; }
-                    html+=`<td style="background-color:${bg}; text-align:center;">${txt}</td>`;
+                    let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), bg="#FFFFFF", txt="", color="#000000";
+                    let isOff = (d.getDay()===0 || hl[t]);
+
+                    if(isOff){
+                        if(idx === 0){ // MENGGABUNGKAN SEL VERTIKAL
+                            let label = hl[t] ? "Libur Nasional" : "Minggu";
+                            html += `<td rowspan="${jmlKaryawan}" class="vert" style="background-color:#ff0000; color:#000000;">${label}</td>`;
+                        }
+                    } else {
+                        if(ad[t] && ad[t][n]){
+                            if(ad[t][n].Izin){ bg="#FFFF00"; txt="I ("+(ad[t][n].Izin.note||"")+")"; cI++; color="#000000"; }
+                            else if(ad[t][n].Masuk){ bg = (ad[t][n].Masuk.status === "Terlambat") ? "#92D050" : "#00B050"; txt="H ("+ad[t][n].Masuk.waktu+")"; cH++; color = (bg==="#00B050")?"#FFFFFF":"#000000"; }
+                        } else if(t >= TGL_MULAI_SISTEM && t < todayStr){ bg="#C00000"; txt="A"; cA++; color="#FFFFFF"; }
+                        html+=`<td style="background-color:${bg}; color:${color}; font-weight:bold; font-size:10px;">${txt}</td>`;
+                    }
                 }
-                html+=`<td style="font-weight:bold;">${cH}</td><td>${cI}</td><td>${cA}</td></tr>`;
+                html+=`<td style="background-color:#E2EFDA; font-weight:bold;">${cH}</td><td style="background-color:#FFF2CC; font-weight:bold;">${cI}</td><td style="background-color:#F4B084; font-weight:bold;">${cA}</td></tr>`;
             });
-            html+=`</table></body></html>`;
+
+            // KETERANGAN EXCEL BAWAH
+            html += `
+                <tr></tr><tr><td colspan="4" style="text-align:left; font-weight:bold;">Keterangan:</td></tr>
+                <tr><td style="background-color:#00B050; color:white; font-weight:bold;">H</td><td colspan="3" style="text-align:left;">Hadir</td></tr>
+                <tr><td style="background-color:#FFFF00; color:black; font-weight:bold;">I</td><td colspan="3" style="text-align:left;">Izin / Sakit</td></tr>
+                <tr><td style="background-color:#C00000; color:white; font-weight:bold;">A</td><td colspan="3" style="text-align:left;">Alpa</td></tr>
+                </table></body></html>`;
+
             const base64=s=>window.btoa(unescape(encodeURIComponent(s)));
             const link=document.createElement("a"); link.href=`data:application/vnd.ms-excel;base64,${base64(html)}`; link.download=`REKAP_AGN_${f}.xls`; link.click();
         }
