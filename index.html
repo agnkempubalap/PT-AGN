@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN Management v35.0</title>
+    <title>PT-AGN Management v36.0</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
@@ -27,16 +27,14 @@
 
         .container { max-width: 1400px; margin: 0 auto; }
 
-        /* Header UI (App) */
         header {
             display: flex; align-items: center; justify-content: space-between;
             padding: 15px 0; margin-bottom: 5px;
         }
         .logo-box { display: flex; align-items: center; gap: 10px; }
-        .logo-box img { height: 40px; width: auto; border-radius: 6px; }
+        .logo-box img { height: 45px; width: auto; border-radius: 6px; }
         .logo-box h2 { margin: 0; font-size: 1rem; font-weight: 700; color: var(--primary-dark); letter-spacing: -0.3px; }
 
-        /* Card System (Glassmorphism look) */
         .card { 
             background: white; padding: 18px; border-radius: 14px; 
             margin-bottom: 12px; border: 1px solid #f1f5f9;
@@ -48,7 +46,6 @@
             display: flex; align-items: center; gap: 8px;
         }
 
-        /* Input & Controls (Modern Style) */
         input, select, button, textarea { border-radius: 10px; font-size: 14px; transition: all 0.2s; }
         input, select { 
             width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; 
@@ -70,18 +67,14 @@
         .management-row { display: grid; grid-template-columns: 1fr 50px 50px; gap: 8px; margin-bottom: 10px; }
         .libur-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
 
-        /* Export UI */
         .export-container { position: relative; }
         .export-menu { 
             display: none; position: absolute; right: 0; top: 48px; 
             background: white; border: 1px solid #eee; border-radius: 10px; 
             box-shadow: 0 8px 16px rgba(0,0,0,0.1); z-index: 100; min-width: 160px;
-            animation: fadeIn 0.2s ease;
         }
         .export-menu button { width: 100%; text-align: left; background: none; padding: 10px 12px; border: none; border-bottom: 1px solid #f1f5f9; cursor: pointer; }
-        .export-menu button:hover { background: #f8fafc; color: var(--primary); }
 
-        /* Tabel Rekap (Luxury look) */
         .table-wrap { overflow: auto; border-radius: 12px; border: 1px solid #e2e8f0; background: white; margin-bottom: 12px; }
         table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 1100px; }
         th, td { border-bottom: 1px solid #f1f5f9; padding: 10px 4px; text-align: center; }
@@ -93,7 +86,6 @@
             z-index: 4; border-right: 2px solid #e2e8f0; padding-left: 12px;
         }
         
-        /* Status Badges */
         .status-cell { border-radius: 5px; width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; margin: auto; }
         .status-v { background-color: #22c55e !important; color: white !important; font-weight: 700; } 
         .status-t { background-color: #eab308 !important; color: white !important; font-weight: 700; } 
@@ -101,23 +93,15 @@
         .status-off { background-color: #fee2e2 !important; color: #b91c1c !important; } 
         .status-lbr { background-color: #e2e8f0 !important; color: #475569 !important; font-style: italic; } 
 
-        /* KOP SURAT UNTUK PDF/PRINT */
         #kop-surat { display: none; align-items: center; justify-content: center; border-bottom: 3px double #333; padding-bottom: 15px; margin-bottom: 25px; gap: 20px; }
         #kop-surat img { height: 90px; width: auto; }
-        #kop-surat .text-kop { text-align: left; }
 
         @media print { 
             .no-print { display: none !important; } 
             #kop-surat { display: flex !important; } 
-            #print-note { display: block !important; } 
             .table-wrap { border: none; box-shadow: none; overflow: visible; }
-            table { font-size: 10px; width: 100%; table-layout: fixed; }
-            th { background: #f2f2f2 !important; color: #000; }
-            .nama-fixed { background: white !important; }
             @page { size: landscape; margin: 1cm; } 
         }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -125,16 +109,16 @@
     <div class="container">
         <header class="no-print">
             <div class="logo-box">
-                <img src="https://i.ibb.co.com/m50YkM4v/AGN-Logo.jpg" alt="Logo">
+                <img src="https://i.ibb.co/C5fRByW/AGN-Logo.jpg" alt="Logo">
                 <div>
                     <h2>PT ATHA GHANIA NUGRAHA</h2>
-                    <span style="font-size: 10px; color: var(--gray); font-weight: 600;">PRESENSI SYSTEM v35.0</span>
+                    <span style="font-size: 10px; color: var(--gray); font-weight: 600;">PRESENSI SYSTEM v36.0</span>
                 </div>
             </div>
         </header>
 
         <div id="kop-surat">
-            <img src="https://i.ibb.co.com/m50YkM4v/AGN-Logo.jpg" alt="Logo AGN">
+            <img src="https://i.ibb.co/C5fRByW/AGN-Logo.jpg" alt="Logo AGN">
             <div class="text-kop">
                 <h1 style="margin:0; font-size: 26px;">PT ATHA GHANIA NUGRAHA</h1>
                 <p style="margin:5px 0; font-size: 16px; letter-spacing: 1px;">LAPORAN REKAPITULASI PRESENSI KARYAWAN</p>
@@ -146,9 +130,8 @@
             <div class="management-row">
                 <input list="listKaryawan" id="inputPilihNama" placeholder="Ketik nama baru / pilih nama...">
                 <datalist id="listKaryawan"></datalist>
-                
-                <button class="btn btn-success" onclick="tambahKaryawan()" title="Tambah Nama Baru">➕</button>
-                <button class="btn" style="background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca;" onclick="hapusKaryawan()" title="Hapus Nama Terpilih">🗑️</button>
+                <button class="btn btn-success" onclick="tambahKaryawan()">➕</button>
+                <button class="btn" style="background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca;" onclick="hapusKaryawan()">🗑️</button>
             </div>
             
             <h3>🗓️ Atur Libur Masal</h3>
@@ -157,7 +140,7 @@
                 <input type="date" id="tglSelesaiLibur">
             </div>
             <div style="display: flex; gap:5px;">
-                <button class="btn btn-primary btn-gray" style="flex:1;" onclick="setRentangLibur(true)">SET LIBUR MASAL</button>
+                <button class="btn btn-primary btn-gray" style="flex:1;" onclick="setRentangLibur(true)">SET LIBUR</button>
                 <button class="btn btn-primary" style="background:#eee; color:#333; border:1px solid #ccc; flex:1;" onclick="setRentangLibur(false)">HAPUS JADWAL</button>
             </div>
         </div>
@@ -168,14 +151,13 @@
                 <button class="btn btn-success" style="height: 55px; font-size: 16px;" onclick="prosesAbsen('Masuk')">MASUK</button>
                 <button class="btn btn-danger" style="height: 55px; font-size: 16px;" onclick="prosesAbsen('Pulang')">PULANG</button>
             </div>
-            
             <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 8px; margin-top: 8px;">
                 <button class="btn btn-warning" style="height: 48px;" onclick="prosesAbsen('Izin')">📝 IZIN / SAKIT</button>
                 <button class="btn btn-primary btn-gray" style="height: 48px;" onclick="resetAbsen()">♻️ RESET</button>
             </div>
         </div>
 
-        <div class="card rekap-card">
+        <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;" class="no-print">
                 <h3>📊 Laporan Bulanan</h3>
                 <input type="month" id="filterBulan" style="margin:0; width: 160px;" onchange="renderRekap()">
@@ -197,7 +179,7 @@
 
             <div class="no-print" style="margin-top:20px">
                 <h3>📝 Catatan Admin</h3>
-                <textarea id="catatanAdmin" style="width:100%; height:70px; padding:12px; border:1px solid #cbd5e1; border-radius:10px;" placeholder="Alda izin, Hatta lembur..."></textarea>
+                <textarea id="catatanAdmin" style="width:100%; height:70px; padding:12px; border:1px solid #cbd5e1; border-radius:10px;" placeholder="Tulis catatan di sini..."></textarea>
             </div>
 
             <div id="print-note" style="display:none; margin-top:20px; font-size:12px;">
@@ -257,8 +239,7 @@
             const idHapus = Object.keys(masterKaryawan).find(key => masterKaryawan[key] === namaCari);
             if(!idHapus) return alert("Pilih nama di daftar!");
             if(confirm(`Hapus permanen ${namaCari}?`)) {
-                db.ref(`master_karyawan/${idHapus}`).remove().then(() => n.value = "");
-            }
+                db.ref(`master_karyawan/${idHapus}`).remove().then(() => n.value = ""; });
         }
 
         function setRentangLibur(isSet) {
@@ -312,10 +293,8 @@
                 for(let i=1; i<=totalH; i++) {
                     const tgl = `${y}-${m}-${String(i).padStart(2,'0')}`, dObj = new Date(tgl);
                     let sim = "-", cls = "";
-                    
                     if(dObj.getDay()===0) { sim = "OFF"; cls = "status-off"; }
                     else if(hariLibur[tgl]) { sim = "LBR"; cls = "status-lbr"; }
-
                     if(absensiData[tgl] && absensiData[tgl][nama]) {
                         const d = absensiData[tgl][nama];
                         if(d.Izin) { sim="I"; cls="status-i"; cI++; }
