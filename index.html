@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v72.0 - Stable System</title>
+    <title>PT-AGN v73.0 - Minggu Label</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700&display=swap" rel="stylesheet">
@@ -38,7 +38,7 @@
         <header>
             <div class="logo-box" onclick="gantiLogo()">
                 <img id="mainLogo" src="https://ui-avatars.com/api/?name=AGN&background=2563eb&color=fff">
-                <div><h2 style="margin:0;font-size:1rem">PT AGN</h2><span style="font-size:9px;color:var(--w);font-weight:800">SYSTEM v72.0</span></div>
+                <div><h2 style="margin:0;font-size:1rem">PT AGN</h2><span style="font-size:9px;color:var(--w);font-weight:800">SYSTEM v73.0</span></div>
             </div>
             <button onclick="toggleT()" id="tBtn" style="width:80px;font-size:11px">🌙 Dark</button>
         </header>
@@ -154,7 +154,9 @@
                 let cH=0, cI=0, cA=0, row=`<td class="nama-fixed">${n}</td>`;
                 for(let i=1;i<=last;i++){
                     let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), s="-", cl="", infoText="";
-                    if(d.getDay()===0||hl[t]){ s="OFF"; cl="s-off"; }
+                    
+                    if(d.getDay()===0){ s="MNG"; cl="s-off"; } // HARI MINGGU
+                    else if(hl[t]){ s="OFF"; cl="s-off"; } // HARI LIBUR TAMBAHAN
                     else {
                         const dataHari = ad[t] ? ad[t][n] : null;
                         if(dataHari){
@@ -182,7 +184,8 @@
                 let cH=0, cI=0, cA=0; html+=`<tr><td style="font-weight:bold;">${n}</td>`;
                 for(let i=1; i<=last; i++){
                     let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), bg="#FFFFFF", txt="-";
-                    if(d.getDay()===0||hl[t]){ bg="#ff0000"; txt="OFF"; }
+                    if(d.getDay()===0){ bg="#ff0000"; txt="MINGGU"; }
+                    else if(hl[t]){ bg="#ff0000"; txt="OFF"; }
                     else if(ad[t] && ad[t][n]){
                         if(ad[t][n].Izin){ bg="#ffff00"; txt="I ("+(ad[t][n].Izin.note||"")+")"; cI++; }
                         else if(ad[t][n].Masuk){ bg = (ad[t][n].Masuk.status === "Terlambat") ? "#facc15" : "#00ff00"; txt="H ("+ad[t][n].Masuk.waktu+")"; cH++; }
