@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN Management v9.0</title>
+    <title>PT-AGN Management v11.0</title>
     
-    <!-- SDK Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     
@@ -22,22 +21,29 @@
         .btn-pulang { background: #dc3545; }
         .btn-izin { background: #ffc107; color: black; }
         .btn-tambah { background: #6f42c1; margin: 0; width: auto; }
+        
+        /* Table Styling */
         .table-container { overflow-x: auto; margin-top: 15px; border-radius: 8px; border: 1px solid #ddd; }
-        table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 900px; }
-        th, td { border: 1px solid #ddd; padding: 6px; text-align: center; }
+        table { width: 100%; border-collapse: collapse; font-size: 10px; min-width: 1000px; }
+        th, td { border: 1px solid #ddd; padding: 5px; text-align: center; }
         th { background: #f8f9fa; }
-        .status-hadir { background: #d4edda; color: #155724; }
-        .status-terlambat { background: #fff3cd; color: #856404; }
-        .status-izin { background: #d1ecf1; color: #0c5460; }
-        .status-alpa { background: #f8d7da; color: #721c24; }
-        .nama-kolom { background: #f8f9fa; font-weight: bold; position: sticky; left: 0; z-index: 2; text-align: left; padding-left: 10px; width: 120px; }
+        
+        /* Status Colors */
+        .status-hadir { background: #d4edda; color: #155724; font-weight: bold; }
+        .status-terlambat { background: #fff3cd; color: #856404; font-weight: bold; }
+        .status-izin { background: #d1ecf1; color: #0c5460; font-weight: bold; }
+        .status-alpa { background: #f8d7da; color: #721c24; font-weight: bold; }
+        .status-minggu { background: #ffebf0; color: #d00000; font-weight: bold; }
+        .status-libur { background: #e9ecef; color: #6c757d; font-weight: normal; }
+        
+        .nama-kolom { background: #f8f9fa; font-weight: bold; position: sticky; left: 0; z-index: 2; text-align: left; padding-left: 10px; width: 130px; }
         .manage-row { display: flex; gap: 8px; align-items: center; margin-bottom: 15px; background: #f9f9f9; padding: 10px; border-radius: 8px; border: 1px dashed #ccc; }
         #notif { text-align: center; font-weight: bold; margin-top: 5px; min-height: 20px; }
     </style>
 </head>
 <body>
 
-    <h2>📦 PT-AGN System</h2>
+    <h2>📦 PT-AGN System v11.0</h2>
 
     <div class="card">
         <h3>1. Presensi & Kelola Karyawan</h3>
@@ -61,7 +67,16 @@
     </div>
 
     <div class="card">
-        <h3>2. Laporan Bulanan PT-AGN</h3>
+        <h3>2. Kelola Hari Libur Nasional</h3>
+        <div class="manage-row">
+            <input type="date" id="inputTglLibur" style="margin:0; flex-grow:1;">
+            <button class="btn-tambah" onclick="tambahLibur()" style="background:#6c757d;">Set Libur</button>
+        </div>
+        <p style="font-size: 11px; color: #888;">*Tanggal yang diset libur akan muncul sebagai 'LBR' di rekap.</p>
+    </div>
+
+    <div class="card">
+        <h3>3. Laporan Bulanan Realtime</h3>
         <input type="month" id="filterBulan">
         <button onclick="renderRekap()">Tampilkan Rekap</button>
         <div class="table-container">
@@ -70,11 +85,10 @@
                 <tbody id="tbodyRekap"></tbody>
             </table>
         </div>
-        <button onclick="window.print()" style="background:#6c757d; margin-top:10px;">Cetak PDF</button>
+        <button onclick="window.print()" style="background:#333; margin-top:10px;">Cetak / Simpan PDF</button>
     </div>
 
     <script>
-        // DATA FIREBASE DIAMBIL DARI SCREENSHOT ANDA
         const firebaseConfig = {
             apiKey: "AIzaSyAu67MAhWBxdmciPi3xOKWhdy-uP4u9tXI",
             authDomain: "pt-agn.firebaseapp.com",
@@ -82,15 +96,15 @@
             projectId: "pt-agn",
             storageBucket: "pt-agn.appspot.com",
             messagingSenderId: "810494462386",
-            appId: "1:810494462386:web:432a3050c054bdd8437cab",
-            measurementId: "G-N6S12LYQLD"
+            appId: "1:810494462386:web:432a3050c054bdd8437cab"
         };
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         let masterKaryawan = {};
+        let hariLibur = {};
 
-        // Pantau data karyawan secara realtime
+        // Ambil Data Karyawan
         db.ref('master_karyawan').on('value', snap => {
             masterKaryawan = snap.val() || {};
             let options = '<option value="">-- Pilih Nama --</option>';
@@ -98,26 +112,29 @@
                 options += `<option value="${masterKaryawan[id]}" data-id="${id}">${masterKaryawan[id]}</option>`;
             }
             document.getElementById('pilihKaryawan').innerHTML = options;
-        }, err => {
-            document.getElementById('notif').innerText = "Cek Rules Realtime Database Anda!";
-            document.getElementById('notif').style.color = "red";
         });
+
+        // Ambil Data Hari Libur
+        db.ref('hari_libur').on('value', snap => { hariLibur = snap.val() || {}; });
 
         function tambahKaryawan() {
             const nama = document.getElementById('inputNamaBaru').value.trim();
-            if(!nama) return alert("Isi nama karyawan!");
+            if(!nama) return;
             db.ref('master_karyawan').push(nama).then(() => {
                 document.getElementById('inputNamaBaru').value = "";
-                document.getElementById('notif').innerText = "✅ " + nama + " Berhasil Ditambah!";
-                document.getElementById('notif').style.color = "green";
-            }).catch(e => alert("Error: " + e.message));
+            });
         }
 
         function hapusKaryawan() {
             const el = document.getElementById('pilihKaryawan');
             const id = el.options[el.selectedIndex].getAttribute('data-id');
-            if(!id) return alert("Pilih nama!");
-            if(confirm("Hapus " + el.value + " dari daftar?")) db.ref('master_karyawan/' + id).remove();
+            if(id && confirm("Hapus karyawan ini?")) db.ref('master_karyawan/' + id).remove();
+        }
+
+        function tambahLibur() {
+            const tgl = document.getElementById('inputTglLibur').value;
+            if(!tgl) return alert("Pilih tanggal!");
+            db.ref('hari_libur/' + tgl).set(true).then(() => alert("Berhasil set hari libur!"));
         }
 
         function prosesAbsen(tipe) {
@@ -137,7 +154,7 @@
 
             db.ref(`absensi/${tglKey}/${nama}/${tipe}`).set({ waktu: waktuStr, status: status })
                 .then(() => {
-                    document.getElementById('notif').innerText = `✅ ${nama}: ${tipe} Berhasil!`;
+                    document.getElementById('notif').innerText = `✅ Berhasil ${tipe}!`;
                     setTimeout(() => document.getElementById('notif').innerText = "", 3000);
                 });
         }
@@ -147,11 +164,15 @@
             if(!filter) return alert("Pilih bulan!");
             const [th, bl] = filter.split('-');
             const jmlHari = new Date(th, bl, 0).getDate();
-            const hariIni = new Date();
-            hariIni.setHours(0,0,0,0);
 
+            // Header Tabel dengan Nama Hari
             let hHtml = `<th class="nama-kolom">Nama Karyawan</th>`;
-            for(let i=1; i<=jmlHari; i++) hHtml += `<th>${i}</th>`;
+            for(let i=1; i<=jmlHari; i++) {
+                const d = new Date(th, bl-1, i);
+                const hari = d.toLocaleDateString('id-ID', {weekday: 'short'});
+                const color = d.getDay() === 0 ? 'color:red;' : '';
+                hHtml += `<th style="${color}">${i}<br>${hari}</th>`;
+            }
             document.getElementById('theadRekap').innerHTML = hHtml;
 
             db.ref('absensi').once('value', snap => {
@@ -162,8 +183,18 @@
                     bHtml += `<tr><td class="nama-kolom">${nama}</td>`;
                     for(let h=1; h<=jmlHari; h++) {
                         const tglKey = `${th}-${bl}-${String(h).padStart(2,'0')}`;
-                        const tglObj = new Date(tglKey);
-                        let simbol = "-"; let kls = "";
+                        const dObj = new Date(tglKey);
+                        let simbol = "-";
+                        let kls = "";
+
+                        // Cek apakah hari Minggu atau Libur Nasional
+                        if(dObj.getDay() === 0) {
+                            simbol = "OFF"; kls = "status-minggu";
+                        } else if(hariLibur[tglKey]) {
+                            simbol = "LBR"; kls = "status-libur";
+                        }
+
+                        // Cek Data Absensi (Menimpa status OFF jika ternyata dia masuk lembur)
                         if(data[tglKey] && data[tglKey][nama]) {
                             const d = data[tglKey][nama];
                             if(d.Izin) { simbol = "I"; kls = "status-izin"; }
@@ -174,7 +205,7 @@
                                     kls = d.Masuk.status === "Terlambat" ? "status-terlambat" : "status-hadir";
                                 }
                             }
-                        } else if(tglObj < hariIni) { simbol = "A"; kls = "status-alpa"; }
+                        }
                         bHtml += `<td class="${kls}">${simbol}</td>`;
                     }
                     bHtml += `</tr>`;
