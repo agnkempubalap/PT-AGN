@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN Management v29.0</title>
+    <title>PT-AGN Management v31.0</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
@@ -16,7 +16,7 @@
         .container { max-width: 1400px; margin: 0 auto; }
 
         .card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 12px; border: 1px solid #e2e8f0; }
-        h3 { margin: 0 0 12px 0; font-size: 0.75rem; color: #64748b; text-transform: uppercase; font-weight: 700; }
+        h3 { margin: 0 0 10px 0; font-size: 0.75rem; color: #64748b; text-transform: uppercase; font-weight: 700; }
         
         input, select, button, textarea { border-radius: 8px; font-size: 14px; box-sizing: border-box; }
         input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; }
@@ -24,7 +24,8 @@
         .btn-primary { background: var(--primary); color: white; border: none; font-weight: 600; cursor: pointer; padding: 10px; }
         
         .input-group { display: flex; gap: 5px; margin-bottom: 10px; }
-        .select-row { display: flex; gap: 5px; align-items: center; margin-bottom: 15px; }
+        .select-row { display: flex; gap: 5px; align-items: center; margin-bottom: 10px; }
+        .libur-group { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 8px; }
 
         .export-container { position: relative; }
         .export-menu { 
@@ -34,38 +35,52 @@
         }
         .export-menu button { width: 100%; text-align: left; background: none; padding: 12px; border: none; border-bottom: 1px solid #eee; cursor: pointer; }
 
+        /* Tabel & Color Blocking */
         .table-wrap { overflow: auto; border-radius: 8px; border: 1px solid #e2e8f0; background: white; margin-bottom: 10px; }
-        table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 1000px; }
-        th, td { border: 1px solid #e2e8f0; padding: 6px; text-align: center; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 1100px; }
+        th, td { border: 1px solid #e2e8f0; padding: 8px 4px; text-align: center; }
         th { background: #f1f5f9; position: sticky; top: 0; z-index: 5; }
         .nama-fixed { position: sticky; left: 0; background: white; font-weight: 600; text-align: left; width: 130px; z-index: 4; border-right: 2px solid #e2e8f0; }
         
-        .status-v { color: var(--success); font-weight: 800; }
-        .status-t { color: var(--warning); font-weight: 800; }
-        .status-i { color: #0891b2; font-weight: 800; }
-        .status-off { color: #ef4444; background: #fff1f2; }
+        /* Status Background Colors */
+        .status-v { background-color: #22c55e !important; color: white !important; font-weight: bold; } /* Hijau */
+        .status-t { background-color: #eab308 !important; color: white !important; font-weight: bold; } /* Kuning */
+        .status-i { background-color: #06b6d4 !important; color: white !important; font-weight: bold; } /* Biru */
+        .status-off { background-color: #fecaca !important; color: #b91c1c !important; } /* Merah (Minggu) */
+        .status-lbr { background-color: #e2e8f0 !important; color: #475569 !important; font-style: italic; } /* Abu (Libur) */
 
-        @media print { .no-print { display: none !important; } #kop-surat, #print-note { display: block !important; } @page { size: landscape; } }
+        @media print { .no-print { display: none !important; } #kop-surat, #print-note { display: block !important; } @page { size: landscape; margin: 1cm; } }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <!-- HEADER PRINT -->
-        <div id="kop-surat" style="display:none; text-align: center; border-bottom: 2px solid #333; margin-bottom: 15px;">
-            <h2 style="margin:0;">PT. AGUNG GLOBAL NIAGA (AGN)</h2>
-            <p style="margin:5px 0;">Laporan Presensi Karyawan</p>
+        <div id="kop-surat" style="display:none; text-align: center; border-bottom: 3px double #333; padding-bottom: 10px; margin-bottom: 20px;">
+            <h1 style="margin:0;">PT. AGUNG GLOBAL NIAGA (AGN)</h1>
+            <p style="margin:5px 0;">LAPORAN REKAPITULASI PRESENSI KARYAWAN</p>
         </div>
 
-        <!-- PANEL KONTROL RINGKAS -->
+        <!-- 1. MANAJEMEN NAMA & LIBUR -->
         <div class="card no-print">
-            <h3>Manajemen & Presensi</h3>
-            
+            <h3>Manajemen Nama & Libur Masal</h3>
             <div class="input-group">
                 <input type="text" id="inputNamaBaru" placeholder="Nama karyawan baru...">
                 <button class="btn-primary" style="width: 80px;" onclick="tambahKaryawan()">SIMPAN</button>
             </div>
+            
+            <div class="libur-group">
+                <input type="date" id="tglMulaiLibur">
+                <input type="date" id="tglSelesaiLibur">
+            </div>
+            <div style="display: flex; gap:5px;">
+                <button class="btn-primary" style="background:var(--gray); flex:1;" onclick="setRentangLibur(true)">SET LIBUR MASAL</button>
+                <button class="btn-primary" style="background:#eee; color:#333; border:1px solid #ccc; flex:1;" onclick="setRentangLibur(false)">HAPUS LIBUR</button>
+            </div>
+        </div>
 
+        <!-- 2. PRESENSI HARIAN -->
+        <div class="card no-print">
+            <h3>Presensi Harian</h3>
             <div class="select-row">
                 <select id="pilihKaryawan"><option value="">-- Pilih Nama --</option></select>
                 <button onclick="hapusKaryawan()" style="background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; width: 45px; height: 40px; cursor: pointer;" title="Hapus nama">🗑️</button>
@@ -76,23 +91,21 @@
                 <button class="btn-primary" style="background:var(--danger)" onclick="prosesAbsen('Pulang')">PULANG</button>
             </div>
             
-            <!-- Baris Izin & Reset -->
             <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 8px; margin-top: 8px;">
-                <button class="btn-primary" style="background:var(--warning)" onclick="prosesAbsen('Izin')">📝 IZIN/SAKIT</button>
+                <button class="btn-primary" style="background:var(--warning)" onclick="prosesAbsen('Izin')">📝 IZIN / SAKIT</button>
                 <button class="btn-primary" style="background:var(--gray)" onclick="resetAbsen()">♻️ RESET</button>
             </div>
         </div>
 
-        <!-- LAPORAN -->
+        <!-- 3. LAPORAN -->
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;" class="no-print">
                 <input type="month" id="filterBulan" style="margin:0; width: 140px;" onchange="renderRekap()">
-                
                 <div class="export-container">
                     <button class="btn-primary" style="width:120px; background:#475569" onclick="toggleExport()">EXPORT ▾</button>
                     <div id="exportMenu" class="export-menu">
-                        <button onclick="exportToExcel()">📊 Excel</button>
-                        <button onclick="siapkanCetak()">📄 PDF / Cetak</button>
+                        <button onclick="exportToExcel()">📊 Format Excel</button>
+                        <button onclick="siapkanCetak()">📄 Format PDF</button>
                     </div>
                 </div>
             </div>
@@ -105,13 +118,19 @@
             </div>
 
             <div class="no-print">
-                <textarea id="catatanAdmin" style="width:100%; height:60px; padding:10px;" placeholder="Catatan laporan..."></textarea>
+                <label style="font-size: 11px; color: #64748b;">CATATAN LAPORAN:</label>
+                <textarea id="catatanAdmin" style="width:100%; height:60px; padding:10px; margin-top:5px;" placeholder="Alda izin..."></textarea>
             </div>
 
             <div id="print-note" style="display:none; margin-top:15px; font-size:12px;">
                 <strong>Keterangan Admin:</strong>
                 <p id="noteContent" style="white-space: pre-wrap; border: 1px solid #ccc; padding: 10px;"></p>
-                <p style="text-align: right; margin-top: 20px;">Dicetak: <span id="tglCetak"></span></p>
+                <div style="margin-top: 30px; text-align: right;">
+                    <p>Dicetak pada: <span id="tglCetak"></span></p>
+                    <br><br><br>
+                    <p>( ____________________ )</p>
+                    <p>Admin PT. AGN</p>
+                </div>
             </div>
         </div>
     </div>
@@ -128,13 +147,14 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        let masterKaryawan = {}, absensiData = {};
+        let masterKaryawan = {}, absensiData = {}, hariLibur = {};
 
         window.onload = () => {
             const s = new Date();
             document.getElementById('filterBulan').value = `${s.getFullYear()}-${String(s.getMonth() + 1).padStart(2, '0')}`;
             db.ref('master_karyawan').on('value', snap => { masterKaryawan = snap.val() || {}; updateDropdown(); renderRekap(); });
             db.ref('absensi').on('value', snap => { absensiData = snap.val() || {}; renderRekap(); });
+            db.ref('hari_libur').on('value', snap => { hariLibur = snap.val() || {}; renderRekap(); });
         };
 
         function updateDropdown() {
@@ -154,17 +174,23 @@
         function hapusKaryawan() {
             const sel = document.getElementById('pilihKaryawan');
             const id = sel.options[sel.selectedIndex].getAttribute('data-id');
-            if(!id) return alert("Pilih nama dulu!");
+            if(!id) return alert("Pilih nama di dropdown!");
             if(confirm(`Hapus permanen ${sel.value}?`)) db.ref(`master_karyawan/${id}`).remove();
+        }
+
+        function setRentangLibur(isSet) {
+            const m = document.getElementById('tglMulaiLibur').value, s = document.getElementById('tglSelesaiLibur').value;
+            if(!m || !s) return alert("Pilih Rentang Tanggal!");
+            let u = {}; let curr = new Date(m), end = new Date(s);
+            while(curr <= end) { u[curr.toISOString().split('T')[0]] = isSet ? true : null; curr.setDate(curr.getDate()+1); }
+            db.ref('hari_libur').update(u).then(()=> alert("Jadwal Libur Diperbarui"));
         }
 
         function resetAbsen() {
             const nama = document.getElementById('pilihKaryawan').value;
-            if(!nama) return alert("Pilih nama yang ingin di-reset!");
+            if(!nama) return alert("Pilih nama!");
             const tgl = new Date().toISOString().split('T')[0];
-            if(confirm(`Hapus data absen ${nama} untuk hari ini saja?`)) {
-                db.ref(`absensi/${tgl}/${nama}`).remove();
-            }
+            if(confirm(`Reset absen ${nama} hari ini?`)) db.ref(`absensi/${tgl}/${nama}`).remove();
         }
 
         function prosesAbsen(tipe) {
@@ -203,8 +229,13 @@
                 let cH=0, cT=0, cI=0;
                 let r = `<td class="nama-fixed">${nama}</td>`;
                 for(let i=1; i<=totalH; i++) {
-                    const tgl = `${y}-${m}-${String(i).padStart(2,'0')}`;
+                    const tgl = `${y}-${m}-${String(i).padStart(2,'0')}`, dObj = new Date(tgl);
                     let sim = "-", cls = "";
+                    
+                    // Prioritas: Minggu -> Libur Masal -> Absensi
+                    if(dObj.getDay()===0) { sim = "OFF"; cls = "status-off"; }
+                    else if(hariLibur[tgl]) { sim = "LBR"; cls = "status-lbr"; }
+
                     if(absensiData[tgl] && absensiData[tgl][nama]) {
                         const d = absensiData[tgl][nama];
                         if(d.Izin) { sim="I"; cls="status-i"; cI++; }
