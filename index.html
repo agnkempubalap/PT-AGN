@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v77.4 - FULL PRO REPORT</title>
+    <title>PT-AGN v77.5 - COLOR PRO REPORT</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
@@ -20,11 +20,9 @@
         .card{background:var(--c);padding:18px;border-radius:18px;margin-bottom:12px;border:1px solid var(--b);box-shadow:0 4px 6px -1px rgba(0,0,0,0.1)}
         h3{margin:0 0 15px;font-size:11px;color:var(--iz);text-transform:uppercase;letter-spacing:1px;font-weight:800}
         
-        label{display:block;font-size:10px;margin-bottom:5px;font-weight:600;opacity:0.8}
         input,button,select{border-radius:12px;font-size:14px;height:52px;border:1px solid var(--b);background:var(--bg);color:var(--t);width:100%;box-sizing:border-box;outline:none}
         .btn{display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;border:none;color:#fff}
         
-        /* TOMBOL EXPORT */
         .export-group { display: flex; justify-content: flex-end; align-items: flex-end; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
         .btn-ex { width: 100px; height: 45px; font-size: 11px; border-radius: 10px; }
 
@@ -37,38 +35,42 @@
         .rekap-akhir{background:var(--bg) !important; color:var(--t) !important; font-weight:800; min-width:30px !important}
         .th-rekap{background:var(--bg) !important; color:var(--iz) !important; font-weight:800}
 
-        .s-cell{border-radius:6px;width:38px;height:38px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;font-size:10px;margin: 0 auto}
+        .s-cell{border-radius:6px;width:38px;height:38px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;font-size:10px;margin: 0 auto; -webkit-print-color-adjust: exact; print-color-adjust: exact;}
         .s-v{background:var(--s);color:#fff} .s-late{background:var(--w);color:#000} .s-i{background:var(--iz);color:#fff}
         .s-off{background:var(--d);color:#fff} .s-a{background:var(--al);color:#fff} .s-l{background:#AA00FF;color:#fff} .s-mng{background:#64748b;color:#fff}
         .jam-text{font-size:7px;font-weight:600;display:block;margin-top:2px;max-width:36px}
 
-        /* PRINT SETTINGS - ANTI POTONG */
+        /* PRINT CONFIG: COLOR EDITION */
         @media print {
-            @page { size: A4 landscape; margin: 5mm; }
-            html, body { background: #fff !important; color: #000 !important; }
+            @page { size: A4 landscape; margin: 8mm; }
+            html, body { background: #fff !important; color: #1e293b !important; }
             header, .no-print, .export-group, .dark-card { display: none !important; }
             .container { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
-            .card { border: none !important; padding: 0 !important; background: #fff !important; }
-            .table-wrap { overflow: visible !important; border: none !important; }
+            .card { border: none !important; padding: 0 !important; background: transparent !important; }
             
-            /* Megecilkan tabel agar muat satu halaman landscape */
             .table-web { 
                 width: 100% !important; 
-                transform: scale(0.82); 
+                transform: scale(0.8); 
                 transform-origin: top left; 
-                border: 1px solid #000 !important;
-                color: #000 !important;
+                border-collapse: collapse !important;
+                -webkit-print-color-adjust: exact !important; 
+                print-color-adjust: exact !important;
             }
-            .table-web th, .table-web td { 
-                border: 1px solid #444 !important; 
-                color: #000 !important; 
-                padding: 4px 1px !important;
-                background: #fff !important;
-            }
-            .nama-fixed { position: static !important; border-right: 1px solid #000 !important; min-width: 100px !important; }
-            .s-cell { border: 1px solid #666 !important; background: #fff !important; color: #000 !important; width: 30px !important; height: 30px !important; }
-            .jam-text { color: #000 !important; font-size: 6px !important; }
-            .s-v, .s-late, .s-i, .s-off, .s-a, .s-l, .s-mng { color: #000 !important; background: #fff !important; }
+            .table-web th { background: #2563eb !important; color: #ffffff !important; padding: 8px 2px !important; border: 1px solid #1e40af !important; }
+            .table-web td { border: 1px solid #cbd5e1 !important; color: #334155 !important; padding: 4px 1px !important; }
+            
+            /* Warna Status tetap muncul di print */
+            .s-v { background-color: #00C853 !important; color: white !important; }
+            .s-late { background-color: #FFD600 !important; color: black !important; }
+            .s-i { background-color: #f59e0b !important; color: white !important; }
+            .s-off { background-color: #ef4444 !important; color: white !important; }
+            .s-a { background-color: #37474F !important; color: white !important; }
+            .s-mng { background-color: #64748b !important; color: white !important; }
+            .s-l { background-color: #AA00FF !important; color: white !important; }
+            
+            .nama-fixed { position: static !important; background: #f8fafc !important; color: #1e293b !important; font-weight: bold !important; text-align: left !important; }
+            .th-rekap { background: #f1f5f9 !important; color: #2563eb !important; }
+            .rekap-akhir { background: #f8fafc !important; color: #1e293b !important; }
         }
     </style>
 </head>
@@ -78,14 +80,13 @@
             <div class="logo-box">
                 <input type="file" id="inpLogo" style="display:none" accept="image/*" onchange="cLogo(event)">
                 <img id="mainLogo" src="https://ui-avatars.com/api/?name=AGN&background=000&color=fff" onclick="document.getElementById('inpLogo').click()">
-                <div><h2 style="margin:0;font-size:1.3rem">PT AGN</h2><span style="font-size:10px;color:var(--p);font-weight:800">SYSTEM v77.4 PRO</span></div>
+                <div><h2 style="margin:0;font-size:1.3rem">PT AGN</h2><span style="font-size:10px;color:var(--p);font-weight:800">SYSTEM v77.5 COLOR-PRO</span></div>
             </div>
             <div class="dark-card" onclick="toggleT()">
                 <span id="tIco">☀️</span> <span style="font-size:12px;font-weight:600" id="tTxt">Light Mode</span>
             </div>
         </header>
 
-        <!-- KONTROL (Disembunyikan saat print) -->
         <div class="card no-print">
             <h3>👥 DATA KARYAWAN</h3>
             <div style="display:flex;gap:10px">
@@ -121,7 +122,6 @@
             <button class="btn" style="background:var(--iz);height:50px;font-size:16px" onclick="pAbsen('Izin')">📝 IZIN / KETERANGAN</button>
         </div>
 
-        <!-- REKAP TABLE -->
         <div class="card table-card">
             <div class="export-group no-print">
                 <div style="flex-grow:1">
@@ -250,7 +250,6 @@
                 b+=`<tr>${row}<td class="rekap-akhir">${cH}</td><td class="rekap-akhir">${cI}</td><td class="rekap-akhir">${cA}</td><td class="rekap-akhir">${cL}</td></tr>`;
             });
             document.getElementById('tbWeb').innerHTML=b;
-
             setTimeout(() => {
                 const scrollArea = document.getElementById('scrollArea');
                 const target = document.getElementById(`tgl-${tglSkrg}`);
@@ -267,7 +266,7 @@
             const template = `
                 <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
                 <head><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Rekap</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
-                <style>table { border-collapse:collapse; } th, td { border:1px solid black; text-align:center; font-family: Arial; font-size: 10pt; }</style></head>
+                <style>table { border-collapse:collapse; } th { background-color: #2563eb; color: #ffffff; border:1px solid black; } td { border:1px solid black; text-align:center; font-family: Arial; font-size: 10pt; }</style></head>
                 <body>${table}</body></html>`;
             const blob = new Blob([template], {type: "application/vnd.ms-excel"});
             const url = URL.createObjectURL(blob);
