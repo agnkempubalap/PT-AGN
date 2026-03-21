@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN Management v37.0</title>
+    <title>PT-AGN Management v38.0</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
@@ -27,14 +27,16 @@
 
         .container { max-width: 1400px; margin: 0 auto; }
 
+        /* HEADER FIX */
         header {
-            display: flex; align-items: center; gap: 12px;
+            display: flex; align-items: center; gap: 15px;
             padding: 15px 0; margin-bottom: 5px;
         }
-        .logo-box img { height: 50px; width: auto; border-radius: 4px; object-fit: contain; }
-        .logo-box h2 { margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--primary-dark); }
-        .logo-box span { font-size: 10px; color: var(--gray); font-weight: 600; display: block; }
+        .logo-box img { height: 55px; width: auto; border-radius: 6px; object-fit: contain; }
+        .logo-box h2 { margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--primary-dark); line-height: 1.2; }
+        .logo-box span { font-size: 10px; color: var(--gray); font-weight: 600; display: block; margin-top: 2px; }
 
+        /* CARD STYLE */
         .card { 
             background: white; padding: 20px; border-radius: 16px; 
             margin-bottom: 15px; border: 1px solid #f1f5f9;
@@ -45,11 +47,13 @@
             text-transform: uppercase; font-weight: 700; display: flex; align-items: center; gap: 8px;
         }
 
-        input, select, button, textarea { border-radius: 12px; font-size: 14px; transition: all 0.2s; }
+        /* INPUTS & BUTTONS */
+        input, select, button, textarea { border-radius: 12px; font-size: 14px; transition: all 0.2s; outline: none; }
         input, select { 
             width: 100%; padding: 12px; border: 1.5px solid #e2e8f0; 
-            background: #fff; height: 50px; outline: none; box-sizing: border-box;
+            background: #fff; height: 50px; box-sizing: border-box;
         }
+        input:focus { border-color: var(--primary); }
         
         .btn { 
             display: flex; align-items: center; justify-content: center; 
@@ -60,19 +64,23 @@
         .btn-warning { background: var(--warning); }
         .btn-gray { background: #e2e8f0; color: #64748b; }
 
-        /* Fix Posisi Manajemen Row */
-        .management-row { display: flex; gap: 8px; margin-bottom: 12px; }
-        .management-row input { flex: 1; }
+        /* MANAGEMENT ROW FIX */
+        .management-row { display: flex; gap: 10px; margin-bottom: 15px; align-items: center; }
+        .management-row input { flex: 1; height: 50px; }
         .btn-sq { width: 55px; height: 50px; border-radius: 12px; flex-shrink: 0; }
 
         .libur-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
 
-        /* Tabel Rekap */
+        /* TABLE UI */
         .table-wrap { overflow: auto; border-radius: 12px; border: 1px solid #e2e8f0; background: white; margin-bottom: 15px; }
         table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 1100px; }
         th, td { border-bottom: 1px solid #f1f5f9; padding: 12px 6px; text-align: center; }
         th { background: #f8fafc; color: var(--gray); font-weight: 700; position: sticky; top: 0; z-index: 5; }
-        .nama-fixed { position: sticky; left: 0; background: white !important; font-weight: 700; text-align: left; width: 140px; z-index: 4; border-right: 2px solid #f1f5f9; padding-left: 15px; }
+        .nama-fixed { 
+            position: sticky; left: 0; background: white !important; 
+            font-weight: 700; text-align: left; width: 140px; 
+            z-index: 4; border-right: 2px solid #f1f5f9; padding-left: 15px; 
+        }
         
         .status-cell { border-radius: 6px; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; margin: auto; }
         .status-v { background: #22c55e; color: white; font-weight: bold; } 
@@ -94,24 +102,28 @@
 <body>
 
     <div class="container">
+        <!-- APP HEADER -->
         <header class="no-print">
-            <div class="logo-box" style="display:flex; align-items:center; gap:12px;">
-                <img src="https://i.ibb.co/C5fRByW/AGN-Logo.jpg" alt="AGN Logo">
+            <div class="logo-box" style="display:flex; align-items:center; gap:15px;">
+                <!-- LINK LOGO STABIL -->
+                <img src="https://i.ibb.co.com/m50YkM4v/AGN-Logo.jpg" alt="Logo PT AGN">
                 <div>
                     <h2>PT ATHA GHANIA NUGRAHA</h2>
-                    <span>PRESENSI SYSTEM v37.0</span>
+                    <span>PRESENSI SYSTEM v38.0</span>
                 </div>
             </div>
         </header>
 
+        <!-- PRINT HEADER (PDF) -->
         <div id="kop-surat">
-            <img src="https://i.ibb.co/C5fRByW/AGN-Logo.jpg" alt="Logo">
+            <img src="https://i.ibb.co.com/m50YkM4v/AGN-Logo.jpg" alt="Logo">
             <div style="text-align: left;">
                 <h1 style="margin:0; font-size: 28px;">PT ATHA GHANIA NUGRAHA</h1>
                 <p style="margin:5px 0; font-size: 16px;">Laporan Rekapitulasi Presensi Karyawan</p>
             </div>
         </div>
 
+        <!-- MANAJEMEN KARYAWAN -->
         <div class="card no-print">
             <h3>👤 Manajemen Karyawan</h3>
             <div class="management-row">
@@ -132,6 +144,7 @@
             </div>
         </div>
 
+        <!-- PRESENSI BUTTONS -->
         <div class="card no-print">
             <h3>⚡ Presensi Cepat</h3>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
@@ -144,13 +157,13 @@
             </div>
         </div>
 
+        <!-- REKAPITULASI -->
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;" class="no-print">
                 <input type="month" id="filterBulan" style="width: 170px;" onchange="renderRekap()">
-                <button class="btn btn-primary" style="background:var(--dark); height: 50px; padding: 0 20px;" onclick="toggleExport()">EXPORT ▾</button>
-                <div id="exportMenu" style="display:none; position:absolute; right:35px; top:auto; background:white; border:1px solid #ddd; border-radius:12px; z-index:100; box-shadow:0 10px 20px rgba(0,0,0,0.1);">
-                    <button style="display:block; width:100%; padding:15px; border:none; background:none; text-align:left;" onclick="exportToExcel()">📊 Excel</button>
-                    <button style="display:block; width:100%; padding:15px; border:none; background:none; text-align:left;" onclick="siapkanCetak()">📄 PDF</button>
+                <div style="display: flex; gap: 5px;">
+                    <button class="btn btn-primary" style="background:var(--dark); height: 50px; padding: 0 15px;" onclick="exportToExcel()">📊 EXCEL</button>
+                    <button class="btn btn-primary" style="background:var(--primary); height: 50px; padding: 0 15px;" onclick="siapkanCetak()">📄 PDF</button>
                 </div>
             </div>
 
@@ -169,7 +182,6 @@
     </div>
 
     <script>
-        // Logika Firebase dan Fungsi tetap sama seperti v36.0 agar data tidak hilang
         const firebaseConfig = {
             apiKey: "AIzaSyAu67MAhWBxdmciPi3xOKWhdy-uP4u9tXI",
             authDomain: "pt-agn.firebaseapp.com",
@@ -229,11 +241,6 @@
             const jam = s.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
             let status = (tipe==='Masuk' && (s.getHours()>9 || (s.getHours()===9 && s.getMinutes()>0))) ? "Terlambat" : "Hadir";
             db.ref(`absensi/${tgl}/${nama}/${tipe}`).set({ waktu: jam, status: status });
-        }
-
-        function toggleExport() {
-            const m = document.getElementById('exportMenu');
-            m.style.display = m.style.display === 'block' ? 'none' : 'block';
         }
 
         function renderRekap() {
