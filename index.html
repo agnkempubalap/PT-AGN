@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v66.0 - Full Report & Notes</title>
+    <title>PT-AGN v68.0 - Start Date Fixed</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700&display=swap" rel="stylesheet">
@@ -10,7 +10,7 @@
         :root{--p:#2563eb;--s:#10b981;--d:#ef4444;--w:#f59e0b;--bg:#f1f5f9;--c:#fff;--t:#1e293b;--b:#e2e8f0}
         [data-theme="dark"]{--bg:#0f172a;--c:#1e293b;--t:#f8fafc;--b:#334155}
         body{font-family:'Plus Jakarta Sans',sans-serif;margin:0;background:var(--bg);color:var(--t);padding:8px;transition:0.2s}
-        .container{max-width:1400px;margin:0 auto}
+        .container{max-width:1450px;margin:0 auto}
         header{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px;padding:5px}
         .logo-box{display:flex;align-items:center;gap:10px}
         .logo-box img{width:60px;height:60px;border-radius:12px;background:#fff;border:2px solid var(--p);object-fit:contain}
@@ -22,13 +22,14 @@
         #toast{position:fixed;bottom:20px;right:20px;padding:12px 20px;border-radius:10px;color:#fff;font-size:13px;z-index:999;display:none}
         #toast.show{display:block}
         .table-wrap{overflow:auto;border-radius:12px;border:1px solid var(--b);background:var(--c)}
-        table{width:100%;border-collapse:collapse;font-size:10px;min-width:1300px}
-        th,td{border-bottom:1px solid var(--b);padding:6px 4px;text-align:center}
-        .nama-fixed{position:sticky;left:0;background:var(--c)!important;font-weight:700;text-align:left;width:120px;z-index:4;border-right:2px solid var(--b);padding-left:10px}
-        .s-cell{border-radius:4px;width:28px;min-height:28px;display:inline-flex;align-items:center;justify-content:center;font-weight:800;position:relative}
-        .s-v{background:#22c55e;color:#fff} .s-i{background:#eab308;color:#000} .s-off{background:#ef4444;color:#fff} .s-a{background:#64748b;color:#fff}
-        .col-total{font-weight:bold;background:#f8fafc;color:#1e293b}
+        table{width:100%;border-collapse:collapse;font-size:9px;min-width:1400px}
+        th,td{border-bottom:1px solid var(--b);padding:6px 2px;text-align:center}
+        .nama-fixed{position:sticky;left:0;background:var(--c)!important;font-weight:700;text-align:left;width:110px;z-index:4;border-right:2px solid var(--b);padding-left:8px}
+        .s-cell{border-radius:4px;width:26px;min-height:26px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;font-size:9px}
+        .s-v{background:#22c55e;color:#fff} .s-late{background:#facc15;color:#000} .s-i{background:#eab308;color:#000} .s-off{background:#ef4444;color:#fff} .s-a{background:#64748b;color:#fff}
+        .col-total{font-weight:bold;background:#f1f5f9;color:#1e293b;width:35px}
         [data-theme="dark"] .col-total{background:#334155;color:#fff}
+        .jam-text{font-size:7px;font-weight:400;display:block;margin-top:1px}
         @media print { .card:not(:last-child), header, .btn, input { display: none !important; } body { background: white; } table { border: 1px solid #000; } th, td { border: 1px solid #000 !important; -webkit-print-color-adjust: exact; } }
     </style>
 </head>
@@ -38,7 +39,7 @@
         <header>
             <div class="logo-box">
                 <img src="https://ui-avatars.com/api/?name=AGN&background=2563eb&color=fff">
-                <div><h2 style="margin:0;font-size:1rem">PT AGN</h2><span style="font-size:9px;color:var(--w);font-weight:800">SYSTEM v66.0</span></div>
+                <div><h2 style="margin:0;font-size:1rem">PT AGN</h2><span style="font-size:9px;color:var(--w);font-weight:800">SYSTEM v68.0</span></div>
             </div>
             <button onclick="toggleT()" id="tBtn" style="width:80px;font-size:11px">🌙 Dark</button>
         </header>
@@ -46,7 +47,7 @@
         <div class="card">
             <h3>👤 Management Karyawan</h3>
             <div style="display:flex;gap:8px">
-                <input list="lk" id="iNama" placeholder="Nama Karyawan...">
+                <input list="lk" id="iNama" placeholder="Cari/Tambah Nama...">
                 <datalist id="lk"></datalist>
                 <button class="btn btn-sq" style="background:var(--s)" onclick="tKaryawan()">➕</button>
                 <button class="btn btn-sq" style="background:var(--d)" onclick="hKaryawan()">🗑️</button>
@@ -54,15 +55,10 @@
         </div>
 
         <div class="card">
-            <h3>🧹 Reset Absensi</h3>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-                <input type="date" id="tglReset">
-                <button class="btn" style="background:var(--d);font-size:12px" onclick="resetPerKaryawan()">HAPUS DATA</button>
+            <h3>🧹 Reset & Libur</h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+                <input type="date" id="tglReset"><button class="btn" style="background:var(--d);font-size:12px" onclick="resetPerKaryawan()">HAPUS DATA</button>
             </div>
-        </div>
-
-        <div class="card">
-            <h3>🗓️ Jadwal Libur</h3>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
                 <input type="date" id="tM"><input type="date" id="tS">
             </div>
@@ -73,12 +69,12 @@
         </div>
 
         <div class="card">
-            <h3>⚡ Presensi</h3>
+            <h3>⚡ Presensi (09:00 - 16:00)</h3>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
                 <button class="btn" style="background:var(--s);height:55px" onclick="pAbsen('Masuk')">MASUK</button>
                 <button class="btn" style="background:var(--d);height:55px" onclick="pAbsen('Pulang')">PULANG</button>
             </div>
-            <button class="btn" style="background:var(--w);margin-top:10px;height:42px" onclick="pAbsen('Izin')">📝 IZIN / SAKIT (ISI NOTE)</button>
+            <button class="btn" style="background:var(--w);margin-top:10px;height:42px" onclick="pAbsen('Izin')">📝 IZIN / SAKIT / CATATAN</button>
         </div>
 
         <div class="card">
@@ -97,6 +93,9 @@
         const cfg={apiKey:"AIzaSyAu67MAhWBxdmciPi3xOKWhdy-uP4u9tXI",databaseURL:"https://pt-agn-default-rtdb.asia-southeast1.firebasedatabase.app"};
         firebase.initializeApp(cfg); const db=firebase.database();
         let mk={}, ad={}, hl={};
+
+        // --- KONFIGURASI TANGGAL MULAI ---
+        const TGL_MULAI_SISTEM = "2026-03-21"; // Alpa hanya dihitung dari tanggal ini
 
         function toggleT(){ 
             let t = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; 
@@ -131,33 +130,50 @@
         }
 
         function pAbsen(ty){
-            let n=document.getElementById('iNama'), now=new Date(), tgl=now.toISOString().split('T')[0], jam=now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+            let n=document.getElementById('iNama'), now=new Date(), tgl=now.toISOString().split('T')[0], jam=now.getHours(), menit=now.getMinutes();
+            let jamFormat = now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
             if(!n.value) return sT("Pilih Nama!","error");
-            let note = ""; if(ty==='Izin') { note = prompt("Masukkan alasan Izin/Sakit:"); if(note === null) return; }
-            db.ref(`absensi/${tgl}/${n.value}/${ty}`).set({waktu:jam, status:(ty==='Masuk'&&(now.getHours()>9))?"Terlambat":"Hadir", note:note}).then(()=>{
-                sT(ty+" Berhasil!"); n.value="";
+            let status = "Hadir";
+            if(ty==='Masuk' && (jam > 9 || (jam === 9 && menit > 0))) status = "Terlambat";
+            let note = ""; if(ty==='Izin') { note = prompt("Alasan:"); if(note === null) return; status="Izin"; }
+            db.ref(`absensi/${tgl}/${n.value}/${ty}`).set({waktu:jamFormat, status:status, note:note, timestamp: Date.now()}).then(()=>{
+                sT(ty + (status === "Terlambat" ? " (Telat)" : " Berhasil!")); n.value="";
             });
         }
 
         function rRekap(){
             const f=document.getElementById('fB').value; if(!f) return;
             const [y,m]=f.split('-'), last=new Date(y,m,0).getDate();
-            const today = new Date().toISOString().split('T')[0];
+            const now = new Date();
+            const todayStr = now.toISOString().split('T')[0];
+            const currentHour = now.getHours();
             
             document.getElementById('thR').innerHTML=`<th class="nama-fixed">Karyawan</th>${Array.from({length:last},(_,i)=>`<th>${i+1}</th>`).join('')}<th class="col-total">H</th><th class="col-total">I</th><th class="col-total">A</th>`;
             
             document.getElementById('tbR').innerHTML=Object.values(mk).sort().map(n=>{
                 let cH=0, cI=0, cA=0, row=`<td class="nama-fixed">${n}</td>`;
                 for(let i=1;i<=last;i++){
-                    let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), s="-", cl="", title="";
-                    if(d.getDay()===0||hl[t]){s="OFF"; cl="s-off";}
+                    let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), s="-", cl="", jamWkt="", tip="";
+                    
+                    if(d.getDay()===0||hl[t]){ s="OFF"; cl="s-off"; }
                     else {
-                        if(ad[t]&&ad[t][n]){
-                            if(ad[t][n].Izin){s="I";cl="s-i";cI++; title=ad[t][n].Izin.note || "";}
-                            else if(ad[t][n].Masuk){s="H";cl="s-v";cH++;}
-                        } else if(t < today) {s="A"; cl="s-a"; cA++;}
+                        const dataHari = ad[t] ? ad[t][n] : null;
+                        if(dataHari){
+                            if(dataHari.Izin){ s="I"; cl="s-i"; cI++; tip=dataHari.Izin.note; }
+                            else if(dataHari.Masuk){
+                                s="H"; cl = (dataHari.Masuk.status === "Terlambat") ? "s-late" : "s-v";
+                                cH++; jamWkt = dataHari.Masuk.waktu;
+                            }
+                        } else {
+                            // FIXED LOGIKA ALPA: Harus sudah melewati TGL_MULAI_SISTEM
+                            if(t >= TGL_MULAI_SISTEM) {
+                                if(t < todayStr || (t === todayStr && currentHour >= 16)){
+                                    s="A"; cl="s-a"; cA++;
+                                }
+                            }
+                        }
                     }
-                    row+=`<td><div class="s-cell ${cl}" title="${title}">${s}</div></td>`;
+                    row+=`<td><div class="s-cell ${cl}" title="${tip}">${s}${jamWkt?`<span class="jam-text">${jamWkt}</span>`:''}</div></td>`;
                 }
                 return `<tr>${row}<td class="col-total">${cH}</td><td class="col-total">${cI}</td><td class="col-total">${cA}</td></tr>`;
             }).join('');
@@ -165,20 +181,27 @@
 
         function doExcel(){
             const f=document.getElementById('fB').value; const [y,m]=f.split('-'); const last=new Date(y,m,0).getDate();
+            const todayStr = new Date().toISOString().split('T')[0];
+            const currentHour = new Date().getHours();
+            
             let html=`<html><head><meta charset="UTF-8"></head><body><table border="1">
                 <tr><th colspan="${last+4}" style="background-color:#FFA500; color:white; height:35px;">REKAP ABSENSI PT AGN - ${f}</th></tr>
                 <tr style="background-color:#e0e0e0; font-weight:bold;"><th>Nama</th>${Array.from({length:last},(_,i)=>`<th>${i+1}</th>`).join('')}<th>H</th><th>I</th><th>A</th></tr>`;
+            
             Object.values(mk).sort().forEach(n=>{
                 let cH=0, cI=0, cA=0; html+=`<tr><td style="font-weight:bold;">${n}</td>`;
                 for(let i=1; i<=last; i++){
                     let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), bg="#FFFFFF", txt="-";
-                    if(d.getDay()===0||hl[t]){bg="#ff0000";txt="OFF"}
-                    else if(ad[t]&&ad[t][n]){
-                        if(ad[t][n].Izin){bg="#ffff00";txt="I";cI++}else if(ad[t][n].Masuk){bg="#00ff00";txt="H";cH++}
-                    } else if(t < new Date().toISOString().split('T')[0]){bg="#64748b";txt="A";cA++}
+                    if(d.getDay()===0||hl[t]){ bg="#ff0000"; txt="OFF"; }
+                    else if(ad[t] && ad[t][n]){
+                        if(ad[t][n].Izin){ bg="#ffff00"; txt="I"; cI++; }
+                        else if(ad[t][n].Masuk){ bg = (ad[t][n].Masuk.status === "Terlambat") ? "#facc15" : "#00ff00"; txt="H ("+ad[t][n].Masuk.waktu+")"; cH++; }
+                    } else if(t >= TGL_MULAI_SISTEM && (t < todayStr || (t === todayStr && currentHour >= 16))){
+                        bg="#64748b"; txt="A"; cA++;
+                    }
                     html+=`<td style="background-color:${bg}; text-align:center;">${txt}</td>`;
                 }
-                html+=`<td style="font-weight:bold;text-align:center;">${cH}</td><td style="font-weight:bold;text-align:center;">${cI}</td><td style="font-weight:bold;text-align:center;">${cA}</td></tr>`;
+                html+=`<td style="font-weight:bold;">${cH}</td><td>${cI}</td><td>${cA}</td></tr>`;
             });
             html+=`</table></body></html>`;
             const base64=s=>window.btoa(unescape(encodeURIComponent(s)));
