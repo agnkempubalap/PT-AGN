@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN Management v11.0</title>
+    <title>PT-AGN Management v12.0</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
@@ -22,13 +22,11 @@
         .btn-izin { background: #ffc107; color: black; }
         .btn-tambah { background: #6f42c1; margin: 0; width: auto; }
         
-        /* Table Styling */
         .table-container { overflow-x: auto; margin-top: 15px; border-radius: 8px; border: 1px solid #ddd; }
         table { width: 100%; border-collapse: collapse; font-size: 10px; min-width: 1000px; }
         th, td { border: 1px solid #ddd; padding: 5px; text-align: center; }
         th { background: #f8f9fa; }
         
-        /* Status Colors */
         .status-hadir { background: #d4edda; color: #155724; font-weight: bold; }
         .status-terlambat { background: #fff3cd; color: #856404; font-weight: bold; }
         .status-izin { background: #d1ecf1; color: #0c5460; font-weight: bold; }
@@ -43,8 +41,9 @@
 </head>
 <body>
 
-    <h2>📦 PT-AGN System v11.0</h2>
+    <h2>📦 PT-AGN System v12.0</h2>
 
+    <!-- PANEL 1: ABSENSI -->
     <div class="card">
         <h3>1. Presensi & Kelola Karyawan</h3>
         <div class="manage-row">
@@ -66,15 +65,24 @@
         <div id="notif"></div>
     </div>
 
+    <!-- PANEL 2: RENTANG LIBUR -->
     <div class="card">
-        <h3>2. Kelola Hari Libur Nasional</h3>
-        <div class="manage-row">
-            <input type="date" id="inputTglLibur" style="margin:0; flex-grow:1;">
-            <button class="btn-tambah" onclick="tambahLibur()" style="background:#6c757d;">Set Libur</button>
+        <h3>2. Kelola Libur Panjang (Rentang Tanggal)</h3>
+        <div class="grid">
+            <div>
+                <label>Dari Tanggal:</label>
+                <input type="date" id="tglMulaiLibur">
+            </div>
+            <div>
+                <label>Sampai Tanggal:</label>
+                <input type="date" id="tglSelesaiLibur">
+            </div>
         </div>
-        <p style="font-size: 11px; color: #888;">*Tanggal yang diset libur akan muncul sebagai 'LBR' di rekap.</p>
+        <button class="btn-tambah" onclick="setRentangLibur()" style="background:#6c757d; width: 100%;">Terapkan Libur Panjang</button>
+        <p style="font-size: 11px; color: #888; margin-top: 5px;">*Gunakan ini untuk libur Lebaran, Natal, atau cuti bersama.</p>
     </div>
 
+    <!-- PANEL 3: REKAP -->
     <div class="card">
         <h3>3. Laporan Bulanan Realtime</h3>
         <input type="month" id="filterBulan">
@@ -104,7 +112,6 @@
         let masterKaryawan = {};
         let hariLibur = {};
 
-        // Ambil Data Karyawan
         db.ref('master_karyawan').on('value', snap => {
             masterKaryawan = snap.val() || {};
             let options = '<option value="">-- Pilih Nama --</option>';
@@ -114,7 +121,6 @@
             document.getElementById('pilihKaryawan').innerHTML = options;
         });
 
-        // Ambil Data Hari Libur
         db.ref('hari_libur').on('value', snap => { hariLibur = snap.val() || {}; });
 
         function tambahKaryawan() {
@@ -131,10 +137,30 @@
             if(id && confirm("Hapus karyawan ini?")) db.ref('master_karyawan/' + id).remove();
         }
 
-        function tambahLibur() {
-            const tgl = document.getElementById('inputTglLibur').value;
-            if(!tgl) return alert("Pilih tanggal!");
-            db.ref('hari_libur/' + tgl).set(true).then(() => alert("Berhasil set hari libur!"));
+        // FUNGSI BARU: SET RENTANG LIBUR
+        function setRentangLibur() {
+            const mulai = document.getElementById('tglMulaiLibur').value;
+            const selesai = document.getElementById('tglSelesaiLibur').value;
+
+            if(!mulai || !selesai) return alert("Pilih tanggal mulai dan selesai!");
+            
+            let dateMulai = new Date(mulai);
+            let dateSelesai = new Date(selesai);
+
+            if(dateMulai > dateSelesai) return alert("Tanggal mulai tidak boleh lebih besar dari tanggal selesai!");
+
+            let updates = {};
+            let tempDate = new Date(dateMulai);
+
+            while(tempDate <= dateSelesai) {
+                const tglKey = tempDate.toISOString().split('T')[0];
+                updates[tglKey] = true;
+                tempDate.setDate(tempDate.getDate() + 1);
+            }
+
+            db.ref('hari_libur').update(updates).then(() => {
+                alert("Berhasil menyetel libur panjang!");
+            }).catch(e => alert("Gagal: " + e.message));
         }
 
         function prosesAbsen(tipe) {
@@ -142,15 +168,11 @@
             if(!nama) return alert("Pilih nama!");
             const skrg = new Date();
             const tglKey = skrg.toISOString().split('T')[0];
-            const jam = skrg.getHours();
-            const menit = skrg.getMinutes();
             const waktuStr = skrg.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
+            const jam = skrg.getHours();
 
             let status = "Hadir";
-            if(tipe === 'Masuk') {
-                if(jam >= 16) status = "Alpa";
-                else if(jam > 9 || (jam === 9 && menit > 0)) status = "Terlambat";
-            }
+            if(tipe === 'Masuk' && jam >= 9) status = "Terlambat";
 
             db.ref(`absensi/${tglKey}/${nama}/${tipe}`).set({ waktu: waktuStr, status: status })
                 .then(() => {
@@ -165,7 +187,6 @@
             const [th, bl] = filter.split('-');
             const jmlHari = new Date(th, bl, 0).getDate();
 
-            // Header Tabel dengan Nama Hari
             let hHtml = `<th class="nama-kolom">Nama Karyawan</th>`;
             for(let i=1; i<=jmlHari; i++) {
                 const d = new Date(th, bl-1, i);
@@ -187,23 +208,15 @@
                         let simbol = "-";
                         let kls = "";
 
-                        // Cek apakah hari Minggu atau Libur Nasional
-                        if(dObj.getDay() === 0) {
-                            simbol = "OFF"; kls = "status-minggu";
-                        } else if(hariLibur[tglKey]) {
-                            simbol = "LBR"; kls = "status-libur";
-                        }
+                        if(dObj.getDay() === 0) { simbol = "OFF"; kls = "status-minggu"; }
+                        else if(hariLibur[tglKey]) { simbol = "LBR"; kls = "status-libur"; }
 
-                        // Cek Data Absensi (Menimpa status OFF jika ternyata dia masuk lembur)
                         if(data[tglKey] && data[tglKey][nama]) {
                             const d = data[tglKey][nama];
                             if(d.Izin) { simbol = "I"; kls = "status-izin"; }
                             else if(d.Masuk) {
-                                if(d.Masuk.status === "Alpa") { simbol = "A"; kls = "status-alpa"; }
-                                else {
-                                    simbol = d.Masuk.status === "Terlambat" ? "T" : "V";
-                                    kls = d.Masuk.status === "Terlambat" ? "status-terlambat" : "status-hadir";
-                                }
+                                simbol = d.Masuk.status === "Terlambat" ? "T" : "V";
+                                kls = d.Masuk.status === "Terlambat" ? "status-terlambat" : "status-hadir";
                             }
                         }
                         bHtml += `<td class="${kls}">${simbol}</td>`;
