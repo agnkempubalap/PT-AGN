@@ -2,95 +2,56 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v56.0 - Replica Excel</title>
+    <title>PT-AGN v57.0 - Full Color Excel</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root{--p:#2563eb;--s:#10b981;--d:#ef4444;--w:#f59e0b;--bg:#f1f5f9;--c:#fff;--t:#1e293b;--b:#e2e8f0}
         [data-theme="dark"]{--bg:#0f172a;--c:#1e293b;--t:#f8fafc;--b:#334155}
-        body{font-family:'Plus Jakarta Sans',sans-serif;margin:0;background:var(--bg);color:var(--t);padding:8px;transition:0.3s}
+        body{font-family:'Plus Jakarta Sans',sans-serif;margin:0;background:var(--bg);color:var(--t);padding:8px}
         .container{max-width:1200px;margin:0 auto}
         header{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px;padding:5px}
-        .logo-box{display:flex;align-items:center;gap:10px;cursor:pointer}
-        .logo-box img{width:60px !important;height:60px !important;border-radius:12px;object-fit:contain;background:#fff;border:2px solid var(--p)}
-        .card{background:var(--c);padding:15px;border-radius:15px;margin-bottom:10px;border:1px solid var(--b);box-shadow:0 4px 6px -1px rgba(0,0,0,0.1)}
-        h3{margin:0 0 10px;font-size:10px;color:var(--w);text-transform:uppercase;letter-spacing:1px}
-        input,button{border-radius:10px;font-size:14px;height:45px;border:1px solid var(--b);background:var(--c);color:var(--t);width:100%;box-sizing:border-box;outline:none}
-        .btn{display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;border:none;color:#fff}
-        .btn-sq{width:55px;flex-shrink:0}
-        #toast{position:fixed;bottom:20px;right:20px;padding:12px 20px;border-radius:10px;color:#fff;font-size:13px;transform:translateY(100px);transition:0.3s;z-index:999}
-        #toast.show{transform:translateY(0)}
-        .table-wrap{overflow:auto;border-radius:12px;border:1px solid var(--b);background:var(--c)}
-        table{width:100%;border-collapse:collapse;font-size:10px;min-width:1100px}
-        th,td{border-bottom:1px solid var(--b);padding:8px 4px;text-align:center}
-        .nama-fixed{position:sticky;left:0;background:var(--c)!important;font-weight:700;text-align:left;width:120px;z-index:4;border-right:2px solid var(--b);padding-left:10px}
-        .s-cell{border-radius:4px;width:28px;min-height:28px;display:inline-flex;align-items:center;justify-content:center;font-weight:800}
-        /* Color Matching with Example Image */
-        .s-v{background:#22c55e;color:#fff} /* Hadir - Hijau */
-        .s-t{background:#3b82f6;color:#fff} /* Terlambat - Biru (Cuti/Sakit di contoh) */
-        .s-i{background:#eab308;color:#000} /* Izin - Kuning */
-        .s-off{background:#ef4444;color:#fff} /* Libur/Minggu - Merah */
+        .logo-box{display:flex;align-items:center;gap:10px}
+        .logo-box img{width:50px;height:50px;border-radius:10px;background:#fff;border:2px solid var(--p)}
+        .card{background:var(--c);padding:15px;border-radius:15px;margin-bottom:10px;border:1px solid var(--b);box-shadow:0 2px 4px rgba(0,0,0,0.05)}
+        h3{margin:0 0 10px;font-size:11px;color:var(--w);text-transform:uppercase}
+        input,button{border-radius:10px;font-size:14px;height:45px;border:1px solid var(--b);background:var(--c);color:var(--t);width:100%;box-sizing:border-box}
+        .btn{font-weight:700;cursor:pointer;border:none;color:#fff;display:flex;align-items:center;justify-content:center}
+        .table-wrap{overflow:auto;border-radius:12px;background:var(--c)}
+        table{width:100%;border-collapse:collapse;font-size:10px;min-width:1000px}
+        th,td{border:1px solid var(--b);padding:8px 4px;text-align:center}
+        .nama-col{position:sticky;left:0;background:var(--c);font-weight:bold;text-align:left;padding-left:10px;z-index:2}
+        .s-v{background:#22c55e;color:#fff;border-radius:4px}
+        .s-i{background:#eab308;color:#000;border-radius:4px}
+        .s-off{background:#ef4444;color:#fff;border-radius:4px}
     </style>
 </head>
 <body data-theme="light">
-    <div id="toast"></div>
-    <div class="container no-p">
+    <div class="container">
         <header>
-            <div class="logo-box" onclick="document.getElementById('fileLogo').click()">
-                <img id="imgLogo" src="https://ui-avatars.com/api/?name=AGN&background=2563eb&color=fff" alt="Logo">
-                <input type="file" id="fileLogo" hidden accept="image/*" onchange="updateLogo(this)">
-                <div><h2 style="margin:0;font-size:1rem">PT AGN</h2><span style="font-size:9px;color:var(--w);font-weight:800">SYSTEM v56.0</span></div>
+            <div class="logo-box">
+                <img id="imgLogo" src="https://ui-avatars.com/api/?name=AGN&background=2563eb&color=fff">
+                <div><h2 style="margin:0;font-size:1.1rem">PT AGN</h2><span style="font-size:10px;color:var(--w)">EXCEL REPLICA v57</span></div>
             </div>
-            <button onclick="toggleT()" id="tBtn" style="width:80px;font-size:11px">🌙 Dark</button>
         </header>
 
-        <!-- INPUT AREA (LOCKED) -->
         <div class="card">
-            <h3>👤 Management Karyawan</h3>
-            <div style="display:flex;gap:8px">
-                <input list="lk" id="iNama" placeholder="Nama Karyawan...">
-                <datalist id="lk"></datalist>
-                <button class="btn btn-sq" style="background:var(--s)" onclick="tKaryawan()">➕</button>
-                <button class="btn btn-sq" style="background:var(--d)" onclick="hKaryawan()">🗑️</button>
+            <h3>👤 Input Karyawan & Absen</h3>
+            <input list="lk" id="iNama" placeholder="Ketik Nama..." style="margin-bottom:8px">
+            <datalist id="lk"></datalist>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px">
+                <button class="btn" style="background:var(--s)" onclick="pAbsen('Masuk')">HADIR</button>
+                <button class="btn" style="background:var(--w)" onclick="pAbsen('Izin')">IZIN</button>
+                <button class="btn" style="background:var(--d)" onclick="hKaryawan()">HAPUS</button>
             </div>
-        </div>
-        <div class="card">
-            <h3>🧹 Reset Absensi</h3>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-                <input type="date" id="tglReset">
-                <button class="btn" style="background:var(--d);font-size:12px" onclick="resetPerKaryawan()">HAPUS ABSENSI</button>
-            </div>
-        </div>
-        <div class="card">
-            <h3>🗓️ Jadwal Libur</h3>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-                <input type="date" id="tM"><input type="date" id="tS">
-            </div>
-            <div style="display:flex;gap:8px">
-                <button class="btn" style="background:var(--p);flex:1" onclick="sLib(true)">SET LIBUR</button>
-                <button class="btn" style="background:var(--b);color:var(--t);flex:1" onclick="sLib(false)">HAPUS</button>
-            </div>
-        </div>
-        <div class="card">
-            <h3>⚡ Presensi</h3>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                <button class="btn" style="background:var(--s);height:55px" onclick="pAbsen('Masuk')">MASUK</button>
-                <button class="btn" style="background:var(--d);height:55px" onclick="pAbsen('Pulang')">PULANG</button>
-            </div>
-            <button class="btn" style="background:var(--w);margin-top:10px;height:42px" onclick="pAbsen('Izin')">📝 IZIN / SAKIT (CATATAN)</button>
+            <button class="btn" style="background:var(--p);margin-top:8px;height:35px" onclick="tKaryawan()">+ TAMBAH KARYAWAN BARU</button>
         </div>
 
         <div class="card">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px">
-                <input type="month" id="fB" style="width:130px" onchange="rRekap()">
-                <div style="display:flex;gap:5px">
-                    <button class="btn" style="background:#1d6f42;width:100px;font-size:11px" onclick="exportExcelReplica()">📂 EXCEL</button>
-                    <button class="btn" style="background:#b91c1c;width:100px;font-size:11px" onclick="exportPDFReplica()">📜 PDF</button>
-                </div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:10px">
+                <input type="month" id="fB" style="width:140px" onchange="rRekap()">
+                <button class="btn" style="background:#1d6f42;width:130px" onclick="doExport()">DOWNLOAD EXCEL</button>
             </div>
             <div class="table-wrap"><table><thead><tr id="thR"></tr></thead><tbody id="tbR"></tbody></table></div>
         </div>
@@ -101,121 +62,82 @@
         firebase.initializeApp(cfg); const db=firebase.database();
         let mk={}, ad={}, hl={};
 
-        // --- CORE FUNCTIONS (LOCKED) ---
-        function toggleT(){ let t=document.body.getAttribute('data-theme')==='dark'?'light':'dark'; document.body.setAttribute('data-theme',t); localStorage.setItem('th',t); document.getElementById('tBtn').innerText=t==='dark'?'☀️ Light':'🌙 Dark'; }
-        function updateLogo(input) { if (input.files && input.files[0]) { const reader = new FileReader(); reader.onload = (e) => { document.getElementById('imgLogo').src = e.target.result; localStorage.setItem('agn_logo', e.target.result); }; reader.readAsDataURL(input.files[0]); } }
-        function sT(m,ty='success'){ const t=document.getElementById('toast'); t.innerText=m; t.style.background=ty==='success'?'#10b981':'#ef4444'; t.className='show'; setTimeout(()=>t.className='',2500); }
-        window.onload=()=>{ let st=localStorage.getItem('th')||'light'; document.body.setAttribute('data-theme',st); let sl=localStorage.getItem('agn_logo'); if(sl) document.getElementById('imgLogo').src=sl; document.getElementById('fB').value=new Date().toISOString().slice(0,7); db.ref('master_karyawan').on('value',s=>{mk=s.val()||{}; uDl(); rRekap();}); db.ref('absensi').on('value',s=>{ad=s.val()||{}; rRekap();}); db.ref('hari_libur').on('value',s=>{hl=s.val()||{}; rRekap();}); };
-        function uDl(){let dl=document.getElementById('lk'); dl.innerHTML=Object.values(mk).sort().map(n=>`<option value="${n}">`).join('');}
-        function tKaryawan(){let n=document.getElementById('iNama'); if(!n.value) return sT("Isi Nama!","error"); db.ref('master_karyawan').push(n.value).then(()=>{sT("Berhasil!"); n.value=""});}
-        function hKaryawan(){let n=document.getElementById('iNama'); let id=Object.keys(mk).find(k=>mk[k]===n.value); if(id && confirm(`Hapus ${n.value}?`)) db.ref(`master_karyawan/${id}`).remove().then(()=>{sT("Dihapus!"); n.value=""});}
-        function resetPerKaryawan(){ let nI=document.getElementById('iNama'), tI=document.getElementById('tglReset'), n=nI.value, t=tI.value; if(!n || !t) return sT("Pilih Nama & Tanggal!","error"); if(confirm(`Hapus data absen ${n} tgl ${t}?`)) { db.ref(`absensi/${t}/${n}`).remove().then(()=> { sT("Data Terhapus!"); nI.value = ""; tI.value = ""; }); } }
-        function sLib(st){ let mI=document.getElementById('tM'), sI=document.getElementById('tS'), m=mI.value, s=sI.value; if(!m) return sT("Isi tanggal minimal 1 kotak!","error"); let u={}; if(!s || m === s){ u[m] = st ? true : null; } else { let cur=new Date(m), end=new Date(s); if(cur > end) return sT("Tgl Mulai harus lebih awal!","error"); while(cur <= end){ u[cur.toISOString().split('T')[0]] = st ? true : null; cur.setDate(cur.getDate()+1); } } db.ref('hari_libur').update(u).then(()=>{sT("Update Berhasil!"); mI.value=""; sI.value="";}); }
-        function pAbsen(ty){ let n=document.getElementById('iNama'); if(!n.value) return sT("Pilih Nama!","error"); let now=new Date(), tgl=now.toISOString().split('T')[0], jam=now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}); let note = ""; if(ty === 'Izin'){ note = prompt("Alasan Izin/Sakit:"); if(note === null) return; } let st=(ty==='Masuk'&&(now.getHours()>9||(now.getHours()===9&&now.getMinutes()>0)))?"Terlambat":"Hadir"; db.ref(`absensi/${tgl}/${n.value}/${ty}`).set({waktu:jam,status:st,catatan:note}).then(()=>{sT(ty+" Berhasil!"); n.value=""}); }
-        
+        window.onload=()=>{
+            document.getElementById('fB').value=new Date().toISOString().slice(0,7);
+            db.ref('master_karyawan').on('value',s=>{mk=s.val()||{}; uDl(); rRekap();});
+            db.ref('absensi').on('value',s=>{ad=s.val()||{}; rRekap();});
+            db.ref('hari_libur').on('value',s=>{hl=s.val()||{}; rRekap();});
+        };
+
+        function uDl(){document.getElementById('lk').innerHTML=Object.values(mk).sort().map(n=>`<option value="${n}">`).join('');}
+        function tKaryawan(){let n=document.getElementById('iNama'); if(!n.value)return; db.ref('master_karyawan').push(n.value); n.value="";}
+        function hKaryawan(){let n=document.getElementById('iNama'); let id=Object.keys(mk).find(k=>mk[k]===n.value); if(id && confirm('Hapus?')) db.ref(`master_karyawan/${id}`).remove();}
+        function pAbsen(ty){let n=document.getElementById('iNama').value, t=new Date().toISOString().split('T')[0]; if(!n)return; db.ref(`absensi/${t}/${n}/${ty}`).set({waktu:'OK'});}
+
         function rRekap(){
             const f=document.getElementById('fB').value; if(!f) return;
             const [y,m]=f.split('-'), last=new Date(y,m,0).getDate();
-            document.getElementById('thR').innerHTML=`<th class="nama-fixed">Karyawan</th>${Array.from({length:last},(_,i)=>`<th>${i+1}</th>`).join('')}<th>H</th><th>T</th><th>I</th>`;
+            document.getElementById('thR').innerHTML=`<th class="nama-col">Nama</th>${Array.from({length:last},(_,i)=>`<th>${i+1}</th>`).join('')}`;
             document.getElementById('tbR').innerHTML=Object.values(mk).sort().map(n=>{
-                let cH=0,cT=0,cI=0,row=`<td class="nama-fixed">${n}</td>`;
+                let row=`<td class="nama-col">${n}</td>`;
                 for(let i=1;i<=last;i++){
-                    let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), s="-", cl="";
-                    if(d.getDay()===0||hl[t]){s="OFF"; cl="s-off";}
-                    if(ad[t]&&ad[t][n]){
-                        let a=ad[t][n]; 
-                        if(a.Izin){ s="I"; cl="s-i"; cI++; }
-                        else if(a.Masuk){ if(a.Masuk.status==="Terlambat"){s="T";cl="s-t";cT++}else{s="H";cl="s-v";cH++} }
-                    }
-                    row+=`<td><div class="s-cell ${cl}">${s}</div></td>`;
+                    let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), cl="", s="-";
+                    if(d.getDay()===0) {s="OFF"; cl="s-off";}
+                    if(ad[t]&&ad[t][n]){ if(ad[t][n].Izin){s="I";cl="s-i"} else if(ad[t][n].Masuk){s="H";cl="s-v"} }
+                    row+=`<td><div class="${cl}">${s}</div></td>`;
                 }
-                return `<tr>${row}<td>${cH}</td><td>${cT}</td><td>${cI}</td></tr>`;
+                return `<tr>${row}</tr>`;
             }).join('');
         }
 
-        // --- REPLICA ENGINE: MENIRU GAMBAR CONTOH ---
-
-        function exportExcelReplica() {
+        // --- THE MAGIC: EXCEL DENGAN WARNA TETAP ---
+        function doExport() {
             const f = document.getElementById('fB').value;
             const [y, m] = f.split('-'), last = new Date(y, m, 0).getDate();
             const monthNames = ["JANUARI", "FEBRUARI", "MARET", "APRIL", "MEI", "JUNI", "JULI", "AGUSTUS", "SEPTEMBER", "OKTOBER", "NOVEMBER", "DESEMBER"];
-            
-            // Header Persis Gambar
-            const data = [
-                ["ABSENSI KARYAWAN PT AGN"],
-                [`PERIODE ${monthNames[parseInt(m)-1]} ${y}`],
-                [],
-                ["Nama", "Jabatan", ...Array.from({length:last},(_,i)=>i+1), "Jumlah Kerja", "", "", "Keterangan"],
-                ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "H", "I", "S", "A"]
-            ];
 
-            // Isi Data
+            // Desain Tabel HTML yang akan diconvert ke Excel
+            let html = `
+            <table border="1">
+                <tr><th colspan="${last+2}" style="background:#FFA500; height:30px; font-size:16px;">ABSENSI KARYAWAN PT AGN</th></tr>
+                <tr><th colspan="${last+2}" style="background:#FFD700; height:25px;">PERIODE ${monthNames[m-1]} ${y}</th></tr>
+                <tr style="background:#eeeeee; font-weight:bold;">
+                    <th style="width:150px;">Nama</th><th style="width:100px;">Jabatan</th>
+                    ${Array.from({length:last},(_,i)=>`<th>${i+1}</th>`).join('')}
+                </tr>`;
+
             Object.values(mk).sort().forEach(n => {
-                let cH=0, cT=0, cI=0, r = [n, "Karyawan"];
-                for(let i=1;i<=last;i++){
-                    let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), v="-";
-                    if(d.getDay()===0) v="OFF"; else if(hl[t]) v="LIBUR";
+                html += `<tr><td style="text-align:left; font-weight:bold;">${n}</td><td>Karyawan</td>`;
+                for(let i=1; i<=last; i++){
+                    let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), bg="", txt="-", color="#000";
+                    if(d.getDay()===0) { bg="#FF0000"; txt="OFF"; color="#fff"; }
                     if(ad[t]&&ad[t][n]){
-                        let a=ad[t][n];
-                        if(a.Izin){ v="I"; cI++; }
-                        else if(a.Masuk){ if(a.Masuk.status==="Terlambat"){v="T";cT++;}else{v="H";cH++;} }
+                        if(ad[t][n].Izin){ bg="#FFFF00"; txt="I"; }
+                        else if(ad[t][n].Masuk){ bg="#00FF00"; txt="H"; }
                     }
-                    r.push(v);
+                    html += `<td style="background:${bg}; color:${color}; text-align:center;">${txt}</td>`;
                 }
-                r.push(cH+cT, "", "", "", cH, cI, cT, "0");
-                data.push(r);
+                html += `</tr>`;
             });
 
-            // Legenda di Bawah
-            data.push([], ["Keterangan:"], ["H", "Hadir"], ["I", "Izin"], ["T", "Terlambat/Cuti"], ["OFF", "Libur Nasional/Minggu"]);
+            html += `
+                <tr><td colspan="5"></td></tr>
+                <tr><td style="font-weight:bold;">Keterangan:</td></tr>
+                <tr><td style="background:#00FF00; text-align:center;">H</td><td>Hadir</td></tr>
+                <tr><td style="background:#FFFF00; text-align:center;">I</td><td>Izin</td></tr>
+                <tr><td style="background:#FF0000; color:#fff; text-align:center;">OFF</td><td>Minggu/Libur</td></tr>
+            </table>`;
 
-            const ws = XLSX.utils.aoa_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Rekap_Absensi");
-            XLSX.writeFile(wb, `ABSENSI_AGN_${f}.xlsx`);
-        }
-
-        function exportPDFReplica() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('l', 'mm', 'a4');
-            const f = document.getElementById('fB').value;
-            const [y, m] = f.split('-'), last = new Date(y, m, 0).getDate();
+            // Proses Download sebagai File Excel
+            const uri = 'data:application/vnd.ms-excel;base64,';
+            const template = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Absensi</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body>{table}</body></html>';
+            const base64 = s => window.btoa(unescape(encodeURIComponent(s)));
+            const format = (s, c) => s.replace(/{(\w+)}/g, (m, p) => c[p]);
             
-            doc.setFontSize(14); doc.text("ABSENSI KARYAWAN PT AGN", 140, 10, {align: 'center'});
-            doc.setFontSize(10); doc.text(`PERIODE: ${f}`, 140, 16, {align: 'center'});
-
-            const head = [["Nama", ...Array.from({length:last},(_,i)=>i+1), "H", "T", "I"]];
-            const body = Object.values(mk).sort().map(n => {
-                let cH=0, cT=0, cI=0, r = [n];
-                for(let i=1;i<=last;i++){
-                    let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), v="-";
-                    if(d.getDay()===0 || hl[t]) v="OFF";
-                    if(ad[t]&&ad[t][n]){
-                        let a=ad[t][n];
-                        if(a.Izin) { v="I"; cI++; }
-                        else if(a.Masuk) { if(a.Masuk.status==="Terlambat") { v="T"; cT++; } else { v="H"; cH++; } }
-                    }
-                    r.push(v);
-                }
-                r.push(cH, cT, cI); return r;
-            });
-
-            doc.autoTable({
-                head: head, body: body, startY: 22, theme: 'grid',
-                styles: { fontSize: 5.5, cellPadding: 1, halign: 'center' },
-                columnStyles: { 0: { halign: 'left', cellWidth: 25, fontStyle: 'bold' } },
-                headStyles: { fillColor: [255, 165, 0], textColor: 0 }, // Oranye sesuai contoh
-                didDrawCell: (data) => {
-                    if (data.section === 'body' && data.column.index > 0) {
-                        const val = data.cell.raw;
-                        if(val === 'H') data.cell.styles.fillColor = [34, 197, 94];
-                        if(val === 'I') data.cell.styles.fillColor = [234, 179, 8];
-                        if(val === 'T') data.cell.styles.fillColor = [59, 130, 246];
-                        if(val === 'OFF') data.cell.styles.fillColor = [239, 68, 68];
-                    }
-                }
-            });
-            doc.save(`PDF_AGN_${f}.pdf`);
+            const link = document.createElement("a");
+            link.href = uri + base64(format(template, { table: html }));
+            link.download = `ABSENSI_AGN_${f}.xls`;
+            link.click();
         }
     </script>
 </body>
