@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN Management v31.0</title>
+    <title>PT-AGN Management v32.0</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
@@ -19,17 +19,17 @@
         h3 { margin: 0 0 10px 0; font-size: 0.75rem; color: #64748b; text-transform: uppercase; font-weight: 700; }
         
         input, select, button, textarea { border-radius: 8px; font-size: 14px; box-sizing: border-box; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #cbd5e1; height: 45px; }
         
-        .btn-primary { background: var(--primary); color: white; border: none; font-weight: 600; cursor: pointer; padding: 10px; }
+        .btn-primary { background: var(--primary); color: white; border: none; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         
-        .input-group { display: flex; gap: 5px; margin-bottom: 10px; }
-        .select-row { display: flex; gap: 5px; align-items: center; margin-bottom: 10px; }
+        /* Layout Baru: Input & Dropdown Jadi Satu */
+        .management-row { display: flex; gap: 8px; margin-bottom: 10px; }
         .libur-group { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 8px; }
 
         .export-container { position: relative; }
         .export-menu { 
-            display: none; position: absolute; right: 0; top: 45px; 
+            display: none; position: absolute; right: 0; top: 50px; 
             background: white; border: 1px solid #ddd; border-radius: 8px; 
             box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 100; min-width: 160px;
         }
@@ -43,11 +43,11 @@
         .nama-fixed { position: sticky; left: 0; background: white; font-weight: 600; text-align: left; width: 130px; z-index: 4; border-right: 2px solid #e2e8f0; }
         
         /* Status Background Colors */
-        .status-v { background-color: #22c55e !important; color: white !important; font-weight: bold; } /* Hijau */
-        .status-t { background-color: #eab308 !important; color: white !important; font-weight: bold; } /* Kuning */
-        .status-i { background-color: #06b6d4 !important; color: white !important; font-weight: bold; } /* Biru */
-        .status-off { background-color: #fecaca !important; color: #b91c1c !important; } /* Merah (Minggu) */
-        .status-lbr { background-color: #e2e8f0 !important; color: #475569 !important; font-style: italic; } /* Abu (Libur) */
+        .status-v { background-color: #22c55e !important; color: white !important; font-weight: bold; } 
+        .status-t { background-color: #eab308 !important; color: white !important; font-weight: bold; } 
+        .status-i { background-color: #06b6d4 !important; color: white !important; font-weight: bold; } 
+        .status-off { background-color: #fecaca !important; color: #b91c1c !important; } 
+        .status-lbr { background-color: #e2e8f0 !important; color: #475569 !important; font-style: italic; } 
 
         @media print { .no-print { display: none !important; } #kop-surat, #print-note { display: block !important; } @page { size: landscape; margin: 1cm; } }
     </style>
@@ -60,12 +60,15 @@
             <p style="margin:5px 0;">LAPORAN REKAPITULASI PRESENSI KARYAWAN</p>
         </div>
 
-        <!-- 1. MANAJEMEN NAMA & LIBUR -->
+        <!-- 1. MANAJEMEN KARYAWAN & LIBUR (DIPERINGKAS) -->
         <div class="card no-print">
-            <h3>Manajemen Nama & Libur Masal</h3>
-            <div class="input-group">
-                <input type="text" id="inputNamaBaru" placeholder="Nama karyawan baru...">
-                <button class="btn-primary" style="width: 80px;" onclick="tambahKaryawan()">SIMPAN</button>
+            <h3>Manajemen Karyawan</h3>
+            <div class="management-row">
+                <input list="listKaryawan" id="inputPilihNama" placeholder="Ketik nama baru / pilih nama...">
+                <datalist id="listKaryawan"></datalist>
+                
+                <button class="btn-primary" style="width: 50px; background: var(--success);" onclick="tambahKaryawan()" title="Tambah Nama Baru">➕</button>
+                <button class="btn-primary" style="width: 50px; background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca;" onclick="hapusKaryawan()" title="Hapus Nama Terpilih">🗑️</button>
             </div>
             
             <div class="libur-group">
@@ -80,29 +83,24 @@
 
         <!-- 2. PRESENSI HARIAN -->
         <div class="card no-print">
-            <h3>Presensi Harian</h3>
-            <div class="select-row">
-                <select id="pilihKaryawan"><option value="">-- Pilih Nama --</option></select>
-                <button onclick="hapusKaryawan()" style="background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; width: 45px; height: 40px; cursor: pointer;" title="Hapus nama">🗑️</button>
-            </div>
-
+            <h3>Tombol Presensi</h3>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                <button class="btn-primary" style="background:var(--success)" onclick="prosesAbsen('Masuk')">MASUK</button>
-                <button class="btn-primary" style="background:var(--danger)" onclick="prosesAbsen('Pulang')">PULANG</button>
+                <button class="btn-primary" style="background:var(--success); height: 50px;" onclick="prosesAbsen('Masuk')">MASUK</button>
+                <button class="btn-primary" style="background:var(--danger); height: 50px;" onclick="prosesAbsen('Pulang')">PULANG</button>
             </div>
             
             <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 8px; margin-top: 8px;">
-                <button class="btn-primary" style="background:var(--warning)" onclick="prosesAbsen('Izin')">📝 IZIN / SAKIT</button>
-                <button class="btn-primary" style="background:var(--gray)" onclick="resetAbsen()">♻️ RESET</button>
+                <button class="btn-primary" style="background:var(--warning); height: 45px;" onclick="prosesAbsen('Izin')">📝 IZIN / SAKIT</button>
+                <button class="btn-primary" style="background:var(--gray); height: 45px;" onclick="resetAbsen()">♻️ RESET</button>
             </div>
         </div>
 
         <!-- 3. LAPORAN -->
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;" class="no-print">
-                <input type="month" id="filterBulan" style="margin:0; width: 140px;" onchange="renderRekap()">
+                <input type="month" id="filterBulan" style="margin:0; width: 150px;" onchange="renderRekap()">
                 <div class="export-container">
-                    <button class="btn-primary" style="width:120px; background:#475569" onclick="toggleExport()">EXPORT ▾</button>
+                    <button class="btn-primary" style="width:120px; background:#475569; height: 45px;" onclick="toggleExport()">EXPORT ▾</button>
                     <div id="exportMenu" class="export-menu">
                         <button onclick="exportToExcel()">📊 Format Excel</button>
                         <button onclick="siapkanCetak()">📄 Format PDF</button>
@@ -118,8 +116,8 @@
             </div>
 
             <div class="no-print">
-                <label style="font-size: 11px; color: #64748b;">CATATAN LAPORAN:</label>
-                <textarea id="catatanAdmin" style="width:100%; height:60px; padding:10px; margin-top:5px;" placeholder="Alda izin..."></textarea>
+                <label style="font-size: 11px; color: #64748b; font-weight: bold;">CATATAN / KETERANGAN:</label>
+                <textarea id="catatanAdmin" style="width:100%; height:60px; padding:10px; margin-top:5px; border-radius: 8px; border: 1px solid #cbd5e1;" placeholder="Alda izin, Hatta lembur..."></textarea>
             </div>
 
             <div id="print-note" style="display:none; margin-top:15px; font-size:12px;">
@@ -152,30 +150,43 @@
         window.onload = () => {
             const s = new Date();
             document.getElementById('filterBulan').value = `${s.getFullYear()}-${String(s.getMonth() + 1).padStart(2, '0')}`;
-            db.ref('master_karyawan').on('value', snap => { masterKaryawan = snap.val() || {}; updateDropdown(); renderRekap(); });
+            db.ref('master_karyawan').on('value', snap => { masterKaryawan = snap.val() || {}; updateDatalist(); renderRekap(); });
             db.ref('absensi').on('value', snap => { absensiData = snap.val() || {}; renderRekap(); });
             db.ref('hari_libur').on('value', snap => { hariLibur = snap.val() || {}; renderRekap(); });
         };
 
-        function updateDropdown() {
-            const sel = document.getElementById('pilihKaryawan');
-            let opt = '<option value="">-- Pilih Nama --</option>';
-            Object.keys(masterKaryawan).sort((a,b) => masterKaryawan[a].localeCompare(masterKaryawan[b])).forEach(key => {
-                opt += `<option value="${masterKaryawan[key]}" data-id="${key}">${masterKaryawan[key]}</option>`;
-            });
-            sel.innerHTML = opt;
+        function updateDatalist() {
+            const dl = document.getElementById('listKaryawan');
+            let opt = '';
+            Object.values(masterKaryawan).sort().forEach(nama => { opt += `<option value="${nama}">`; });
+            dl.innerHTML = opt;
         }
 
         function tambahKaryawan() {
-            const n = document.getElementById('inputNamaBaru');
-            if(n.value) db.ref('master_karyawan').push(n.value.trim()).then(()=> n.value="");
+            const n = document.getElementById('inputPilihNama');
+            const namaBaru = n.value.trim();
+            if(!namaBaru) return alert("Ketik nama baru dulu!");
+            // Cek apakah sudah ada
+            const ada = Object.values(masterKaryawan).some(v => v.toLowerCase() === namaBaru.toLowerCase());
+            if(ada) return alert("Nama ini sudah ada di daftar!");
+            
+            db.ref('master_karyawan').push(namaBaru).then(() => {
+                alert(namaBaru + " berhasil ditambahkan!");
+                n.value = "";
+            });
         }
 
         function hapusKaryawan() {
-            const sel = document.getElementById('pilihKaryawan');
-            const id = sel.options[sel.selectedIndex].getAttribute('data-id');
-            if(!id) return alert("Pilih nama di dropdown!");
-            if(confirm(`Hapus permanen ${sel.value}?`)) db.ref(`master_karyawan/${id}`).remove();
+            const n = document.getElementById('inputPilihNama');
+            const namaCari = n.value.trim();
+            if(!namaCari) return alert("Pilih/ketik nama yang ingin dihapus!");
+            
+            const idHapus = Object.keys(masterKaryawan).find(key => masterKaryawan[key] === namaCari);
+            if(!idHapus) return alert("Nama tidak ditemukan di database!");
+
+            if(confirm(`Hapus permanen ${namaCari} dari sistem?`)) {
+                db.ref(`master_karyawan/${idHapus}`).remove().then(() => n.value = "");
+            }
         }
 
         function setRentangLibur(isSet) {
@@ -187,15 +198,16 @@
         }
 
         function resetAbsen() {
-            const nama = document.getElementById('pilihKaryawan').value;
+            const nama = document.getElementById('inputPilihNama').value;
             if(!nama) return alert("Pilih nama!");
             const tgl = new Date().toISOString().split('T')[0];
             if(confirm(`Reset absen ${nama} hari ini?`)) db.ref(`absensi/${tgl}/${nama}`).remove();
         }
 
         function prosesAbsen(tipe) {
-            const nama = document.getElementById('pilihKaryawan').value;
-            if(!nama) return alert("Pilih Nama!");
+            const nama = document.getElementById('inputPilihNama').value;
+            if(!nama) return alert("Pilih/Ketik Nama!");
+            
             const s = new Date();
             const tgl = s.toISOString().split('T')[0];
             const jam = s.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
@@ -231,8 +243,6 @@
                 for(let i=1; i<=totalH; i++) {
                     const tgl = `${y}-${m}-${String(i).padStart(2,'0')}`, dObj = new Date(tgl);
                     let sim = "-", cls = "";
-                    
-                    // Prioritas: Minggu -> Libur Masal -> Absensi
                     if(dObj.getDay()===0) { sim = "OFF"; cls = "status-off"; }
                     else if(hariLibur[tgl]) { sim = "LBR"; cls = "status-lbr"; }
 
