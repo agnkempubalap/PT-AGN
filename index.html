@@ -2,67 +2,75 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v79.0 - FIXED SOFT</title>
+    <title>PT-AGN v79.1 - FINAL REPAIR</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
     <style>
-        :root{--p:#3b82f6;--s:#10b981;--d:#f43f5e;--w:#fbbf24;--bg:#0f172a;--c:#1e293b;--t:#f8fafc;--b:#334155}
-        body[data-theme="light"]{--bg:#f1f5f9;--c:#ffffff;--t:#1e293b;--b:#cbd5e1}
-        body{font-family:'Plus Jakarta Sans',sans-serif;margin:0;background:var(--bg);color:var(--t);padding:10px; transition: 0.3s}
-        .container{max-width:1450px;margin:0 auto}
-        
-        header{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px}
-        .logo-box{display:flex;align-items:center;gap:12px}
-        .logo-box img{width:55px;height:55px;border-radius:10px;background:#000;border:2px solid var(--p);object-fit:cover;cursor:pointer}
-        .dark-card{background:var(--c); border-radius:10px; border:1px solid var(--b); padding:8px 12px; display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--t)}
+        /* TEMA GELAP (DEFAULT) */
+        :root {
+            --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --border: #334155;
+            --primary: #3b82f6; --success: #10b981; --danger: #f43f5e; --warn: #fbbf24;
+        }
+        /* TEMA TERANG */
+        body.light-mode {
+            --bg: #f1f5f9; --card: #ffffff; --text: #1e293b; --border: #cbd5e1;
+        }
 
-        .card{background:var(--c);padding:15px;border-radius:18px;margin-bottom:12px;border:1px solid var(--b);box-shadow:0 4px 6px -1px rgba(0,0,0,0.1)}
-        h3{margin:0 0 12px;font-size:10px;color:var(--w);text-transform:uppercase;letter-spacing:1px;font-weight:800}
+        body { font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; background: var(--bg); color: var(--text); padding: 10px; transition: 0.3s; }
+        .container { max-width: 1450px; margin: 0 auto; }
         
-        /* TOMBOL SLIM & SOFT */
-        input,button,select{border-radius:10px;font-size:13px;height:35px;border:1px solid var(--b);background:var(--bg);color:var(--t);width:100%;box-sizing:border-box;outline:none;padding:0 12px}
+        header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
+        .logo-box { display: flex; align-items: center; gap: 10px; }
+        .logo-box img { width: 50px; height: 50px; border-radius: 10px; border: 2px solid var(--primary); background: #000; }
         
-        .btn{display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;border:none;color:#fff; transition: 0.2s; opacity: 0.9}
-        .btn:active{transform: scale(0.96)}
-        
-        .btn-masuk{background:rgba(59, 130, 246, 0.8) !important; height:42px !important; font-size:14px !important}
-        .btn-pulang{background:rgba(239, 68, 68, 0.8) !important; height:42px !important; font-size:14px !important}
-        .btn-izin{background:rgba(139, 92, 246, 0.8) !important; height:36px !important; font-size:13px !important}
-        .btn-save{background:rgba(16, 185, 129, 0.8) !important}
-        .btn-del{background:rgba(244, 63, 94, 0.8) !important}
+        .mode-btn { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 8px 15px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 12px; }
 
-        /* TABEL FIXED DARK MODE */
-        .table-wrap{overflow-x:auto; border-radius:12px; border:1px solid var(--b); background:var(--c); scroll-behavior: smooth}
-        .table-web{width:100%;border-collapse:separate;border-spacing:0;font-size:10px; color:var(--t)}
-        .table-web th, .table-web td{border-bottom:1px solid var(--b);border-right:1px solid var(--b);padding:8px 1px;text-align:center;min-width:35px; background: inherit}
-        
-        .nama-fixed{position:sticky !important;left:0;background-color:var(--c) !important;z-index:10;min-width:110px !important;text-align:left !important;padding-left:10px !important;font-weight:700; border-right: 2px solid var(--p) !important; color:var(--t)}
-        
-        .s-cell{border-radius:6px;width:32px;height:32px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;font-size:10px;margin: 0 auto}
-        .s-v{background:rgba(16,185,129,0.15);color:#10b981;border:0.5px solid #10b981} 
-        .s-late{background:rgba(251,191,36,0.15);color:#fbbf24;border:0.5px solid #fbbf24} 
-        .s-i{background:rgba(139,92,246,0.15);color:#8b5cf6;border:0.5px solid #8b5cf6}
-        .s-off{background:rgba(239,68,68,0.15);color:#ef4444;border:0.5px solid #ef4444} 
-        .s-a{background:rgba(71,85,105,0.15);color:#94a3b8;border:0.5px solid #475569} 
-        .s-l{background:rgba(168,85,247,0.15);color:#a855f7;border:0.5px solid #a855f7}
-        .s-mng{color:#4b5563; opacity:0.4; font-weight:400}
-        .jam-text{font-size:7px;font-weight:600;display:block;margin-top:2px}
+        .card { background: var(--card); padding: 15px; border-radius: 18px; margin-bottom: 12px; border: 1px solid var(--border); }
+        h3 { margin: 0 0 12px; font-size: 10px; color: var(--warn); text-transform: uppercase; letter-spacing: 1px; }
 
-        @media print { .no-print { display: none !important; } .table-web { transform: scale(0.7); transform-origin: top left; } }
+        /* INPUT & TOMBOL SLIM */
+        input, button { border-radius: 10px; font-size: 13px; height: 36px; border: 1px solid var(--border); background: var(--bg); color: var(--text); width: 100%; box-sizing: border-box; outline: none; padding: 0 12px; }
+        
+        .btn { display: flex; align-items: center; justify-content: center; font-weight: 700; cursor: pointer; border: none; color: #fff; opacity: 0.9; }
+        .btn:active { transform: scale(0.98); }
+        
+        .btn-masuk { background: #3b82f6 !important; height: 42px !important; }
+        .btn-pulang { background: #ef4444 !important; height: 42px !important; }
+        .btn-izin { background: #8b5cf6 !important; height: 36px !important; }
+        .btn-save { background: #10b981 !important; }
+        .btn-del { background: #f43f5e !important; }
+
+        /* TABEL SYNC MODE */
+        .table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); background: var(--card); }
+        .table-web { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 10px; color: var(--text); }
+        .table-web th, .table-web td { border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); padding: 8px 2px; text-align: center; background: var(--card); color: var(--text); }
+        
+        .nama-fixed { position: sticky !important; left: 0; z-index: 10; min-width: 100px !important; text-align: left !important; padding-left: 10px !important; font-weight: 700; border-right: 2px solid var(--primary) !important; background: var(--card) !important; color: var(--text) !important; }
+        
+        .s-cell { border-radius: 6px; width: 32px; height: 32px; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 900; font-size: 10px; margin: 0 auto; }
+        .s-v { background: rgba(16,185,129,0.2); color: #10b981; border: 1px solid #10b981; } 
+        .s-late { background: rgba(251,191,36,0.2); color: #fbbf24; border: 1px solid #fbbf24; } 
+        .s-i { background: rgba(139,92,246,0.2); color: #8b5cf6; border: 1px solid #8b5cf6; }
+        .s-off { background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid #ef4444; } 
+        .s-a { background: rgba(148,163,184,0.2); color: #94a3b8; border: 1px solid #94a3b8; } 
+        .s-l { background: rgba(168,85,247,0.2); color: #a855f7; border: 1px solid #a855f7; }
+        .s-mng { color: #94a3b8; opacity: 0.5; font-weight: 400; }
+        .jam-text { font-size: 7px; display: block; }
+
+        @media print { .no-print { display: none !important; } }
     </style>
 </head>
-<body data-theme="dark">
+<body>
     <div class="container">
         <header>
             <div class="logo-box">
-                <input type="file" id="inpLogo" style="display:none" accept="image/*" onchange="cLogo(event)">
-                <img id="mainLogo" src="https://i.ibb.co/mF9fR7z/agn-logo.png" onclick="document.getElementById('inpLogo').click()" onerror="this.src='https://ui-avatars.com/api/?name=AGN&background=000&color=fff'">
-                <div><h2 style="margin:0;font-size:1.1rem">PT AGN</h2><span style="font-size:10px;color:var(--p);font-weight:800">SYSTEM v79.0 FIXED</span></div>
+                <img id="mainLogo" src="https://i.ibb.co/mF9fR7z/agn-logo.png">
+                <div><h2 style="margin:0;font-size:1rem">PT AGN</h2><span style="font-size:9px;color:var(--primary);font-weight:800">SYSTEM v79.1</span></div>
             </div>
-            <div class="dark-card" onclick="toggleT()">
-                <span id="tIco">☀️</span> <span style="font-size:12px;font-weight:600" id="tTxt">Mode</span>
-            </div>
+            <button class="mode-btn" onclick="toggleMode()">
+                <span id="modeIcon">☀️</span> <span id="modeText">Light Mode</span>
+            </button>
         </header>
 
         <div class="card no-print">
@@ -82,8 +90,8 @@
                 <button class="btn btn-del" onclick="resetAbsen()">RESET DATA</button>
             </div>
             <div style="display:grid;grid-template-columns: 1fr 1fr; gap:8px">
-                <button class="btn btn-masuk" style="height:35px !important; font-size:12px !important" onclick="sLib(true)">SET LIBUR</button>
-                <button class="btn btn-del" style="height:35px !important; font-size:12px !important" onclick="sLib(false)">HAPUS LIBUR</button>
+                <button class="btn btn-masuk" style="height:34px !important; font-size:11px !important" onclick="sLib(true)">SET LIBUR</button>
+                <button class="btn btn-del" style="height:34px !important; font-size:11px !important" onclick="sLib(false)">HAPUS LIBUR</button>
             </div>
         </div>
 
@@ -96,7 +104,7 @@
             <button class="btn btn-izin" onclick="pAbsen('Izin')">📝 IZIN / KETERANGAN</button>
         </div>
 
-        <div class="card table-card">
+        <div class="card">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px" class="no-print">
                 <input type="month" id="fB" style="width:130px; height:32px" onchange="rRekap()">
                 <div style="display:flex; gap:6px">
@@ -104,7 +112,7 @@
                     <button class="btn btn-del" style="width:70px; height:32px; font-size:11px" onclick="window.print()">PDF</button>
                 </div>
             </div>
-            <div class="table-wrap" id="scrollArea">
+            <div class="table-wrap">
                 <table class="table-web" id="rekapTable">
                     <thead id="thWeb"></thead>
                     <tbody id="tbWeb"></tbody>
@@ -121,22 +129,22 @@
         window.onload=()=>{
             const m = new Date().toISOString().slice(0,7);
             document.getElementById('fB').value=m;
-            if(localStorage.getItem('agnLogo')) document.getElementById('mainLogo').src=localStorage.getItem('agnLogo');
             db.ref('master_karyawan').on('value',s=>{mk=s.val()||{}; uDl(); rRekap();});
             db.ref('absensi').on('value',s=>{ad=s.val()||{}; rRekap();});
             db.ref('hari_libur').on('value',s=>{hl=s.val()||{}; rRekap();});
         };
 
-        function toggleT(){ 
-            let b=document.body; let nt=b.getAttribute('data-theme')==='dark'?'light':'dark'; 
-            b.setAttribute('data-theme',nt); document.getElementById('tIco').innerText=nt==='dark'?'☀️':'🌙';
-            rRekap(); // Refresh tabel agar warna ikut berubah
+        function toggleMode() {
+            const body = document.body;
+            body.classList.toggle('light-mode');
+            const isLight = body.classList.contains('light-mode');
+            document.getElementById('modeIcon').innerText = isLight ? '🌙' : '☀️';
+            document.getElementById('modeText').innerText = isLight ? 'Dark Mode' : 'Light Mode';
         }
-        function cLogo(e){const r=new FileReader(); r.onload=()=>{document.getElementById('mainLogo').src=r.result; localStorage.setItem('agnLogo',r.result);}; r.readAsDataURL(e.target.files[0]);}
+
         function uDl(){let opt = Object.values(mk).sort().map(n=>`<option value="${n}">`).join(''); document.getElementById('lk').innerHTML=opt;}
         function tKaryawan(){let n=document.getElementById('iNama'); if(n.value){db.ref('master_karyawan').push(n.value).then(()=>{n.value="";});}}
         function hKaryawan(){let n=document.getElementById('iNama'); let id=Object.keys(mk).find(k=>mk[k]===n.value); if(id && confirm('Hapus?')) db.ref(`master_karyawan/${id}`).remove().then(()=>n.value="");}
-
         function pAbsen(ty){
             let inp=document.getElementById('iNama'), n=inp.value, now=new Date(), tgl=now.toISOString().split('T')[0];
             if(!n) return alert("Pilih Nama!");
@@ -156,10 +164,10 @@
         }
         function rRekap(){
             const f=document.getElementById('fB').value; if(!f) return;
-            const [y,m]=f.split('-'), last=new Date(y,m,0).getDate(), todayFull = new Date().toISOString().split('T')[0], tglSkrg = new Date().getDate();
+            const [y,m]=f.split('-'), last=new Date(y,m,0).getDate(), todayFull = new Date().toISOString().split('T')[0];
             const kList=Object.values(mk).sort();
             let h=`<tr><th class="nama-fixed">Nama</th>`;
-            for(let i=1;i<=last;i++) h+=`<th id="tgl-${i}" class="${i===tglSkrg?'today-col':''}">${i}</th>`;
+            for(let i=1;i<=last;i++) h+=`<th>${i}</th>`;
             h+=`<th>H</th><th>L</th><th>I</th><th>A</th></tr>`;
             document.getElementById('thWeb').innerHTML=h;
             let b="";
@@ -179,7 +187,7 @@
                     else if(isMin){ sW="M"; clW="s-mng"; }
                     else if(isLib){ sW="OFF"; clW="s-off"; }
                     else if(t < todayFull && t >= TGL_MULAI_SISTEM){ sW="A"; clW="s-a"; cA++; }
-                    row+=`<td class="${i===tglSkrg?'today-col':''}"><div class="s-cell ${clW}">${sW}<span class="jam-text">${infoW}</span></div></td>`;
+                    row+=`<td><div class="s-cell ${clW}">${sW}<span class="jam-text">${infoW}</span></div></td>`;
                 }
                 b+=`<tr>${row}<td>${cH}</td><td>${cL}</td><td>${cI}</td><td>${cA}</td></tr>`;
             });
