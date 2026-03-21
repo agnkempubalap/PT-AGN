@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN Management v25.0</title>
+    <title>PT-AGN Management v26.0</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
@@ -11,120 +11,104 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     
     <style>
-        :root {
-            --primary: #1e40af; --success: #15803d; --danger: #b91c1c;
-            --warning: #a16207; --dark: #0f172a; --bg: #f8fafc;
-        }
-
+        :root { --primary: #1e40af; --success: #15803d; --danger: #b91c1c; --warning: #a16207; --dark: #0f172a; --bg: #f8fafc; }
         body { font-family: 'Inter', sans-serif; margin: 0; background: var(--bg); color: var(--dark); padding: 10px; }
         .container { max-width: 1400px; margin: 0 auto; }
 
-        /* UI Header & Card */
-        header { display: flex; justify-content: space-between; align-items: center; padding: 10px; margin-bottom: 5px; }
-        .card { background: white; padding: 20px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        h3 { margin: 0 0 15px 0; font-size: 0.8rem; color: #64748b; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+        /* UI Styling */
+        header { display: flex; justify-content: space-between; align-items: center; padding: 10px; }
+        .card { background: white; padding: 20px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #e2e8f0; }
+        h3 { margin: 0 0 15px 0; font-size: 0.8rem; color: #64748b; text-transform: uppercase; font-weight: 700; }
         
         .grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
         @media (min-width: 768px) { .grid { grid-template-columns: 1fr 1fr; } }
 
-        input, select, button, textarea { border-radius: 8px; font-size: 14px; box-sizing: border-box; transition: 0.2s; font-family: inherit; }
+        input, select, button, textarea { border-radius: 8px; font-size: 14px; box-sizing: border-box; }
         input, select { width: 100%; padding: 12px; border: 1px solid #cbd5e1; margin-bottom: 10px; }
-        button { border: none; font-weight: 600; cursor: pointer; padding: 12px; }
         
-        .btn-success { background: var(--success); color: white; width: 100%; }
-        .btn-danger { background: var(--danger); color: white; width: 100%; }
-        .btn-primary { background: var(--primary); color: white; width: 100%; }
-        .btn-outline { background: white; border: 1px solid #cbd5e1; color: #475569; width: 100%; }
+        /* Tombol & Dropdown Export */
+        .btn-primary { background: var(--primary); color: white; border: none; font-weight: 600; cursor: pointer; padding: 12px; width: 100%; }
+        .export-container { position: relative; display: inline-block; }
+        .export-menu { 
+            display: none; position: absolute; right: 0; top: 45px; 
+            background: white; border: 1px solid #ddd; border-radius: 8px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 100; min-width: 150px;
+        }
+        .export-menu button { 
+            width: 100%; text-align: left; background: none; color: #333; 
+            padding: 12px; border: none; border-bottom: 1px solid #eee; cursor: pointer;
+        }
+        .export-menu button:hover { background: #f8fafc; }
 
-        /* Tabel Pro */
+        /* Tabel Styling */
         .table-wrap { overflow: auto; border-radius: 8px; border: 1px solid #e2e8f0; background: white; margin-bottom: 15px; }
         table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 1200px; }
         th, td { border: 1px solid #e2e8f0; padding: 8px; text-align: center; }
         th { background: #f1f5f9; color: #475569; position: sticky; top: 0; z-index: 5; }
         .nama-fixed { position: sticky; left: 0; background: white; font-weight: 600; text-align: left; width: 150px; z-index: 4; border-right: 2px solid #e2e8f0; }
         
-        /* Status Styling */
         .status-v { color: var(--success); font-weight: 800; }
         .status-t { color: var(--warning); font-weight: 800; }
         .status-i { color: #0891b2; font-weight: 800; }
         .status-off { color: #ef4444; background: #fff1f2; }
 
-        /* Catatan Admin */
-        .admin-note-area { margin-top: 15px; }
+        /* Catatan */
         textarea#catatanAdmin { width: 100%; height: 80px; padding: 12px; border: 1px solid #cbd5e1; resize: none; background: #fffbeb; }
 
-        /* Print/PDF Logic */
-        #kop-surat { display: none; text-align: center; margin-bottom: 20px; border-bottom: 3px double #333; padding-bottom: 10px; }
-        #print-note { display: none; margin-top: 20px; padding: 15px; border: 1px solid #ccc; font-size: 12px; }
-
+        /* Print Logic */
+        #kop-surat, #print-note { display: none; }
         @media print {
             @page { size: landscape; margin: 1cm; }
             .no-print { display: none !important; }
-            body { background: white; padding: 0; }
-            .card { border: none; box-shadow: none; padding: 0; }
             #kop-surat, #print-note { display: block; }
-            .table-wrap { overflow: visible; }
             table { font-size: 9px; }
-            th { background: #f2f2f2 !important; color: #000; }
-            .nama-fixed { background: white !important; }
+            .table-wrap { overflow: visible; }
         }
-
-        #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 10px 25px; border-radius: 50px; font-size: 13px; display: none; z-index: 9999; }
     </style>
 </head>
 <body>
 
-    <div id="toast"></div>
-
     <div class="container">
-        <!-- HEADER CETAK -->
-        <div id="kop-surat">
-            <h1 style="margin:0; font-size: 22px;">LAPORAN REKAPITULASI ABSENSI KARYAWAN</h1>
-            <h2 style="margin:5px 0; font-size: 18px; color:#1e40af;">PT. AGUNG GLOBAL NIAGA (AGN)</h2>
-            <p id="tglCetak" style="margin:0; font-size: 11px;"></p>
+        <!-- HEADER PRINT -->
+        <div id="kop-surat" style="text-align: center; border-bottom: 3px double #333; margin-bottom: 20px;">
+            <h1 style="margin:0;">PT. AGUNG GLOBAL NIAGA (AGN)</h1>
+            <p>Laporan Presensi Bulanan Karyawan</p>
         </div>
 
         <header class="no-print">
-            <h2>📦 PT-AGN Management</h2>
-            <span style="font-size: 11px; color: #64748b;">v25.0 Executive</span>
+            <h2>📦 PT-AGN v26.0</h2>
         </header>
 
         <div class="grid no-print">
             <div class="card">
                 <h3>Input Presensi</h3>
                 <select id="pilihKaryawan"><option value="">-- Pilih Nama --</option></select>
-                <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-                    <button class="btn-success" onclick="prosesAbsen('Masuk')">MASUK</button>
-                    <button class="btn-danger" onclick="prosesAbsen('Pulang')">PULANG</button>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn-primary" style="background:var(--success)" onclick="prosesAbsen('Masuk')">MASUK</button>
+                    <button class="btn-primary" style="background:var(--danger)" onclick="prosesAbsen('Pulang')">PULANG</button>
                 </div>
-                <button class="btn-outline" style="border-color: var(--warning); color: var(--warning);" onclick="prosesAbsen('Izin')">IZIN / SAKIT</button>
-                <button class="btn-outline" style="margin-top: 10px; font-size: 11px; border: none; color: #be123c;" onclick="hapusKaryawan()">Hapus Karyawan</button>
+                <button class="btn-primary" style="background:var(--warning); margin-top:10px" onclick="prosesAbsen('Izin')">INPUT IZIN / SAKIT</button>
             </div>
 
             <div class="card">
-                <h3>Kelola Data</h3>
-                <label>Tambah Karyawan</label>
-                <div style="display: flex; gap: 5px; margin-bottom: 15px;">
+                <h3>Kelola Nama</h3>
+                <div style="display: flex; gap: 5px;">
                     <input type="text" id="inputNamaBaru" placeholder="Nama..." style="margin:0;">
-                    <button class="btn-primary" style="width: auto;" onclick="tambahKaryawan()">Simpan</button>
+                    <button class="btn-primary" style="width:auto" onclick="tambahKaryawan()">Simpan</button>
                 </div>
-                <label>Set Hari Libur</label>
-                <div style="display: flex; gap: 5px; margin-bottom: 10px;">
-                    <input type="date" id="tglMulaiLibur" style="margin:0;">
-                    <input type="date" id="tglSelesaiLibur" style="margin:0;">
-                </div>
-                <button class="btn-outline" onclick="setRentangLibur(true)">Set Libur Masal</button>
             </div>
         </div>
 
-        <!-- AREA LAPORAN -->
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;" class="no-print">
-                <h3>Rekapitulasi Bulanan</h3>
-                <div style="display: flex; gap: 8px;">
-                    <input type="month" id="filterBulan" style="margin:0; width: 160px;" onchange="renderRekap()">
-                    <button onclick="exportToExcel()" style="background:#15803d; color:white; padding: 0 15px;">📊 EXCEL</button>
-                    <button onclick="siapkanCetak()" style="background:var(--primary); color:white; padding: 0 15px;">🖨️ PDF</button>
+                <input type="month" id="filterBulan" style="margin:0; width: 150px;" onchange="renderRekap()">
+                
+                <div class="export-container">
+                    <button class="btn-primary" style="width:140px; background:#475569" onclick="toggleExport()">EXPORT ▾</button>
+                    <div id="exportMenu" class="export-menu">
+                        <button onclick="exportToExcel()">📊 Format Excel</button>
+                        <button onclick="siapkanCetak()">📄 Format PDF</button>
+                    </div>
                 </div>
             </div>
 
@@ -135,26 +119,20 @@
                 </table>
             </div>
 
-            <div class="admin-note-area no-print">
-                <label>📝 Tambahkan Catatan (Muncul di laporan PDF):</label>
-                <textarea id="catatanAdmin" placeholder="Contoh: Alda sakit tipes 3 hari, Hatta izin nikah kakak..."></textarea>
+            <div class="no-print">
+                <label>📝 Catatan Admin (Auto-fill tersedia):</label>
+                <textarea id="catatanAdmin" placeholder="Ketik catatan di sini..."></textarea>
             </div>
 
-            <!-- Bagian ini muncul hanya di Print -->
-            <div id="print-note">
-                <strong>Catatan Admin:</strong><br>
-                <p id="noteContent" style="margin-top: 5px; white-space: pre-wrap;"></p>
-                <div style="margin-top: 40px; display: flex; justify-content: flex-end;">
-                    <div style="text-align: center; width: 200px; border-top: 1px solid #000; padding-top: 5px;">
-                        Tanda Tangan Admin
-                    </div>
-                </div>
+            <div id="print-note" style="margin-top:20px;">
+                <strong>Catatan/Keterangan:</strong>
+                <p id="noteContent" style="white-space: pre-wrap; border: 1px solid #ccc; padding: 10px;"></p>
             </div>
         </div>
     </div>
 
     <script>
-        // FIREBASE SETUP
+        // FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyAu67MAhWBxdmciPi3xOKWhdy-uP4u9tXI",
             authDomain: "pt-agn.firebaseapp.com",
@@ -167,42 +145,25 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         
-        let masterKaryawan = {}, hariLibur = {}, absensiData = {};
+        let masterKaryawan = {}, absensiData = {};
 
         window.onload = () => {
-            const skrg = new Date();
-            document.getElementById('filterBulan').value = `${skrg.getFullYear()}-${String(skrg.getMonth() + 1).padStart(2, '0')}`;
+            const s = new Date();
+            document.getElementById('filterBulan').value = `${s.getFullYear()}-${String(s.getMonth() + 1).padStart(2, '0')}`;
             db.ref('master_karyawan').on('value', snap => { masterKaryawan = snap.val() || {}; updateDropdown(); renderRekap(); });
-            db.ref('hari_libur').on('value', snap => { hariLibur = snap.val() || {}; renderRekap(); });
             db.ref('absensi').on('value', snap => { absensiData = snap.val() || {}; renderRekap(); });
         };
 
-        function showNotif(m) { 
-            const t = document.getElementById('toast'); 
-            t.innerText = m; t.style.display = 'block'; 
-            setTimeout(() => t.style.display = 'none', 2000); 
-        }
-
         function updateDropdown() {
-            const select = document.getElementById('pilihKaryawan');
+            const sel = document.getElementById('pilihKaryawan');
             let opt = '<option value="">-- Pilih Nama --</option>';
-            Object.entries(masterKaryawan).sort((a,b)=>a[1].localeCompare(b[1])).forEach(([id,nama]) => {
-                opt += `<option value="${nama}" data-id="${id}">${nama}</option>`;
-            });
-            select.innerHTML = opt;
+            Object.values(masterKaryawan).sort().forEach(n => opt += `<option value="${n}">${n}</option>`);
+            sel.innerHTML = opt;
         }
 
         function tambahKaryawan() {
-            const inp = document.getElementById('inputNamaBaru');
-            if(!inp.value) return;
-            db.ref('master_karyawan').push(inp.value.trim()).then(()=> { showNotif("Tersimpan"); inp.value=""; });
-        }
-
-        function hapusKaryawan() {
-            const sel = document.getElementById('pilihKaryawan');
-            const id = sel.options[sel.selectedIndex].getAttribute('data-id');
-            if(!id || !confirm("Hapus karyawan ini?")) return;
-            db.ref('master_karyawan/'+id).remove().then(()=> showNotif("Terhapus"));
+            const n = document.getElementById('inputNamaBaru');
+            if(n.value) db.ref('master_karyawan').push(n.value.trim()).then(()=> n.value="");
         }
 
         function prosesAbsen(tipe) {
@@ -211,40 +172,42 @@
             const s = new Date();
             const tgl = s.toISOString().split('T')[0];
             const jam = s.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
+            
             let status = (tipe==='Masuk' && (s.getHours()>9 || (s.getHours()===9 && s.getMinutes()>0))) ? "Terlambat" : "Hadir";
-            db.ref(`absensi/${tgl}/${nama}/${tipe}`).set({ waktu: jam, status: status }).then(()=> showNotif("Berhasil!"));
+            
+            // FITUR AUTO-NOTE untuk IZIN
+            if(tipe === 'Izin') {
+                const area = document.getElementById('catatanAdmin');
+                const tglIndo = s.toLocaleDateString('id-ID', {day:'numeric', month:'short'});
+                const noteBaru = `- ${nama} Izin (${tglIndo})\n`;
+                if(!area.value.includes(nama + " Izin")) area.value += noteBaru;
+            }
+
+            db.ref(`absensi/${tgl}/${nama}/${tipe}`).set({ waktu: jam, status: status });
         }
 
-        function setRentangLibur(isSet) {
-            const m = document.getElementById('tglMulaiLibur').value, s = document.getElementById('tglSelesaiLibur').value;
-            if(!m || !s) return alert("Pilih Tanggal!");
-            let u = {}; let curr = new Date(m), end = new Date(s);
-            while(curr <= end) { u[curr.toISOString().split('T')[0]] = isSet ? true : null; curr.setDate(curr.setDate()+1); }
-            db.ref('hari_libur').update(u).then(()=> showNotif("Update Libur Berhasil"));
+        function toggleExport() {
+            const m = document.getElementById('exportMenu');
+            m.style.display = m.style.display === 'block' ? 'none' : 'block';
         }
 
         function renderRekap() {
             const f = document.getElementById('filterBulan').value;
-            if(!f) return;
             const [y, m] = f.split('-');
             const totalH = new Date(y, m, 0).getDate();
-            let h = `<th class="nama-fixed">Nama Karyawan</th>`;
-            for(let i=1; i<=totalH; i++) {
-                const d = new Date(y, m-1, i);
-                h += `<th style="${d.getDay()===0?'color:red':''}">${i}<br>${d.toLocaleDateString('id-ID',{weekday:'short'})}</th>`;
-            }
-            h += `<th>H</th><th>T</th><th>I</th><th>%</th>`;
+            
+            let h = `<th class="nama-fixed">Nama</th>`;
+            for(let i=1; i<=totalH; i++) h += `<th>${i}</th>`;
+            h += `<th>H</th><th>T</th><th>I</th>`;
             document.getElementById('theadRekap').innerHTML = h;
 
             let b = "";
-            Object.values(masterKaryawan).sort().forEach((nama, idx) => {
-                let cH=0, cT=0, cI=0, cKerja=0;
+            Object.values(masterKaryawan).sort().forEach(nama => {
+                let cH=0, cT=0, cI=0;
                 let r = `<td class="nama-fixed">${nama}</td>`;
                 for(let i=1; i<=totalH; i++) {
-                    const tgl = `${y}-${m}-${String(i).padStart(2,'0')}`, dObj = new Date(tgl);
+                    const tgl = `${y}-${m}-${String(i).padStart(2,'0')}`;
                     let sim = "-", cls = "";
-                    if(dObj.getDay()===0) { sim = "OFF"; cls = "status-off"; }
-                    else { cKerja++; if(hariLibur[tgl]) sim = "LBR"; }
                     if(absensiData[tgl] && absensiData[tgl][nama]) {
                         const d = absensiData[tgl][nama];
                         if(d.Izin) { sim="I"; cls="status-i"; cI++; }
@@ -255,23 +218,22 @@
                     }
                     r += `<td class="${cls}">${sim}</td>`;
                 }
-                const p = cKerja > 0 ? Math.round(((cH+cT)/cKerja)*100) : 0;
-                b += `<tr style="${idx%2===0?'':'background:#fcfdfe'}">${r}<td>${cH}</td><td>${cT}</td><td>${cI}</td><td style="font-weight:700">${p}%</td></tr>`;
+                b += `<tr>${r}<td>${cH}</td><td>${cT}</td><td>${cI}</td></tr>`;
             });
             document.getElementById('tbodyRekap').innerHTML = b;
         }
 
         function siapkanCetak() {
-            const note = document.getElementById('catatanAdmin').value;
-            document.getElementById('noteContent').innerText = note || "(Tanpa catatan tambahan)";
-            document.getElementById('tglCetak').innerText = "Dicetak pada: " + new Date().toLocaleString('id-ID');
+            document.getElementById('noteContent').innerText = document.getElementById('catatanAdmin').value;
             window.print();
+            toggleExport();
         }
 
         function exportToExcel() {
             const t = document.getElementById("tabelUtama");
-            const wb = XLSX.utils.table_to_book(t, { sheet: "LAPORAN_AGN" });
+            const wb = XLSX.utils.table_to_book(t);
             XLSX.writeFile(wb, `Laporan_AGN_${document.getElementById('filterBulan').value}.xlsx`);
+            toggleExport();
         }
     </script>
 </body>
