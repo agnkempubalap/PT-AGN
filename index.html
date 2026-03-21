@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v64.0 - Final Stable</title>
+    <title>PT-AGN v66.0 - Full Report & Notes</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700&display=swap" rel="stylesheet">
@@ -10,7 +10,7 @@
         :root{--p:#2563eb;--s:#10b981;--d:#ef4444;--w:#f59e0b;--bg:#f1f5f9;--c:#fff;--t:#1e293b;--b:#e2e8f0}
         [data-theme="dark"]{--bg:#0f172a;--c:#1e293b;--t:#f8fafc;--b:#334155}
         body{font-family:'Plus Jakarta Sans',sans-serif;margin:0;background:var(--bg);color:var(--t);padding:8px;transition:0.2s}
-        .container{max-width:1200px;margin:0 auto}
+        .container{max-width:1400px;margin:0 auto}
         header{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px;padding:5px}
         .logo-box{display:flex;align-items:center;gap:10px}
         .logo-box img{width:60px;height:60px;border-radius:12px;background:#fff;border:2px solid var(--p);object-fit:contain}
@@ -19,14 +19,16 @@
         input,button{border-radius:10px;font-size:14px;height:45px;border:1px solid var(--b);background:var(--c);color:var(--t);width:100%;box-sizing:border-box;outline:none}
         .btn{display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;border:none;color:#fff}
         .btn-sq{width:55px;flex-shrink:0}
-        #toast{position:fixed;bottom:20px;right:20px;padding:12px 20px;border-radius:10px;color:#fff;font-size:13px;transform:translateY(100px);transition:0.3s;z-index:999;display:none}
-        #toast.show{display:block;transform:translateY(0)}
+        #toast{position:fixed;bottom:20px;right:20px;padding:12px 20px;border-radius:10px;color:#fff;font-size:13px;z-index:999;display:none}
+        #toast.show{display:block}
         .table-wrap{overflow:auto;border-radius:12px;border:1px solid var(--b);background:var(--c)}
-        table{width:100%;border-collapse:collapse;font-size:10px;min-width:1100px}
-        th,td{border-bottom:1px solid var(--b);padding:8px 4px;text-align:center}
+        table{width:100%;border-collapse:collapse;font-size:10px;min-width:1300px}
+        th,td{border-bottom:1px solid var(--b);padding:6px 4px;text-align:center}
         .nama-fixed{position:sticky;left:0;background:var(--c)!important;font-weight:700;text-align:left;width:120px;z-index:4;border-right:2px solid var(--b);padding-left:10px}
-        .s-cell{border-radius:4px;width:28px;min-height:28px;display:inline-flex;align-items:center;justify-content:center;font-weight:800}
-        .s-v{background:#22c55e;color:#fff} .s-i{background:#eab308;color:#000} .s-off{background:#ef4444;color:#fff}
+        .s-cell{border-radius:4px;width:28px;min-height:28px;display:inline-flex;align-items:center;justify-content:center;font-weight:800;position:relative}
+        .s-v{background:#22c55e;color:#fff} .s-i{background:#eab308;color:#000} .s-off{background:#ef4444;color:#fff} .s-a{background:#64748b;color:#fff}
+        .col-total{font-weight:bold;background:#f8fafc;color:#1e293b}
+        [data-theme="dark"] .col-total{background:#334155;color:#fff}
         @media print { .card:not(:last-child), header, .btn, input { display: none !important; } body { background: white; } table { border: 1px solid #000; } th, td { border: 1px solid #000 !important; -webkit-print-color-adjust: exact; } }
     </style>
 </head>
@@ -36,7 +38,7 @@
         <header>
             <div class="logo-box">
                 <img src="https://ui-avatars.com/api/?name=AGN&background=2563eb&color=fff">
-                <div><h2 style="margin:0;font-size:1rem">PT AGN</h2><span style="font-size:9px;color:var(--w);font-weight:800">SYSTEM v64.0</span></div>
+                <div><h2 style="margin:0;font-size:1rem">PT AGN</h2><span style="font-size:9px;color:var(--w);font-weight:800">SYSTEM v66.0</span></div>
             </div>
             <button onclick="toggleT()" id="tBtn" style="width:80px;font-size:11px">🌙 Dark</button>
         </header>
@@ -76,15 +78,15 @@
                 <button class="btn" style="background:var(--s);height:55px" onclick="pAbsen('Masuk')">MASUK</button>
                 <button class="btn" style="background:var(--d);height:55px" onclick="pAbsen('Pulang')">PULANG</button>
             </div>
-            <button class="btn" style="background:var(--w);margin-top:10px;height:42px" onclick="pAbsen('Izin')">📝 IZIN / SAKIT</button>
+            <button class="btn" style="background:var(--w);margin-top:10px;height:42px" onclick="pAbsen('Izin')">📝 IZIN / SAKIT (ISI NOTE)</button>
         </div>
 
         <div class="card">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px">
                 <input type="month" id="fB" style="width:130px" onchange="rRekap()">
                 <div style="display:flex;gap:5px">
-                    <button class="btn" style="background:#1d6f42;width:100px;font-size:11px" onclick="doExcel()">📂 EXCEL</button>
-                    <button class="btn" style="background:#b91c1c;width:100px;font-size:11px" onclick="window.print()">📜 PDF</button>
+                    <button class="btn" style="background:#1d6f42;width:95px;font-size:10px" onclick="doExcel()">📂 EXCEL</button>
+                    <button class="btn" style="background:#b91c1c;width:95px;font-size:10px" onclick="window.print()">📜 PDF</button>
                 </div>
             </div>
             <div class="table-wrap"><table><thead><tr id="thR"></tr></thead><tbody id="tbR"></tbody></table></div>
@@ -116,66 +118,71 @@
         };
 
         function uDl(){document.getElementById('lk').innerHTML=Object.values(mk).sort().map(n=>`<option value="${n}">`).join('');}
-        function tKaryawan(){let n=document.getElementById('iNama'); if(n.value) db.ref('master_karyawan').push(n.value).then(()=>n.value="");}
-        function hKaryawan(){let n=document.getElementById('iNama'); let id=Object.keys(mk).find(k=>mk[k]===n.value); if(id && confirm('Hapus?')) db.ref(`master_karyawan/${id}`).remove();}
-        function resetPerKaryawan(){ let n=document.getElementById('iNama').value, t=document.getElementById('tglReset').value; if(n && t && confirm('Hapus?')) db.ref(`absensi/${t}/${n}`).remove(); }
+        function tKaryawan(){let n=document.getElementById('iNama'); if(n.value) db.ref('master_karyawan').push(n.value).then(()=>{n.value=""; sT("Berhasil");});}
+        function hKaryawan(){let n=document.getElementById('iNama'); let id=Object.keys(mk).find(k=>mk[k]===n.value); if(id && confirm('Hapus?')) db.ref(`master_karyawan/${id}`).remove().then(()=>{n.value="";});}
+        function resetPerKaryawan(){ let n=document.getElementById('iNama'), t=document.getElementById('tglReset'); if(n.value && t.value && confirm('Hapus?')) db.ref(`absensi/${t.value}/${n.value}`).remove().then(()=>{t.value=""; n.value=""; sT("Terhapus");}); }
         
         function sLib(st){ 
-            let m=document.getElementById('tM').value, s=document.getElementById('tS').value;
-            if(!m) return;
-            if(!s) { db.ref(`hari_libur/${m}`).set(st?true:null); }
-            else {
-                let start=new Date(m), end=new Date(s);
-                if(end < start) return;
-                let curr=new Date(start);
-                while(curr <= end){
-                    db.ref(`hari_libur/${curr.toISOString().split('T')[0]}`).set(st?true:null);
-                    curr.setDate(curr.getDate()+1);
-                    if(curr.getFullYear() > 2030) break; // Safety break
-                }
-            }
+            let m=document.getElementById('tM'), s=document.getElementById('tS'); if(!m.value) return;
+            let start=new Date(m.value), end=s.value ? new Date(s.value) : start;
+            let curr=new Date(start);
+            while(curr <= end){ db.ref(`hari_libur/${curr.toISOString().split('T')[0]}`).set(st?true:null); curr.setDate(curr.getDate()+1); }
+            m.value=""; s.value=""; sT("Update Libur");
         }
 
         function pAbsen(ty){
-            let n=document.getElementById('iNama').value, now=new Date(), tgl=now.toISOString().split('T')[0], jam=now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
-            if(!n) return sT("Pilih Nama!","error");
-            db.ref(`absensi/${tgl}/${n}/${ty}`).set({waktu:jam,status:(ty==='Masuk'&&(now.getHours()>9))?"Terlambat":"Hadir"}).then(()=>sT(ty+" Berhasil!"));
+            let n=document.getElementById('iNama'), now=new Date(), tgl=now.toISOString().split('T')[0], jam=now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+            if(!n.value) return sT("Pilih Nama!","error");
+            let note = ""; if(ty==='Izin') { note = prompt("Masukkan alasan Izin/Sakit:"); if(note === null) return; }
+            db.ref(`absensi/${tgl}/${n.value}/${ty}`).set({waktu:jam, status:(ty==='Masuk'&&(now.getHours()>9))?"Terlambat":"Hadir", note:note}).then(()=>{
+                sT(ty+" Berhasil!"); n.value="";
+            });
         }
 
         function rRekap(){
             const f=document.getElementById('fB').value; if(!f) return;
             const [y,m]=f.split('-'), last=new Date(y,m,0).getDate();
-            document.getElementById('thR').innerHTML=`<th class="nama-fixed">Karyawan</th>${Array.from({length:last},(_,i)=>`<th>${i+1}</th>`).join('')}<th>H</th>`;
+            const today = new Date().toISOString().split('T')[0];
+            
+            document.getElementById('thR').innerHTML=`<th class="nama-fixed">Karyawan</th>${Array.from({length:last},(_,i)=>`<th>${i+1}</th>`).join('')}<th class="col-total">H</th><th class="col-total">I</th><th class="col-total">A</th>`;
+            
             document.getElementById('tbR').innerHTML=Object.values(mk).sort().map(n=>{
-                let cH=0, row=`<td class="nama-fixed">${n}</td>`;
+                let cH=0, cI=0, cA=0, row=`<td class="nama-fixed">${n}</td>`;
                 for(let i=1;i<=last;i++){
-                    let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), s="-", cl="";
+                    let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), s="-", cl="", title="";
                     if(d.getDay()===0||hl[t]){s="OFF"; cl="s-off";}
-                    if(ad[t]&&ad[t][n]){ if(ad[t][n].Izin){s="I";cl="s-i"}else if(ad[t][n].Masuk){s="H";cl="s-v";cH++} }
-                    row+=`<td><div class="s-cell ${cl}">${s}</div></td>`;
+                    else {
+                        if(ad[t]&&ad[t][n]){
+                            if(ad[t][n].Izin){s="I";cl="s-i";cI++; title=ad[t][n].Izin.note || "";}
+                            else if(ad[t][n].Masuk){s="H";cl="s-v";cH++;}
+                        } else if(t < today) {s="A"; cl="s-a"; cA++;}
+                    }
+                    row+=`<td><div class="s-cell ${cl}" title="${title}">${s}</div></td>`;
                 }
-                return `<tr>${row}<td>${cH}</td></tr>`;
+                return `<tr>${row}<td class="col-total">${cH}</td><td class="col-total">${cI}</td><td class="col-total">${cA}</td></tr>`;
             }).join('');
         }
 
         function doExcel(){
             const f=document.getElementById('fB').value; const [y,m]=f.split('-'); const last=new Date(y,m,0).getDate();
             let html=`<html><head><meta charset="UTF-8"></head><body><table border="1">
-                <tr><th colspan="${last+2}" style="background-color:#FFA500; color:white; height:35px;">REKAP ABSENSI PT AGN - ${f}</th></tr>
-                <tr style="background-color:#e0e0e0; font-weight:bold;"><th>Nama</th><th>Jabatan</th>${Array.from({length:last},(_,i)=>`<th>${i+1}</th>`).join('')}</tr>`;
+                <tr><th colspan="${last+4}" style="background-color:#FFA500; color:white; height:35px;">REKAP ABSENSI PT AGN - ${f}</th></tr>
+                <tr style="background-color:#e0e0e0; font-weight:bold;"><th>Nama</th>${Array.from({length:last},(_,i)=>`<th>${i+1}</th>`).join('')}<th>H</th><th>I</th><th>A</th></tr>`;
             Object.values(mk).sort().forEach(n=>{
-                html+=`<tr><td style="font-weight:bold;">${n}</td><td>Karyawan</td>`;
+                let cH=0, cI=0, cA=0; html+=`<tr><td style="font-weight:bold;">${n}</td>`;
                 for(let i=1; i<=last; i++){
                     let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), bg="#FFFFFF", txt="-";
                     if(d.getDay()===0||hl[t]){bg="#ff0000";txt="OFF"}
-                    if(ad[t]&&ad[t][n]){ if(ad[t][n].Izin){bg="#ffff00";txt="I"}else if(ad[t][n].Masuk){bg="#00ff00";txt="H"} }
+                    else if(ad[t]&&ad[t][n]){
+                        if(ad[t][n].Izin){bg="#ffff00";txt="I";cI++}else if(ad[t][n].Masuk){bg="#00ff00";txt="H";cH++}
+                    } else if(t < new Date().toISOString().split('T')[0]){bg="#64748b";txt="A";cA++}
                     html+=`<td style="background-color:${bg}; text-align:center;">${txt}</td>`;
                 }
-                html+=`</tr>`;
+                html+=`<td style="font-weight:bold;text-align:center;">${cH}</td><td style="font-weight:bold;text-align:center;">${cI}</td><td style="font-weight:bold;text-align:center;">${cA}</td></tr>`;
             });
             html+=`</table></body></html>`;
             const base64=s=>window.btoa(unescape(encodeURIComponent(s)));
-            const link=document.createElement("a"); link.href=`data:application/vnd.ms-excel;base64,${base64(html)}`; link.download=`ABSENSI_AGN_${f}.xls`; link.click();
+            const link=document.createElement("a"); link.href=`data:application/vnd.ms-excel;base64,${base64(html)}`; link.download=`REKAP_AGN_${f}.xls`; link.click();
         }
     </script>
 </body>
