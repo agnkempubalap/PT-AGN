@@ -3,91 +3,161 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN Management v19.0</title>
+    <title>PT-AGN Management v22.0</title>
     
+    <!-- Firebase & Excel Library -->
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     
     <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 15px; background: #f0f2f5; color: #333; }
-        .card { background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
-        h2, h3 { margin-top: 0; color: #0056b3; border-bottom: 2px solid #eee; padding-bottom: 8px; font-size: 1.1rem; }
-        label { font-weight: bold; font-size: 13px; display: block; margin-bottom: 5px; color: #666; }
-        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; font-size: 16px; }
-        button { background: #007bff; color: white; border: none; font-weight: bold; cursor: pointer; }
-        button:active { transform: scale(0.96); }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .btn-masuk { background: #28a745; }
-        .btn-pulang { background: #dc3545; }
-        .btn-izin { background: #ffc107; color: black; }
-        .btn-reset-absen { background: #6c757d; font-size: 13px; padding: 8px; margin-top: 5px; }
-        .btn-tambah { background: #6f42c1; margin: 0; width: auto; }
+        :root {
+            --primary: #2563eb; --success: #10b981; --danger: #ef4444;
+            --warning: #f59e0b; --dark: #1e293b; --bg: #f8fafc;
+        }
+
+        body { font-family: 'Inter', sans-serif; margin: 0; background: var(--bg); color: var(--dark); padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; }
+
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid #e2e8f0; }
+        h2 { margin: 0; font-size: 1.5rem; font-weight: 700; color: var(--dark); }
+        .version { font-size: 0.8rem; background: #e2e8f0; padding: 4px 10px; border-radius: 20px; }
+
+        .card { 
+            background: white; padding: 24px; border-radius: 16px; margin-bottom: 20px; 
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid #f1f5f9;
+        }
+
+        h3 { margin-top: 0; font-size: 0.9rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 15px; }
+        label { font-weight: 600; font-size: 13px; display: block; margin-bottom: 8px; color: #475569; }
+
+        input, select { 
+            width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 10px; 
+            border: 1px solid #cbd5e1; font-size: 15px; transition: 0.2s;
+        }
+        input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+
+        button { 
+            width: 100%; padding: 12px; border-radius: 10px; border: none; 
+            font-weight: 600; cursor: pointer; transition: all 0.2s;
+            display: flex; justify-content: center; align-items: center; gap: 8px;
+        }
+        button:active { transform: scale(0.98); }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-outline { background: transparent; border: 1px solid #cbd5e1; color: #64748b; }
+        .btn-excel { background: #15803d; color: white; }
+
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+        /* Toast Notification */
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; }
+        .toast {
+            background: var(--dark); color: white; padding: 12px 24px; border-radius: 12px;
+            margin-bottom: 10px; box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+            animation: slideIn 0.3s ease-out forwards; font-size: 14px;
+        }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* Table Styling */
+        .table-container { overflow: auto; max-height: 550px; border-radius: 12px; border: 1px solid #e2e8f0; position: relative; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 11px; min-width: 1300px; }
+        th, td { padding: 8px; text-align: center; border-bottom: 1px solid #f1f5f9; border-right: 1px solid #f1f5f9; }
+        th { background: #f8fafc; font-weight: 700; position: sticky; top: 0; z-index: 10; }
         
-        .table-container { overflow-x: auto; margin-top: 15px; border-radius: 8px; border: 1px solid #ddd; }
-        table { width: 100%; border-collapse: collapse; font-size: 10px; min-width: 1000px; }
-        th, td { border: 1px solid #ddd; padding: 5px; text-align: center; }
-        th { background: #f8f9fa; }
-        
-        .status-hadir { background: #d4edda; color: #155724; font-weight: bold; } 
-        .status-terlambat { background: #fff3cd; color: #856404; font-weight: bold; }
-        .status-izin { background: #d1ecf1; color: #0c5460; font-weight: bold; }
-        .status-minggu { background: #ffebf0; color: #d00000; font-weight: bold; }
-        .status-libur { background: #e9ecef; color: #6c757d; font-weight: normal; }
-        
-        .nama-kolom { background: #f8f9fa; font-weight: bold; position: sticky; left: 0; z-index: 2; text-align: left; padding-left: 10px; width: 130px; }
-        .manage-row { display: flex; gap: 8px; align-items: center; margin-bottom: 15px; background: #f9f9f9; padding: 10px; border-radius: 8px; border: 1px dashed #ccc; }
-        #notif { text-align: center; font-weight: bold; margin-top: 5px; min-height: 20px; }
+        .nama-kolom { 
+            position: sticky; left: 0; background: #fff; z-index: 9; 
+            text-align: left; padding-left: 15px; font-weight: 600; width: 160px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+        }
+
+        .col-summary { background: #fdfdfd; font-weight: 700; width: 40px; }
+        .head-summary { background: #edf2f7 !important; color: #2d3748; }
+
+        /* Status Colors */
+        .status-hadir { color: var(--success); font-weight: 800; }
+        .status-terlambat { color: var(--warning); font-weight: 800; }
+        .status-izin { color: #06b6d4; font-weight: 800; }
+        .status-minggu { background: #fef2f2; color: var(--danger); }
+        .status-libur { background: #f1f5f9; color: #94a3b8; }
+
+        @media print { 
+            .card:not(.rekap-card), header, .no-print { display: none !important; } 
+            body { padding: 0; background: white; }
+            .rekap-card { box-shadow: none; border: none; padding: 0; }
+            .table-container { max-height: none; overflow: visible; }
+        }
     </style>
 </head>
 <body>
 
-    <h2>📦 PT-AGN System v19.0 (Full Real-time)</h2>
+    <div id="toast-container"></div>
 
-    <div class="card">
-        <h3>1. Presensi & Kelola Karyawan</h3>
-        <div class="manage-row">
-            <input type="text" id="inputNamaBaru" placeholder="Ketik Nama Baru...">
-            <button class="btn-tambah" onclick="tambahKaryawan()">Tambah</button>
-        </div>
-        <label>Pilih Nama Karyawan:</label>
-        <div style="display: flex; gap: 8px;">
-            <select id="pilihKaryawan" style="margin:0; flex-grow:1;"><option value="">-- Memuat... --</option></select>
-            <button onclick="hapusKaryawan()" style="background:#ff4d4d; width:auto; margin:0; padding:0 15px;">Hapus</button>
-        </div>
-        <div class="grid" style="margin-top:10px;">
-            <button class="btn-masuk" onclick="prosesAbsen('Masuk')">MASUK</button>
-            <button class="btn-pulang" onclick="prosesAbsen('Pulang')">PULANG</button>
-        </div>
-        <button class="btn-izin" onclick="prosesAbsen('Izin')">INPUT IZIN / SAKIT</button>
-        <button class="btn-reset-absen" onclick="resetAbsenHarian()">❌ RESET ABSEN ORANG INI (HARI INI)</button>
-        <div id="notif"></div>
-    </div>
+    <div class="container">
+        <header>
+            <h2>📦 PT-AGN System</h2>
+            <span class="version">v22.0 Ultimate Export</span>
+        </header>
 
-    <div class="card">
-        <h3>2. Kelola Libur Panjang (Set / Batal)</h3>
-        <div class="grid">
-            <div><label>Dari Tanggal:</label><input type="date" id="tglMulaiLibur"></div>
-            <div><label>Sampai Tanggal:</label><input type="date" id="tglSelesaiLibur"></div>
-        </div>
-        <div class="grid">
-            <button onclick="setRentangLibur(true)" style="background:#6c757d;">Terapkan Libur</button>
-            <button onclick="setRentangLibur(false)" style="background:#dc3545;">Hapus Libur (Batal)</button>
-        </div>
-    </div>
+        <div class="grid no-print">
+            <!-- PANEL PRESENSI -->
+            <div class="card">
+                <h3>Presensi Harian</h3>
+                <label>Pilih Nama Karyawan</label>
+                <select id="pilihKaryawan"><option value="">Memuat...</option></select>
+                <div class="grid">
+                    <button class="btn-success" onclick="prosesAbsen('Masuk')">🟢 Masuk</button>
+                    <button class="btn-danger" onclick="prosesAbsen('Pulang')">🔴 Pulang</button>
+                </div>
+                <button class="btn-outline" style="margin-top:10px; border-color: #ffc107; color: #856404;" onclick="prosesAbsen('Izin')">📝 Izin / Sakit</button>
+                <button class="btn-outline" style="margin-top:10px; font-size: 12px;" onclick="resetAbsenHarian()">🔄 Reset Hari Ini</button>
+            </div>
 
-    <div class="card">
-        <h3>3. Laporan Bulanan Realtime</h3>
-        <input type="month" id="filterBulan" onchange="renderRekap()">
-        <div class="table-container">
-            <table id="tabelRekap">
-                <thead><tr id="theadRekap"></tr></thead>
-                <tbody id="tbodyRekap"></tbody>
-            </table>
+            <!-- PANEL KELOLA -->
+            <div class="card">
+                <h3>Karyawan & Libur</h3>
+                <label>Karyawan Baru</label>
+                <div style="display: flex; gap: 8px; margin-bottom: 15px;">
+                    <input type="text" id="inputNamaBaru" placeholder="Nama..." style="margin:0;">
+                    <button class="btn-primary" style="width: auto; padding: 0 20px;" onclick="tambahKaryawan()">Tambah</button>
+                </div>
+                <label>Rentang Libur Panjang</label>
+                <div class="grid" style="margin-bottom: 0;">
+                    <input type="date" id="tglMulaiLibur">
+                    <input type="date" id="tglSelesaiLibur">
+                </div>
+                <div class="grid">
+                    <button class="btn-outline" onclick="setRentangLibur(true)">📅 Set Libur</button>
+                    <button class="btn-danger" style="background: #fee2e2; color: #b91c1c;" onclick="setRentangLibur(false)">🗑️ Hapus</button>
+                </div>
+            </div>
         </div>
-        <button onclick="window.print()" style="background:#333; margin-top:10px;">Cetak / Simpan PDF</button>
+
+        <!-- LAPORAN & EXPORT -->
+        <div class="card rekap-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;" class="no-print">
+                <h3>Laporan Bulanan & Ringkasan</h3>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <input type="month" id="filterBulan" style="margin:0; width: 170px;" onchange="renderRekap()">
+                    <button class="btn-excel" style="width: auto; padding: 0 15px; font-size: 13px;" onclick="exportToExcel()">📊 Excel</button>
+                    <button class="btn-primary" style="width: auto; padding: 0 15px; font-size: 13px;" onclick="window.print()">🖨️ PDF</button>
+                </div>
+            </div>
+            
+            <div class="table-container">
+                <table id="tabelRekapUtama">
+                    <thead><tr id="theadRekap"></tr></thead>
+                    <tbody id="tbodyRekap"></tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <script>
+        // CONFIG FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyAu67MAhWBxdmciPi3xOKWhdy-uP4u9tXI",
             authDomain: "pt-agn.firebaseapp.com",
@@ -105,108 +175,77 @@
         let hariLibur = {};
         let absensiData = {};
 
-        // INISIALISASI LISTENER REAL-TIME UNTUK SEMUA DATA
         window.onload = () => {
             const sekarang = new Date();
             document.getElementById('filterBulan').value = `${sekarang.getFullYear()}-${String(sekarang.getMonth() + 1).padStart(2, '0')}`;
-            
-            // 1. Dengerin perubahan Karyawan
-            db.ref('master_karyawan').on('value', snap => {
-                masterKaryawan = snap.val() || {};
-                updateDropdownKaryawan();
-                renderRekap();
-            });
-
-            // 2. Dengerin perubahan Hari Libur
-            db.ref('hari_libur').on('value', snap => {
-                hariLibur = snap.val() || {};
-                renderRekap();
-            });
-
-            // 3. Dengerin perubahan Absensi
-            db.ref('absensi').on('value', snap => {
-                absensiData = snap.val() || {};
-                renderRekap();
-            });
+            db.ref('master_karyawan').on('value', snap => { masterKaryawan = snap.val() || {}; updateDropdownKaryawan(); renderRekap(); });
+            db.ref('hari_libur').on('value', snap => { hariLibur = snap.val() || {}; renderRekap(); });
+            db.ref('absensi').on('value', snap => { absensiData = snap.val() || {}; renderRekap(); });
         };
+
+        function showToast(msg, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            if(type === 'danger') toast.style.background = '#ef4444';
+            toast.innerText = msg;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
 
         function updateDropdownKaryawan() {
             const select = document.getElementById('pilihKaryawan');
-            const selectedVal = select.value;
-            let options = '<option value="">-- Pilih Nama --</option>';
-            for(let id in masterKaryawan) {
-                options += `<option value="${masterKaryawan[id]}" data-id="${id}">${masterKaryawan[id]}</option>`;
-            }
+            const prev = select.value;
+            let options = '<option value="">-- Pilih Karyawan --</option>';
+            Object.values(masterKaryawan).sort().forEach(nama => {
+                options += `<option value="${nama}">${nama}</option>`;
+            });
             select.innerHTML = options;
-            select.value = selectedVal;
+            select.value = prev;
         }
 
         function tambahKaryawan() {
-            const el = document.getElementById('inputNamaBaru');
-            const nama = el.value.trim();
-            if(!nama) return;
-            db.ref('master_karyawan').push(nama).then(() => {
-                el.value = "";
-                showNotif("✅ Karyawan berhasil ditambah");
+            const input = document.getElementById('inputNamaBaru');
+            if(!input.value.trim()) return;
+            db.ref('master_karyawan').push(input.value.trim()).then(() => {
+                showToast("Karyawan ditambahkan");
+                input.value = "";
             });
         }
 
-        function hapusKaryawan() {
-            const el = document.getElementById('pilihKaryawan');
-            const id = el.options[el.selectedIndex].getAttribute('data-id');
-            if(id && confirm("Hapus karyawan ini secara permanen?")) {
-                db.ref('master_karyawan/' + id).remove().then(() => showNotif("🗑️ Karyawan dihapus"));
-            }
-        }
-
         function setRentangLibur(isSet) {
-            const mEl = document.getElementById('tglMulaiLibur');
-            const sEl = document.getElementById('tglSelesaiLibur');
-            if(!mEl.value || !sEl.value) return alert("Pilih rentang tanggal!");
-            
+            const start = document.getElementById('tglMulaiLibur').value;
+            const end = document.getElementById('tglSelesaiLibur').value;
+            if(!start || !end) return alert("Pilih tanggal!");
             let updates = {};
-            let tempDate = new Date(mEl.value);
-            let endDate = new Date(sEl.value);
-
-            while(tempDate <= endDate) {
-                const tglKey = tempDate.toISOString().split('T')[0];
-                updates[tglKey] = isSet ? true : null;
-                tempDate.setDate(tempDate.getDate() + 1);
+            let curr = new Date(start);
+            let last = new Date(end);
+            while(curr <= last) {
+                const key = curr.toISOString().split('T')[0];
+                updates[key] = isSet ? true : null;
+                curr.setDate(curr.getDate() + 1);
             }
-
             db.ref('hari_libur').update(updates).then(() => {
-                mEl.value = ""; sEl.value = "";
-                showNotif(isSet ? "📅 Libur berhasil dipasang" : "📅 Libur berhasil dihapus");
+                showToast(isSet ? "Libur dipasang" : "Libur dihapus", isSet ? 'success' : 'danger');
             });
         }
 
         function prosesAbsen(tipe) {
             const nama = document.getElementById('pilihKaryawan').value;
-            if(!nama) return alert("Pilih nama karyawan!");
+            if(!nama) return alert("Pilih karyawan!");
             const skrg = new Date();
             const tglKey = skrg.toISOString().split('T')[0];
-            const waktuStr = skrg.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
-            
+            const waktu = skrg.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
             let status = "Hadir";
             if(tipe === 'Masuk' && (skrg.getHours() > 9 || (skrg.getHours() === 9 && skrg.getMinutes() > 0))) status = "Terlambat";
-
-            db.ref(`absensi/${tglKey}/${nama}/${tipe}`).set({ waktu: waktuStr, status: status })
-                .then(() => showNotif(`✅ Berhasil ${tipe} (${waktuStr})`));
+            db.ref(`absensi/${tglKey}/${nama}/${tipe}`).set({ waktu, status }).then(() => showToast(`${tipe} Berhasil`));
         }
 
         function resetAbsenHarian() {
             const nama = document.getElementById('pilihKaryawan').value;
-            if(!nama) return alert("Pilih nama!");
+            if(!nama || !confirm(`Reset data ${nama} hari ini?`)) return;
             const tglKey = new Date().toISOString().split('T')[0];
-            if(confirm(`Hapus seluruh data absen ${nama} hari ini?`)) {
-                db.ref(`absensi/${tglKey}/${nama}`).remove().then(() => showNotif("❌ Absen direset"));
-            }
-        }
-
-        function showNotif(msg) {
-            const n = document.getElementById('notif');
-            n.innerText = msg;
-            setTimeout(() => n.innerText = "", 3000);
+            db.ref(`absensi/${tglKey}/${nama}`).remove().then(() => showToast("Data direset", 'danger'));
         }
 
         function renderRekap() {
@@ -215,43 +254,61 @@
             const [th, bl] = filter.split('-');
             const jmlHari = new Date(th, bl, 0).getDate();
 
-            // Header Tabel
             let hHtml = `<th class="nama-kolom">Nama Karyawan</th>`;
             for(let i=1; i<=jmlHari; i++) {
                 const d = new Date(th, bl-1, i);
-                const hari = d.toLocaleDateString('id-ID', {weekday: 'short'});
-                const color = d.getDay() === 0 ? 'color:red;' : '';
-                hHtml += `<th style="${color}">${i}<br>${hari}</th>`;
+                hHtml += `<th style="${d.getDay() === 0 ? 'color:#ef4444' : ''}">${i}<br>${d.toLocaleDateString('id-ID',{weekday:'short'})}</th>`;
             }
+            hHtml += `<th class="head-summary">H</th><th class="head-summary">T</th><th class="head-summary">I</th><th class="head-summary">%</th>`;
             document.getElementById('theadRekap').innerHTML = hHtml;
 
-            // Isi Tabel
             let bHtml = "";
             const sortedNames = Object.values(masterKaryawan).sort();
             
             sortedNames.forEach(nama => {
-                bHtml += `<tr><td class="nama-kolom">${nama}</td>`;
+                let countH = 0, countT = 0, countI = 0, totalHariKerja = 0;
+                let rowHtml = `<td class="nama-kolom">${nama}</td>`;
+
                 for(let h=1; h<=jmlHari; h++) {
                     const tglKey = `${th}-${bl}-${String(h).padStart(2,'0')}`;
                     const dObj = new Date(tglKey);
                     let simbol = "-"; let kls = "";
 
-                    if(dObj.getDay() === 0) { simbol = "OFF"; kls = "status-minggu"; }
-                    else if(hariLibur[tglKey]) { simbol = "LBR"; kls = "status-libur"; }
+                    const isMinggu = dObj.getDay() === 0;
+                    const isLibur = hariLibur[tglKey];
+                    if(!isMinggu && !isLibur) totalHariKerja++;
+
+                    if(isMinggu) { simbol = "OFF"; kls = "status-minggu"; }
+                    else if(isLibur) { simbol = "LBR"; kls = "status-libur"; }
 
                     if(absensiData[tglKey] && absensiData[tglKey][nama]) {
                         const d = absensiData[tglKey][nama];
-                        if(d.Izin) { simbol = "I"; kls = "status-izin"; }
+                        if(d.Izin) { simbol = "I"; kls = "status-izin"; countI++; }
                         else if(d.Masuk) {
-                            simbol = d.Masuk.status === "Terlambat" ? "T" : "V";
-                            kls = d.Masuk.status === "Terlambat" ? "status-terlambat" : "status-hadir";
+                            if(d.Masuk.status === "Terlambat") { simbol = "T"; kls = "status-terlambat"; countT++; }
+                            else { simbol = "V"; kls = "status-hadir"; countH++; }
                         }
                     }
-                    bHtml += `<td class="${kls}">${simbol}</td>`;
+                    rowHtml += `<td class="${kls}">${simbol}</td>`;
                 }
-                bHtml += `</tr>`;
+
+                const persen = totalHariKerja > 0 ? Math.round(((countH + countT) / totalHariKerja) * 100) : 0;
+                rowHtml += `<td class="col-summary" style="color:var(--success)">${countH}</td>`;
+                rowHtml += `<td class="col-summary" style="color:var(--warning)">${countT}</td>`;
+                rowHtml += `<td class="col-summary" style="color:#06b6d4">${countI}</td>`;
+                rowHtml += `<td class="col-summary" style="background:#f1f5f9">${persen}%</td>`;
+                bHtml += `<tr>${rowHtml}</tr>`;
             });
             document.getElementById('tbodyRekap').innerHTML = bHtml;
+        }
+
+        // FUNGSI EXPORT EXCEL
+        function exportToExcel() {
+            const table = document.getElementById("tabelRekapUtama");
+            const filter = document.getElementById('filterBulan').value;
+            const wb = XLSX.utils.table_to_book(table, { sheet: "Laporan Absensi" });
+            XLSX.writeFile(wb, `Absensi_PT_AGN_${filter}.xlsx`);
+            showToast("Berhasil ekspor ke Excel");
         }
     </script>
 </body>
