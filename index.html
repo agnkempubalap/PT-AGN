@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v68.0 - Start Date Fixed</title>
+    <title>PT-AGN v70.0 - Full Features</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700&display=swap" rel="stylesheet">
@@ -12,8 +12,9 @@
         body{font-family:'Plus Jakarta Sans',sans-serif;margin:0;background:var(--bg);color:var(--t);padding:8px;transition:0.2s}
         .container{max-width:1450px;margin:0 auto}
         header{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px;padding:5px}
-        .logo-box{display:flex;align-items:center;gap:10px}
-        .logo-box img{width:60px;height:60px;border-radius:12px;background:#fff;border:2px solid var(--p);object-fit:contain}
+        .logo-box{display:flex;align-items:center;gap:10px;cursor:pointer}
+        .logo-box img{width:60px;height:60px;border-radius:12px;background:#fff;border:2px solid var(--p);object-fit:contain;transition:0.3s}
+        .logo-box img:hover{transform:scale(1.05);border-color:var(--w)}
         .card{background:var(--c);padding:15px;border-radius:15px;margin-bottom:10px;border:1px solid var(--b);box-shadow:0 4px 6px -1px rgba(0,0,0,0.1)}
         h3{margin:0 0 10px;font-size:10px;color:var(--w);text-transform:uppercase;letter-spacing:1px}
         input,button{border-radius:10px;font-size:14px;height:45px;border:1px solid var(--b);background:var(--c);color:var(--t);width:100%;box-sizing:border-box;outline:none}
@@ -37,9 +38,9 @@
     <div id="toast"></div>
     <div class="container">
         <header>
-            <div class="logo-box">
-                <img src="https://ui-avatars.com/api/?name=AGN&background=2563eb&color=fff">
-                <div><h2 style="margin:0;font-size:1rem">PT AGN</h2><span style="font-size:9px;color:var(--w);font-weight:800">SYSTEM v68.0</span></div>
+            <div class="logo-box" onclick="gantiLogo()">
+                <img id="mainLogo" src="https://ui-avatars.com/api/?name=AGN&background=2563eb&color=fff" title="Klik untuk ganti foto">
+                <div><h2 style="margin:0;font-size:1rem">PT AGN</h2><span style="font-size:9px;color:var(--w);font-weight:800">SYSTEM v70.0</span></div>
             </div>
             <button onclick="toggleT()" id="tBtn" style="width:80px;font-size:11px">🌙 Dark</button>
         </header>
@@ -94,8 +95,16 @@
         firebase.initializeApp(cfg); const db=firebase.database();
         let mk={}, ad={}, hl={};
 
-        // --- KONFIGURASI TANGGAL MULAI ---
-        const TGL_MULAI_SISTEM = "2026-03-21"; // Alpa hanya dihitung dari tanggal ini
+        const TGL_MULAI_SISTEM = "2026-03-21";
+
+        function gantiLogo(){
+            let link = prompt("Masukkan Link Foto/Logo Baru:");
+            if(link) {
+                document.getElementById('mainLogo').src = link;
+                localStorage.setItem('agn_logo', link);
+                sT("Logo Diperbarui!");
+            }
+        }
 
         function toggleT(){ 
             let t = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; 
@@ -110,6 +119,10 @@
             let savedTheme = localStorage.getItem('agn_theme') || 'light';
             document.body.setAttribute('data-theme', savedTheme);
             document.getElementById('tBtn').innerText = savedTheme === 'dark' ? '☀️ Light' : '🌙 Dark';
+            
+            let savedLogo = localStorage.getItem('agn_logo');
+            if(savedLogo) document.getElementById('mainLogo').src = savedLogo;
+
             document.getElementById('fB').value=new Date().toISOString().slice(0,7);
             db.ref('master_karyawan').on('value',s=>{mk=s.val()||{}; uDl(); rRekap();});
             db.ref('absensi').on('value',s=>{ad=s.val()||{}; rRekap();});
@@ -118,15 +131,15 @@
 
         function uDl(){document.getElementById('lk').innerHTML=Object.values(mk).sort().map(n=>`<option value="${n}">`).join('');}
         function tKaryawan(){let n=document.getElementById('iNama'); if(n.value) db.ref('master_karyawan').push(n.value).then(()=>{n.value=""; sT("Berhasil");});}
-        function hKaryawan(){let n=document.getElementById('iNama'); let id=Object.keys(mk).find(k=>mk[k]===n.value); if(id && confirm('Hapus?')) db.ref(`master_karyawan/${id}`).remove().then(()=>{n.value="";});}
-        function resetPerKaryawan(){ let n=document.getElementById('iNama'), t=document.getElementById('tglReset'); if(n.value && t.value && confirm('Hapus?')) db.ref(`absensi/${t.value}/${n.value}`).remove().then(()=>{t.value=""; n.value=""; sT("Terhapus");}); }
+        function hKaryawan(){let n=document.getElementById('iNama'); let id=Object.keys(mk).find(k=>mk[k]===n.value); if(id && confirm('Hapus Karyawan?')) db.ref(`master_karyawan/${id}`).remove().then(()=>{n.value="";});}
+        function resetPerKaryawan(){ let n=document.getElementById('iNama'), t=document.getElementById('tglReset'); if(n.value && t.value && confirm('Hapus data absen?')) db.ref(`absensi/${t.value}/${n.value}`).remove().then(()=>{t.value=""; n.value=""; sT("Data Dihapus");}); }
         
         function sLib(st){ 
             let m=document.getElementById('tM'), s=document.getElementById('tS'); if(!m.value) return;
             let start=new Date(m.value), end=s.value ? new Date(s.value) : start;
             let curr=new Date(start);
             while(curr <= end){ db.ref(`hari_libur/${curr.toISOString().split('T')[0]}`).set(st?true:null); curr.setDate(curr.getDate()+1); }
-            m.value=""; s.value=""; sT("Update Libur");
+            m.value=""; s.value=""; sT("Jadwal Diupdate");
         }
 
         function pAbsen(ty){
@@ -135,9 +148,9 @@
             if(!n.value) return sT("Pilih Nama!","error");
             let status = "Hadir";
             if(ty==='Masuk' && (jam > 9 || (jam === 9 && menit > 0))) status = "Terlambat";
-            let note = ""; if(ty==='Izin') { note = prompt("Alasan:"); if(note === null) return; status="Izin"; }
+            let note = ""; if(ty==='Izin') { note = prompt("Isi keterangan:"); if(note === null) return; status="Izin"; }
             db.ref(`absensi/${tgl}/${n.value}/${ty}`).set({waktu:jamFormat, status:status, note:note, timestamp: Date.now()}).then(()=>{
-                sT(ty + (status === "Terlambat" ? " (Telat)" : " Berhasil!")); n.value="";
+                sT(ty + (status === "Terlambat" ? " (Terlambat)" : " Sukses!")); n.value="";
             });
         }
 
@@ -146,7 +159,6 @@
             const [y,m]=f.split('-'), last=new Date(y,m,0).getDate();
             const now = new Date();
             const todayStr = now.toISOString().split('T')[0];
-            const currentHour = now.getHours();
             
             document.getElementById('thR').innerHTML=`<th class="nama-fixed">Karyawan</th>${Array.from({length:last},(_,i)=>`<th>${i+1}</th>`).join('')}<th class="col-total">H</th><th class="col-total">I</th><th class="col-total">A</th>`;
             
@@ -165,11 +177,8 @@
                                 cH++; jamWkt = dataHari.Masuk.waktu;
                             }
                         } else {
-                            // FIXED LOGIKA ALPA: Harus sudah melewati TGL_MULAI_SISTEM
-                            if(t >= TGL_MULAI_SISTEM) {
-                                if(t < todayStr || (t === todayStr && currentHour >= 16)){
-                                    s="A"; cl="s-a"; cA++;
-                                }
+                            if(t >= TGL_MULAI_SISTEM && t < todayStr) {
+                                s="A"; cl="s-a"; cA++;
                             }
                         }
                     }
@@ -182,12 +191,9 @@
         function doExcel(){
             const f=document.getElementById('fB').value; const [y,m]=f.split('-'); const last=new Date(y,m,0).getDate();
             const todayStr = new Date().toISOString().split('T')[0];
-            const currentHour = new Date().getHours();
-            
             let html=`<html><head><meta charset="UTF-8"></head><body><table border="1">
                 <tr><th colspan="${last+4}" style="background-color:#FFA500; color:white; height:35px;">REKAP ABSENSI PT AGN - ${f}</th></tr>
                 <tr style="background-color:#e0e0e0; font-weight:bold;"><th>Nama</th>${Array.from({length:last},(_,i)=>`<th>${i+1}</th>`).join('')}<th>H</th><th>I</th><th>A</th></tr>`;
-            
             Object.values(mk).sort().forEach(n=>{
                 let cH=0, cI=0, cA=0; html+=`<tr><td style="font-weight:bold;">${n}</td>`;
                 for(let i=1; i<=last; i++){
@@ -196,9 +202,7 @@
                     else if(ad[t] && ad[t][n]){
                         if(ad[t][n].Izin){ bg="#ffff00"; txt="I"; cI++; }
                         else if(ad[t][n].Masuk){ bg = (ad[t][n].Masuk.status === "Terlambat") ? "#facc15" : "#00ff00"; txt="H ("+ad[t][n].Masuk.waktu+")"; cH++; }
-                    } else if(t >= TGL_MULAI_SISTEM && (t < todayStr || (t === todayStr && currentHour >= 16))){
-                        bg="#64748b"; txt="A"; cA++;
-                    }
+                    } else if(t >= TGL_MULAI_SISTEM && t < todayStr){ bg="#64748b"; txt="A"; cA++; }
                     html+=`<td style="background-color:${bg}; text-align:center;">${txt}</td>`;
                 }
                 html+=`<td style="font-weight:bold;">${cH}</td><td>${cI}</td><td>${cA}</td></tr>`;
