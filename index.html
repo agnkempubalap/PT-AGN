@@ -2,152 +2,132 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v75.9 - Systematic Update</title>
+    <title>PT-AGN v76.1 - Final Match</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
     <style>
-        /* 1. VARIABEL & TEMA */
-        :root{--p:#2563eb;--s:#00C853;--d:#FF1744;--w:#FFD600;--bg:#f1f5f9;--c:#fff;--t:#1e293b;--b:#e2e8f0;--iz:#00B0FF;--al:#37474F}
-        body[data-theme="dark"]{--bg:#0f172a;--c:#1e293b;--t:#f8fafc;--b:#334155}
-        body{font-family:'Plus Jakarta Sans',sans-serif;margin:0;background:var(--bg);color:var(--t);padding:8px;transition: 0.3s}
-        
-        /* 2. LAYOUT DASAR */
+        :root{--p:#2563eb;--s:#00C853;--d:#ef4444;--w:#FFD600;--bg:#0f172a;--c:#1e293b;--t:#f8fafc;--b:#334155;--iz:#f59e0b;--al:#37474F}
+        body[data-theme="light"]{--bg:#f1f5f9;--c:#fff;--t:#1e293b;--b:#e2e8f0}
+        body{font-family:'Plus Jakarta Sans',sans-serif;margin:0;background:var(--bg);color:var(--t);padding:10px; transition: 0.3s}
         .container{max-width:1450px;margin:0 auto}
-        header{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px;padding:5px}
-        .logo-box{display:flex;align-items:center;gap:10px}
-        .logo-box img{width:65px;height:65px;border-radius:50%;background:#fff;border:3px solid var(--p);object-fit:cover;cursor:pointer}
-        .card{background:var(--c);padding:15px;border-radius:15px;margin-bottom:10px;border:1px solid var(--b);box-shadow:0 4px 6px -1px rgba(0,0,0,0.1)}
-        h3{margin:0 0 10px;font-size:10px;color:var(--p);text-transform:uppercase;letter-spacing:1px;font-weight:800}
         
-        /* 3. TOMBOL & INPUT */
-        input,button{border-radius:10px;font-size:14px;height:45px;border:1px solid var(--b);background:var(--c);color:var(--t);width:100%;box-sizing:border-box;outline:none}
+        header{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px}
+        .logo-box{display:flex;align-items:center;gap:12px}
+        .logo-box img{width:70px;height:70px;border-radius:50%;background:#000;border:3px solid var(--p);object-fit:cover}
+        .dark-card{background:var(--c); border-radius:12px; border:1px solid var(--b); padding:10px 15px; display:flex; align-items:center; gap:8px; cursor:pointer}
+
+        .card{background:var(--c);padding:18px;border-radius:18px;margin-bottom:12px;border:1px solid var(--b);box-shadow:0 4px 6px -1px rgba(0,0,0,0.2)}
+        h3{margin:0 0 15px;font-size:11px;color:#f59e0b;text-transform:uppercase;letter-spacing:1px;font-weight:800;display:flex;align-items:center;gap:5px}
+        
+        label{display:block;font-size:10px;margin-bottom:5px;font-weight:600;color:var(--t);opacity:0.8}
+        input,button,select{border-radius:12px;font-size:14px;height:52px;border:1px solid var(--b);background:var(--bg);color:var(--t);width:100%;box-sizing:border-box;outline:none}
         .btn{display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;border:none;color:#fff}
         
-        /* 4. TABEL REKAP */
-        .table-wrap{overflow:auto;border-radius:12px;border:1px solid var(--b);background:var(--c);max-height:500px}
+        .table-wrap{overflow:auto;border-radius:12px;border:1px solid var(--b);background:var(--c)}
         .table-web{width:100%;border-collapse:separate;border-spacing:0;font-size:10px}
-        .table-web th, .table-web td{border-bottom:1px solid var(--b);border-right:1px solid var(--b);padding:8px 4px;text-align:center;min-width:45px}
-        .nama-fixed{position:sticky !important;left:0;background-color:var(--c) !important;z-index:10;min-width:115px !important;text-align:left !important;padding-left:10px !important;border-right:3px solid var(--p) !important;font-weight:800}
+        .table-web th, .table-web td{border-bottom:1px solid var(--b);border-right:1px solid var(--b);padding:10px 4px;text-align:center;min-width:45px}
+        .nama-fixed{position:sticky !important;left:0;background-color:var(--c) !important;z-index:10;min-width:120px !important;text-align:left !important;padding-left:15px !important;font-weight:700}
         
-        /* 5. STATUS CELL */
-        .s-cell{border-radius:6px;width:40px;height:38px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;font-size:11px}
-        .s-v{background:var(--s);color:#fff}
-        .s-late{background:var(--w);color:#000}
-        .s-i{background:var(--iz);color:#fff}
-        .s-off{background:var(--d);color:#fff}
-        .s-a{background:var(--al);color:#fff}
-        .s-l{background:#AA00FF;color:#fff}
+        .s-cell{border-radius:6px;width:42px;height:40px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;font-size:11px}
+        .s-v{background:var(--s);color:#fff} .s-late{background:var(--w);color:#000} .s-i{background:var(--iz);color:#fff}
+        .s-off{background:var(--d);color:#fff} .s-a{background:var(--al);color:#fff} .s-l{background:#AA00FF;color:#fff}
         .jam-text{font-size:8px;font-weight:600;display:block;margin-top:2px}
 
-        /* 6. PEMBATAS REKAP AKHIR */
-        .rekap-akhir{background:#1e293b !important; color:#ffffff !important; font-weight:800; border-left: 2px solid #000 !important;}
-        .th-rekap{background:#0f172a !important; color:#fff !important}
-
-        /* 7. ATURAN CETAK (PDF) */
         @media print {
-            body { background: white !important; color: black !important; }
             header, .card:not(.table-card), .no-print { display: none !important; }
-            .container { max-width: 100% !important; margin: 0 !important; }
-            .card.table-card { border: none !important; box-shadow: none !important; padding: 0 !important; }
-            .table-wrap { overflow: visible !important; max-height: none !important; }
-            .table-web { width: 100% !important; font-size: 8pt !important; border: 1px solid #000 !important; }
-            .nama-fixed { position: static !important; background: white !important; border: 1px solid #000 !important; color: black !important; }
-            .rekap-akhir { background: #eee !important; color: black !important; border: 1px solid #000 !important; }
-            @page { size: landscape; margin: 5mm; }
+            .table-web { font-size: 8pt !important; }
         }
     </style>
 </head>
-<body data-theme="light">
+<body data-theme="dark">
     <div class="container">
-        <!-- HEADER & TEMA -->
         <header>
             <div class="logo-box">
-                <input type="file" id="fileLogo" accept="image/*" style="display:none" onchange="loadLogo(event)">
-                <img id="mainLogo" src="https://ui-avatars.com/api/?name=AGN&background=2563eb&color=fff" onclick="document.getElementById('fileLogo').click()">
-                <div><h2 style="margin:0;font-size:1.1rem">PT AGN</h2><span style="font-size:9px;color:var(--p);font-weight:800">SYSTEM v75.9</span></div>
+                <img id="mainLogo" src="https://ui-avatars.com/api/?name=AGN&background=000&color=fff">
+                <div><h2 style="margin:0;font-size:1.3rem">PT AGN</h2><span style="font-size:10px;color:var(--p);font-weight:800">SYSTEM v76.1</span></div>
             </div>
-            <button onclick="toggleT()" id="tBtn" style="width:110px;font-size:11px;background:var(--c)">🌙 Dark Mode</button>
+            <div class="dark-card" onclick="toggleT()">
+                <span id="tIco">☀️</span> <span style="font-size:12px;font-weight:600" id="tTxt">Dark Mode</span>
+            </div>
         </header>
 
-        <!-- PENGELOLA KARYAWAN -->
+        <!-- PENGELOLA -->
         <div class="card">
-            <div style="display:flex;gap:8px">
+            <div style="display:flex;gap:10px">
                 <input list="lk" id="iNama" placeholder="Pilih Nama...">
                 <datalist id="lk"></datalist>
-                <button class="btn" style="background:var(--s);width:55px" onclick="tKaryawan()">➕</button>
-                <button class="btn" style="background:var(--d);width:55px" onclick="hKaryawan()">🗑️</button>
+                <button class="btn" style="background:var(--s);width:60px;font-size:24px" onclick="tKaryawan()">+</button>
+                <button class="btn" style="background:var(--d);width:60px" onclick="hKaryawan()">🗑️</button>
             </div>
         </div>
 
-        <!-- RESET & LIBUR (Sesuai Permintaan) -->
+        <!-- RESET & LIBUR (PERSIS GAMBAR) -->
         <div class="card">
-            <h3>🧹 Reset & Libur</h3>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-                <input type="date" id="tglReset">
-                <button class="btn" style="background:var(--al);font-size:11px" onclick="resetPerKaryawan()">HAPUS PER HARI</button>
+            <h3>🧹 RESET & LIBUR</h3>
+            <div style="display:grid;grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px">
+                <input list="lk" id="resetNama" placeholder="Pilih Nama...">
+                <button class="btn" style="background:var(--d)" onclick="resetAbsen()">RESET ABSEN</button>
             </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div style="display:grid;grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px">
+                <div><label>Dari:</label><input type="date" id="tglAwal"></div>
+                <div><label>Sampai:</label><input type="date" id="tglAkhir"></div>
+            </div>
+            <div style="display:grid;grid-template-columns: 1fr 1fr; gap:10px">
                 <button class="btn" style="background:var(--p)" onclick="sLib(true)">SET LIBUR</button>
-                <button class="btn" style="background:var(--d)" onclick="sLib(false)">BATAL LIBUR</button>
+                <button class="btn" style="background:var(--d)" onclick="sLib(false)">HAPUS LIBUR</button>
             </div>
         </div>
 
-        <!-- TOMBOL ABSEN UTAMA -->
+        <!-- PRESENSI -->
         <div class="card">
-            <h3>⚡ Presensi</h3>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                <button class="btn" style="background:var(--s);height:55px;font-size:16px" onclick="pAbsen('Masuk')">MASUK</button>
-                <button class="btn" style="background:var(--d);height:55px;font-size:16px" onclick="pAbsen('Pulang')">PULANG</button>
+            <h3>⚡ PRESENSI</h3>
+            <div style="display:grid;grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px">
+                <button class="btn" style="background:var(--s);height:65px;font-size:18px" onclick="pAbsen('Masuk')">MASUK</button>
+                <button class="btn" style="background:var(--d);height:65px;font-size:18px" onclick="pAbsen('Pulang')">PULANG</button>
             </div>
-            <button class="btn" style="background:var(--iz);margin-top:10px" onclick="pAbsen('Izin')">📝 IZIN / NOTE</button>
+            <button class="btn" style="background:var(--iz);height:55px;font-size:16px" onclick="pAbsen('Izin')">📝 IZIN / NOTE</button>
         </div>
 
-        <!-- TABEL REKAP -->
+        <!-- REKAP -->
         <div class="card table-card">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px" class="no-print">
-                <input type="month" id="fB" style="width:130px" onchange="rRekap()">
-                <div style="display:flex;gap:5px">
-                    <button class="btn" style="background:#1d6f42;width:90px;font-size:10px" onclick="doExcel()">📂 EXCEL</button>
-                    <button class="btn" style="background:#b91c1c;width:90px;font-size:10px" onclick="window.print()">📜 PDF</button>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px" class="no-print">
+                <input type="month" id="fB" style="width:150px" onchange="rRekap()">
+                <div style="display:flex;gap:8px">
+                    <button class="btn" style="background:#1d6f42;width:110px;font-size:11px" onclick="doExcel()">📂 EXCEL</button>
+                    <button class="btn" style="background:#b91c1c;width:110px;font-size:11px" onclick="window.print()">📜 PDF</button>
                 </div>
             </div>
-            <div class="table-wrap" id="scrollContainer">
+            <div class="table-wrap">
                 <table class="table-web"><thead id="thWeb"></thead><tbody id="tbWeb"></tbody></table>
             </div>
         </div>
     </div>
 
     <script>
-        /* --- KELOMPOK 1: CONFIG & DATABASE --- */
         const cfg={apiKey:"AIzaSyAu67MAhWBxdmciPi3xOKWhdy-uP4u9tXI",databaseURL:"https://pt-agn-default-rtdb.asia-southeast1.firebasedatabase.app"};
         firebase.initializeApp(cfg); const db=firebase.database();
-        let mk={}, ad={}, hl={};
-        const TGL_MULAI_SISTEM = "2026-03-21";
+        let mk={}, ad={}, hl={}; const TGL_MULAI_SISTEM = "2026-03-21";
 
-        /* --- KELOMPOK 2: FUNGSI TAMPILAN (THEME & LOGO) --- */
         function toggleT(){ 
-            let b=document.body; 
-            let nt=b.getAttribute('data-theme')==='dark'?'light':'dark'; 
-            b.setAttribute('data-theme',nt); 
-            document.getElementById('tBtn').innerText=nt==='dark'?'☀️ Light Mode':'🌙 Dark Mode';
-        }
-        function loadLogo(event) {
-            const reader = new FileReader();
-            reader.onload = () => { document.getElementById('mainLogo').src = reader.result; localStorage.setItem('agn_logo_local', reader.result); };
-            reader.readAsDataURL(event.target.files[0]);
+            let b=document.body; let nt=b.getAttribute('data-theme')==='dark'?'light':'dark'; 
+            b.setAttribute('data-theme',nt);
+            document.getElementById('tIco').innerText=nt==='dark'?'☀️':'🌙';
+            document.getElementById('tTxt').innerText=nt==='dark'?'Light Mode':'Dark Mode';
         }
 
-        /* --- KELOMPOK 3: FUNGSI CORE (ABSEN & DATA) --- */
         window.onload=()=>{
-            let savedLogo = localStorage.getItem('agn_logo_local'); if(savedLogo) document.getElementById('mainLogo').src = savedLogo;
             document.getElementById('fB').value=new Date().toISOString().slice(0,7);
             db.ref('master_karyawan').on('value',s=>{mk=s.val()||{}; uDl(); rRekap();});
             db.ref('absensi').on('value',s=>{ad=s.val()||{}; rRekap();});
             db.ref('hari_libur').on('value',s=>{hl=s.val()||{}; rRekap();});
         };
 
-        function uDl(){document.getElementById('lk').innerHTML=Object.values(mk).sort().map(n=>`<option value="${n}">`).join('');}
+        function uDl(){
+            let opt = Object.values(mk).sort().map(n=>`<option value="${n}">`).join('');
+            document.getElementById('lk').innerHTML=opt;
+        }
+
         function tKaryawan(){let n=document.getElementById('iNama'); if(n.value){db.ref('master_karyawan').push(n.value).then(()=>{n.value="";});}}
         function hKaryawan(){let n=document.getElementById('iNama'); let id=Object.keys(mk).find(k=>mk[k]===n.value); if(id && confirm('Hapus?')) db.ref(`master_karyawan/${id}`).remove();}
 
@@ -160,18 +140,28 @@
             db.ref(`absensi/${tgl}/${n.value}/${ty}`).set({waktu:jam, status:st, note:nt}).then(()=>{n.value="";});
         }
 
-        /* --- KELOMPOK 4: RESET & LIBUR --- */
-        function resetPerKaryawan(){
-            let n=document.getElementById('iNama'), t=document.getElementById('tglReset'); 
-            if(!n.value || !t.value) return alert("Pilih Nama & Tanggal!");
-            if(confirm('Hapus data '+n.value+' tgl '+t.value+'?')) db.ref(`absensi/${t.value}/${n.value}`).remove();
-        }
-        function sLib(st){
-            let m=document.getElementById('tglReset'); if(!m.value) return alert("Pilih Tanggal!");
-            db.ref(`hari_libur/${m.value}`).set(st?true:null);
+        function resetAbsen(){
+            let n=document.getElementById('resetNama').value, d1=document.getElementById('tglAwal').value, d2=document.getElementById('tglAkhir').value;
+            if(!n || !d1 || !d2) return alert("Lengkapi Nama & Rentang Tanggal!");
+            if(confirm(`Hapus data ${n} dari ${d1} s/d ${d2}?`)){
+                let start = new Date(d1), end = new Date(d2);
+                for(let d = start; d <= end; d.setDate(d.getDate() + 1)){
+                    let tgl = d.toISOString().split('T')[0];
+                    db.ref(`absensi/${tgl}/${n}`).remove();
+                }
+            }
         }
 
-        /* --- KELOMPOK 5: REKAP & EXPORT --- */
+        function sLib(st){
+            let d1=document.getElementById('tglAwal').value, d2=document.getElementById('tglAkhir').value;
+            if(!d1 || !d2) return alert("Pilih Rentang Tanggal!");
+            let start = new Date(d1), end = new Date(d2);
+            for(let d = start; d <= end; d.setDate(d.getDate() + 1)){
+                let tgl = d.toISOString().split('T')[0];
+                db.ref(`hari_libur/${tgl}`).set(st?true:null);
+            }
+        }
+
         function rRekap(){
             const f=document.getElementById('fB').value; if(!f) return;
             const [y,m]=f.split('-'), last=new Date(y,m,0).getDate(), todayFull = new Date().toISOString().split('T')[0];
@@ -179,27 +169,26 @@
             
             let h=`<tr><th class="nama-fixed">Nama</th>`;
             for(let i=1;i<=last;i++) h+=`<th>${i}</th>`;
-            h+=`<th class="th-rekap">H</th><th class="th-rekap">I</th><th class="th-rekap">A</th><th class="th-rekap">L</th></tr>`;
-            document.getElementById('thWeb').innerHTML=h;
+            h+=`</tr>`; document.getElementById('thWeb').innerHTML=h;
 
             let b="";
             kList.forEach(n=>{
-                let cH=0, cI=0, cA=0, cL=0, row=`<td class="nama-fixed">${n}</td>`;
+                let row=`<td class="nama-fixed">${n}</td>`;
                 for(let i=1;i<=last;i++){
                     let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), isOff=(d.getDay()===0 || hl[t]);
                     let data=ad[t]?ad[t][n]:null, sW="-", clW="", infoW="";
                     if(data){
-                        if(data.Izin){ sW="I"; clW="s-i"; cI++; }
+                        if(data.Izin){ sW="I"; clW="s-i"; }
                         else if(data.Masuk){ 
-                            if(isOff) { sW="L"; clW="s-l"; cL++; } 
-                            else { sW="H"; clW=(data.Masuk.status==="Terlambat")?"s-late":"s-v"; cH++; }
+                            if(isOff) { sW="L"; clW="s-l"; } 
+                            else { sW="H"; clW=(data.Masuk.status==="Terlambat")?"s-late":"s-v"; }
                             infoW=data.Masuk.waktu;
                         }
-                    } else if(isOff){ sW="OFF"; clW="s-off"; }
-                    else if(t < todayFull && t >= TGL_MULAI_SISTEM){ sW="A"; clW="s-a"; cA++; }
+                    } else if(isOff){ sW="MNG"; clW="s-off"; }
+                    else if(t < todayFull && t >= TGL_MULAI_SISTEM){ sW="A"; clW="s-a"; }
                     row+=`<td><div class="s-cell ${clW}">${sW}<span class="jam-text">${infoW}</span></div></td>`;
                 }
-                b+=`<tr>${row}<td class="rekap-akhir">${cH}</td><td class="rekap-akhir">${cI}</td><td class="rekap-akhir">${cA}</td><td class="rekap-akhir">${cL}</td></tr>`;
+                b+=`<tr>${row}</tr>`;
             });
             document.getElementById('tbWeb').innerHTML=b;
         }
