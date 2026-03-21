@@ -2,31 +2,35 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v75.7 - Full Features</title>
+    <title>PT-AGN v75.9 - Systematic Update</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
     <style>
+        /* 1. VARIABEL & TEMA */
         :root{--p:#2563eb;--s:#00C853;--d:#FF1744;--w:#FFD600;--bg:#f1f5f9;--c:#fff;--t:#1e293b;--b:#e2e8f0;--iz:#00B0FF;--al:#37474F}
         body[data-theme="dark"]{--bg:#0f172a;--c:#1e293b;--t:#f8fafc;--b:#334155}
-        body{font-family:'Plus Jakarta Sans',sans-serif;margin:0;background:var(--bg);color:var(--t);padding:8px}
+        body{font-family:'Plus Jakarta Sans',sans-serif;margin:0;background:var(--bg);color:var(--t);padding:8px;transition: 0.3s}
+        
+        /* 2. LAYOUT DASAR */
         .container{max-width:1450px;margin:0 auto}
-        
         header{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px;padding:5px}
+        .logo-box{display:flex;align-items:center;gap:10px}
         .logo-box img{width:65px;height:65px;border-radius:50%;background:#fff;border:3px solid var(--p);object-fit:cover;cursor:pointer}
-        
         .card{background:var(--c);padding:15px;border-radius:15px;margin-bottom:10px;border:1px solid var(--b);box-shadow:0 4px 6px -1px rgba(0,0,0,0.1)}
         h3{margin:0 0 10px;font-size:10px;color:var(--p);text-transform:uppercase;letter-spacing:1px;font-weight:800}
         
+        /* 3. TOMBOL & INPUT */
         input,button{border-radius:10px;font-size:14px;height:45px;border:1px solid var(--b);background:var(--c);color:var(--t);width:100%;box-sizing:border-box;outline:none}
         .btn{display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;border:none;color:#fff}
         
+        /* 4. TABEL REKAP */
         .table-wrap{overflow:auto;border-radius:12px;border:1px solid var(--b);background:var(--c);max-height:500px}
         .table-web{width:100%;border-collapse:separate;border-spacing:0;font-size:10px}
         .table-web th, .table-web td{border-bottom:1px solid var(--b);border-right:1px solid var(--b);padding:8px 4px;text-align:center;min-width:45px}
-        
         .nama-fixed{position:sticky !important;left:0;background-color:var(--c) !important;z-index:10;min-width:115px !important;text-align:left !important;padding-left:10px !important;border-right:3px solid var(--p) !important;font-weight:800}
         
+        /* 5. STATUS CELL */
         .s-cell{border-radius:6px;width:40px;height:38px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;font-size:11px}
         .s-v{background:var(--s);color:#fff}
         .s-late{background:var(--w);color:#000}
@@ -36,11 +40,11 @@
         .s-l{background:#AA00FF;color:#fff}
         .jam-text{font-size:8px;font-weight:600;display:block;margin-top:2px}
 
-        /* UPGRADE: PEMBATAS WARNA REKAP AKHIR */
+        /* 6. PEMBATAS REKAP AKHIR */
         .rekap-akhir{background:#1e293b !important; color:#ffffff !important; font-weight:800; border-left: 2px solid #000 !important;}
         .th-rekap{background:#0f172a !important; color:#fff !important}
 
-        /* FIX PDF PRINT MODE */
+        /* 7. ATURAN CETAK (PDF) */
         @media print {
             body { background: white !important; color: black !important; }
             header, .card:not(.table-card), .no-print { display: none !important; }
@@ -56,16 +60,17 @@
 </head>
 <body data-theme="light">
     <div class="container">
+        <!-- HEADER & TEMA -->
         <header>
             <div class="logo-box">
                 <input type="file" id="fileLogo" accept="image/*" style="display:none" onchange="loadLogo(event)">
                 <img id="mainLogo" src="https://ui-avatars.com/api/?name=AGN&background=2563eb&color=fff" onclick="document.getElementById('fileLogo').click()">
-                <div><h2 style="margin:0;font-size:1.1rem">PT AGN</h2><span style="font-size:9px;color:var(--p);font-weight:800">SYSTEM v75.7</span></div>
+                <div><h2 style="margin:0;font-size:1.1rem">PT AGN</h2><span style="font-size:9px;color:var(--p);font-weight:800">SYSTEM v75.9</span></div>
             </div>
-            <button onclick="toggleT()" id="tBtn" style="width:100px;font-size:11px">🌙 Dark Mode</button>
+            <button onclick="toggleT()" id="tBtn" style="width:110px;font-size:11px;background:var(--c)">🌙 Dark Mode</button>
         </header>
 
-        <!-- FITUR LENGKAP 75.2 -->
+        <!-- PENGELOLA KARYAWAN -->
         <div class="card">
             <div style="display:flex;gap:8px">
                 <input list="lk" id="iNama" placeholder="Pilih Nama...">
@@ -75,11 +80,12 @@
             </div>
         </div>
 
+        <!-- RESET & LIBUR (Sesuai Permintaan) -->
         <div class="card">
             <h3>🧹 Reset & Libur</h3>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
                 <input type="date" id="tglReset">
-                <button class="btn" style="background:var(--al);font-size:12px" onclick="resetPerKaryawan()">HAPUS PER HARI</button>
+                <button class="btn" style="background:var(--al);font-size:11px" onclick="resetPerKaryawan()">HAPUS PER HARI</button>
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
                 <button class="btn" style="background:var(--p)" onclick="sLib(true)">SET LIBUR</button>
@@ -87,6 +93,7 @@
             </div>
         </div>
 
+        <!-- TOMBOL ABSEN UTAMA -->
         <div class="card">
             <h3>⚡ Presensi</h3>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
@@ -96,6 +103,7 @@
             <button class="btn" style="background:var(--iz);margin-top:10px" onclick="pAbsen('Izin')">📝 IZIN / NOTE</button>
         </div>
 
+        <!-- TABEL REKAP -->
         <div class="card table-card">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px" class="no-print">
                 <input type="month" id="fB" style="width:130px" onchange="rRekap()">
@@ -111,19 +119,26 @@
     </div>
 
     <script>
+        /* --- KELOMPOK 1: CONFIG & DATABASE --- */
         const cfg={apiKey:"AIzaSyAu67MAhWBxdmciPi3xOKWhdy-uP4u9tXI",databaseURL:"https://pt-agn-default-rtdb.asia-southeast1.firebasedatabase.app"};
         firebase.initializeApp(cfg); const db=firebase.database();
         let mk={}, ad={}, hl={};
         const TGL_MULAI_SISTEM = "2026-03-21";
 
-        function toggleT(){ let b=document.body; let nt=b.getAttribute('data-theme')==='dark'?'light':'dark'; b.setAttribute('data-theme',nt); document.getElementById('tBtn').innerText=nt==='dark'?'☀️ Light':'🌙 Dark';}
-
+        /* --- KELOMPOK 2: FUNGSI TAMPILAN (THEME & LOGO) --- */
+        function toggleT(){ 
+            let b=document.body; 
+            let nt=b.getAttribute('data-theme')==='dark'?'light':'dark'; 
+            b.setAttribute('data-theme',nt); 
+            document.getElementById('tBtn').innerText=nt==='dark'?'☀️ Light Mode':'🌙 Dark Mode';
+        }
         function loadLogo(event) {
             const reader = new FileReader();
             reader.onload = () => { document.getElementById('mainLogo').src = reader.result; localStorage.setItem('agn_logo_local', reader.result); };
             reader.readAsDataURL(event.target.files[0]);
         }
 
+        /* --- KELOMPOK 3: FUNGSI CORE (ABSEN & DATA) --- */
         window.onload=()=>{
             let savedLogo = localStorage.getItem('agn_logo_local'); if(savedLogo) document.getElementById('mainLogo').src = savedLogo;
             document.getElementById('fB').value=new Date().toISOString().slice(0,7);
@@ -136,16 +151,6 @@
         function tKaryawan(){let n=document.getElementById('iNama'); if(n.value){db.ref('master_karyawan').push(n.value).then(()=>{n.value="";});}}
         function hKaryawan(){let n=document.getElementById('iNama'); let id=Object.keys(mk).find(k=>mk[k]===n.value); if(id && confirm('Hapus?')) db.ref(`master_karyawan/${id}`).remove();}
 
-        function resetPerKaryawan(){
-            let n=document.getElementById('iNama'), t=document.getElementById('tglReset'); 
-            if(n.value && t.value) { db.ref(`absensi/${t.value}/${n.value}`).remove().then(()=>{alert("Berhasil Dihapus");}); }
-        }
-
-        function sLib(st){
-            let m=document.getElementById('tglReset'); if(!m.value) return alert("Pilih Tanggal!");
-            db.ref(`hari_libur/${m.value}`).set(st?true:null);
-        }
-
         function pAbsen(ty){
             let n=document.getElementById('iNama'), now=new Date(), tgl=now.toISOString().split('T')[0];
             if(!n.value) return alert("Pilih Nama!");
@@ -155,6 +160,18 @@
             db.ref(`absensi/${tgl}/${n.value}/${ty}`).set({waktu:jam, status:st, note:nt}).then(()=>{n.value="";});
         }
 
+        /* --- KELOMPOK 4: RESET & LIBUR --- */
+        function resetPerKaryawan(){
+            let n=document.getElementById('iNama'), t=document.getElementById('tglReset'); 
+            if(!n.value || !t.value) return alert("Pilih Nama & Tanggal!");
+            if(confirm('Hapus data '+n.value+' tgl '+t.value+'?')) db.ref(`absensi/${t.value}/${n.value}`).remove();
+        }
+        function sLib(st){
+            let m=document.getElementById('tglReset'); if(!m.value) return alert("Pilih Tanggal!");
+            db.ref(`hari_libur/${m.value}`).set(st?true:null);
+        }
+
+        /* --- KELOMPOK 5: REKAP & EXPORT --- */
         function rRekap(){
             const f=document.getElementById('fB').value; if(!f) return;
             const [y,m]=f.split('-'), last=new Date(y,m,0).getDate(), todayFull = new Date().toISOString().split('T')[0];
