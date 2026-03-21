@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN Management v17.0</title>
+    <title>PT-AGN Management v18.0</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
@@ -31,7 +31,6 @@
         .status-hadir { background: #d4edda; color: #155724; font-weight: bold; } 
         .status-terlambat { background: #fff3cd; color: #856404; font-weight: bold; }
         .status-izin { background: #d1ecf1; color: #0c5460; font-weight: bold; }
-        .status-alpa { background: #f8d7da; color: #721c24; font-weight: bold; }
         .status-minggu { background: #ffebf0; color: #d00000; font-weight: bold; }
         .status-libur { background: #e9ecef; color: #6c757d; font-weight: normal; }
         
@@ -42,43 +41,33 @@
 </head>
 <body>
 
-    <h2>📦 PT-AGN System v17.0</h2>
+    <h2>📦 PT-AGN System v18.0</h2>
 
     <div class="card">
         <h3>1. Presensi & Kelola Karyawan</h3>
         <div class="manage-row">
-            <input type="text" id="inputNamaBaru" placeholder="Ketik Nama Baru..." style="margin:0; flex-grow:1;">
+            <input type="text" id="inputNamaBaru" placeholder="Ketik Nama Baru...">
             <button class="btn-tambah" onclick="tambahKaryawan()">Tambah</button>
         </div>
-
         <label>Pilih Nama Karyawan:</label>
         <div style="display: flex; gap: 8px;">
             <select id="pilihKaryawan" style="margin:0; flex-grow:1;"><option value="">-- Memuat... --</option></select>
             <button onclick="hapusKaryawan()" style="background:#ff4d4d; width:auto; margin:0; padding:0 15px;">Hapus</button>
         </div>
-        
         <div class="grid" style="margin-top:10px;">
             <button class="btn-masuk" onclick="prosesAbsen('Masuk')">MASUK</button>
             <button class="btn-pulang" onclick="prosesAbsen('Pulang')">PULANG</button>
         </div>
         <button class="btn-izin" onclick="prosesAbsen('Izin')">INPUT IZIN / SAKIT</button>
-        
         <button class="btn-reset-absen" onclick="resetAbsenHarian()">❌ RESET ABSEN ORANG INI (HARI INI)</button>
-        
         <div id="notif"></div>
     </div>
 
     <div class="card">
         <h3>2. Kelola Libur Panjang (Set / Batal)</h3>
         <div class="grid">
-            <div>
-                <label>Dari Tanggal:</label>
-                <input type="date" id="tglMulaiLibur">
-            </div>
-            <div>
-                <label>Sampai Tanggal:</label>
-                <input type="date" id="tglSelesaiLibur">
-            </div>
+            <div><label>Dari Tanggal:</label><input type="date" id="tglMulaiLibur"></div>
+            <div><label>Sampai Tanggal:</label><input type="date" id="tglSelesaiLibur"></div>
         </div>
         <div class="grid">
             <button onclick="setRentangLibur(true)" style="background:#6c757d;">Terapkan Libur</button>
@@ -114,50 +103,56 @@
         const db = firebase.database();
         let masterKaryawan = {};
         let hariLibur = {};
+        let absensiData = {};
 
+        // Inisialisasi awal
         window.onload = () => {
             const sekarang = new Date();
             document.getElementById('filterBulan').value = `${sekarang.getFullYear()}-${String(sekarang.getMonth() + 1).padStart(2, '0')}`;
+            
+            // Pasang Listener Real-time agar tabel auto-update tanpa refresh
+            db.ref('master_karyawan').on('value', snap => {
+                masterKaryawan = snap.val() || {};
+                updateDropdownKaryawan();
+                renderRekap();
+            });
+
+            db.ref('hari_libur').on('value', snap => {
+                hariLibur = snap.val() || {};
+                renderRekap(); // Rekap otomatis update saat libur berubah
+            });
+
+            db.ref('absensi').on('value', snap => {
+                absensiData = snap.val() || {};
+                renderRekap();
+            });
         };
 
-        db.ref('master_karyawan').on('value', snap => {
-            masterKaryawan = snap.val() || {};
+        function updateDropdownKaryawan() {
             let options = '<option value="">-- Pilih Nama --</option>';
             for(let id in masterKaryawan) {
                 options += `<option value="${masterKaryawan[id]}" data-id="${id}">${masterKaryawan[id]}</option>`;
             }
             document.getElementById('pilihKaryawan').innerHTML = options;
-        });
-
-        db.ref('hari_libur').on('value', snap => { hariLibur = snap.val() || {}; });
+        }
 
         function tambahKaryawan() {
             const el = document.getElementById('inputNamaBaru');
-            const nama = el.value.trim();
-            if(!nama) return;
-            db.ref('master_karyawan').push(nama).then(() => {
-                el.value = ""; 
-                document.getElementById('notif').innerText = "✅ " + nama + " Berhasil ditambah.";
-            });
+            if(!el.value.trim()) return;
+            db.ref('master_karyawan').push(el.value.trim()).then(() => el.value = "");
         }
 
         function hapusKaryawan() {
             const el = document.getElementById('pilihKaryawan');
             const id = el.options[el.selectedIndex].getAttribute('data-id');
-            if(id && confirm("Hapus permanen karyawan ini?")) db.ref('master_karyawan/' + id).remove();
+            if(id && confirm("Hapus karyawan ini?")) db.ref('master_karyawan/' + id).remove();
         }
 
         function resetAbsenHarian() {
             const nama = document.getElementById('pilihKaryawan').value;
-            if(!nama) return alert("Pilih nama dulu!");
+            if(!nama) return alert("Pilih nama!");
             const tglKey = new Date().toISOString().split('T')[0];
-            
-            if(confirm(`Hapus semua data absen ${nama} untuk tanggal hari ini (${tglKey})?`)) {
-                db.ref(`absensi/${tglKey}/${nama}`).remove().then(() => {
-                    document.getElementById('notif').innerText = "✅ Data absen hari ini dihapus!";
-                    setTimeout(() => document.getElementById('notif').innerText = "", 3000);
-                });
-            }
+            if(confirm(`Hapus absen ${nama} hari ini?`)) db.ref(`absensi/${tglKey}/${nama}`).remove();
         }
 
         function setRentangLibur(isSet) {
@@ -165,20 +160,19 @@
             const sEl = document.getElementById('tglSelesaiLibur');
             if(!mEl.value || !sEl.value) return alert("Pilih tanggal!");
             
-            let dateMulai = new Date(mEl.value);
-            let dateSelesai = new Date(sEl.value);
             let updates = {};
-            let tempDate = new Date(dateMulai);
+            let tempDate = new Date(mEl.value);
+            let endDate = new Date(sEl.value);
 
-            while(tempDate <= dateSelesai) {
+            while(tempDate <= endDate) {
                 const tglKey = tempDate.toISOString().split('T')[0];
                 updates[tglKey] = isSet ? true : null;
                 tempDate.setDate(tempDate.getDate() + 1);
             }
 
             db.ref('hari_libur').update(updates).then(() => {
-                alert(isSet ? "Libur dipasang!" : "Libur dibatalkan!");
                 mEl.value = ""; sEl.value = "";
+                // Render rekap otomatis terpicu oleh listener 'on value'
             });
         }
 
@@ -188,62 +182,54 @@
             const skrg = new Date();
             const tglKey = skrg.toISOString().split('T')[0];
             const waktuStr = skrg.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
-            const jam = skrg.getHours();
-            const menit = skrg.getMinutes();
-
+            
             let status = "Hadir";
-            if(tipe === 'Masuk' && (jam > 9 || (jam === 9 && menit > 0))) status = "Terlambat";
+            if(tipe === 'Masuk' && (skrg.getHours() > 9 || (skrg.getHours() === 9 && skrg.getMinutes() > 0))) status = "Terlambat";
 
-            db.ref(`absensi/${tglKey}/${nama}/${tipe}`).set({ waktu: waktuStr, status: status })
-                .then(() => {
-                    document.getElementById('notif').innerText = `✅ Berhasil ${tipe}!`;
-                    setTimeout(() => document.getElementById('notif').innerText = "", 3000);
-                });
+            db.ref(`absensi/${tglKey}/${nama}/${tipe}`).set({ waktu: waktuStr, status: status });
         }
 
         function renderRekap() {
             const filter = document.getElementById('filterBulan').value;
-            if(!filter) return alert("Pilih bulan!");
+            if(!filter) return;
             const [th, bl] = filter.split('-');
             const jmlHari = new Date(th, bl, 0).getDate();
 
+            // Header Tabel
             let hHtml = `<th class="nama-kolom">Nama Karyawan</th>`;
             for(let i=1; i<=jmlHari; i++) {
                 const d = new Date(th, bl-1, i);
                 const hari = d.toLocaleDateString('id-ID', {weekday: 'short'});
-                const color = d.getDay() === 0 ? 'color:red;' : '';
-                hHtml += `<th style="${color}">${i}<br>${hari}</th>`;
+                hHtml += `<th style="${d.getDay() === 0 ? 'color:red;' : ''}">${i}<br>${hari}</th>`;
             }
             document.getElementById('theadRekap').innerHTML = hHtml;
 
-            db.ref('absensi').once('value', snap => {
-                const data = snap.val() || {};
-                let bHtml = "";
-                for(let id in masterKaryawan) {
-                    const nama = masterKaryawan[id];
-                    bHtml += `<tr><td class="nama-kolom">${nama}</td>`;
-                    for(let h=1; h<=jmlHari; h++) {
-                        const tglKey = `${th}-${bl}-${String(h).padStart(2,'0')}`;
-                        const dObj = new Date(tglKey);
-                        let simbol = "-"; let kls = "";
+            // Isi Tabel
+            let bHtml = "";
+            for(let id in masterKaryawan) {
+                const nama = masterKaryawan[id];
+                bHtml += `<tr><td class="nama-kolom">${nama}</td>`;
+                for(let h=1; h<=jmlHari; h++) {
+                    const tglKey = `${th}-${bl}-${String(h).padStart(2,'0')}`;
+                    const dObj = new Date(tglKey);
+                    let simbol = "-"; let kls = "";
 
-                        if(dObj.getDay() === 0) { simbol = "OFF"; kls = "status-minggu"; }
-                        else if(hariLibur[tglKey]) { simbol = "LBR"; kls = "status-libur"; }
+                    if(dObj.getDay() === 0) { simbol = "OFF"; kls = "status-minggu"; }
+                    else if(hariLibur[tglKey]) { simbol = "LBR"; kls = "status-libur"; }
 
-                        if(data[tglKey] && data[tglKey][nama]) {
-                            const d = data[tglKey][nama];
-                            if(d.Izin) { simbol = "I"; kls = "status-izin"; }
-                            else if(d.Masuk) {
-                                simbol = d.Masuk.status === "Terlambat" ? "T" : "V";
-                                kls = d.Masuk.status === "Terlambat" ? "status-terlambat" : "status-hadir";
-                            }
+                    if(absensiData[tglKey] && absensiData[tglKey][nama]) {
+                        const d = absensiData[tglKey][nama];
+                        if(d.Izin) { simbol = "I"; kls = "status-izin"; }
+                        else if(d.Masuk) {
+                            simbol = d.Masuk.status === "Terlambat" ? "T" : "V";
+                            kls = d.Masuk.status === "Terlambat" ? "status-terlambat" : "status-hadir";
                         }
-                        bHtml += `<td class="${kls}">${simbol}</td>`;
                     }
-                    bHtml += `</tr>`;
+                    bHtml += `<td class="${kls}">${simbol}</td>`;
                 }
-                document.getElementById('tbodyRekap').innerHTML = bHtml;
-            });
+                bHtml += `</tr>`;
+            }
+            document.getElementById('tbodyRekap').innerHTML = bHtml;
         }
     </script>
 </body>
