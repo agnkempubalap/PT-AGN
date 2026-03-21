@@ -2,12 +2,12 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v78.1 - NEO GLASS</title>
+    <title>PT-AGN v78.2 - MATTE GLASS</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root{--p:#3b82f6;--s:#22c55e;--d:#f43f5e;--w:#f59e0b;--bg:#0f172a;--c:rgba(30, 41, 59, 0.7);--t:#f8fafc;--b:rgba(255, 255, 255, 0.1);--iz:#8b5cf6}
+        :root{--p:#3b82f6;--s:#10b981;--d:#ef4444;--w:#f59e0b;--bg:#0f172a;--c:rgba(30, 41, 59, 0.7);--t:#f8fafc;--b:rgba(255, 255, 255, 0.1);--iz:#8b5cf6}
         body[data-theme="light"]{--bg:#f1f5f9;--c:rgba(255, 255, 255, 0.8);--t:#0f172a;--b:rgba(0,0,0,0.05)}
         
         body{
@@ -21,46 +21,38 @@
         .logo-box{display:flex;align-items:center;gap:10px}
         .logo-box img{width:42px;height:42px;border-radius:12px;box-shadow: 0 4px 12px rgba(0,0,0,0.3);cursor:pointer}
         
-        /* GLASS CARD EFFECT */
         .card{
             background: var(--c); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
             padding:12px; border-radius:16px; margin-bottom:10px; border:1px solid var(--b);
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
         }
         
-        h3{margin:0 0 8px;font-size:9px;color:var(--p);text-transform:uppercase;letter-spacing:1.5px;font-weight:800}
-
-        /* SLIM MODERN INPUTS */
         input, button, select{
             border-radius:10px; font-size:11px; height:32px; border:1px solid var(--b);
             background: rgba(0, 0, 0, 0.2); color:var(--t); width:100%; box-sizing:border-box; 
-            outline:none; padding:0 12px; transition: all 0.2s;
+            outline:none; padding:0 12px; transition: 0.2s;
         }
         input:focus{ border-color:var(--p); background: rgba(0,0,0,0.4); }
 
-        /* VIBRANT BUTTONS */
-        .btn{
-            display:flex; align-items:center; justify-content:center; font-weight:700; 
-            cursor:pointer; border:none; color:#fff; font-size:10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-        }
-        .btn:active{ transform: translateY(2px); box-shadow: none; }
+        /* MATTE BUTTONS (Tidak Ngejreng) */
+        .btn{ display:flex; align-items:center; justify-content:center; font-weight:700; cursor:pointer; border:none; color:#fff; font-size:10px; }
+        .btn:active{ transform: scale(0.97); }
         
-        .btn-vibe-s{ background: linear-gradient(135deg, #22c55e, #16a34a); }
-        .btn-vibe-d{ background: linear-gradient(135deg, #f43f5e, #e11d48); }
-        .btn-vibe-p{ background: linear-gradient(135deg, #3b82f6, #2563eb); }
-        .btn-vibe-iz{ background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
-        .btn-dark{ background: #334155; color: #fff; }
+        .btn-matte-s{ background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4); }
+        .btn-matte-d{ background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4); }
+        .btn-matte-p{ background: rgba(59, 130, 246, 0.2); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.4); }
+        .btn-matte-iz{ background: rgba(139, 92, 246, 0.2); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.4); }
+        .btn-dark{ background: rgba(71, 85, 105, 0.2); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.1); }
 
-        /* TABLE NEO-DESIGN */
+        /* TABLE DESIGN */
         .table-wrap{ overflow-x:auto; border-radius:12px; background: rgba(0,0,0,0.1); border: 1px solid var(--b); }
         .table-web{ width:100%; border-collapse:collapse; font-size:9.5px; color:var(--t); }
         .table-web th, .table-web td{ border: 0.5px solid var(--b); padding:6px 2px; text-align:center; min-width:35px; }
         
         .nama-fixed{
-            position:sticky !important; left:0; background: var(--bg) !important; 
+            position:sticky !important; left:0; background: #1e293b !important; 
             z-index:10; min-width:100px !important; text-align:left !important; 
-            padding-left:12px !important; font-weight:700; color: var(--p);
+            padding-left:12px !important; font-weight:700; color: #94a3b8; border-right: 1.5px solid var(--p) !important;
         }
         
         .s-cell{
@@ -68,18 +60,18 @@
             flex-direction:column; align-items:center; justify-content:center; 
             font-weight:800; font-size:10px; margin: 0 auto;
         }
-        .s-v{ background: rgba(34,197,94,0.2); color:#22c55e; border:1px solid rgba(34,197,94,0.3); } 
-        .s-late{ background: rgba(245,158,11,0.2); color:#f59e0b; border:1px solid rgba(245,158,11,0.3); } 
-        .s-i{ background: rgba(139,92,246,0.2); color:#a78bfa; border:1px solid rgba(139,92,246,0.3); }
-        .s-off{ background: rgba(244,63,94,0.2); color:#f43f5e; border:1px solid rgba(244,63,94,0.3); } 
-        .s-mng{ color:#475569; opacity:0.3; }
+        .s-v{ background: rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.3); } 
+        .s-late{ background: rgba(245,158,11,0.15); color:#f59e0b; border:1px solid rgba(245,158,11,0.3); } 
+        .s-i{ background: rgba(139,92,246,0.15); color:#a78bfa; border:1px solid rgba(139,92,246,0.3); }
+        .s-off{ background: rgba(239,68,68,0.15); color:#ef4444; border:1px solid rgba(239,68,68,0.3); } 
+        .s-mng{ background: transparent; color:#475569; border: 1px solid rgba(71, 85, 105, 0.2); opacity: 0.6; }
+        .s-a{ background: rgba(148, 163, 184, 0.1); color: #94a3b8; }
         .jam-text{ font-size:6px; font-weight:600; display:block; margin-top:1px; }
 
         @media print {
-            body { background: white !important; color: black !important; }
             .no-print { display: none !important; }
-            .card { background: white !important; border: 1px solid #ddd !important; }
-            .table-web th { background: #f1f5f9 !important; }
+            .card { background: white !important; color: black !important; border: 1px solid #000 !important; }
+            .table-web td, .table-web th { border: 1px solid #000 !important; color: black !important; }
         }
     </style>
 </head>
@@ -89,51 +81,47 @@
             <div class="logo-box">
                 <input type="file" id="inpLogo" style="display:none" accept="image/*" onchange="cLogo(event)">
                 <img id="mainLogo" src="https://ui-avatars.com/api/?name=AGN&background=3b82f6&color=fff" onclick="document.getElementById('inpLogo').click()">
-                <div><h2 style="margin:0;font-size:16px;font-weight:800;letter-spacing:0.5px">PT AGN</h2><span style="font-size:8px;color:var(--p);font-weight:700">NEO-GLASS v78.1</span></div>
+                <div><h2 style="margin:0;font-size:16px;font-weight:800;letter-spacing:0.5px">PT AGN</h2><span style="font-size:8px;color:var(--p);font-weight:700">MATTE GLASS v78.2</span></div>
             </div>
-            <div style="background:var(--c); border-radius:10px; padding:6px 12px; font-size:12px; border:1px solid var(--b)" onclick="toggleT()">☀️</div>
+            <div style="background:var(--c); border-radius:10px; padding:6px 12px; font-size:12px; border:1px solid var(--b); cursor:pointer" onclick="toggleT()">☀️</div>
         </header>
 
-        <!-- SEARCH & MANAGE -->
         <div class="card no-print">
             <div style="display:flex;gap:8px">
-                <input list="lk" id="iNama" placeholder="Ketik Nama Karyawan..." style="flex-grow:1">
+                <input list="lk" id="iNama" placeholder="Cari Nama Karyawan..." style="flex-grow:1">
                 <datalist id="lk"></datalist>
-                <button class="btn btn-vibe-s" style="width:38px" onclick="tKaryawan()">+</button>
-                <button class="btn btn-vibe-d" style="width:38px" onclick="hKaryawan()">🗑️</button>
+                <button class="btn btn-matte-s" style="width:38px" onclick="tKaryawan()">+</button>
+                <button class="btn btn-matte-d" style="width:38px" onclick="hKaryawan()">🗑️</button>
             </div>
         </div>
 
-        <!-- CONTROL CENTER -->
         <div class="card no-print">
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
                 <div style="grid-column: span 2; display:flex; gap:6px">
                     <input type="date" id="resetTgl" style="flex-grow:1">
-                    <button class="btn btn-dark" style="padding:0 15px" onclick="resetAbsen()">RESET DATA</button>
+                    <button class="btn btn-dark" style="padding:0 15px" onclick="resetAbsen()">RESET</button>
                 </div>
                 <div><input type="date" id="tglAwal"></div>
                 <div><input type="date" id="tglAkhir"></div>
-                <button class="btn btn-vibe-p" onclick="sLib(true)">SET HARI LIBUR</button>
-                <button class="btn btn-dark" onclick="sLib(false)">HAPUS LIBUR</button>
+                <button class="btn btn-matte-p" onclick="sLib(true)">SET LIBUR</button>
+                <button class="btn btn-dark" onclick="sLib(false)">HAPUS</button>
             </div>
         </div>
 
-        <!-- QUICK ATTENDANCE -->
         <div class="card no-print">
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px">
-                <button class="btn btn-vibe-s" style="height:40px; font-size:11px" onclick="pAbsen('Masuk')">MASUK SEKARANG</button>
-                <button class="btn btn-vibe-d" style="height:40px; font-size:11px" onclick="pAbsen('Pulang')">PULANG SEKARANG</button>
+                <button class="btn btn-matte-s" style="height:40px; font-size:11px" onclick="pAbsen('Masuk')">MASUK</button>
+                <button class="btn btn-matte-d" style="height:40px; font-size:11px" onclick="pAbsen('Pulang')">PULANG</button>
             </div>
-            <button class="btn btn-vibe-iz" style="height:32px" onclick="pAbsen('Izin')">INPUT IZIN / KETERANGAN</button>
+            <button class="btn btn-matte-iz" style="height:32px" onclick="pAbsen('Izin')">IZIN / KETERANGAN</button>
         </div>
 
-        <!-- DATA REKAP -->
         <div class="card">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px" class="no-print">
-                <input type="month" id="fB" style="width:130px" onchange="rRekap()">
+                <input type="month" id="fB" style="width:130px; height:30px" onchange="rRekap()">
                 <div style="display:flex; gap:6px">
-                    <button class="btn btn-vibe-s" style="width:70px; height:30px" onclick="doExcel()">EXCEL</button>
-                    <button class="btn btn-vibe-d" style="width:70px; height:30px" onclick="window.print()">PDF</button>
+                    <button class="btn btn-matte-s" style="width:65px; height:30px" onclick="doExcel()">EXCEL</button>
+                    <button class="btn btn-matte-d" style="width:65px; height:30px" onclick="window.print()">PDF</button>
                 </div>
             </div>
             <div class="table-wrap" id="scrollArea">
@@ -146,7 +134,6 @@
     </div>
 
     <script>
-        // Logika Script Tetap Sama (v77.8/78.0)
         const cfg={apiKey:"AIzaSyAu67MAhWBxdmciPi3xOKWhdy-uP4u9tXI",databaseURL:"https://pt-agn-default-rtdb.asia-southeast1.firebasedatabase.app"};
         firebase.initializeApp(cfg); const db=firebase.database();
         let mk={}, ad={}, hl={}; const TGL_MULAI_SISTEM = "2026-03-21";
@@ -192,7 +179,7 @@
             let jam=now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
             let st="Hadir"; if(ty==='Masuk' && (now.getHours()>9 || (now.getHours()===9 && now.getMinutes()>0))) st="Terlambat";
             let nt=""; if(ty==='Izin'){nt=prompt("Alasan:"); if(nt===null)return; st="Izin";}
-            db.ref(`absensi/${tgl}/${n}/${ty}`).set({waktu:jam, status:st, note:nt}).then(()=>{alert(`Berhasil!`); inp.value="";});
+            db.ref(`absensi/${tgl}/${n}/${ty}`).set({waktu:jam, status:st, note:nt}).then(()=>{alert(`Selesai!`); inp.value="";});
         }
 
         function resetAbsen(){
@@ -209,7 +196,6 @@
                 db.ref(`hari_libur/${start.toISOString().split('T')[0]}`).set(st?true:null);
                 start.setDate(start.getDate() + 1);
             }
-            alert("Update Libur Selesai");
         }
 
         function rRekap(){
@@ -231,12 +217,13 @@
                     if(data){
                         if(data.Izin){ sW="I"; clW="s-i"; cI++; }
                         else if(data.Masuk){ 
-                            if(isMin || isLib) { sW="L"; clW="s-v"; } 
+                            if(isMin || isLib) { sW="M"; clW="s-v"; } 
                             else { sW="H"; clW=(data.Masuk.status==="Terlambat")?"s-late":"s-v"; cH++; }
                             infoW = data.Masuk.waktu;
                         }
                     } 
-                    else if(isMin || isLib){ sW=""; clW="s-mng"; }
+                    else if(isMin){ sW="M"; clW="s-mng"; }
+                    else if(isLib){ sW="OFF"; clW="s-off"; }
                     else if(t < todayFull && t >= TGL_MULAI_SISTEM){ sW="A"; clW="s-a"; cA++; }
                     row+=`<td><div class="s-cell ${clW}">${sW}<span class="jam-text">${infoW}</span></div></td>`;
                 }
@@ -248,7 +235,7 @@
                 const target = document.getElementById(`tgl-${tglSkrg}`);
                 if(target && scrollArea) {
                     const offset = target.offsetLeft - (scrollArea.offsetWidth / 2) + (target.offsetWidth / 2);
-                    scrollArea.scrollTo({ left: offset, behavior: 'smooth' });
+                    scrollArea.scrollTo({ left: offset });
                 }
             }, 500);
         }
@@ -258,7 +245,7 @@
             const table = document.getElementById("rekapTable").outerHTML;
             const blob = new Blob([table], {type: "application/vnd.ms-excel"});
             const url = URL.createObjectURL(blob);
-            const a = document.createElement("a"); a.href = url; a.download = `AGN_${f}.xls`; a.click();
+            const a = document.createElement("a"); a.href = url; a.download = `REKAP_AGN.xls`; a.click();
         }
     </script>
 </body>
