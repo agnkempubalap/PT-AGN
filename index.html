@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v74.4 - Lembur System</title>
+    <title>PT-AGN v74.5 - Fix Libur</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
@@ -57,7 +57,7 @@
         <header>
             <div class="logo-box" onclick="gantiLogo()">
                 <img id="mainLogo" src="https://ui-avatars.com/api/?name=AGN&background=2563eb&color=fff">
-                <div><h2 style="margin:0;font-size:1rem">PT AGN</h2><span style="font-size:9px;color:var(--w);font-weight:800">SYSTEM v74.4</span></div>
+                <div><h2 style="margin:0;font-size:1rem">PT AGN</h2><span style="font-size:9px;color:var(--w);font-weight:800">SYSTEM v74.5</span></div>
             </div>
             <button onclick="toggleT()" id="tBtn" style="width:80px;font-size:11px">🌙 Dark</button>
         </header>
@@ -74,13 +74,18 @@
 
         <div class="card">
             <h3>🧹 Reset & Libur</h3>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-                <input type="date" id="tglReset"><button class="btn" style="background:var(--d);font-size:12px" onclick="resetPerKaryawan()">HAPUS</button>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+                <input type="date" id="tglReset">
+                <button class="btn" style="background:var(--d);font-size:12px" onclick="resetPerKaryawan()">RESET ABSEN</button>
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-                <input type="date" id="tM"><input type="date" id="tS">
+                <div><label style="font-size:9px">Dari:</label><input type="date" id="tM"></div>
+                <div><label style="font-size:9px">Sampai:</label><input type="date" id="tS"></div>
             </div>
-            <button class="btn" style="background:var(--p)" onclick="sLib(true)">SET LIBUR</button>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <button class="btn" style="background:var(--p)" onclick="sLib(true)">✅ SET LIBUR</button>
+                <button class="btn" style="background:var(--d)" onclick="sLib(false)">❌ HAPUS LIBUR</button>
+            </div>
         </div>
 
         <div class="card">
@@ -140,7 +145,18 @@
         function tKaryawan(){let n=document.getElementById('iNama'); if(n.value) db.ref('master_karyawan').push(n.value).then(()=>{n.value="";});}
         function hKaryawan(){let n=document.getElementById('iNama'); let id=Object.keys(mk).find(k=>mk[k]===n.value); if(id && confirm('Hapus?')) db.ref(`master_karyawan/${id}`).remove();}
         function resetPerKaryawan(){let n=document.getElementById('iNama'), t=document.getElementById('tglReset'); if(n.value && t.value) db.ref(`absensi/${t.value}/${n.value}`).remove();}
-        function sLib(st){let m=document.getElementById('tM'), s=document.getElementById('tS'); if(!m.value)return; let curr=new Date(m.value), end=s.value?new Date(s.value):curr; while(curr<=end){ db.ref(`hari_libur/${curr.toISOString().split('T')[0]}`).set(st?true:null); curr.setDate(curr.getDate()+1); } m.value=""; s.value="";}
+        function sLib(st){
+            let m=document.getElementById('tM'), s=document.getElementById('tS'); 
+            if(!m.value) return sT("Pilih Tanggal!","error");
+            let curr=new Date(m.value), end=s.value?new Date(s.value):new Date(m.value);
+            while(curr<=end){
+                let tKey = curr.toISOString().split('T')[0];
+                db.ref(`hari_libur/${tKey}`).set(st?true:null);
+                curr.setDate(curr.getDate()+1);
+            }
+            sT(st?"Berhasil Set Libur":"Berhasil Hapus Libur");
+            m.value=""; s.value="";
+        }
 
         function pAbsen(ty){
             let n=document.getElementById('iNama'), now=new Date(), tgl=now.toISOString().split('T')[0];
@@ -156,7 +172,6 @@
             const [y,m]=f.split('-'), last=new Date(y,m,0).getDate(), today=new Date().toISOString().split('T')[0];
             const kList=Object.values(mk).sort();
 
-            // HEADER WEB & PRINT
             document.getElementById('thWeb').innerHTML = `<th class="nama-fixed">Nama</th>${Array.from({length:last},(_,i)=>`<th>${i+1}</th>`).join('')}<th>H</th><th>I</th><th>A</th><th>L</th>`;
             let hP = `<tr><th colspan="${last+5}" style="background:#FFC000!important; height:25px; font-size:14px;">ABSENSI PT AGN</th></tr>
                       <tr><th colspan="${last+5}" style="background:#FFE699!important;">PERIODE ${f}</th></tr>
@@ -172,7 +187,6 @@
                     let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), isOff=(d.getDay()===0 || hl[t]);
                     let data=ad[t]?ad[t][n]:null;
                     
-                    // WEB VIEW
                     let sW="-", clW="", infoW="";
                     if(data){
                         if(data.Izin){ sW="I"; clW="s-i"; cI++; infoW=data.Izin.note||""; }
@@ -185,7 +199,6 @@
                     else if(t>=TGL_MULAI_SISTEM && t<today){ sW="A"; clW="s-a"; cA++; }
                     rWeb+=`<td><div class="s-cell ${clW}">${sW}<span class="jam-text">${infoW}</span></div></td>`;
 
-                    // PRINT VIEW
                     if(isOff && !data){
                         if(idx===0){
                             let txt=(hl[t]?"LIBUR":"MINGGU").split('').map(c=>`<span class="lbl-off">${c}</span>`).join('');
