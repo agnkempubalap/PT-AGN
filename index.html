@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v46.0</title>
+    <title>PT-AGN v47.0 (Full Features)</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -23,13 +23,13 @@
         #toast{position:fixed;bottom:20px;right:20px;padding:12px 20px;border-radius:10px;color:#fff;font-size:13px;transform:translateY(100px);transition:0.3s;z-index:999}
         #toast.show{transform:translateY(0)}
         .table-wrap{overflow:auto;border-radius:12px;border:1px solid var(--b);background:var(--c)}
-        table{width:100%;border-collapse:collapse;font-size:11px;min-width:1100px}
-        th,td{border-bottom:1px solid var(--b);padding:10px 5px;text-align:center}
+        table{width:100%;border-collapse:collapse;font-size:10px;min-width:1100px}
+        th,td{border-bottom:1px solid var(--b);padding:8px 4px;text-align:center}
         .nama-fixed{position:sticky;left:0;background:var(--c)!important;font-weight:700;text-align:left;width:120px;z-index:4;border-right:2px solid var(--b);padding-left:10px}
-        .s-cell{border-radius:6px;width:30px;min-height:30px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;gap:2px}
+        .s-cell{border-radius:6px;width:32px;min-height:32px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;gap:1px}
         .s-v{background:var(--s);color:#fff}.s-t{background:var(--w);color:#fff}.s-i{background:var(--p);color:#fff}.s-off{background:#ef44441a;color:var(--d)}
-        .note-text{font-size:7px;font-weight:400;max-width:35px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-        @media print{.no-p{display:none !important}body{background:#fff;color:#000}table{font-size:9px}}
+        .note-text{font-size:6.5px;font-weight:400;width:30px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        @media print{.no-p{display:none !important}body{background:#fff;color:#000}table{font-size:8px;min-width:100%}.s-cell{border:1px solid #ddd;color:#000 !important;background:none !important}}
     </style>
 </head>
 <body data-theme="light">
@@ -39,18 +39,27 @@
             <div class="logo-box" onclick="document.getElementById('fileLogo').click()">
                 <img id="imgLogo" src="https://ui-avatars.com/api/?name=AGN&background=2563eb&color=fff" alt="Logo">
                 <input type="file" id="fileLogo" hidden accept="image/*" onchange="updateLogo(this)">
-                <div><h2 style="margin:0;font-size:1rem">PT AGN</h2><span style="font-size:9px;color:var(--w);font-weight:800">SYSTEM v46.0</span></div>
+                <div><h2 style="margin:0;font-size:1rem">PT AGN</h2><span style="font-size:9px;color:var(--w);font-weight:800">SYSTEM v47.0</span></div>
             </div>
             <button onclick="toggleT()" id="tBtn" style="width:80px;font-size:11px">🌙 Dark</button>
         </header>
 
+        <!-- FITUR HARI LIBUR (BALIK LAGI!) -->
         <div class="card no-p">
-            <h3>👤 Management</h3>
-            <div style="display:flex;gap:8px">
+            <h3>🗓️ Jadwal Libur & Management</h3>
+            <div style="display:flex;gap:8px;margin-bottom:10px">
                 <input list="lk" id="iNama" placeholder="Nama Karyawan...">
                 <datalist id="lk"></datalist>
                 <button class="btn btn-sq" style="background:var(--s)" onclick="tKaryawan()">➕</button>
                 <button class="btn btn-sq" style="background:var(--d)" onclick="hKaryawan()">🗑️</button>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+                <input type="date" id="tM" title="Mulai Libur">
+                <input type="date" id="tS" title="Sampai Libur">
+            </div>
+            <div style="display:flex;gap:8px">
+                <button class="btn" style="background:var(--p);flex:1" onclick="sLib(true)">SET LIBUR</button>
+                <button class="btn" style="background:var(--b);color:var(--t);flex:1" onclick="sLib(false)">HAPUS</button>
             </div>
         </div>
 
@@ -112,19 +121,25 @@
         };
 
         function uDl(){let dl=document.getElementById('lk'); dl.innerHTML=Object.values(mk).sort().map(n=>`<option value="${n}">`).join('');}
-        function tKaryawan(){let n=document.getElementById('iNama'); if(!n.value) return sT("Isi Nama!","error"); db.ref('master_karyawan').push(n.value).then(()=>{sT("Karyawan Ditambah!"); n.value=""});}
-        function hKaryawan(){let n=document.getElementById('iNama'); let id=Object.keys(mk).find(k=>mk[k]===n.value); if(id && confirm(`Hapus ${n.value}?`)) db.ref(`master_karyawan/${id}`).remove().then(()=>{sT("Karyawan Dihapus!"); n.value=""});}
+        function tKaryawan(){let n=document.getElementById('iNama'); if(!n.value) return sT("Isi Nama!","error"); db.ref('master_karyawan').push(n.value).then(()=>{sT("Berhasil!"); n.value=""});}
+        function hKaryawan(){let n=document.getElementById('iNama'); let id=Object.keys(mk).find(k=>mk[k]===n.value); if(id && confirm(`Hapus ${n.value}?`)) db.ref(`master_karyawan/${id}`).remove().then(()=>{sT("Dihapus!"); n.value=""});}
+
+        function sLib(st){
+            let m=document.getElementById('tM'), s=document.getElementById('tS'); 
+            if(!m.value || !s.value) return sT("Pilih Tgl Libur!","error");
+            let u={}, cur=new Date(m.value), end=new Date(s.value);
+            while(cur <= end){ u[cur.toISOString().split('T')[0]] = st?true:null; cur.setDate(cur.getDate()+1); }
+            db.ref('hari_libur').update(u).then(()=>{sT("Jadwal Libur Update!"); m.value=s.value="";});
+        }
 
         function pAbsen(ty){
             let n=document.getElementById('iNama'); if(!n.value) return sT("Pilih Nama!","error");
             let now=new Date(), tgl=now.toISOString().split('T')[0], jam=now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
             let note = "";
-            
             if(ty === 'Izin'){
-                note = prompt("Masukkan Alasan Izin/Sakit:");
+                note = prompt("Alasan Izin/Sakit:");
                 if(note === null) return; 
             }
-
             let st=(ty==='Masuk'&&(now.getHours()>9||(now.getHours()===9&&now.getMinutes()>0)))?"Terlambat":"Hadir";
             db.ref(`absensi/${tgl}/${n.value}/${ty}`).set({waktu:jam,status:st,catatan:note}).then(()=>{sT(ty+" Berhasil!"); n.value=""});
         }
