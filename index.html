@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN Management v18.0</title>
+    <title>PT-AGN Management v19.0</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
@@ -41,7 +41,7 @@
 </head>
 <body>
 
-    <h2>📦 PT-AGN System v18.0</h2>
+    <h2>📦 PT-AGN System v19.0 (Full Real-time)</h2>
 
     <div class="card">
         <h3>1. Presensi & Kelola Karyawan</h3>
@@ -77,8 +77,7 @@
 
     <div class="card">
         <h3>3. Laporan Bulanan Realtime</h3>
-        <input type="month" id="filterBulan">
-        <button onclick="renderRekap()">Tampilkan Rekap</button>
+        <input type="month" id="filterBulan" onchange="renderRekap()">
         <div class="table-container">
             <table id="tabelRekap">
                 <thead><tr id="theadRekap"></tr></thead>
@@ -101,27 +100,30 @@
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
+        
         let masterKaryawan = {};
         let hariLibur = {};
         let absensiData = {};
 
-        // Inisialisasi awal
+        // INISIALISASI LISTENER REAL-TIME UNTUK SEMUA DATA
         window.onload = () => {
             const sekarang = new Date();
             document.getElementById('filterBulan').value = `${sekarang.getFullYear()}-${String(sekarang.getMonth() + 1).padStart(2, '0')}`;
             
-            // Pasang Listener Real-time agar tabel auto-update tanpa refresh
+            // 1. Dengerin perubahan Karyawan
             db.ref('master_karyawan').on('value', snap => {
                 masterKaryawan = snap.val() || {};
                 updateDropdownKaryawan();
                 renderRekap();
             });
 
+            // 2. Dengerin perubahan Hari Libur
             db.ref('hari_libur').on('value', snap => {
                 hariLibur = snap.val() || {};
-                renderRekap(); // Rekap otomatis update saat libur berubah
+                renderRekap();
             });
 
+            // 3. Dengerin perubahan Absensi
             db.ref('absensi').on('value', snap => {
                 absensiData = snap.val() || {};
                 renderRekap();
@@ -129,36 +131,38 @@
         };
 
         function updateDropdownKaryawan() {
+            const select = document.getElementById('pilihKaryawan');
+            const selectedVal = select.value;
             let options = '<option value="">-- Pilih Nama --</option>';
             for(let id in masterKaryawan) {
                 options += `<option value="${masterKaryawan[id]}" data-id="${id}">${masterKaryawan[id]}</option>`;
             }
-            document.getElementById('pilihKaryawan').innerHTML = options;
+            select.innerHTML = options;
+            select.value = selectedVal;
         }
 
         function tambahKaryawan() {
             const el = document.getElementById('inputNamaBaru');
-            if(!el.value.trim()) return;
-            db.ref('master_karyawan').push(el.value.trim()).then(() => el.value = "");
+            const nama = el.value.trim();
+            if(!nama) return;
+            db.ref('master_karyawan').push(nama).then(() => {
+                el.value = "";
+                showNotif("✅ Karyawan berhasil ditambah");
+            });
         }
 
         function hapusKaryawan() {
             const el = document.getElementById('pilihKaryawan');
             const id = el.options[el.selectedIndex].getAttribute('data-id');
-            if(id && confirm("Hapus karyawan ini?")) db.ref('master_karyawan/' + id).remove();
-        }
-
-        function resetAbsenHarian() {
-            const nama = document.getElementById('pilihKaryawan').value;
-            if(!nama) return alert("Pilih nama!");
-            const tglKey = new Date().toISOString().split('T')[0];
-            if(confirm(`Hapus absen ${nama} hari ini?`)) db.ref(`absensi/${tglKey}/${nama}`).remove();
+            if(id && confirm("Hapus karyawan ini secara permanen?")) {
+                db.ref('master_karyawan/' + id).remove().then(() => showNotif("🗑️ Karyawan dihapus"));
+            }
         }
 
         function setRentangLibur(isSet) {
             const mEl = document.getElementById('tglMulaiLibur');
             const sEl = document.getElementById('tglSelesaiLibur');
-            if(!mEl.value || !sEl.value) return alert("Pilih tanggal!");
+            if(!mEl.value || !sEl.value) return alert("Pilih rentang tanggal!");
             
             let updates = {};
             let tempDate = new Date(mEl.value);
@@ -172,13 +176,13 @@
 
             db.ref('hari_libur').update(updates).then(() => {
                 mEl.value = ""; sEl.value = "";
-                // Render rekap otomatis terpicu oleh listener 'on value'
+                showNotif(isSet ? "📅 Libur berhasil dipasang" : "📅 Libur berhasil dihapus");
             });
         }
 
         function prosesAbsen(tipe) {
             const nama = document.getElementById('pilihKaryawan').value;
-            if(!nama) return alert("Pilih nama!");
+            if(!nama) return alert("Pilih nama karyawan!");
             const skrg = new Date();
             const tglKey = skrg.toISOString().split('T')[0];
             const waktuStr = skrg.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
@@ -186,7 +190,23 @@
             let status = "Hadir";
             if(tipe === 'Masuk' && (skrg.getHours() > 9 || (skrg.getHours() === 9 && skrg.getMinutes() > 0))) status = "Terlambat";
 
-            db.ref(`absensi/${tglKey}/${nama}/${tipe}`).set({ waktu: waktuStr, status: status });
+            db.ref(`absensi/${tglKey}/${nama}/${tipe}`).set({ waktu: waktuStr, status: status })
+                .then(() => showNotif(`✅ Berhasil ${tipe} (${waktuStr})`));
+        }
+
+        function resetAbsenHarian() {
+            const nama = document.getElementById('pilihKaryawan').value;
+            if(!nama) return alert("Pilih nama!");
+            const tglKey = new Date().toISOString().split('T')[0];
+            if(confirm(`Hapus seluruh data absen ${nama} hari ini?`)) {
+                db.ref(`absensi/${tglKey}/${nama}`).remove().then(() => showNotif("❌ Absen direset"));
+            }
+        }
+
+        function showNotif(msg) {
+            const n = document.getElementById('notif');
+            n.innerText = msg;
+            setTimeout(() => n.innerText = "", 3000);
         }
 
         function renderRekap() {
@@ -200,14 +220,16 @@
             for(let i=1; i<=jmlHari; i++) {
                 const d = new Date(th, bl-1, i);
                 const hari = d.toLocaleDateString('id-ID', {weekday: 'short'});
-                hHtml += `<th style="${d.getDay() === 0 ? 'color:red;' : ''}">${i}<br>${hari}</th>`;
+                const color = d.getDay() === 0 ? 'color:red;' : '';
+                hHtml += `<th style="${color}">${i}<br>${hari}</th>`;
             }
             document.getElementById('theadRekap').innerHTML = hHtml;
 
             // Isi Tabel
             let bHtml = "";
-            for(let id in masterKaryawan) {
-                const nama = masterKaryawan[id];
+            const sortedNames = Object.values(masterKaryawan).sort();
+            
+            sortedNames.forEach(nama => {
                 bHtml += `<tr><td class="nama-kolom">${nama}</td>`;
                 for(let h=1; h<=jmlHari; h++) {
                     const tglKey = `${th}-${bl}-${String(h).padStart(2,'0')}`;
@@ -228,7 +250,7 @@
                     bHtml += `<td class="${kls}">${simbol}</td>`;
                 }
                 bHtml += `</tr>`;
-            }
+            });
             document.getElementById('tbodyRekap').innerHTML = bHtml;
         }
     </script>
