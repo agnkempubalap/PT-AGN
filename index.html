@@ -1,52 +1,42 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v77.9 - THE GHOST MINIMALIST</title>
+    <title>PT-AGN v77.8 - CLASSIC STABLE</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        :root{--p:#3b82f6;--s:#10b981;--d:#f43f5e;--w:#fbbf24;--bg:#020617;--c:#0f172a;--t:#f1f5f9;--b:#1e293b;--iz:#8b5cf6}
-        body[data-theme="light"]{--bg:#f8fafc;--c:#ffffff;--t:#0f172a;--b:#e2e8f0}
-        body{font-family:'Inter',sans-serif;margin:0;background:var(--bg);color:var(--t);padding:5px;transition:0.3s}
+        :root{--p:#60a5fa;--s:#34d399;--d:#fb7185;--bg:#020617;--c:#111827;--t:#e2e8f0;--b:#1f2937}
+        body[data-theme="light"]{--bg:#f8fafc;--c:#ffffff;--t:#1e293b;--b:#e2e8f0}
+        body{font-family:'Plus Jakarta Sans',sans-serif;margin:0;background:var(--bg);color:var(--t);padding:8px}
         .container{max-width:1400px;margin:0 auto}
         
-        header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;padding:2px}
-        .logo-box{display:flex;align-items:center;gap:8px}
-        .logo-box img{width:40px;height:40px;border-radius:8px;border:1px solid var(--b);object-fit:cover;cursor:pointer}
-        .dark-card{background:var(--c); border-radius:6px; border:1px solid var(--b); padding:4px 8px; cursor:pointer; color:var(--t); font-size:10px}
+        header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+        .logo-box{display:flex;align-items:center;gap:10px}
+        .logo-box img{width:45px;height:45px;border-radius:10px;cursor:pointer;object-fit:cover;border:1px solid var(--b)}
+        
+        .card{background:var(--c);padding:12px;border-radius:12px;margin-bottom:10px;border:1px solid var(--b)}
+        
+        input,button,select{border-radius:8px;font-size:12px;height:38px;border:1px solid var(--b);background:var(--bg);color:var(--t);width:100%;box-sizing:border-box;outline:none;padding:0 12px}
+        .btn{display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;border:none;color:#fff}
+        .btn-s{background:var(--s)} .btn-d{background:var(--d)} .btn-p{background:var(--p)}
+        .btn-ghost{background:transparent; border:1px solid var(--b); color:var(--t)}
 
-        .card{background:var(--c);padding:10px;border-radius:8px;margin-bottom:5px;border:1px solid var(--b)}
-        h3{margin:0 0 5px;font-size:8px;color:var(--p);text-transform:uppercase;letter-spacing:1px;font-weight:700;opacity:0.6}
+        .table-wrap{overflow-x:auto; border-radius:10px; border:1px solid var(--b)}
+        .table-web{width:100%;border-collapse:collapse;font-size:10px}
+        .table-web th, .table-web td{border:1px solid var(--b);padding:6px 2px;text-align:center;min-width:35px}
+        .nama-fixed{position:sticky;left:0;background:var(--c)!important;z-index:10;min-width:100px!important;text-align:left!important;padding-left:10px!important;font-weight:600}
         
-        input,button,select{border-radius:5px;font-size:11px;height:30px;border:1px solid var(--b);background:var(--bg);color:var(--t);width:100%;box-sizing:border-box;outline:none;padding:0 8px}
-        input:focus{border-color:var(--p)}
-        .btn{display:flex;align-items:center;justify-content:center;font-weight:600;cursor:pointer;border:none;color:#fff;transition:0.1s}
-        .btn:active{transform:scale(0.98)}
-        
-        /* GHOST STYLE BUTTONS */
-        .btn-s{background:rgba(16,185,129,0.1); color:#10b981; border:1px solid rgba(16,185,129,0.2)}
-        .btn-d{background:rgba(244,63,94,0.1); color:#f43f5e; border:1px solid rgba(244,63,94,0.2)}
-        .btn-p{background:rgba(59,130,246,0.1); color:#3b82f6; border:1px solid rgba(59,130,246,0.2)}
+        .s-cell{border-radius:6px;width:32px;height:32px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;font-size:11px;margin:0 auto}
+        .s-v{background:rgba(52,211,153,0.2);color:var(--s)} 
+        .s-late{background:rgba(251,191,36,0.2);color:#fbbf24} 
+        .s-i{background:rgba(167,139,250,0.2);color:#a78bfa}
+        .s-off{background:rgba(251,113,133,0.2);color:var(--d)}
+        .jam-text{font-size:6px;font-weight:600;margin-top:1px;display:block}
 
-        .table-wrap{overflow-x:auto; border-radius:6px; border:1px solid var(--b); background:var(--c)}
-        .table-web{width:100%;border-collapse:separate;border-spacing:0;font-size:9px; color:var(--t)}
-        .table-web th, .table-web td{border-bottom:1px solid var(--b);border-right:1px solid var(--b);padding:3px 1px;text-align:center;min-width:30px}
-        
-        .nama-fixed{position:sticky !important;left:0;background-color:var(--c) !important;z-index:10;min-width:90px !important;text-align:left !important;padding-left:6px !important;font-weight:600; border-right: 1.2px solid var(--p) !important}
-        
-        .s-cell{border-radius:4px;width:26px;height:26px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;font-size:9px;margin: 0 auto;}
-        .s-v{color:#10b981;background:rgba(16,185,129,0.05)} 
-        .s-late{color:#fbbf24;background:rgba(251,191,36,0.05)} 
-        .s-i{color:#8b5cf6;background:rgba(139,92,246,0.05)}
-        .s-off{color:#f43f5e;background:rgba(244,63,94,0.05)} 
-        .jam-text{font-size:5px;font-weight:500;display:block;margin-top:1px;opacity:0.6}
-
-        @media print {
-            header, .no-print, .dark-card { display: none !important; }
-            .table-web { width: 100% !important; transform: scale(0.7); transform-origin: top left; }
-        }
+        @media print{.no-print{display:none} .table-web{font-size:8px}}
     </style>
 </head>
 <body data-theme="dark">
@@ -54,38 +44,54 @@
         <header>
             <div class="logo-box">
                 <input type="file" id="inpLogo" style="display:none" accept="image/*" onchange="cLogo(event)">
-                <img id="mainLogo" src="https://ui-avatars.com/api/?name=AGN&background=000&color=3b82f6" onclick="document.getElementById('inpLogo').click()">
-                <div><h2 style="margin:0;font-size:12px;letter-spacing:1px">PT AGN</h2><span style="font-size:7px;color:var(--p)">GHOST v77.9</span></div>
+                <img id="mainLogo" src="https://ui-avatars.com/api/?name=AGN&background=111827&color=60a5fa" onclick="document.getElementById('inpLogo').click()">
+                <div><h2 style="margin:0;font-size:16px">PT AGN</h2><span style="font-size:9px;color:var(--p)">STABLE v77.8</span></div>
             </div>
-            <div class="dark-card" onclick="toggleT()"><span id="tIco">☀️</span></div>
+            <button class="btn btn-ghost" style="width:40px" onclick="toggleT()">☀️</button>
         </header>
 
         <div class="card no-print">
-            <div style="display:flex;gap:4px">
-                <input list="lk" id="iNama" placeholder="Nama...">
+            <div style="display:flex;gap:6px;margin-bottom:8px">
+                <input list="lk" id="iNama" placeholder="Nama Karyawan...">
                 <datalist id="lk"></datalist>
-                <button class="btn btn-s" style="width:32px" onclick="tKaryawan()">+</button>
-                <button class="btn btn-d" style="width:32px" onclick="hKaryawan()">🗑️</button>
+                <button class="btn btn-s" style="width:40px" onclick="tKaryawan()">+</button>
+                <button class="btn btn-d" style="width:40px" onclick="hKaryawan()">🗑️</button>
+            </div>
+            <div style="display:flex;gap:6px">
+                <input type="date" id="resetTgl">
+                <button class="btn btn-ghost" onclick="resetAbsen()">RESET DATA TANGGAL INI</button>
             </div>
         </div>
 
         <div class="card no-print">
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; margin-bottom:5px">
-                <button class="btn btn-s" style="height:35px" onclick="pAbsen('Masuk')">MASUK</button>
-                <button class="btn btn-d" style="height:35px" onclick="pAbsen('Pulang')">PULANG</button>
+            <h3 style="font-size:10px;margin-top:0">SET LIBUR RENTANG TANGGAL</h3>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px; margin-bottom:6px">
+                <input type="date" id="tglAwal">
+                <input type="date" id="tglAkhir">
             </div>
-            <button class="btn btn-p" style="height:28px; font-size:10px" onclick="pAbsen('Izin')">IZIN</button>
+            <div style="display:flex;gap:6px">
+                <button class="btn btn-p" onclick="sLib(true)">SET LIBUR</button>
+                <button class="btn btn-ghost" onclick="sLib(false)">HAPUS LIBUR</button>
+            </div>
+        </div>
+
+        <div class="card no-print">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:8px">
+                <button class="btn btn-s" style="height:45px" onclick="pAbsen('Masuk')">MASUK</button>
+                <button class="btn btn-d" style="height:45px" onclick="pAbsen('Pulang')">PULANG</button>
+            </div>
+            <button class="btn btn-p" style="height:35px;background:#8b5cf6" onclick="pAbsen('Izin')">IZIN / KETERANGAN</button>
         </div>
 
         <div class="card">
-            <div style="display:flex; justify-content:space-between; margin-bottom:6px" class="no-print">
-                <input type="month" id="fB" style="width:100px; height:28px" onchange="rRekap()">
-                <div style="display:flex; gap:4px">
-                    <button class="btn btn-s" style="width:55px; height:28px" onclick="doExcel()">XLS</button>
-                    <button class="btn btn-d" style="width:55px; height:28px" onclick="window.print()">PDF</button>
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px" class="no-print">
+                <input type="month" id="fB" style="width:140px" onchange="rRekap()">
+                <div style="display:flex; gap:6px">
+                    <button class="btn btn-s" style="width:70px" onclick="doExcel()">EXCEL</button>
+                    <button class="btn btn-d" style="width:70px" onclick="window.print()">PDF</button>
                 </div>
             </div>
-            <div class="table-wrap" id="scrollArea">
+            <div class="table-wrap">
                 <table class="table-web" id="rekapTable">
                     <thead id="thWeb"></thead>
                     <tbody id="tbWeb"></tbody>
@@ -102,16 +108,14 @@
         window.onload=()=>{
             const m = new Date().toISOString().slice(0,7);
             document.getElementById('fB').value=m;
-            if(localStorage.getItem('agnLogo')) document.getElementById('mainLogo').src=localStorage.getItem('agnLogo');
-            const savedTheme = localStorage.getItem('agnTheme') || 'dark';
-            document.body.setAttribute('data-theme', savedTheme);
             db.ref('master_karyawan').on('value',s=>{mk=s.val()||{}; uDl(); rRekap();});
             db.ref('absensi').on('value',s=>{ad=s.val()||{}; rRekap();});
+            db.ref('hari_libur').on('value',s=>{hl=s.val()||{}; rRekap();});
         };
 
         function toggleT(){ 
             let b=document.body; let nt=b.getAttribute('data-theme')==='dark'?'light':'dark'; 
-            b.setAttribute('data-theme',nt); localStorage.setItem('agnTheme', nt); 
+            b.setAttribute('data-theme',nt);
         }
 
         function cLogo(e){
@@ -130,25 +134,42 @@
 
         function hKaryawan(){
             let n=document.getElementById('iNama'); let id=Object.keys(mk).find(k=>mk[k]===n.value); 
-            if(id && confirm('Hapus?')) db.ref(`master_karyawan/${id}`).remove().then(()=>n.value="");
+            if(id && confirm('Hapus Karyawan?')) db.ref(`master_karyawan/${id}`).remove().then(()=>n.value="");
         }
 
         function pAbsen(ty){
             let inp=document.getElementById('iNama'), n=inp.value, now=new Date(), tgl=now.toISOString().split('T')[0];
-            if(!n) return;
+            if(!n) return alert("Pilih Nama!");
             let jam=now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
             let st="Hadir"; if(ty==='Masuk' && (now.getHours()>9 || (now.getHours()===9 && now.getMinutes()>0))) st="Terlambat";
-            let nt=""; if(ty==='Izin'){nt=prompt("Alasan:"); if(nt===null)return; st="Izin";}
-            db.ref(`absensi/${tgl}/${n}/${ty}`).set({waktu:jam, status:st, note:nt}).then(()=>{alert(`Selesai`); inp.value="";});
+            let nt=""; if(ty==='Izin'){nt=prompt("Keterangan:"); if(nt===null)return; st="Izin";}
+            db.ref(`absensi/${tgl}/${n}/${ty}`).set({waktu:jam, status:st, note:nt}).then(()=>{alert("Berhasil!"); inp.value="";});
+        }
+
+        function resetAbsen(){
+            let n=document.getElementById('iNama'), tgl=document.getElementById('resetTgl');
+            if(!n.value || !tgl.value) return alert("Pilih Nama & Tanggal!");
+            if(confirm('Hapus data absen orang ini di tanggal tersebut?')) db.ref(`absensi/${tgl.value}/${n.value}`).remove();
+        }
+
+        function sLib(st){
+            let d1=document.getElementById('tglAwal'), d2=document.getElementById('tglAkhir');
+            if(!d1.value) return alert("Pilih Tanggal!");
+            let start = new Date(d1.value); let end = d2.value ? new Date(d2.value) : new Date(d1.value);
+            while(start <= end){
+                db.ref(`hari_libur/${start.toISOString().split('T')[0]}`).set(st?true:null);
+                start.setDate(start.getDate() + 1);
+            }
+            alert("Update Hari Libur Selesai");
         }
 
         function rRekap(){
             const f=document.getElementById('fB').value; if(!f) return;
-            const [y,m]=f.split('-'), last=new Date(y,m,0).getDate(), todayFull = new Date().toISOString().split('T')[0], tglSkrg = new Date().getDate();
+            const [y,m]=f.split('-'), last=new Date(y,m,0).getDate(), todayFull = new Date().toISOString().split('T')[0];
             const kList=Object.values(mk).sort();
             
             let h=`<tr><th class="nama-fixed">Karyawan</th>`;
-            for(let i=1;i<=last;i++) h+=`<th id="tgl-${i}">${i}</th>`;
+            for(let i=1;i<=last;i++) h+=`<th>${i}</th>`;
             h+=`<th>H</th><th>I</th><th>A</th></tr>`;
             document.getElementById('thWeb').innerHTML=h;
 
@@ -156,15 +177,19 @@
             kList.forEach(n=>{
                 let cH=0, cI=0, cA=0, row=`<td class="nama-fixed">${n}</td>`;
                 for(let i=1;i<=last;i++){
-                    let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), isMin = (d.getDay()===0);
-                    let data=ad[t]?ad[t][n]:null, sW="-", clW="", infoW="";
+                    let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), isMin = (d.getDay()===0), isLib = hl[t];
+                    let data=ad[t]?ad[t][n]:null, sW="-", clW="", jam="";
                     if(data){
                         if(data.Izin){ sW="I"; clW="s-i"; cI++; }
-                        else if(data.Masuk){ sW="H"; clW=(data.Masuk.status==="Terlambat")?"s-late":"s-v"; cH++; infoW = data.Masuk.waktu; }
+                        else if(data.Masuk){ 
+                            if(isMin || isLib) { sW="L"; clW="s-v"; } 
+                            else { sW="H"; clW=(data.Masuk.status==="Terlambat")?"s-late":"s-v"; cH++; }
+                            jam = data.Masuk.waktu;
+                        }
                     } 
-                    else if(isMin){ sW=""; clW=""; }
+                    else if(isMin || isLib){ sW=""; clW=""; }
                     else if(t < todayFull && t >= TGL_MULAI_SISTEM){ sW="A"; cA++; }
-                    row+=`<td><div class="s-cell ${clW}">${sW}<span class="jam-text">${infoW}</span></div></td>`;
+                    row+=`<td><div class="s-cell ${clW}">${sW}<span class="jam-text">${jam}</span></div></td>`;
                 }
                 b+=`<tr>${row}<td>${cH}</td><td>${cI}</td><td>${cA}</td></tr>`;
             });
@@ -175,7 +200,7 @@
             const table = document.getElementById("rekapTable").outerHTML;
             const blob = new Blob([table], {type: "application/vnd.ms-excel"});
             const url = URL.createObjectURL(blob);
-            const a = document.createElement("a"); a.href = url; a.download = `AGN.xls`; a.click();
+            const a = document.createElement("a"); a.href = url; a.download = `REKAP_AGN.xls`; a.click();
         }
     </script>
 </body>
