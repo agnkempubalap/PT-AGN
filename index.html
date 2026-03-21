@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v77.2 - PRO EXPORT</title>
+    <title>PT-AGN v77.4 - FULL PRO REPORT</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
@@ -24,37 +24,51 @@
         input,button,select{border-radius:12px;font-size:14px;height:52px;border:1px solid var(--b);background:var(--bg);color:var(--t);width:100%;box-sizing:border-box;outline:none}
         .btn{display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;border:none;color:#fff}
         
-        /* TOMBOL EXPORT PRO */
+        /* TOMBOL EXPORT */
         .export-group { display: flex; justify-content: flex-end; align-items: flex-end; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
         .btn-ex { width: 100px; height: 45px; font-size: 11px; border-radius: 10px; }
 
         .table-wrap{overflow-x:auto; border-radius:12px; border:1px solid var(--b); background:var(--c); scroll-behavior: smooth}
         .table-web{width:100%;border-collapse:separate;border-spacing:0;font-size:10px; color:var(--t)}
-        .table-web th, .table-web td{border-bottom:1px solid var(--b);border-right:1px solid var(--b);padding:8px 2px;text-align:center;min-width:50px}
+        .table-web th, .table-web td{border-bottom:1px solid var(--b);border-right:1px solid var(--b);padding:8px 1px;text-align:center;min-width:38px}
         
-        .nama-fixed{position:sticky !important;left:0;background-color:var(--c) !important;z-index:10;min-width:130px !important;text-align:left !important;padding-left:15px !important;font-weight:700; border-right: 2px solid var(--p) !important}
+        .nama-fixed{position:sticky !important;left:0;background-color:var(--c) !important;z-index:10;min-width:115px !important;text-align:left !important;padding-left:12px !important;font-weight:700; border-right: 2px solid var(--p) !important}
         .today-col{background: rgba(37, 99, 235, 0.15) !important;}
-        .rekap-akhir{background:var(--bg) !important; color:var(--t) !important; font-weight:800; min-width:35px !important}
+        .rekap-akhir{background:var(--bg) !important; color:var(--t) !important; font-weight:800; min-width:30px !important}
         .th-rekap{background:var(--bg) !important; color:var(--iz) !important; font-weight:800}
 
-        .s-cell{border-radius:6px;width:44px;height:42px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;font-size:11px;margin: 0 auto}
+        .s-cell{border-radius:6px;width:38px;height:38px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;font-size:10px;margin: 0 auto}
         .s-v{background:var(--s);color:#fff} .s-late{background:var(--w);color:#000} .s-i{background:var(--iz);color:#fff}
         .s-off{background:var(--d);color:#fff} .s-a{background:var(--al);color:#fff} .s-l{background:#AA00FF;color:#fff} .s-mng{background:#64748b;color:#fff}
-        .jam-text{font-size:7.5px;font-weight:600;display:block;margin-top:2px;max-width:40px}
+        .jam-text{font-size:7px;font-weight:600;display:block;margin-top:2px;max-width:36px}
 
-        /* PRINT CONFIG - AGAR PDF FULL TIDAK KEPOTONG */
+        /* PRINT SETTINGS - ANTI POTONG */
         @media print {
-            @page { size: landscape; margin: 5mm; }
-            body { background: #fff !important; color: #000 !important; padding: 0; }
-            .container { max-width: 100%; }
-            header, .card:not(.table-card), .no-print { display: none !important; }
-            .card { border: none !important; padding: 0 !important; }
+            @page { size: A4 landscape; margin: 5mm; }
+            html, body { background: #fff !important; color: #000 !important; }
+            header, .no-print, .export-group, .dark-card { display: none !important; }
+            .container { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
+            .card { border: none !important; padding: 0 !important; background: #fff !important; }
             .table-wrap { overflow: visible !important; border: none !important; }
-            .table-web { width: 100% !important; font-size: 8pt !important; color: #000 !important; border: 1px solid #000 !important; }
-            .table-web th, .table-web td { border: 1px solid #ccc !important; color: #000 !important; }
-            .nama-fixed { position: static !important; background: #fff !important; color: #000 !important; border-right: 1px solid #ccc !important; }
-            .s-cell { border: 1px solid #eee !important; color: #000 !important; background: transparent !important; }
-            .s-v, .s-late, .s-i, .s-off, .s-a, .s-l, .s-mng { color: #000 !important; background: none !important; border: 1px solid #ccc !important; }
+            
+            /* Megecilkan tabel agar muat satu halaman landscape */
+            .table-web { 
+                width: 100% !important; 
+                transform: scale(0.82); 
+                transform-origin: top left; 
+                border: 1px solid #000 !important;
+                color: #000 !important;
+            }
+            .table-web th, .table-web td { 
+                border: 1px solid #444 !important; 
+                color: #000 !important; 
+                padding: 4px 1px !important;
+                background: #fff !important;
+            }
+            .nama-fixed { position: static !important; border-right: 1px solid #000 !important; min-width: 100px !important; }
+            .s-cell { border: 1px solid #666 !important; background: #fff !important; color: #000 !important; width: 30px !important; height: 30px !important; }
+            .jam-text { color: #000 !important; font-size: 6px !important; }
+            .s-v, .s-late, .s-i, .s-off, .s-a, .s-l, .s-mng { color: #000 !important; background: #fff !important; }
         }
     </style>
 </head>
@@ -64,13 +78,14 @@
             <div class="logo-box">
                 <input type="file" id="inpLogo" style="display:none" accept="image/*" onchange="cLogo(event)">
                 <img id="mainLogo" src="https://ui-avatars.com/api/?name=AGN&background=000&color=fff" onclick="document.getElementById('inpLogo').click()">
-                <div><h2 style="margin:0;font-size:1.3rem">PT AGN</h2><span style="font-size:10px;color:var(--p);font-weight:800">SYSTEM v77.2 PRO</span></div>
+                <div><h2 style="margin:0;font-size:1.3rem">PT AGN</h2><span style="font-size:10px;color:var(--p);font-weight:800">SYSTEM v77.4 PRO</span></div>
             </div>
             <div class="dark-card" onclick="toggleT()">
                 <span id="tIco">☀️</span> <span style="font-size:12px;font-weight:600" id="tTxt">Light Mode</span>
             </div>
         </header>
 
+        <!-- KONTROL (Disembunyikan saat print) -->
         <div class="card no-print">
             <h3>👥 DATA KARYAWAN</h3>
             <div style="display:flex;gap:10px">
@@ -106,17 +121,22 @@
             <button class="btn" style="background:var(--iz);height:50px;font-size:16px" onclick="pAbsen('Izin')">📝 IZIN / KETERANGAN</button>
         </div>
 
+        <!-- REKAP TABLE -->
         <div class="card table-card">
             <div class="export-group no-print">
                 <div style="flex-grow:1">
-                    <label>Filter Bulan:</label>
+                    <label>Pilih Bulan:</label>
                     <input type="month" id="fB" style="width:160px; height:45px" onchange="rRekap()">
                 </div>
                 <button class="btn btn-ex" style="background:#1d6f42" onclick="doExcel()">📥 EXCEL</button>
                 <button class="btn btn-ex" style="background:#b91c1c" onclick="window.print()">📄 PDF</button>
             </div>
+            
             <div class="table-wrap" id="scrollArea">
-                <table class="table-web" id="rekapTable"><thead id="thWeb"></thead><tbody id="tbWeb"></tbody></table>
+                <table class="table-web" id="rekapTable">
+                    <thead id="thWeb"></thead>
+                    <tbody id="tbWeb"></tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -199,10 +219,12 @@
             const f=document.getElementById('fB').value; if(!f) return;
             const [y,m]=f.split('-'), last=new Date(y,m,0).getDate(), todayFull = new Date().toISOString().split('T')[0], tglSkrg = new Date().getDate();
             const kList=Object.values(mk).sort();
+            
             let h=`<tr><th class="nama-fixed">Nama</th>`;
             for(let i=1;i<=last;i++) h+=`<th id="tgl-${i}" class="${i===tglSkrg?'today-col':''}">${i}</th>`;
             h+=`<th class="th-rekap">H</th><th class="th-rekap">I</th><th class="th-rekap">A</th><th class="th-rekap">L</th></tr>`;
             document.getElementById('thWeb').innerHTML=h;
+
             let b="";
             kList.forEach(n=>{
                 let cH=0, cI=0, cA=0, cL=0, row=`<td class="nama-fixed">${n}</td>`;
@@ -210,6 +232,7 @@
                     let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t);
                     let isMinggu = (d.getDay()===0), isSetLibur = hl[t];
                     let data=ad[t]?ad[t][n]:null, sW="-", clW="", infoW="";
+                    
                     if(data){
                         if(data.Izin){ sW="I"; clW="s-i"; cI++; infoW = data.Izin.note || "Izin"; }
                         else if(data.Masuk){ 
@@ -221,11 +244,13 @@
                     else if(isMinggu){ sW="MNG"; clW="s-mng"; }
                     else if(isSetLibur){ sW="OFF"; clW="s-off"; }
                     else if(t < todayFull && t >= TGL_MULAI_SISTEM){ sW="A"; clW="s-a"; cA++; }
+                    
                     row+=`<td class="${i===tglSkrg?'today-col':''}"><div class="s-cell ${clW}">${sW}<span class="jam-text">${infoW}</span></div></td>`;
                 }
                 b+=`<tr>${row}<td class="rekap-akhir">${cH}</td><td class="rekap-akhir">${cI}</td><td class="rekap-akhir">${cA}</td><td class="rekap-akhir">${cL}</td></tr>`;
             });
             document.getElementById('tbWeb').innerHTML=b;
+
             setTimeout(() => {
                 const scrollArea = document.getElementById('scrollArea');
                 const target = document.getElementById(`tgl-${tglSkrg}`);
@@ -241,8 +266,8 @@
             const table = document.getElementById("rekapTable").outerHTML;
             const template = `
                 <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-                <head><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Rekap Absensi</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
-                <style>table { border-collapse:collapse; } th, td { border:1px solid black; text-align:center; }</style></head>
+                <head><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Rekap</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
+                <style>table { border-collapse:collapse; } th, td { border:1px solid black; text-align:center; font-family: Arial; font-size: 10pt; }</style></head>
                 <body>${table}</body></html>`;
             const blob = new Blob([template], {type: "application/vnd.ms-excel"});
             const url = URL.createObjectURL(blob);
