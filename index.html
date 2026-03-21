@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v47.0 (Full Features)</title>
+    <title>PT-AGN v48.0 (Final)</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -29,7 +29,7 @@
         .s-cell{border-radius:6px;width:32px;min-height:32px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;gap:1px}
         .s-v{background:var(--s);color:#fff}.s-t{background:var(--w);color:#fff}.s-i{background:var(--p);color:#fff}.s-off{background:#ef44441a;color:var(--d)}
         .note-text{font-size:6.5px;font-weight:400;width:30px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-        @media print{.no-p{display:none !important}body{background:#fff;color:#000}table{font-size:8px;min-width:100%}.s-cell{border:1px solid #ddd;color:#000 !important;background:none !important}}
+        @media print{.no-p{display:none !important}body{background:#fff;color:#000}table{font-size:8px;min-width:100%}}
     </style>
 </head>
 <body data-theme="light">
@@ -39,23 +39,26 @@
             <div class="logo-box" onclick="document.getElementById('fileLogo').click()">
                 <img id="imgLogo" src="https://ui-avatars.com/api/?name=AGN&background=2563eb&color=fff" alt="Logo">
                 <input type="file" id="fileLogo" hidden accept="image/*" onchange="updateLogo(this)">
-                <div><h2 style="margin:0;font-size:1rem">PT AGN</h2><span style="font-size:9px;color:var(--w);font-weight:800">SYSTEM v47.0</span></div>
+                <div><h2 style="margin:0;font-size:1rem">PT AGN</h2><span style="font-size:9px;color:var(--w);font-weight:800">SYSTEM v48.0</span></div>
             </div>
             <button onclick="toggleT()" id="tBtn" style="width:80px;font-size:11px">🌙 Dark</button>
         </header>
 
-        <!-- FITUR HARI LIBUR (BALIK LAGI!) -->
         <div class="card no-p">
-            <h3>🗓️ Jadwal Libur & Management</h3>
+            <h3>👤 Management & Reset</h3>
             <div style="display:flex;gap:8px;margin-bottom:10px">
                 <input list="lk" id="iNama" placeholder="Nama Karyawan...">
                 <datalist id="lk"></datalist>
                 <button class="btn btn-sq" style="background:var(--s)" onclick="tKaryawan()">➕</button>
                 <button class="btn btn-sq" style="background:var(--d)" onclick="hKaryawan()">🗑️</button>
             </div>
+            <button class="btn" style="background:var(--d);margin-top:5px;height:38px;font-size:12px" onclick="resetAbsensi()">⚠️ RESET SEMUA DATA ABSENSI</button>
+        </div>
+
+        <div class="card no-p">
+            <h3>🗓️ Jadwal Libur</h3>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-                <input type="date" id="tM" title="Mulai Libur">
-                <input type="date" id="tS" title="Sampai Libur">
+                <input type="date" id="tM"><input type="date" id="tS">
             </div>
             <div style="display:flex;gap:8px">
                 <button class="btn" style="background:var(--p);flex:1" onclick="sLib(true)">SET LIBUR</button>
@@ -69,7 +72,7 @@
                 <button class="btn" style="background:var(--s);height:55px" onclick="pAbsen('Masuk')">MASUK</button>
                 <button class="btn" style="background:var(--d);height:55px" onclick="pAbsen('Pulang')">PULANG</button>
             </div>
-            <button class="btn" style="background:var(--w);margin-top:10px;height:42px" onclick="pAbsen('Izin')">📝 IZIN / SAKIT (DENGAN CATATAN)</button>
+            <button class="btn" style="background:var(--w);margin-top:10px;height:42px" onclick="pAbsen('Izin')">📝 IZIN / SAKIT (CATATAN)</button>
         </div>
 
         <div class="card">
@@ -124,6 +127,14 @@
         function tKaryawan(){let n=document.getElementById('iNama'); if(!n.value) return sT("Isi Nama!","error"); db.ref('master_karyawan').push(n.value).then(()=>{sT("Berhasil!"); n.value=""});}
         function hKaryawan(){let n=document.getElementById('iNama'); let id=Object.keys(mk).find(k=>mk[k]===n.value); if(id && confirm(`Hapus ${n.value}?`)) db.ref(`master_karyawan/${id}`).remove().then(()=>{sT("Dihapus!"); n.value=""});}
 
+        function resetAbsensi(){
+            if(confirm("PERINGATAN: Semua data absensi di database akan dihapus selamanya! Lanjutkan?")){
+                if(confirm("Klik OK sekali lagi untuk konfirmasi penghapusan TOTAL.")){
+                    db.ref('absensi').remove().then(()=>sT("Semua Absensi Terhapus!","error"));
+                }
+            }
+        }
+
         function sLib(st){
             let m=document.getElementById('tM'), s=document.getElementById('tS'); 
             if(!m.value || !s.value) return sT("Pilih Tgl Libur!","error");
@@ -155,13 +166,8 @@
                     if(d.getDay()===0||hl[t]){s=d.getDay()===0?"OFF":"LBR"; cl="s-off";}
                     if(ad[t]&&ad[t][n]){
                         let a=ad[t][n]; 
-                        if(a.Izin){
-                            s="I"; cl="s-i"; cI++;
-                            if(a.Izin.catatan) noteDisp = `<div class="note-text">${a.Izin.catatan}</div>`;
-                        }
-                        else if(a.Masuk){
-                            if(a.Masuk.status==="Terlambat"){s="T";cl="s-t";cT++}else{s="V";cl="s-v";cH++}
-                        }
+                        if(a.Izin){ s="I"; cl="s-i"; cI++; if(a.Izin.catatan) noteDisp = `<div class="note-text">${a.Izin.catatan}</div>`; }
+                        else if(a.Masuk){ if(a.Masuk.status==="Terlambat"){s="T";cl="s-t";cT++}else{s="V";cl="s-v";cH++} }
                     }
                     row+=`<td><div class="s-cell ${cl}"><span>${s}</span>${noteDisp}</div></td>`;
                 }
