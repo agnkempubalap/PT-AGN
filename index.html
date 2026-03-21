@@ -1,9 +1,8 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v43.0 (Logo Fixed)</title>
+    <title>PT-AGN v44.0</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -14,8 +13,12 @@
         body{font-family:'Plus Jakarta Sans',sans-serif;margin:0;background:var(--bg);color:var(--t);padding:10px;transition:0.3s}
         .container{max-width:1200px;margin:0 auto}
         header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-        /* LOGO FIX: Tanam langsung kodenya agar tidak butuh link luar */
-        .logo-box img{height:50px;width:50px;border-radius:10px;background:#fff;object-fit:cover;border:2px solid var(--b)}
+        
+        /* LOGO STYLE */
+        .logo-wrapper{position:relative;cursor:pointer}
+        .logo-box img{height:55px;width:55px;border-radius:12px;background:#fff;object-fit:cover;border:2px solid var(--p);display:block}
+        .logo-msg{font-size:7px;position:absolute;bottom:-12px;width:100%;text-align:center;color:var(--p);font-weight:700}
+        
         .card{background:var(--c);padding:15px;border-radius:15px;margin-bottom:10px;border:1px solid var(--b);box-shadow:0 4px 6px -1px #0000001a}
         h3{margin:0 0 10px;font-size:10px;color:var(--w);text-transform:uppercase;letter-spacing:1px}
         input,button{border-radius:10px;font-size:14px;height:45px;border:1px solid var(--b);background:var(--c);color:var(--t);width:100%;box-sizing:border-box;outline:none}
@@ -37,9 +40,12 @@
     <div class="container">
         <header class="no-p">
             <div style="display:flex;align-items:center;gap:12px">
-                <!-- LOGO DENGAN LINK BARU YANG STABIL -->
-                <img src="https://i.ibb.co.com/m50YkM4v/AGN-Logo.jpg" style="height:50px;border-radius:10px;" alt="AGN">
-                <div><h2 style="margin:0;font-size:1.1rem;letter-spacing:-0.5px">PT AGN</h2><span style="font-size:9px;color:var(--w);font-weight:800">MANAGEMENT v43.0</span></div>
+                <div class="logo-wrapper" onclick="document.getElementById('fileLogo').click()">
+                    <img id="imgLogo" src="https://ui-avatars.com/api/?name=AGN&background=2563eb&color=fff&bold=true" alt="Logo">
+                    <div class="logo-msg">KLIK GANTI</div>
+                    <input type="file" id="fileLogo" hidden accept="image/*" onchange="updateLogo(this)">
+                </div>
+                <div><h2 style="margin:0;font-size:1.1rem;letter-spacing:-0.5px">PT AGN</h2><span style="font-size:9px;color:var(--w);font-weight:800">MANAGEMENT v44.0</span></div>
             </div>
             <button onclick="toggleT()" id="tBtn" style="width:100px;font-weight:700">🌙 Dark</button>
         </header>
@@ -60,11 +66,11 @@
             </div>
         </div>
 
-        <div class="card no-p" style="background:linear-gradient(145deg, var(--c), rgba(37,99,235,0.05))">
-            <h3>⚡ Quick Access</h3>
+        <div class="card no-p">
+            <h3>⚡ Presensi</h3>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                <button class="btn" style="background:var(--s);height:55px;font-size:16px" onclick="pAbsen('Masuk')">MASUK</button>
-                <button class="btn" style="background:var(--d);height:55px;font-size:16px" onclick="pAbsen('Pulang')">PULANG</button>
+                <button class="btn" style="background:var(--s);height:55px" onclick="pAbsen('Masuk')">MASUK</button>
+                <button class="btn" style="background:var(--d);height:55px" onclick="pAbsen('Pulang')">PULANG</button>
             </div>
             <button class="btn" style="background:var(--w);margin-top:8px;height:42px" onclick="pAbsen('Izin')">📝 IZIN / SAKIT</button>
         </div>
@@ -83,10 +89,22 @@
         firebase.initializeApp(cfg); const db=firebase.database();
         let mk={}, ad={}, hl={};
 
+        // THEME & LOGO PERSISTENCE
         function toggleT(){
             let t=document.body.getAttribute('data-theme')==='dark'?'light':'dark';
             document.body.setAttribute('data-theme',t); localStorage.setItem('th',t);
             document.getElementById('tBtn').innerText=t==='dark'?'☀️ Light':'🌙 Dark';
+        }
+
+        function updateLogo(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.getElementById('imgLogo').src = e.target.result;
+                    localStorage.setItem('agn_logo', e.target.result);
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
         }
 
         function sT(m,ty='success'){
@@ -95,8 +113,12 @@
         }
 
         window.onload=()=>{
+            // Load Theme
             let st=localStorage.getItem('th')||'light'; document.body.setAttribute('data-theme',st);
             document.getElementById('tBtn').innerText=st==='dark'?'☀️ Light':'🌙 Dark';
+            // Load Logo
+            let sl=localStorage.getItem('agn_logo'); if(sl) document.getElementById('imgLogo').src=sl;
+            
             document.getElementById('fB').value=new Date().toISOString().slice(0,7);
             db.ref('master_karyawan').on('value',s=>{mk=s.val()||{}; uDl(); rRekap();});
             db.ref('absensi').on('value',s=>{ad=s.val()||{}; rRekap();});
@@ -104,21 +126,21 @@
         };
 
         function uDl(){let dl=document.getElementById('lk'); dl.innerHTML=Object.values(mk).sort().map(n=>`<option value="${n}">`).join('');}
-        function tKaryawan(){let n=document.getElementById('iNama'); if(!n.value) return sT("Nama Kosong!","error"); db.ref('master_karyawan').push(n.value).then(()=>{sT("Karyawan Ditambah!"); n.value=""});}
-        function hKaryawan(){let n=document.getElementById('iNama'); let id=Object.keys(mk).find(k=>mk[k]===n.value); if(id && confirm(`Hapus ${n.value}?`)) db.ref(`master_karyawan/${id}`).remove().then(()=>{sT("Karyawan Dihapus!"); n.value=""});}
+        function tKaryawan(){let n=document.getElementById('iNama'); if(!n.value) return sT("Isi Nama!","error"); db.ref('master_karyawan').push(n.value).then(()=>{sT("Berhasil!"); n.value=""});}
+        function hKaryawan(){let n=document.getElementById('iNama'); let id=Object.keys(mk).find(k=>mk[k]===n.value); if(id && confirm(`Hapus ${n.value}?`)) db.ref(`master_karyawan/${id}`).remove().then(()=>{sT("Dihapus!"); n.value=""});}
         
         function sLib(st){
-            let m=document.getElementById('tM'), s=document.getElementById('tS'); if(!m.value||!s.value) return sT("Isi Tanggal!","error");
+            let m=document.getElementById('tM'), s=document.getElementById('tS'); if(!m.value||!s.value) return sT("Pilih Tgl!","error");
             let u={}, c=new Date(m.value), e=new Date(s.value);
             while(c<=e){u[c.toISOString().split('T')[0]]=st?true:null; c.setDate(c.getDate()+1);}
-            db.ref('hari_libur').update(u).then(()=>{sT("Jadwal Update!"); m.value=s.value=""});
+            db.ref('hari_libur').update(u).then(()=>{sT("Jadwal OK!"); m.value=s.value=""});
         }
 
         function pAbsen(ty){
             let n=document.getElementById('iNama'); if(!n.value) return sT("Pilih Nama!","error");
             let now=new Date(), tgl=now.toISOString().split('T')[0], jam=now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
             let st=(ty==='Masuk'&&(now.getHours()>9||(now.getHours()===9&&now.getMinutes()>0)))?"Terlambat":"Hadir";
-            db.ref(`absensi/${tgl}/${n.value}/${ty}`).set({waktu:jam,status:st}).then(()=>{sT(ty+" Berhasil!"); n.value=""});
+            db.ref(`absensi/${tgl}/${n.value}/${ty}`).set({waktu:jam,status:st}).then(()=>{sT(ty+" Sukses!"); n.value=""});
         }
 
         function rRekap(){
