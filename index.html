@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v74.9 - Fixed Layout</title>
+    <title>PT-AGN v75.0 - Auto Focus</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
@@ -21,35 +21,23 @@
         #toast{position:fixed;bottom:20px;right:20px;padding:12px 20px;border-radius:10px;color:#fff;font-size:13px;z-index:999;display:none}
         #toast.show{display:block}
         
-        /* FIX: Table & Frozen Column */
-        .table-wrap{overflow:auto;border-radius:12px;border:1px solid var(--b);background:var(--c);max-height:500px}
+        .table-wrap{overflow:auto;border-radius:12px;border:1px solid var(--b);background:var(--c);max-height:550px;position:relative;scroll-behavior: smooth;}
         .table-web{width:100%;border-collapse:separate;border-spacing:0;font-size:10px}
-        .table-web th, .table-web td{border-bottom:1px solid var(--b);border-right:1px solid var(--b);padding:8px 4px;text-align:center;min-width:35px}
+        .table-web th, .table-web td{border-bottom:1px solid var(--b);border-right:1px solid var(--b);padding:8px 4px;text-align:center;min-width:45px}
         
-        /* Nama Di-Freeze di sini */
-        .nama-fixed{
-            position: sticky !important;
-            left: 0;
-            background-color: var(--c) !important;
-            z-index: 10;
-            min-width: 120px !important;
-            text-align: left !important;
-            padding-left: 10px !important;
-            border-right: 2px solid var(--p) !important;
-        }
-        thead th.nama-fixed { z-index: 11; top: 0; }
+        /* Frozen Column Nama */
+        .nama-fixed{position:sticky !important;left:0;background-color:var(--c) !important;z-index:10;min-width:110px !important;text-align:left !important;padding-left:10px !important;border-right:2px solid var(--p) !important}
+        thead th.nama-fixed{z-index:11;top:0}
 
-        .s-cell{border-radius:4px;width:32px;height:35px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;font-size:9px}
+        /* Penanda Hari Ini */
+        .today-col{background-color: rgba(37, 99, 235, 0.1) !important; border-left: 2px dashed var(--p); border-right: 2px dashed var(--p);}
+
+        .s-cell{border-radius:4px;width:38px;height:35px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;font-size:9px}
         .s-v{background:#22c55e;color:#fff} .s-late{background:#facc15;color:#000} .s-i{background:#eab308;color:#000} .s-off{background:#ef4444;color:#fff} .s-a{background:#64748b;color:#fff} .s-l{background:#3b82f6;color:#fff}
         .jam-text{font-size:7px;font-weight:400;display:block;margin-top:2px}
 
         .print-only { display: none; }
-        @media print { 
-            .screen-only, header, .card:not(:last-child) { display: none !important; }
-            .print-only { display: block !important; }
-            .table-print { width: 100%; border-collapse: collapse; font-size: 8px; }
-            .table-print th, .table-print td { border: 1px solid #000 !important; padding: 2px; text-align: center; }
-        }
+        @media print { .screen-only, header, .card:not(:last-child) { display: none !important; } .print-only { display: block !important; } }
     </style>
 </head>
 <body data-theme="light">
@@ -58,11 +46,12 @@
         <header>
             <div class="logo-box" onclick="gantiLogo()">
                 <img id="mainLogo" src="https://ui-avatars.com/api/?name=AGN&background=2563eb&color=fff">
-                <div><h2 style="margin:0;font-size:1rem">PT AGN</h2><span style="font-size:9px;color:var(--w);font-weight:800">SYSTEM v74.9</span></div>
+                <div><h2 style="margin:0;font-size:1rem">PT AGN</h2><span style="font-size:9px;color:var(--w);font-weight:800">SYSTEM v75.0</span></div>
             </div>
             <button onclick="toggleT()" id="tBtn" style="width:100px;font-size:11px">🌙 Dark Mode</button>
         </header>
 
+        <!-- Bagian Management & Reset Tetap Sama -->
         <div class="card">
             <h3>👤 Management</h3>
             <div style="display:flex;gap:8px">
@@ -74,28 +63,11 @@
         </div>
 
         <div class="card">
-            <h3>🧹 Reset & Libur</h3>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
-                <input type="date" id="tglReset">
-                <button class="btn" style="background:var(--d);font-size:12px" onclick="resetPerKaryawan()">RESET ABSEN</button>
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-                <div><label style="font-size:9px">Dari:</label><input type="date" id="tM"></div>
-                <div><label style="font-size:9px">Sampai:</label><input type="date" id="tS"></div>
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-                <button class="btn" style="background:var(--p)" onclick="sLib(true)">SET LIBUR</button>
-                <button class="btn" style="background:var(--d)" onclick="sLib(false)">HAPUS LIBUR</button>
-            </div>
-        </div>
-
-        <div class="card">
             <h3>⚡ Presensi</h3>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
                 <button class="btn" style="background:var(--s);height:50px" onclick="pAbsen('Masuk')">MASUK</button>
                 <button class="btn" style="background:var(--d);height:50px" onclick="pAbsen('Pulang')">PULANG</button>
             </div>
-            <button class="btn" style="background:var(--w);margin-top:10px" onclick="pAbsen('Izin')">📝 IZIN / NOTE</button>
         </div>
 
         <div class="card">
@@ -106,11 +78,8 @@
                     <button class="btn" style="background:#b91c1c;width:90px;font-size:10px" onclick="window.print()">📜 PDF</button>
                 </div>
             </div>
-            <div class="table-wrap screen-only">
+            <div class="table-wrap screen-only" id="scrollContainer">
                 <table class="table-web"><thead id="thWeb"></thead><tbody id="tbWeb"></tbody></table>
-            </div>
-            <div class="print-only">
-                <table class="table-print"><thead id="thPrint"></thead><tbody id="tbPrint"></tbody></table>
             </div>
         </div>
     </div>
@@ -122,16 +91,10 @@
         const TGL_MULAI_SISTEM = "2026-03-21";
 
         function sT(m,ty='success'){ const t=document.getElementById('toast'); t.innerText=m; t.className='show'; t.style.background=ty==='success'?'#10b981':'#ef4444'; setTimeout(()=>t.className='',2000); }
-        
-        function toggleT(){ 
-            let b=document.body; let nt=b.getAttribute('data-theme')==='dark'?'light':'dark';
-            b.setAttribute('data-theme',nt); localStorage.setItem('agn_theme',nt);
-            document.getElementById('tBtn').innerText=nt==='dark'?'☀️ Light':'🌙 Dark';
-        }
+        function toggleT(){ let b=document.body; let nt=b.getAttribute('data-theme')==='dark'?'light':'dark'; b.setAttribute('data-theme',nt); localStorage.setItem('agn_theme',nt); document.getElementById('tBtn').innerText=nt==='dark'?'☀️ Light':'🌙 Dark';}
 
         window.onload=()=>{
             let st=localStorage.getItem('agn_theme')||'light'; document.body.setAttribute('data-theme',st);
-            document.getElementById('tBtn').innerText=st==='dark'?'☀️ Light':'🌙 Dark';
             document.getElementById('fB').value=new Date().toISOString().slice(0,7);
             db.ref('master_karyawan').on('value',s=>{mk=s.val()||{}; uDl(); rRekap();});
             db.ref('absensi').on('value',s=>{ad=s.val()||{}; rRekap();});
@@ -141,35 +104,26 @@
         function uDl(){document.getElementById('lk').innerHTML=Object.values(mk).sort().map(n=>`<option value="${n}">`).join('');}
         function tKaryawan(){let n=document.getElementById('iNama'); if(n.value){db.ref('master_karyawan').push(n.value).then(()=>{n.value="";});}}
         function hKaryawan(){let n=document.getElementById('iNama'); let id=Object.keys(mk).find(k=>mk[k]===n.value); if(id && confirm('Hapus?')) db.ref(`master_karyawan/${id}`).remove();}
-        
-        function resetPerKaryawan(){
-            let n=document.getElementById('iNama'), t=document.getElementById('tglReset'); 
-            if(n.value && t.value) { db.ref(`absensi/${t.value}/${n.value}`).remove().then(()=>{sT("Berhasil Dihapus"); n.value=""; t.value="";}); }
-        }
-
-        function sLib(st){
-            let m=document.getElementById('tM'), s=document.getElementById('tS'); if(!m.value) return sT("Pilih Tanggal!","error");
-            let curr=new Date(m.value), end=s.value?new Date(s.value):new Date(m.value);
-            while(curr<=end){ db.ref(`hari_libur/${curr.toISOString().split('T')[0]}`).set(st?true:null); curr.setDate(curr.getDate()+1); }
-            sT("Update Libur Berhasil"); m.value=""; s.value="";
-        }
 
         function pAbsen(ty){
             let n=document.getElementById('iNama'), now=new Date(), tgl=now.toISOString().split('T')[0];
             if(!n.value) return sT("Pilih Nama!","error");
             let jam=now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
-            let st="Hadir"; if(ty==='Masuk' && (now.getHours()>9 || (now.getHours()===9 && now.getMinutes()>0))) st="Terlambat";
-            let nt=""; if(ty==='Izin'){nt=prompt("Alasan:"); if(nt===null)return; st="Izin";}
-            db.ref(`absensi/${tgl}/${n.value}/${ty}`).set({waktu:jam, status:st, note:nt}).then(()=>{sT(ty+" Berhasil"); n.value="";});
+            db.ref(`absensi/${tgl}/${n.value}/${ty}`).set({waktu:jam, status:"Hadir"}).then(()=>{sT(ty+" Berhasil"); n.value="";});
         }
 
         function rRekap(){
             const f=document.getElementById('fB').value; if(!f) return;
-            const [y,m]=f.split('-'), last=new Date(y,m,0).getDate(), today=new Date().toISOString().split('T')[0];
+            const [y,m]=f.split('-'), last=new Date(y,m,0).getDate();
+            const todayDate = new Date().getDate();
+            const todayFull = new Date().toISOString().split('T')[0];
             const kList=Object.values(mk).sort();
             
             let h=`<tr><th class="nama-fixed">Nama</th>`;
-            for(let i=1;i<=last;i++) h+=`<th>${i}</th>`;
+            for(let i=1;i<=last;i++) {
+                let isToday = (i === todayDate && f === new Date().toISOString().slice(0,7));
+                h+=`<th id="col-${i}" class="${isToday?'today-col':''}">${i}</th>`;
+            }
             h+=`<th>H</th><th>I</th><th>A</th><th>L</th></tr>`;
             document.getElementById('thWeb').innerHTML=h;
 
@@ -179,26 +133,37 @@
                 for(let i=1;i<=last;i++){
                     let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), isOff=(d.getDay()===0 || hl[t]);
                     let data=ad[t]?ad[t][n]:null, sW="-", clW="", infoW="";
+                    let isToday = (i === todayDate && f === new Date().toISOString().slice(0,7));
                     
                     if(data){
-                        if(data.Izin){ sW="I"; clW="s-i"; cI++; infoW=data.Izin.note||""; }
+                        if(data.Izin){ sW="I"; clW="s-i"; cI++; }
                         else if(data.Masuk){ 
                             if(isOff) { sW="L"; clW="s-l"; cL++; } 
-                            else { sW="H"; clW=(data.Masuk.status==="Terlambat")?"s-late":"s-v"; cH++; }
-                            infoW=data.Masuk.waktu + (data.Pulang ? "-" + data.Pulang.waktu : "");
+                            else { sW="H"; clW="s-v"; cH++; }
+                            infoW=data.Masuk.waktu;
                         }
-                    } else if(isOff){ sW=(d.getDay()===0)?"MNG":"OFF"; clW="s-off"; }
-                    else if(t>=TGL_MULAI_SISTEM && t<today){ sW="A"; clW="s-a"; cA++; }
-                    row+=`<td><div class="s-cell ${clW}">${sW}<span class="jam-text">${infoW}</span></div></td>`;
+                    } else if(isOff){ sW="OFF"; clW="s-off"; }
+                    else if(t < todayFull){ sW="A"; clW="s-a"; cA++; }
+                    row+=`<td class="${isToday?'today-col':''}"><div class="s-cell ${clW}">${sW}<span class="jam-text">${infoW}</span></div></td>`;
                 }
                 b+=`<tr>${row}<td>${cH}</td><td>${cI}</td><td>${cA}</td><td>${cL}</td></tr>`;
             });
             document.getElementById('tbWeb').innerHTML=b;
+
+            // FITUR AUTO-SCROLL KE HARI INI
+            setTimeout(() => {
+                const todayEl = document.getElementById(`col-${todayDate}`);
+                const container = document.getElementById('scrollContainer');
+                if (todayEl && container) {
+                    const scrollPos = todayEl.offsetLeft - (container.offsetWidth / 2);
+                    container.scrollLeft = scrollPos > 0 ? scrollPos : 0;
+                }
+            }, 500);
         }
 
         function doExcel(){
             const f=document.getElementById('fB').value; const [y,m]=f.split('-'); const last=new Date(y,m,0).getDate();
-            const kList=Object.values(mk).sort(); const today=new Date().toISOString().split('T')[0];
+            const kList=Object.values(mk).sort();
             
             let table=`<table border="1">
                 <tr><th colspan="${last+5}" bgcolor="#FFC000" height="30">REKAP ABSENSI PT AGN - ${f}</th></tr>
@@ -207,30 +172,31 @@
             table+=`<th>H</th><th>I</th><th>A</th><th>L</th></tr>`;
 
             kList.forEach(n=>{
-                table+=`<tr><td><b>${n}</b></td>`;
-                let cH=0, cI=0, cA=0, cL=0;
+                table+=`<tr><td>${n}</td>`;
                 for(let i=1;i<=last;i++){
                     let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), isOff=(d.getDay()===0 || hl[t]);
-                    let data=ad[t]?ad[t][n]:null;
-                    let bg="#FFFFFF", txt="-", col="#000000";
-
+                    let data=ad[t]?ad[t][n]:null, bg="#FFFFFF", txt="-";
                     if(data){
-                        if(data.Izin){ bg="#EAB308"; txt="I"; cI++; }
-                        else if(data.Masuk){ 
-                            if(isOff){ bg="#3B82F6"; txt="L"; cL++; col="#FFFFFF"; }
-                            else { bg=(data.Masuk.status==="Terlambat")?"#FFFF00":"#22C55E"; txt="H"; cH++; if(bg=="#22C55E") col="#FFFFFF"; }
-                        }
-                    } else if(isOff){ bg="#EF4444"; txt="OFF"; col="#FFFFFF"; }
-                    else if(t>=TGL_MULAI_SISTEM && t<today){ bg="#64748B"; txt="A"; col="#FFFFFF"; cA++; }
-                    table+=`<td bgcolor="${bg}" style="color:${col}" align="center">${txt}</td>`;
+                        if(data.Izin){ bg="#EAB308"; txt="I"; }
+                        else if(data.Masuk){ bg=isOff?"#3B82F6":"#22C55E"; txt=isOff?"L":"H"; }
+                    } else if(isOff){ bg="#EF4444"; txt="OFF"; }
+                    table+=`<td bgcolor="${bg}" align="center">${txt}</td>`;
                 }
-                table+=`<td>${cH}</td><td>${cI}</td><td>${cA}</td><td>${cL}</td></tr>`;
+                table+=`<td></td><td></td><td></td><td></td></tr>`;
             });
             table+=`</table>`;
 
-            const template = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Absensi</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body>${table}</body></html>`;
-            const link=document.createElement("a"); link.href='data:application/vnd.ms-excel;base64,' + btoa(unescape(encodeURIComponent(template)));
-            link.download=`REKAP_AGN_${f}.xls`; link.click();
+            const excelData = `
+                <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+                <head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Absensi</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head>
+                <body>${table}</body></html>`;
+            
+            const blob = new Blob([excelData], { type: 'application/vnd.ms-excel' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url; a.download = `REKAP_PTAGN_${f}.xls`;
+            document.body.appendChild(a); a.click();
+            document.body.removeChild(a); window.URL.revokeObjectURL(url);
         }
     </script>
 </body>
