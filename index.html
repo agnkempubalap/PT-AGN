@@ -2,45 +2,44 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v78.9 - SOFT SLIM FINAL</title>
+    <title>PT-AGN v79.0 - FIXED SOFT</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
     <style>
-        :root{--p:#3b82f6;--s:#10b981;--d:#f43f5e;--w:#fbbf24;--bg:#0f172a;--c:#1e293b;--t:#f8fafc;--b:#334155;--iz:#8b5cf6;--al:#475569}
+        :root{--p:#3b82f6;--s:#10b981;--d:#f43f5e;--w:#fbbf24;--bg:#0f172a;--c:#1e293b;--t:#f8fafc;--b:#334155}
         body[data-theme="light"]{--bg:#f1f5f9;--c:#ffffff;--t:#1e293b;--b:#cbd5e1}
-        body{font-family:'Plus Jakarta Sans',sans-serif;margin:0;background:var(--bg);color:var(--t);padding:10px; transition: background 0.3s}
+        body{font-family:'Plus Jakarta Sans',sans-serif;margin:0;background:var(--bg);color:var(--t);padding:10px; transition: 0.3s}
         .container{max-width:1450px;margin:0 auto}
         
         header{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px}
         .logo-box{display:flex;align-items:center;gap:12px}
-        .logo-box img{width:60px;height:60px;border-radius:12px;background:#000;border:2px solid var(--p);object-fit:cover;cursor:pointer}
+        .logo-box img{width:55px;height:55px;border-radius:10px;background:#000;border:2px solid var(--p);object-fit:cover;cursor:pointer}
         .dark-card{background:var(--c); border-radius:10px; border:1px solid var(--b); padding:8px 12px; display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--t)}
 
         .card{background:var(--c);padding:15px;border-radius:18px;margin-bottom:12px;border:1px solid var(--b);box-shadow:0 4px 6px -1px rgba(0,0,0,0.1)}
         h3{margin:0 0 12px;font-size:10px;color:var(--w);text-transform:uppercase;letter-spacing:1px;font-weight:800}
         
-        /* INPUT & TOMBOL DIPERKECIL & WARNA SOFT */
-        input,button,select{border-radius:10px;font-size:13px;height:34px;border:1px solid var(--b);background:var(--bg);color:var(--t);width:100%;box-sizing:border-box;outline:none;padding:0 12px}
+        /* TOMBOL SLIM & SOFT */
+        input,button,select{border-radius:10px;font-size:13px;height:35px;border:1px solid var(--b);background:var(--bg);color:var(--t);width:100%;box-sizing:border-box;outline:none;padding:0 12px}
         
-        .btn{display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;border:none;color:#fff; transition: 0.2s; opacity: 0.85}
-        .btn:hover{opacity: 1}
+        .btn{display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;border:none;color:#fff; transition: 0.2s; opacity: 0.9}
+        .btn:active{transform: scale(0.96)}
         
-        /* WARNA TOMBOL DIBUAT SOFT (DENGAN TRANSPARANSI) */
-        .btn-masuk{background:rgba(59, 130, 246, 0.7) !important; height:40px !important; font-size:14px !important}
-        .btn-pulang{background:rgba(239, 68, 68, 0.7) !important; height:40px !important; font-size:14px !important}
-        .btn-izin{background:rgba(139, 92, 246, 0.7) !important; height:34px !important; font-size:12px !important}
-        .btn-save{background:rgba(16, 185, 129, 0.7) !important}
-        .btn-del{background:rgba(244, 63, 94, 0.7) !important}
+        .btn-masuk{background:rgba(59, 130, 246, 0.8) !important; height:42px !important; font-size:14px !important}
+        .btn-pulang{background:rgba(239, 68, 68, 0.8) !important; height:42px !important; font-size:14px !important}
+        .btn-izin{background:rgba(139, 92, 246, 0.8) !important; height:36px !important; font-size:13px !important}
+        .btn-save{background:rgba(16, 185, 129, 0.8) !important}
+        .btn-del{background:rgba(244, 63, 94, 0.8) !important}
 
+        /* TABEL FIXED DARK MODE */
         .table-wrap{overflow-x:auto; border-radius:12px; border:1px solid var(--b); background:var(--c); scroll-behavior: smooth}
         .table-web{width:100%;border-collapse:separate;border-spacing:0;font-size:10px; color:var(--t)}
-        .table-web th, .table-web td{border-bottom:1px solid var(--b);border-right:1px solid var(--b);padding:8px 1px;text-align:center;min-width:35px}
+        .table-web th, .table-web td{border-bottom:1px solid var(--b);border-right:1px solid var(--b);padding:8px 1px;text-align:center;min-width:35px; background: inherit}
         
-        .nama-fixed{position:sticky !important;left:0;background-color:var(--c) !important;z-index:10;min-width:110px !important;text-align:left !important;padding-left:10px !important;font-weight:700; border-right: 2px solid var(--p) !important}
-        .today-col{background: rgba(37, 99, 235, 0.1) !important;}
+        .nama-fixed{position:sticky !important;left:0;background-color:var(--c) !important;z-index:10;min-width:110px !important;text-align:left !important;padding-left:10px !important;font-weight:700; border-right: 2px solid var(--p) !important; color:var(--t)}
         
-        .s-cell{border-radius:6px;width:35px;height:35px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;font-size:10px;margin: 0 auto}
+        .s-cell{border-radius:6px;width:32px;height:32px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;font-size:10px;margin: 0 auto}
         .s-v{background:rgba(16,185,129,0.15);color:#10b981;border:0.5px solid #10b981} 
         .s-late{background:rgba(251,191,36,0.15);color:#fbbf24;border:0.5px solid #fbbf24} 
         .s-i{background:rgba(139,92,246,0.15);color:#8b5cf6;border:0.5px solid #8b5cf6}
@@ -59,17 +58,17 @@
             <div class="logo-box">
                 <input type="file" id="inpLogo" style="display:none" accept="image/*" onchange="cLogo(event)">
                 <img id="mainLogo" src="https://i.ibb.co/mF9fR7z/agn-logo.png" onclick="document.getElementById('inpLogo').click()" onerror="this.src='https://ui-avatars.com/api/?name=AGN&background=000&color=fff'">
-                <div><h2 style="margin:0;font-size:1.1rem">PT AGN</h2><span style="font-size:10px;color:var(--p);font-weight:800">SYSTEM v78.9 SOFT</span></div>
+                <div><h2 style="margin:0;font-size:1.1rem">PT AGN</h2><span style="font-size:10px;color:var(--p);font-weight:800">SYSTEM v79.0 FIXED</span></div>
             </div>
             <div class="dark-card" onclick="toggleT()">
-                <span id="tIco">☀️</span> <span style="font-size:12px;font-weight:600" id="tTxt">Light Mode</span>
+                <span id="tIco">☀️</span> <span style="font-size:12px;font-weight:600" id="tTxt">Mode</span>
             </div>
         </header>
 
         <div class="card no-print">
             <h3>👥 DATA KARYAWAN</h3>
-            <div style="display:flex;gap:10px">
-                <input list="lk" id="iNama" placeholder="Ketik/Pilih Nama...">
+            <div style="display:flex;gap:8px">
+                <input list="lk" id="iNama" placeholder="Cari Nama...">
                 <datalist id="lk"></datalist>
                 <button class="btn btn-save" style="width:50px;font-size:20px" onclick="tKaryawan()">+</button>
                 <button class="btn btn-del" style="width:50px" onclick="hKaryawan()">🗑️</button>
@@ -78,19 +77,19 @@
 
         <div class="card no-print">
             <h3>🧹 KONTROL DATA</h3>
-            <div style="display:grid;grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px; align-items:end">
-                <div><label style="font-size:10px">Tgl Reset:</label><input type="date" id="resetTgl"></div>
+            <div style="display:grid;grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:10px; align-items:end">
+                <div><label style="font-size:9px">TGL RESET:</label><input type="date" id="resetTgl"></div>
                 <button class="btn btn-del" onclick="resetAbsen()">RESET DATA</button>
             </div>
-            <div style="display:grid;grid-template-columns: 1fr 1fr; gap:10px">
-                <button class="btn btn-masuk" style="height:34px !important; font-size:12px !important" onclick="sLib(true)">SET LIBUR</button>
-                <button class="btn btn-del" style="height:34px !important; font-size:12px !important" onclick="sLib(false)">HAPUS LIBUR</button>
+            <div style="display:grid;grid-template-columns: 1fr 1fr; gap:8px">
+                <button class="btn btn-masuk" style="height:35px !important; font-size:12px !important" onclick="sLib(true)">SET LIBUR</button>
+                <button class="btn btn-del" style="height:35px !important; font-size:12px !important" onclick="sLib(false)">HAPUS LIBUR</button>
             </div>
         </div>
 
         <div class="card no-print">
             <h3>⚡ PRESENSI</h3>
-            <div style="display:grid;grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px">
+            <div style="display:grid;grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px">
                 <button class="btn btn-masuk" onclick="pAbsen('Masuk')">MASUK</button>
                 <button class="btn btn-pulang" onclick="pAbsen('Pulang')">PULANG</button>
             </div>
@@ -99,10 +98,10 @@
 
         <div class="card table-card">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px" class="no-print">
-                <input type="month" id="fB" style="width:140px; height:30px" onchange="rRekap()">
+                <input type="month" id="fB" style="width:130px; height:32px" onchange="rRekap()">
                 <div style="display:flex; gap:6px">
-                    <button class="btn btn-save" style="width:70px; height:30px; font-size:11px" onclick="doExcel()">EXCEL</button>
-                    <button class="btn btn-del" style="width:70px; height:30px; font-size:11px" onclick="window.print()">PDF</button>
+                    <button class="btn btn-save" style="width:70px; height:32px; font-size:11px" onclick="doExcel()">EXCEL</button>
+                    <button class="btn btn-del" style="width:70px; height:32px; font-size:11px" onclick="window.print()">PDF</button>
                 </div>
             </div>
             <div class="table-wrap" id="scrollArea">
@@ -131,6 +130,7 @@
         function toggleT(){ 
             let b=document.body; let nt=b.getAttribute('data-theme')==='dark'?'light':'dark'; 
             b.setAttribute('data-theme',nt); document.getElementById('tIco').innerText=nt==='dark'?'☀️':'🌙';
+            rRekap(); // Refresh tabel agar warna ikut berubah
         }
         function cLogo(e){const r=new FileReader(); r.onload=()=>{document.getElementById('mainLogo').src=r.result; localStorage.setItem('agnLogo',r.result);}; r.readAsDataURL(e.target.files[0]);}
         function uDl(){let opt = Object.values(mk).sort().map(n=>`<option value="${n}">`).join(''); document.getElementById('lk').innerHTML=opt;}
