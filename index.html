@@ -2,14 +2,14 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v63.0 - Original Layout Fixed</title>
+    <title>PT-AGN v64.0 - Final Stable</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root{--p:#2563eb;--s:#10b981;--d:#ef4444;--w:#f59e0b;--bg:#f1f5f9;--c:#fff;--t:#1e293b;--b:#e2e8f0}
         [data-theme="dark"]{--bg:#0f172a;--c:#1e293b;--t:#f8fafc;--b:#334155}
-        body{font-family:'Plus Jakarta Sans',sans-serif;margin:0;background:var(--bg);color:var(--t);padding:8px;transition:0.3s}
+        body{font-family:'Plus Jakarta Sans',sans-serif;margin:0;background:var(--bg);color:var(--t);padding:8px;transition:0.2s}
         .container{max-width:1200px;margin:0 auto}
         header{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px;padding:5px}
         .logo-box{display:flex;align-items:center;gap:10px}
@@ -19,14 +19,14 @@
         input,button{border-radius:10px;font-size:14px;height:45px;border:1px solid var(--b);background:var(--c);color:var(--t);width:100%;box-sizing:border-box;outline:none}
         .btn{display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;border:none;color:#fff}
         .btn-sq{width:55px;flex-shrink:0}
-        #toast{position:fixed;bottom:20px;right:20px;padding:12px 20px;border-radius:10px;color:#fff;font-size:13px;transform:translateY(100px);transition:0.3s;z-index:999}
-        #toast.show{transform:translateY(0)}
+        #toast{position:fixed;bottom:20px;right:20px;padding:12px 20px;border-radius:10px;color:#fff;font-size:13px;transform:translateY(100px);transition:0.3s;z-index:999;display:none}
+        #toast.show{display:block;transform:translateY(0)}
         .table-wrap{overflow:auto;border-radius:12px;border:1px solid var(--b);background:var(--c)}
         table{width:100%;border-collapse:collapse;font-size:10px;min-width:1100px}
         th,td{border-bottom:1px solid var(--b);padding:8px 4px;text-align:center}
         .nama-fixed{position:sticky;left:0;background:var(--c)!important;font-weight:700;text-align:left;width:120px;z-index:4;border-right:2px solid var(--b);padding-left:10px}
         .s-cell{border-radius:4px;width:28px;min-height:28px;display:inline-flex;align-items:center;justify-content:center;font-weight:800}
-        .s-v{background:#22c55e;color:#fff} .s-t{background:#3b82f6;color:#fff} .s-i{background:#eab308;color:#000} .s-off{background:#ef4444;color:#fff}
+        .s-v{background:#22c55e;color:#fff} .s-i{background:#eab308;color:#000} .s-off{background:#ef4444;color:#fff}
         @media print { .card:not(:last-child), header, .btn, input { display: none !important; } body { background: white; } table { border: 1px solid #000; } th, td { border: 1px solid #000 !important; -webkit-print-color-adjust: exact; } }
     </style>
 </head>
@@ -35,4 +35,148 @@
     <div class="container">
         <header>
             <div class="logo-box">
-                <img id="
+                <img src="https://ui-avatars.com/api/?name=AGN&background=2563eb&color=fff">
+                <div><h2 style="margin:0;font-size:1rem">PT AGN</h2><span style="font-size:9px;color:var(--w);font-weight:800">SYSTEM v64.0</span></div>
+            </div>
+            <button onclick="toggleT()" id="tBtn" style="width:80px;font-size:11px">🌙 Dark</button>
+        </header>
+
+        <div class="card">
+            <h3>👤 Management Karyawan</h3>
+            <div style="display:flex;gap:8px">
+                <input list="lk" id="iNama" placeholder="Nama Karyawan...">
+                <datalist id="lk"></datalist>
+                <button class="btn btn-sq" style="background:var(--s)" onclick="tKaryawan()">➕</button>
+                <button class="btn btn-sq" style="background:var(--d)" onclick="hKaryawan()">🗑️</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>🧹 Reset Absensi</h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <input type="date" id="tglReset">
+                <button class="btn" style="background:var(--d);font-size:12px" onclick="resetPerKaryawan()">HAPUS DATA</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>🗓️ Jadwal Libur</h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+                <input type="date" id="tM"><input type="date" id="tS">
+            </div>
+            <div style="display:flex;gap:8px">
+                <button class="btn" style="background:var(--p);flex:1" onclick="sLib(true)">SET LIBUR</button>
+                <button class="btn" style="background:var(--b);color:var(--t);flex:1" onclick="sLib(false)">HAPUS</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>⚡ Presensi</h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <button class="btn" style="background:var(--s);height:55px" onclick="pAbsen('Masuk')">MASUK</button>
+                <button class="btn" style="background:var(--d);height:55px" onclick="pAbsen('Pulang')">PULANG</button>
+            </div>
+            <button class="btn" style="background:var(--w);margin-top:10px;height:42px" onclick="pAbsen('Izin')">📝 IZIN / SAKIT</button>
+        </div>
+
+        <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px">
+                <input type="month" id="fB" style="width:130px" onchange="rRekap()">
+                <div style="display:flex;gap:5px">
+                    <button class="btn" style="background:#1d6f42;width:100px;font-size:11px" onclick="doExcel()">📂 EXCEL</button>
+                    <button class="btn" style="background:#b91c1c;width:100px;font-size:11px" onclick="window.print()">📜 PDF</button>
+                </div>
+            </div>
+            <div class="table-wrap"><table><thead><tr id="thR"></tr></thead><tbody id="tbR"></tbody></table></div>
+        </div>
+    </div>
+
+    <script>
+        const cfg={apiKey:"AIzaSyAu67MAhWBxdmciPi3xOKWhdy-uP4u9tXI",databaseURL:"https://pt-agn-default-rtdb.asia-southeast1.firebasedatabase.app"};
+        firebase.initializeApp(cfg); const db=firebase.database();
+        let mk={}, ad={}, hl={};
+
+        function toggleT(){ 
+            let t = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; 
+            document.body.setAttribute('data-theme', t); 
+            localStorage.setItem('agn_theme', t);
+            document.getElementById('tBtn').innerText = t === 'dark' ? '☀️ Light' : '🌙 Dark';
+        }
+
+        function sT(m,ty='success'){ const t=document.getElementById('toast'); t.innerText=m; t.className='show'; t.style.background=ty==='success'?'#10b981':'#ef4444'; setTimeout(()=>t.className='',2000); }
+
+        window.onload=()=>{
+            let savedTheme = localStorage.getItem('agn_theme') || 'light';
+            document.body.setAttribute('data-theme', savedTheme);
+            document.getElementById('tBtn').innerText = savedTheme === 'dark' ? '☀️ Light' : '🌙 Dark';
+            document.getElementById('fB').value=new Date().toISOString().slice(0,7);
+            db.ref('master_karyawan').on('value',s=>{mk=s.val()||{}; uDl(); rRekap();});
+            db.ref('absensi').on('value',s=>{ad=s.val()||{}; rRekap();});
+            db.ref('hari_libur').on('value',s=>{hl=s.val()||{}; rRekap();});
+        };
+
+        function uDl(){document.getElementById('lk').innerHTML=Object.values(mk).sort().map(n=>`<option value="${n}">`).join('');}
+        function tKaryawan(){let n=document.getElementById('iNama'); if(n.value) db.ref('master_karyawan').push(n.value).then(()=>n.value="");}
+        function hKaryawan(){let n=document.getElementById('iNama'); let id=Object.keys(mk).find(k=>mk[k]===n.value); if(id && confirm('Hapus?')) db.ref(`master_karyawan/${id}`).remove();}
+        function resetPerKaryawan(){ let n=document.getElementById('iNama').value, t=document.getElementById('tglReset').value; if(n && t && confirm('Hapus?')) db.ref(`absensi/${t}/${n}`).remove(); }
+        
+        function sLib(st){ 
+            let m=document.getElementById('tM').value, s=document.getElementById('tS').value;
+            if(!m) return;
+            if(!s) { db.ref(`hari_libur/${m}`).set(st?true:null); }
+            else {
+                let start=new Date(m), end=new Date(s);
+                if(end < start) return;
+                let curr=new Date(start);
+                while(curr <= end){
+                    db.ref(`hari_libur/${curr.toISOString().split('T')[0]}`).set(st?true:null);
+                    curr.setDate(curr.getDate()+1);
+                    if(curr.getFullYear() > 2030) break; // Safety break
+                }
+            }
+        }
+
+        function pAbsen(ty){
+            let n=document.getElementById('iNama').value, now=new Date(), tgl=now.toISOString().split('T')[0], jam=now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+            if(!n) return sT("Pilih Nama!","error");
+            db.ref(`absensi/${tgl}/${n}/${ty}`).set({waktu:jam,status:(ty==='Masuk'&&(now.getHours()>9))?"Terlambat":"Hadir"}).then(()=>sT(ty+" Berhasil!"));
+        }
+
+        function rRekap(){
+            const f=document.getElementById('fB').value; if(!f) return;
+            const [y,m]=f.split('-'), last=new Date(y,m,0).getDate();
+            document.getElementById('thR').innerHTML=`<th class="nama-fixed">Karyawan</th>${Array.from({length:last},(_,i)=>`<th>${i+1}</th>`).join('')}<th>H</th>`;
+            document.getElementById('tbR').innerHTML=Object.values(mk).sort().map(n=>{
+                let cH=0, row=`<td class="nama-fixed">${n}</td>`;
+                for(let i=1;i<=last;i++){
+                    let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), s="-", cl="";
+                    if(d.getDay()===0||hl[t]){s="OFF"; cl="s-off";}
+                    if(ad[t]&&ad[t][n]){ if(ad[t][n].Izin){s="I";cl="s-i"}else if(ad[t][n].Masuk){s="H";cl="s-v";cH++} }
+                    row+=`<td><div class="s-cell ${cl}">${s}</div></td>`;
+                }
+                return `<tr>${row}<td>${cH}</td></tr>`;
+            }).join('');
+        }
+
+        function doExcel(){
+            const f=document.getElementById('fB').value; const [y,m]=f.split('-'); const last=new Date(y,m,0).getDate();
+            let html=`<html><head><meta charset="UTF-8"></head><body><table border="1">
+                <tr><th colspan="${last+2}" style="background-color:#FFA500; color:white; height:35px;">REKAP ABSENSI PT AGN - ${f}</th></tr>
+                <tr style="background-color:#e0e0e0; font-weight:bold;"><th>Nama</th><th>Jabatan</th>${Array.from({length:last},(_,i)=>`<th>${i+1}</th>`).join('')}</tr>`;
+            Object.values(mk).sort().forEach(n=>{
+                html+=`<tr><td style="font-weight:bold;">${n}</td><td>Karyawan</td>`;
+                for(let i=1; i<=last; i++){
+                    let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), bg="#FFFFFF", txt="-";
+                    if(d.getDay()===0||hl[t]){bg="#ff0000";txt="OFF"}
+                    if(ad[t]&&ad[t][n]){ if(ad[t][n].Izin){bg="#ffff00";txt="I"}else if(ad[t][n].Masuk){bg="#00ff00";txt="H"} }
+                    html+=`<td style="background-color:${bg}; text-align:center;">${txt}</td>`;
+                }
+                html+=`</tr>`;
+            });
+            html+=`</table></body></html>`;
+            const base64=s=>window.btoa(unescape(encodeURIComponent(s)));
+            const link=document.createElement("a"); link.href=`data:application/vnd.ms-excel;base64,${base64(html)}`; link.download=`ABSENSI_AGN_${f}.xls`; link.click();
+        }
+    </script>
+</body>
+</html>
