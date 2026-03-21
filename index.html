@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v44.0</title>
+    <title>PT-AGN v45.0</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -10,44 +10,58 @@
     <style>
         :root{--p:#2563eb;--s:#10b981;--d:#ef4444;--w:#f59e0b;--bg:#f1f5f9;--c:#fff;--t:#1e293b;--b:#e2e8f0}
         [data-theme="dark"]{--bg:#0f172a;--c:#1e293b;--t:#f8fafc;--b:#334155}
-        body{font-family:'Plus Jakarta Sans',sans-serif;margin:0;background:var(--bg);color:var(--t);padding:10px;transition:0.3s}
+        body{font-family:'Plus Jakarta Sans',sans-serif;margin:0;background:var(--bg);color:var(--t);padding:8px;transition:0.3s}
         .container{max-width:1200px;margin:0 auto}
-        header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
         
-        /* LOGO STYLE */
-        .logo-wrapper{position:relative;cursor:pointer}
-        .logo-box img{height:55px;width:55px;border-radius:12px;background:#fff;object-fit:cover;border:2px solid var(--p);display:block}
-        .logo-msg{font-size:7px;position:absolute;bottom:-12px;width:100%;text-align:center;color:var(--p);font-weight:700}
+        header{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px;padding:5px}
+        /* LOGO FIXED SIZE - Nggak akan gede lagi */
+        .logo-box{display:flex;align-items:center;gap:10px;cursor:pointer}
+        .logo-box img{width:60px !important;height:60px !important;border-radius:12px;object-fit:contain;background:#fff;border:2px solid var(--p)}
         
-        .card{background:var(--c);padding:15px;border-radius:15px;margin-bottom:10px;border:1px solid var(--b);box-shadow:0 4px 6px -1px #0000001a}
+        .card{background:var(--c);padding:15px;border-radius:15px;margin-bottom:10px;border:1px solid var(--b);box-shadow:0 4px 6px -1px rgba(0,0,0,0.1)}
         h3{margin:0 0 10px;font-size:10px;color:var(--w);text-transform:uppercase;letter-spacing:1px}
-        input,button{border-radius:10px;font-size:14px;height:45px;border:1px solid var(--b);background:var(--c);color:var(--t);width:100%;box-sizing:border-box;outline:none}
+        
+        input,button,textarea{border-radius:10px;font-size:14px;height:45px;border:1px solid var(--b);background:var(--c);color:var(--t);width:100%;box-sizing:border-box;outline:none}
+        textarea{height:60px;padding:10px;font-family:inherit;resize:none}
+        
         .btn{display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;border:none;color:#fff}
         .btn-sq{width:55px;flex-shrink:0}
-        #toast{position:fixed;bottom:20px;right:20px;padding:12px 20px;border-radius:10px;color:#fff;font-size:13px;transform:translateY(100px);transition:0.3s;z-index:99}
+        
+        #toast{position:fixed;bottom:20px;right:20px;padding:12px 20px;border-radius:10px;color:#fff;font-size:13px;transform:translateY(100px);transition:0.3s;z-index:999}
         #toast.show{transform:translateY(0)}
+        
         .table-wrap{overflow:auto;border-radius:12px;border:1px solid var(--b);background:var(--c)}
-        table{width:100%;border-collapse:collapse;font-size:11px;min-width:900px}
+        table{width:100%;border-collapse:collapse;font-size:11px;min-width:1000px}
         th,td{border-bottom:1px solid var(--b);padding:10px 5px;text-align:center}
-        .nama-fixed{position:sticky;left:0;background:var(--c)!important;font-weight:700;text-align:left;width:110px;z-index:4;border-right:2px solid var(--b);padding-left:10px}
-        .s-cell{border-radius:6px;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-weight:800}
+        .nama-fixed{position:sticky;left:0;background:var(--c)!important;font-weight:700;text-align:left;width:120px;z-index:4;border-right:2px solid var(--b);padding-left:10px}
+        
+        .s-cell{border-radius:6px;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:10px}
         .s-v{background:var(--s);color:#fff}.s-t{background:var(--w);color:#fff}.s-i{background:var(--p);color:#fff}.s-off{background:#ef44441a;color:var(--d)}
-        @media print{.no-p{display:none}body{background:#fff;color:#000}table{min-width:100%}}
+
+        @media print{
+            .no-p{display:none !important}
+            body{background:#fff;color:#000}
+            .card{box-shadow:none;border:none}
+            #print-header{display:flex !important;align-items:center;gap:20px;border-bottom:3px solid #000;padding-bottom:10px;margin-bottom:20px}
+        }
     </style>
 </head>
 <body data-theme="light">
     <div id="toast"></div>
     <div class="container">
+        <!-- HEADER CETAK (KHUSUS PDF) -->
+        <div id="print-header" style="display:none">
+            <img id="logoPrint" src="" style="height:70px">
+            <div><h1 style="margin:0">PT ATHA GHANIA NUGRAHA</h1><p>Laporan Rekapitulasi Presensi Karyawan</p></div>
+        </div>
+
         <header class="no-p">
-            <div style="display:flex;align-items:center;gap:12px">
-                <div class="logo-wrapper" onclick="document.getElementById('fileLogo').click()">
-                    <img id="imgLogo" src="https://ui-avatars.com/api/?name=AGN&background=2563eb&color=fff&bold=true" alt="Logo">
-                    <div class="logo-msg">KLIK GANTI</div>
-                    <input type="file" id="fileLogo" hidden accept="image/*" onchange="updateLogo(this)">
-                </div>
-                <div><h2 style="margin:0;font-size:1.1rem;letter-spacing:-0.5px">PT AGN</h2><span style="font-size:9px;color:var(--w);font-weight:800">MANAGEMENT v44.0</span></div>
+            <div class="logo-box" onclick="document.getElementById('fileLogo').click()">
+                <img id="imgLogo" src="https://ui-avatars.com/api/?name=AGN&background=2563eb&color=fff" alt="Logo">
+                <input type="file" id="fileLogo" hidden accept="image/*" onchange="updateLogo(this)">
+                <div><h2 style="margin:0;font-size:1rem">PT AGN</h2><span style="font-size:9px;color:var(--w);font-weight:800">SYSTEM v45.0</span></div>
             </div>
-            <button onclick="toggleT()" id="tBtn" style="width:100px;font-weight:700">🌙 Dark</button>
+            <button onclick="toggleT()" id="tBtn" style="width:80px;font-size:11px">🌙 Dark</button>
         </header>
 
         <div class="card no-p">
@@ -58,8 +72,12 @@
                 <button class="btn btn-sq" style="background:var(--s)" onclick="tKaryawan()">➕</button>
                 <button class="btn btn-sq" style="background:var(--d)" onclick="hKaryawan()">🗑️</button>
             </div>
+            <textarea id="noteAdmin" placeholder="Catatan Admin / Pengumuman..." onchange="saveNote()"></textarea>
+        </div>
+
+        <div class="card no-p">
             <h3>🗓️ Jadwal Libur</h3>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px"><input type="date" id="tM"><input type="date" id="tS"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px"><input type="date" id="tM"><input type="date" id="tS"></div>
             <div style="display:flex;gap:8px">
                 <button class="btn" style="background:var(--p);flex:1" onclick="sLib(true)">SET LIBUR</button>
                 <button class="btn" style="background:var(--b);color:var(--t);flex:1" onclick="sLib(false)">HAPUS</button>
@@ -67,18 +85,21 @@
         </div>
 
         <div class="card no-p">
-            <h3>⚡ Presensi</h3>
+            <h3>⚡ Presensi Cepat</h3>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
                 <button class="btn" style="background:var(--s);height:55px" onclick="pAbsen('Masuk')">MASUK</button>
                 <button class="btn" style="background:var(--d);height:55px" onclick="pAbsen('Pulang')">PULANG</button>
             </div>
-            <button class="btn" style="background:var(--w);margin-top:8px;height:42px" onclick="pAbsen('Izin')">📝 IZIN / SAKIT</button>
+            <button class="btn" style="background:var(--w);margin-top:10px;height:42px" onclick="pAbsen('Izin')">📝 IZIN / SAKIT</button>
         </div>
 
         <div class="card">
-            <div style="display:flex;justify-content:space-between;margin-bottom:12px" class="no-p">
-                <input type="month" id="fB" style="width:145px" onchange="rRekap()">
-                <button class="btn" style="background:#334155;width:90px" onclick="exportToExcel()">EXCEL</button>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px" class="no-p">
+                <input type="month" id="fB" style="width:130px" onchange="rRekap()">
+                <div style="display:flex;gap:5px">
+                    <button class="btn" style="background:#334155;width:70px;font-size:12px" onclick="exportToExcel()">EXCEL</button>
+                    <button class="btn" style="background:var(--p);width:70px;font-size:12px" onclick="window.print()">PDF</button>
+                </div>
             </div>
             <div class="table-wrap"><table><thead><tr id="thR"></tr></thead><tbody id="tbR"></tbody></table></div>
         </div>
@@ -89,7 +110,6 @@
         firebase.initializeApp(cfg); const db=firebase.database();
         let mk={}, ad={}, hl={};
 
-        // THEME & LOGO PERSISTENCE
         function toggleT(){
             let t=document.body.getAttribute('data-theme')==='dark'?'light':'dark';
             document.body.setAttribute('data-theme',t); localStorage.setItem('th',t);
@@ -101,11 +121,14 @@
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     document.getElementById('imgLogo').src = e.target.result;
+                    document.getElementById('logoPrint').src = e.target.result;
                     localStorage.setItem('agn_logo', e.target.result);
                 };
                 reader.readAsDataURL(input.files[0]);
             }
         }
+
+        function saveNote(){ localStorage.setItem('agn_note', document.getElementById('noteAdmin').value); sT("Catatan disimpan!"); }
 
         function sT(m,ty='success'){
             const t=document.getElementById('toast'); t.innerText=m; t.style.background=ty==='success'?'#10b981':'#ef4444';
@@ -113,12 +136,9 @@
         }
 
         window.onload=()=>{
-            // Load Theme
             let st=localStorage.getItem('th')||'light'; document.body.setAttribute('data-theme',st);
-            document.getElementById('tBtn').innerText=st==='dark'?'☀️ Light':'🌙 Dark';
-            // Load Logo
-            let sl=localStorage.getItem('agn_logo'); if(sl) document.getElementById('imgLogo').src=sl;
-            
+            let sl=localStorage.getItem('agn_logo'); if(sl){document.getElementById('imgLogo').src=sl; document.getElementById('logoPrint').src=sl;}
+            let sn=localStorage.getItem('agn_note'); if(sn) document.getElementById('noteAdmin').value=sn;
             document.getElementById('fB').value=new Date().toISOString().slice(0,7);
             db.ref('master_karyawan').on('value',s=>{mk=s.val()||{}; uDl(); rRekap();});
             db.ref('absensi').on('value',s=>{ad=s.val()||{}; rRekap();});
@@ -126,14 +146,14 @@
         };
 
         function uDl(){let dl=document.getElementById('lk'); dl.innerHTML=Object.values(mk).sort().map(n=>`<option value="${n}">`).join('');}
-        function tKaryawan(){let n=document.getElementById('iNama'); if(!n.value) return sT("Isi Nama!","error"); db.ref('master_karyawan').push(n.value).then(()=>{sT("Berhasil!"); n.value=""});}
-        function hKaryawan(){let n=document.getElementById('iNama'); let id=Object.keys(mk).find(k=>mk[k]===n.value); if(id && confirm(`Hapus ${n.value}?`)) db.ref(`master_karyawan/${id}`).remove().then(()=>{sT("Dihapus!"); n.value=""});}
+        function tKaryawan(){let n=document.getElementById('iNama'); if(!n.value) return sT("Isi Nama!","error"); db.ref('master_karyawan').push(n.value).then(()=>{sT("Karyawan Ditambah!"); n.value=""});}
+        function hKaryawan(){let n=document.getElementById('iNama'); let id=Object.keys(mk).find(k=>mk[k]===n.value); if(id && confirm(`Hapus ${n.value}?`)) db.ref(`master_karyawan/${id}`).remove().then(()=>{sT("Karyawan Dihapus!"); n.value=""});}
         
         function sLib(st){
             let m=document.getElementById('tM'), s=document.getElementById('tS'); if(!m.value||!s.value) return sT("Pilih Tgl!","error");
             let u={}, c=new Date(m.value), e=new Date(s.value);
             while(c<=e){u[c.toISOString().split('T')[0]]=st?true:null; c.setDate(c.getDate()+1);}
-            db.ref('hari_libur').update(u).then(()=>{sT("Jadwal OK!"); m.value=s.value=""});
+            db.ref('hari_libur').update(u).then(()=>{sT("Update Jadwal!"); m.value=s.value=""});
         }
 
         function pAbsen(ty){
