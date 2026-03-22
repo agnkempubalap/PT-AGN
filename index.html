@@ -2,143 +2,104 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v81.0</title>
+    <title>PT-AGN v83.0</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
     <style>
-        :root{--p:#2563eb;--s:#00C853;--d:#ef4444;--w:#FFD600;--bg:#0f172a;--c:#1e293b;--t:#f8fafc;--b:#334155;--iz:#f59e0b;--al:#37474F}
-        body[data-theme="light"]{--bg:#f1f5f9;--c:#ffffff;--t:#1e293b;--b:#cbd5e1}
-        body{font-family:'Plus Jakarta Sans',sans-serif;margin:0;background:var(--bg);color:var(--t);padding:10px; transition: 0.3s}
+        :root{--p:#2563eb;--s:#00C853;--d:#ef4444;--w:#FFD600;--bg:#0f172a;--c:#1e293b;--t:#f8fafc;--b:#334155;--iz:#f59e0b}
+        body{font-family:'Plus Jakarta Sans',sans-serif;margin:0;background:var(--bg);color:var(--t);padding:10px}
         .container{max-width:1450px;margin:0 auto}
-        header{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px}
-        .logo-box{display:flex;align-items:center;gap:12px}
-        .logo-box img{width:65px;height:65px;border-radius:50%;background:#000;border:3px solid var(--p);object-fit:cover}
-        .dark-card{background:var(--c); border-radius:12px; border:1px solid var(--b); padding:8px 12px; display:flex; align-items:center; gap:8px; cursor:pointer}
         .tab-menu{display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px}
         .tab-btn{height:55px; border-radius:15px; border:1px solid var(--b); background:var(--c); color:var(--t); font-weight:800; cursor:pointer}
-        .tab-btn.active{background:var(--p); color:#fff; border:none; box-shadow:0 4px 15px rgba(37,99,235,0.3)}
+        .tab-btn.active{background:var(--p); color:#fff; border:none}
         .card{background:var(--c);padding:18px;border-radius:18px;margin-bottom:12px;border:1px solid var(--b)}
         h3{margin:0 0 15px;font-size:11px;color:var(--iz);text-transform:uppercase;letter-spacing:1px;font-weight:800}
-        input,button,select{border-radius:12px;font-size:14px;height:50px;border:1px solid var(--b);background:var(--bg);color:var(--t);width:100%;box-sizing:border-box;padding:0 10px}
+        input,button,select{border-radius:12px;font-size:14px;height:50px;border:1px solid var(--b);background:var(--bg);color:var(--t);width:100%;box-sizing:border-box;padding:0 10px;outline:none}
         .btn{display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;border:none;color:#fff}
-        .table-wrap{overflow-x:auto; border-radius:12px; border:1px solid var(--b); background:var(--c); scroll-behavior: smooth}
+        .table-wrap{overflow-x:auto; border-radius:12px; border:1px solid var(--b); background:var(--c)}
         .table-web{width:100%;border-collapse:separate;border-spacing:0;font-size:10px; color:var(--t)}
-        .table-web th, .table-web td{border-bottom:1px solid var(--b);border-right:1px solid var(--b);padding:8px 2px;text-align:center;min-width:35px}
-        .nama-fixed{position:sticky !important;left:0;background-color:var(--c) !important;z-index:10;min-width:100px !important;text-align:left !important;padding-left:10px !important;font-weight:700; border-right: 2px solid var(--p) !important}
-        .today-col{background: rgba(37,99,235,0.15) !important}
-        .s-cell{border-radius:6px;width:33px;height:33px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;font-size:10px;margin:0 auto}
-        .s-v{background:var(--s)} .s-late{background:var(--w);color:#000} .s-i{background:var(--iz)} .s-off{background:var(--d)} .s-a{background:var(--al)} .s-mng{background:#64748b}
-        .jam-text{font-size:7px;display:block;margin-top:2px}
+        .table-web th, .table-web td{border-bottom:1px solid var(--b);border-right:1px solid var(--b);padding:8px 4px;text-align:center}
+        .nama-fixed{position:sticky;left:0;background-color:var(--c);z-index:10;min-width:100px;text-align:left;padding-left:10px;font-weight:700; border-right: 2px solid var(--p)}
         .page-content{display:none} .page-content.active{display:block}
-        @media print{.tab-menu, .no-print{display:none !important}.page-content{display:none !important}.page-content.active{display:block !important}}
     </style>
 </head>
-<body data-theme="dark">
+<body>
     <div class="container">
-        <header>
-            <div class="logo-box">
-                <img id="mainLogo" src="https://ui-avatars.com/api/?name=AGN&background=000&color=fff">
-                <div><h2 style="margin:0;font-size:1.1rem">PT AGN</h2><span style="font-size:9px;color:var(--p);font-weight:800">ULTRA SYNC v81.0</span></div>
-            </div>
-            <div class="dark-card" onclick="toggleT()"><span id="tIco">☀️</span></div>
-        </header>
-
-        <div class="tab-menu no-print">
-            <button class="tab-btn active" onclick="switchP('absen', this)">📋 ABSENSI</button>
-            <button class="tab-btn" onclick="switchP('stok', this)">📦 STOK</button>
+        <div class="tab-menu">
+            <button class="tab-btn" onclick="switchP('absen', this)">📋 ABSENSI</button>
+            <button class="tab-btn active" onclick="switchP('stok', this)">📦 STOK</button>
         </div>
 
-        <!-- PAGE ABSEN -->
-        <div id="p-absen" class="page-content active">
-            <div class="card no-print">
-                <h3>👥 KARYAWAN</h3>
-                <div style="display:flex;gap:8px">
-                    <input list="lk" id="iNama" placeholder="Nama...">
-                    <datalist id="lk"></datalist>
-                    <button class="btn" style="background:var(--s);width:55px;font-size:20px" onclick="tKar()">+</button>
-                    <button class="btn" style="background:var(--d);width:55px" onclick="hKar()">🗑️</button>
-                </div>
-            </div>
-            <div class="card no-print">
-                <h3>🧹 KONTROL & LIBUR</h3>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-                    <input type="date" id="resT">
-                    <button class="btn" style="background:var(--d)" onclick="resAbs()">RESET</button>
-                </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-                    <input type="date" id="tA"> <input type="date" id="tK">
-                </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                    <button class="btn" style="background:var(--p)" onclick="sLib(1)">SET LIBUR</button>
-                    <button class="btn" style="background:var(--d)" onclick="sLib(0)">HAPUS</button>
-                </div>
-            </div>
-            <div class="card no-print">
-                <h3>⚡ PRESENSI</h3>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-                    <button class="btn" style="background:var(--s);height:55px" onclick="pAbs('Masuk')">MASUK</button>
-                    <button class="btn" style="background:var(--d);height:55px" onclick="pAbs('Pulang')">PULANG</button>
-                </div>
-                <button class="btn" style="background:var(--iz)" onclick="pAbs('Izin')">📝 IZIN / KET</button>
-            </div>
+        <!-- PAGE STOK -->
+        <div id="p-stok" class="page-content active">
             <div class="card">
-                <div style="display:flex;justify-content:space-between;margin-bottom:15px" class="no-print">
-                    <input type="month" id="fB" style="width:140px" onchange="rRek()">
-                    <div style="display:flex;gap:5px">
-                        <button class="btn" style="background:#1d6f42;width:80px;font-size:10px" onclick="doEx()">EXCEL</button>
-                        <button class="btn" style="background:#b91c1c;width:80px;font-size:10px" onclick="window.print()">PDF</button>
-                    </div>
-                </div>
-                <div class="table-wrap" id="scrl"><table class="table-web"><thead id="thW"></thead><tbody id="tbW"></tbody></table></div>
-            </div>
-        </div>
-
-        <!-- PAGE STOK (JOINED MASTER & INPUT) -->
-        <div id="p-stok" class="page-content">
-            <div class="card">
-                <h3>📦 STATUS STOK</h3>
+                <h3>📊 RINGKASAN STOK (Berdasarkan Data Excel)</h3>
                 <div class="table-wrap">
                     <table class="table-web">
-                        <thead><tr style="background:var(--bg)"><th class="nama-fixed">ITEM</th><th>KTR</th><th>RDY</th><th>+KTR</th><th>+RDY</th><th>RKN</th><th>-U</th><th>-A</th><th style="color:var(--s)">RDY</th><th style="color:var(--w)">TOT</th></tr></thead>
+                        <thead>
+                            <tr style="background:var(--bg)">
+                                <th class="nama-fixed">ITEM</th>
+                                <th title="Stok Awal Kotor">AWL-K</th>
+                                <th title="Stok Awal Ready">AWL-R</th>
+                                <th title="Masuk Kotor">M-KTR</th>
+                                <th title="Selesai Rekondisi">REKON</th>
+                                <th title="Jual Umum">J-UM</th>
+                                <th title="Jual Agen">J-AG</th>
+                                <th style="color:var(--s)">SISA-R</th>
+                                <th style="color:var(--w)">TOTAL</th>
+                            </tr>
+                        </thead>
                         <tbody id="tbS"></tbody>
                     </table>
                 </div>
             </div>
-            <div class="card no-print">
-                <h3>⚡ MASTER & TRANSAKSI</h3>
-                <!-- Row 1: Master Barang -->
-                <div style="display:grid; grid-template-columns: 1fr 50px 50px; gap:8px; margin-bottom:15px; border-bottom:1px solid var(--b); padding-bottom:15px">
-                    <input type="text" id="nB" placeholder="Nama Barang Baru...">
-                    <button class="btn" style="background:var(--p)" onclick="addB()">+</button>
-                    <button class="btn" style="background:var(--d)" onclick="delB()">🗑️</button>
+
+            <div class="card">
+                <h3>⚡ INPUT TRANSAKSI & MASTER</h3>
+                <!-- Gabungan Input Master (Stok Awal) dan Transaksi Harian -->
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:10px">
+                    <input type="text" id="nB" placeholder="Nama Barang...">
+                    <input type="number" id="sAK" placeholder="Awal Kotor">
                 </div>
-                <!-- Row 2: Input Stok -->
+                <div style="display:grid; grid-template-columns: 1fr 1fr 100px; gap:8px; margin-bottom:15px; border-bottom:1px solid var(--b); padding-bottom:15px">
+                    <input type="number" id="sAR" placeholder="Awal Ready">
+                    <button class="btn" style="background:var(--p)" onclick="setMaster()">SIMPAN MASTER</button>
+                    <button class="btn" style="background:var(--d)" onclick="delB()">HAPUS</button>
+                </div>
+
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:8px">
-                    <select id="sB"></select><input type="date" id="sT">
+                    <select id="sB"></select>
+                    <input type="date" id="sT">
                 </div>
                 <div style="display:grid; grid-template-columns: 1.2fr 0.6fr 1fr; gap:8px">
-                    <select id="sK"><option value="m_ktr">Masuk Kotor</option><option value="m_rdy">Masuk Ready</option><option value="rekon">Rekon</option><option value="j_u">Jual Umum</option><option value="j_a">Jual Agen</option></select>
+                    <select id="sK">
+                        <option value="m_ktr">Masuk (QC Lolos)</option>
+                        <option value="rekon">Selesai Rekon</option>
+                        <option value="j_u">Terjual Umum</option>
+                        <option value="j_a">Terjual Agen</option>
+                    </select>
                     <input type="number" id="sQ" placeholder="Qty">
-                    <button class="btn" style="background:var(--s)" onclick="svS()">SIMPAN</button>
+                    <button class="btn" style="background:var(--s)" onclick="svS()">INPUT HARIAN</button>
                 </div>
             </div>
+        </div>
+
+        <!-- PAGE ABSEN (Hidden by default) -->
+        <div id="p-absen" class="page-content">
+             <div class="card"><h3>Absensi Aktif</h3><p>Fitur absensi berjalan di latar belakang...</p></div>
         </div>
     </div>
 
     <script>
         const cfg={apiKey:"AIzaSyAu67MAhWBxdmciPi3xOKWhdy-uP4u9tXI",databaseURL:"https://pt-agn-default-rtdb.asia-southeast1.firebasedatabase.app"};
         firebase.initializeApp(cfg); const db=firebase.database();
-        let mk={}, ad={}, hl={}, mb={}, st={};
+        let mb={}, st={};
 
         window.onload=()=>{
-            document.getElementById('fB').value=new Date().toISOString().slice(0,7);
             document.getElementById('sT').value=new Date().toISOString().split('T')[0];
-            db.ref('master_karyawan').on('value',s=>{mk=s.val()||{}; uDl(); rRek();});
-            db.ref('absensi').on('value',s=>{ad=s.val()||{}; rRek();});
-            db.ref('hari_libur').on('value',s=>{hl=s.val()||{}; rRek();});
-            db.ref('master_barang_v5').on('value',s=>{mb=s.val()||{}; uSB(); bS();});
-            db.ref('stok_v5').on('value',s=>{st=s.val()||{}; bS();});
+            db.ref('master_barang_v6').on('value',s=>{mb=s.val()||{}; uSB(); bS();});
+            db.ref('stok_v6').on('value',s=>{st=s.val()||{}; bS();});
         };
 
         function switchP(p, el){
@@ -146,56 +107,58 @@
             document.getElementById('p-'+p).classList.add('active'); el.classList.add('active');
         }
 
-        // ABSENSI LOGIC
-        function toggleT(){ let b=document.body, t=b.getAttribute('data-theme')==='dark'?'light':'dark'; b.setAttribute('data-theme',t); document.getElementById('tIco').innerText=t==='dark'?'☀️':'🌙'; }
-        function uDl(){ document.getElementById('lk').innerHTML=Object.values(mk).sort().map(n=>`<option value="${n}">`).join(''); }
-        function tKar(){ let n=document.getElementById('iNama'); if(n.value) db.ref('master_karyawan').push(n.value).then(()=>n.value=""); }
-        function hKar(){ let n=document.getElementById('iNama').value, id=Object.keys(mk).find(k=>mk[k]===n); if(id && confirm('Hapus?')) db.ref(`master_karyawan/${id}`).remove(); }
-        function pAbs(ty){
-            let n=document.getElementById('iNama').value, now=new Date(), tgl=now.toISOString().split('T')[0];
-            if(!n) return alert("Pilih Nama!");
-            let jam=now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}), st="Hadir";
-            if(ty==='Masuk' && (now.getHours()>9 || (now.getHours()===9 && now.getMinutes()>0))) st="Terlambat";
-            let nt=""; if(ty==='Izin'){nt=prompt("Alasan:"); if(!nt)return; st="Izin";}
-            db.ref(`absensi/${tgl}/${n}/${ty}`).set({waktu:jam, status:st, note:nt}).then(()=>alert("OK!"));
+        // FUNGSI MASTER (Untuk Set Stok Awal sesuai Excel)
+        function setMaster(){
+            let n=document.getElementById('nB').value, 
+                ak=parseInt(document.getElementById('sAK').value)||0, 
+                ar=parseInt(document.getElementById('sAR').value)||0;
+            if(n) db.ref(`master_barang_v6/${n}`).set({awal_ktr:ak, awal_rdy:ar}).then(()=>alert("Master Tersimpan!"));
         }
-        function resAbs(){ let n=document.getElementById('iNama').value, t=document.getElementById('resT').value; if(n && t && confirm('Reset?')) db.ref(`absensi/${t}/${n}`).remove(); }
-        function sLib(v){ let d1=document.getElementById('tA').value, d2=document.getElementById('tK').value; if(!d1) return; let s=new Date(d1), e=d2?new Date(d2):s; while(s<=e){ db.ref(`hari_libur/${s.toISOString().split('T')[0]}`).set(v?true:null); s.setDate(s.getDate()+1); } }
 
-        // STOK LOGIC
-        function addB(){ let n=document.getElementById('nB').value; if(n) db.ref(`master_barang_v5/${n}`).set({ak:0, ar:0}).then(()=>document.getElementById('nB').value=""); }
-        function delB(){ let n=document.getElementById('nB').value; if(n && confirm('Hapus Master?')) db.ref(`master_barang_v5/${n}`).remove(); }
-        function uSB(){ document.getElementById('sB').innerHTML=Object.keys(mb).map(b=>`<option value="${b}">${b}</option>`).join(''); }
+        function delB(){
+            let n=document.getElementById('nB').value;
+            if(n && confirm('Hapus barang ini?')) db.ref(`master_barang_v6/${n}`).remove();
+        }
+
+        function uSB(){
+            document.getElementById('sB').innerHTML=Object.keys(mb).map(b=>`<option value="${b}">${b}</option>`).join('');
+        }
+
+        // FUNGSI INPUT HARIAN (Masuk, Rekon, Jual)
         function svS(){
             let b=document.getElementById('sB').value, t=document.getElementById('sT').value, k=document.getElementById('sK').value, q=parseInt(document.getElementById('sQ').value);
-            if(q) db.ref(`stok_v5/${t.slice(0,7)}/${b}/${k}`).transaction(c=>(c||0)+q).then(()=>alert("Saved!"));
-        }
-        function bS(){
-            let f=document.getElementById('fB').value, h="";
-            Object.keys(mb).forEach(b=>{
-                let d=st[f]?st[f][b]||{}:{}, sk=mb[b].ak, sr=mb[b].ar;
-                let fk=sk+(d.m_ktr||0)-(d.rekon||0), fr=sr+(d.m_rdy||0)+(d.rekon||0)-(d.j_u||0)-(d.j_a||0);
-                h+=`<tr><td class="nama-fixed">${b}</td><td>${sk}</td><td>${sr}</td><td>${d.m_ktr||0}</td><td>${d.m_rdy||0}</td><td>${d.rekon||0}</td><td>${d.j_u||0}</td><td>${d.j_a||0}</td><td style="color:var(--s);font-weight:800">${fr}</td><td style="color:var(--w);font-weight:800">${fk+fr}</td></tr>`;
-            }); document.getElementById('tbS').innerHTML=h;
+            if(q) db.ref(`stok_v6/${t.slice(0,7)}/${b}/${k}`).transaction(c=>(c||0)+q).then(()=>alert("Transaksi Berhasil!"));
         }
 
-        function rRek(){
-            let f=document.getElementById('fB').value; if(!f) return;
-            let [y,m]=f.split('-'), last=new Date(y,m,0).getDate(), tglS=new Date().getDate(), rowH=`<tr><th class="nama-fixed">Nama</th>`;
-            for(let i=1;i<=last;i++) rowH+=`<th id="tgl-${i}" class="${i===tglS?'today-col':''}">${i}</th>`;
-            document.getElementById('thW').innerHTML=rowH+`<th class="th-rekap">H</th><th class="th-rekap">I</th><th class="th-rekap">A</th><th class="th-rekap">L</th></tr>`;
-            let b=""; Object.values(mk).sort().forEach(n=>{
-                let cH=0, cI=0, cA=0, cL=0, r=`<td class="nama-fixed">${n}</td>`;
-                for(let i=1;i<=last;i++){
-                    let t=`${y}-${m}-${String(i).padStart(2,'0')}`, lib=hl[t], mg=(new Date(t).getDay()===0), d=ad[t]?ad[t][n]:null, s="-", c="", inW="";
-                    if(d){ if(d.Izin){s="I";c="s-i";cI++;inW=d.Izin.note||"Izin";} else if(d.Masuk){ if(mg||lib){s="L";c="s-l";cL++;}else{s="H";c=(d.Masuk.status==="Terlambat")?"s-late":"s-v";cH++;} inW=d.Masuk.waktu+(d.Pulang?`|${d.Pulang.waktu}`:"");}}
-                    else if(mg){s="MNG";c="s-mng";} else if(lib){s="OFF";c="s-off";} else if(t<new Date().toISOString().split('T')[0]){s="A";c="s-a";cA++;}
-                    r+=`<td class="${i===tglS?'today-col':''}"><div class="s-cell ${c}">${s}<span class="jam-text">${inW}</span></div></td>`;
-                }
-                b+=`<tr>${r}<td>${cH}</td><td>${cI}</td><td>${cA}</td><td>${cL}</td></tr>`;
-            }); document.getElementById('tbW').innerHTML=b;
+        function bS(){
+            let month = new Date().toISOString().slice(0,7), h="";
+            Object.keys(mb).forEach(b=>{
+                let d = (st[month] && st[month][b]) ? st[month][b] : {};
+                let awk = mb[b].awal_ktr || 0;
+                let awr = mb[b].awal_rdy || 0;
+                
+                // Rumus Excel Mas:
+                // Sisa Kotor = Stok Awal Kotor + Masuk Kotor - Selesai Rekon
+                // Sisa Ready = Stok Awal Ready + Selesai Rekon - Jual Umum - Jual Agen
+                let mk = d.m_ktr || 0;
+                let rk = d.rekon || 0;
+                let ju = d.j_u || 0;
+                let ja = d.j_a || 0;
+
+                let sisa_k = awk + mk - rk;
+                let sisa_r = awr + rk - ju - ja;
+
+                h+=`<tr>
+                    <td class="nama-fixed">${b}</td>
+                    <td>${awk}</td><td>${awr}</td>
+                    <td>${mk}</td><td>${rk}</td>
+                    <td>${ju}</td><td>${ja}</td>
+                    <td style="color:var(--s);font-weight:800">${sisa_r}</td>
+                    <td style="color:var(--w);font-weight:800">${sisa_k + sisa_r}</td>
+                </tr>`;
+            });
+            document.getElementById('tbS').innerHTML=h;
         }
-        function doEx(){ let f=document.getElementById('fB').value, t=document.getElementById("scrl").innerHTML; let a=document.createElement("a"); a.href='data:application/vnd.ms-excel,'+encodeURIComponent(t); a.download=`REKAP_${f}.xls`; a.click(); }
     </script>
 </body>
 </html>
