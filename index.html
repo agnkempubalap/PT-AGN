@@ -2,56 +2,48 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v88.5 - OMNI RESTORASI</title>
+    <title>PT-AGN v88.5 - OMNI SYSTEM</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
     <style>
-        /* CSS ASLI V77.6 - JANGAN DIUBAH */
+        /* --- CSS MURNI V77.6 (JANGAN DIUBAH) --- */
         :root{--p:#2563eb;--s:#00C853;--d:#ef4444;--w:#FFD600;--bg:#0f172a;--c:#1e293b;--t:#f8fafc;--b:#334155;--iz:#f59e0b;--al:#37474F}
         body[data-theme="light"]{--bg:#f1f5f9;--c:#ffffff;--t:#1e293b;--b:#cbd5e1}
         body{font-family:'Plus Jakarta Sans',sans-serif;margin:0;background:var(--bg);color:var(--t);padding:10px; transition: background 0.3s}
         .container{max-width:1450px;margin:0 auto}
-        
         header{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px}
         .logo-box{display:flex;align-items:center;gap:12px}
         .logo-box img{width:70px;height:70px;border-radius:50%;background:#000;border:3px solid var(--p);object-fit:cover;cursor:pointer}
         .dark-card{background:var(--c); border-radius:12px; border:1px solid var(--b); padding:10px 15px; display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--t)}
-
-        /* TAB MENU KHUSUS V88 */
-        .tab-nav{display:flex; gap:10px; margin-bottom:15px}
-        .tab-item{flex:1; height:50px; border-radius:12px; background:var(--c); border:1px solid var(--b); color:var(--t); font-weight:800; cursor:pointer}
-        .tab-item.active{background:var(--p); color:#fff; border:none}
-
         .card{background:var(--c);padding:18px;border-radius:18px;margin-bottom:12px;border:1px solid var(--b);box-shadow:0 4px 6px -1px rgba(0,0,0,0.1)}
         h3{margin:0 0 15px;font-size:11px;color:var(--iz);text-transform:uppercase;letter-spacing:1px;font-weight:800}
-        
-        input,button,select{border-radius:12px;font-size:14px;height:52px;border:1px solid var(--b);background:var(--bg);color:var(--t);width:100%;box-sizing:border-box;outline:none}
+        input,button,select{border-radius:12px;font-size:14px;height:52px;border:1px solid var(--b);background:var(--bg);color:var(--t);width:100%;box-sizing:border-box;outline:none;padding:0 10px}
         .btn{display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;border:none;color:#fff}
-        
         .export-group { display: flex; justify-content: flex-end; align-items: flex-end; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
         .btn-ex { width: 100px; height: 45px; font-size: 11px; border-radius: 10px; }
-
         .table-wrap{overflow-x:auto; border-radius:12px; border:1px solid var(--b); background:var(--c); scroll-behavior: smooth}
         .table-web{width:100%;border-collapse:separate;border-spacing:0;font-size:10px; color:var(--t)}
         .table-web th, .table-web td{border-bottom:1px solid var(--b);border-right:1px solid var(--b);padding:8px 1px;text-align:center;min-width:35px}
-        
         .nama-fixed{position:sticky !important;left:0;background-color:var(--c) !important;z-index:10;min-width:110px !important;text-align:left !important;padding-left:10px !important;font-weight:700; border-right: 2px solid var(--p) !important}
         .today-col{background: rgba(37, 99, 235, 0.15) !important;}
         .rekap-akhir{background:var(--bg) !important; color:var(--t) !important; font-weight:800; min-width:30px !important}
         .th-rekap{background:var(--bg) !important; color:var(--iz) !important; font-weight:800}
-
         .s-cell{border-radius:6px;width:35px;height:35px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;font-size:10px;margin: 0 auto; -webkit-print-color-adjust: exact; print-color-adjust: exact;}
         .s-v{background:var(--s);color:#fff} .s-late{background:var(--w);color:#000} .s-i{background:var(--iz);color:#fff}
         .s-off{background:var(--d);color:#fff} .s-a{background:var(--al);color:#fff} .s-l{background:#AA00FF;color:#fff} .s-mng{background:#64748b;color:#fff}
         .jam-text{font-size:7px;font-weight:600;display:block;margin-top:2px;max-width:33px}
 
+        /* --- CSS TAMBAHAN UNTUK TAB OMNI --- */
+        .tab-menu{display:flex; gap:10px; margin-bottom:15px}
+        .tab-btn{flex:1; height:50px; border-radius:12px; background:var(--c); border:1px solid var(--b); color:var(--t); font-weight:800; cursor:pointer}
+        .tab-btn.active{background:var(--p); color:#fff; border:none}
         .page{display:none} .page.active{display:block}
 
         @media print {
             @page { size: A4 landscape; margin: 5mm; }
             html, body { background: #fff !important; color: #1e293b !important; }
-            header, .no-print, .export-group, .dark-card, .tab-nav { display: none !important; }
+            header, .no-print, .export-group, .dark-card, .tab-menu { display: none !important; }
             .page { display: block !important; }
             .container { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
             .table-web { transform: scale(0.7); transform-origin: top left; width: 140% !important; border: 1px solid #000 !important; }
@@ -63,7 +55,8 @@
     <div class="container">
         <header>
             <div class="logo-box">
-                <img id="mainLogo" src="https://ui-avatars.com/api/?name=AGN&background=000&color=fff" onclick="toggleT()">
+                <input type="file" id="inpLogo" style="display:none" accept="image/*" onchange="cLogo(event)">
+                <img id="mainLogo" src="https://ui-avatars.com/api/?name=AGN&background=000&color=fff" onclick="document.getElementById('inpLogo').click()">
                 <div><h2 style="margin:0;font-size:1.3rem">PT AGN</h2><span style="font-size:10px;color:var(--p);font-weight:800">SYSTEM v88.5 OMNI</span></div>
             </div>
             <div class="dark-card no-print" onclick="toggleT()">
@@ -71,13 +64,14 @@
             </div>
         </header>
 
-        <div class="tab-nav no-print">
-            <button class="tab-item active" onclick="openP('absen', this)">ABSENSI</button>
-            <button class="tab-item" onclick="openP('stok', this)">STOK BARANG</button>
+        <!-- MENU TAB -->
+        <div class="tab-menu no-print">
+            <button class="tab-btn active" onclick="switchTab('absen', this)">ABSENSI</button>
+            <button class="tab-btn" onclick="switchTab('stok', this)">STOK BARANG</button>
         </div>
 
-        <!-- HALAMAN ABSENSI (RESTORASI V77.6) -->
-        <div id="p-absen" class="page active">
+        <!-- ================= PAGE 1: ABSENSI (V77.6 MURNI) ================= -->
+        <div id="page-absen" class="page active">
             <div class="card no-print">
                 <h3>👥 DATA KARYAWAN</h3>
                 <div style="display:flex;gap:10px">
@@ -122,19 +116,24 @@
                     <button class="btn btn-ex" style="background:#1d6f42" onclick="doExcel()">📥 EXCEL</button>
                     <button class="btn btn-ex" style="background:#b91c1c" onclick="window.print()">📄 PDF</button>
                 </div>
-                <div class="table-wrap" id="scrollArea"><table class="table-web" id="rekapTable"><thead id="thWeb"></thead><tbody id="tbWeb"></tbody></table></div>
+                <div class="table-wrap" id="scrollArea">
+                    <table class="table-web" id="rekapTable">
+                        <thead id="thWeb"></thead>
+                        <tbody id="tbWeb"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
-        <!-- HALAMAN STOK -->
-        <div id="p-stok" class="page">
+        <!-- ================= PAGE 2: STOK BARANG (MODUL BARU) ================= -->
+        <div id="page-stok" class="page">
             <div class="card">
                 <h3>📊 STATUS STOK REAL-TIME</h3>
                 <div class="table-wrap">
                     <table class="table-web">
                         <thead>
                             <tr style="background:var(--bg)">
-                                <th class="nama-fixed">ITEM</th>
+                                <th class="nama-fixed">NAMA ITEM</th>
                                 <th>MASUK (KTR)</th><th>REKON</th><th>JUAL</th><th style="color:var(--s)">READY</th>
                             </tr>
                         </thead>
@@ -142,43 +141,61 @@
                     </table>
                 </div>
             </div>
+
             <div class="card no-print">
-                <h3>📥 INPUT TRANSAKSI</h3>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px">
-                    <select id="sB"><option>Kempu</option><option>Derigen 18L</option><option>Derigen 5L</option><option>Botol 1L</option><option>Mesin Minyak</option></select>
-                    <input type="date" id="sT">
+                <h3>📥 INPUT TRANSAKSI STOK</h3>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px">
+                    <select id="sItem">
+                        <option>Kempu</option><option>Derigen 18L</option><option>Derigen 5L</option>
+                        <option>Botol 1L</option><option>Mesin Minyak</option>
+                    </select>
+                    <input type="date" id="sTgl">
                 </div>
-                <div style="display:grid; grid-template-columns:1fr 0.5fr 1fr; gap:10px">
-                    <select id="sK"><option value="m_ktr">Masuk Kotor</option><option value="rekon">Rekon</option><option value="j_u">Jual</option></select>
-                    <input type="number" id="sQ" placeholder="Qty">
-                    <button class="btn" style="background:var(--s)" onclick="saveS()">SIMPAN</button>
+                <div style="display:grid; grid-template-columns: 1fr 0.5fr 1fr; gap:10px">
+                    <select id="sKategori">
+                        <option value="m_ktr">Masuk Kotor</option>
+                        <option value="rekon">Rekon (Selesai)</option>
+                        <option value="j_u">Terjual</option>
+                    </select>
+                    <input type="number" id="sQty" placeholder="0">
+                    <button class="btn" style="background:var(--s)" onclick="saveStok()">SIMPAN</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        // --- KONFIGURASI DATABASE ---
         const cfg={apiKey:"AIzaSyAu67MAhWBxdmciPi3xOKWhdy-uP4u9tXI",databaseURL:"https://pt-agn-default-rtdb.asia-southeast1.firebasedatabase.app"};
         firebase.initializeApp(cfg); const db=firebase.database();
-        let mk={}, ad={}, hl={}, st={}; const TGL_MULAI_SISTEM = "2026-03-21";
+        
+        let mk={}, ad={}, hl={}, stData={}; 
+        const TGL_MULAI_SISTEM = "2026-03-21";
 
         window.onload=()=>{
             const m = new Date().toISOString().slice(0,7);
             document.getElementById('fB').value=m;
-            document.getElementById('sT').value=new Date().toISOString().split('T')[0];
+            document.getElementById('sTgl').value=new Date().toISOString().split('T')[0];
+            if(localStorage.getItem('agnLogo')) document.getElementById('mainLogo').src=localStorage.getItem('agnLogo');
             const savedTheme = localStorage.getItem('agnTheme') || 'dark';
             document.body.setAttribute('data-theme', savedTheme);
             updateThemeUI(savedTheme);
+
+            // Listener Absensi
             db.ref('master_karyawan').on('value',s=>{mk=s.val()||{}; uDl(); rRekap();});
             db.ref('absensi').on('value',s=>{ad=s.val()||{}; rRekap();});
             db.ref('hari_libur').on('value',s=>{hl=s.val()||{}; rRekap();});
-            db.ref('stok_v6').on('value',s=>{st=s.val()||{}; bS();});
+
+            // Listener Stok
+            db.ref('stok_v6').on('value',s=>{stData=s.val()||{}; renderStok();});
         };
 
-        function openP(id, el){
-            document.querySelectorAll('.page, .tab-item').forEach(x=>x.classList.remove('active'));
-            document.getElementById('p-'+id).classList.add('active'); el.classList.add('active');
-            if(id==='absen') rRekap();
+        // --- LOGIKA TAB ---
+        function switchTab(id, el){
+            document.querySelectorAll('.page, .tab-btn').forEach(x=>x.classList.remove('active'));
+            document.getElementById('page-'+id).classList.add('active');
+            el.classList.add('active');
+            if(id==='absen') rRekap(); // Trigger scroll ulang saat balik ke absen
         }
 
         function toggleT(){ 
@@ -191,77 +208,128 @@
             document.getElementById('tTxt').innerText=t==='dark'?'Light Mode':'Dark Mode';
         }
 
-        // SEMUA LOGIKA ABSENSI 100% SAMA DENGAN V77.6
-        function uDl(){ document.getElementById('lk').innerHTML=Object.values(mk).sort().map(n=>`<option value="${n}">`).join(''); }
-        function tKaryawan(){ let n=document.getElementById('iNama'); if(n.value) db.ref('master_karyawan').push(n.value).then(()=>n.value=""); }
-        function hKaryawan(){ let n=document.getElementById('iNama').value; let id=Object.keys(mk).find(k=>mk[k]===n); if(id && confirm('Hapus?')) db.ref(`master_karyawan/${id}`).remove(); }
+        function cLogo(e){
+            const r=new FileReader(); r.onload=()=>{
+                document.getElementById('mainLogo').src=r.result;
+                localStorage.setItem('agnLogo',r.result);
+            }; r.readAsDataURL(e.target.files[0]);
+        }
+
+        // ================= LOGIKA ABSENSI (V77.6 ASLI) =================
+        function uDl(){
+            let opt = Object.values(mk).sort().map(n=>`<option value="${n}">`).join('');
+            document.getElementById('lk').innerHTML=opt;
+        }
+
+        function tKaryawan(){
+            let n=document.getElementById('iNama'); if(n.value){db.ref('master_karyawan').push(n.value).then(()=>{n.value=""; alert("Ditambah!");});}
+        }
+
+        function hKaryawan(){
+            let n=document.getElementById('iNama'); let id=Object.keys(mk).find(k=>mk[k]===n.value); 
+            if(id && confirm('Hapus Karyawan?')) db.ref(`master_karyawan/${id}`).remove().then(()=>n.value="");
+        }
 
         function pAbsen(ty){
-            let n=document.getElementById('iNama').value, now=new Date(), tgl=now.toISOString().split('T')[0];
+            let inp=document.getElementById('iNama'), n=inp.value, now=new Date(), tgl=now.toISOString().split('T')[0];
             if(!n) return alert("Pilih Nama!");
-            let jam=now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}), st="Hadir";
-            if(ty==='Masuk' && (now.getHours()>9 || (now.getHours()===9 && now.getMinutes()>0))) st="Terlambat";
-            let nt=""; if(ty==='Izin'){nt=prompt("Alasan:"); if(nt===null)return; st="Izin";}
-            db.ref(`absensi/${tgl}/${n}/${ty}`).set({waktu:jam, status:st, note:nt}).then(()=>alert("Sukses!"));
+            let jam=now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+            let st="Hadir"; if(ty==='Masuk' && (now.getHours()>9 || (now.getHours()===9 && now.getMinutes()>0))) st="Terlambat";
+            let nt=""; if(ty==='Izin'){nt=prompt("Alasan Izin:"); if(nt===null)return; st="Izin";}
+            db.ref(`absensi/${tgl}/${n}/${ty}`).set({waktu:jam, status:st, note:nt}).then(()=>{alert(`${ty} Sukses!`); inp.value="";});
         }
 
         function resetAbsen(){
-            let n=document.getElementById('iNama').value, tgl=document.getElementById('resetTgl').value;
-            if(n && tgl && confirm('Reset?')) db.ref(`absensi/${tgl}/${n}`).remove();
+            let n=document.getElementById('iNama'), tgl=document.getElementById('resetTgl');
+            if(!n.value || !tgl.value) return alert("Pilih Nama & Tanggal!");
+            if(confirm(`Reset data ${n.value}?`)){db.ref(`absensi/${tgl.value}/${n.value}`).remove().then(()=>{alert("Direset!"); tgl.value=""; n.value="";});}
         }
 
         function sLib(st){
-            let d1=new Date(document.getElementById('tglAwal').value), d2=new Date(document.getElementById('tglAkhir').value || d1);
-            while(d1<=d2){ db.ref(`hari_libur/${d1.toISOString().split('T')[0]}`).set(st?true:null); d1.setDate(d1.getDate()+1); }
-            alert("Selesai!");
+            let d1=document.getElementById('tglAwal'), d2=document.getElementById('tglAkhir');
+            if(!d1.value) return alert("Isi tanggal!");
+            let start = new Date(d1.value); let end = d2.value ? new Date(d2.value) : new Date(d1.value);
+            while(start <= end){
+                db.ref(`hari_libur/${start.toISOString().split('T')[0]}`).set(st?true:null);
+                start.setDate(start.getDate() + 1);
+            }
+            alert(st?"Set Libur!":"Hapus Libur!"); d1.value=""; d2.value="";
         }
 
         function rRekap(){
             const f=document.getElementById('fB').value; if(!f) return;
-            const [y,m]=f.split('-'), last=new Date(y,m,0).getDate(), tglSkrg = new Date().getDate(), todayFull = new Date().toISOString().split('T')[0];
+            const [y,m]=f.split('-'), last=new Date(y,m,0).getDate(), todayFull = new Date().toISOString().split('T')[0], tglSkrg = new Date().getDate();
+            const kList=Object.values(mk).sort();
+            
             let h=`<tr><th class="nama-fixed">Nama</th>`;
             for(let i=1;i<=last;i++) h+=`<th id="tgl-${i}" class="${i===tglSkrg?'today-col':''}">${i}</th>`;
             h+=`<th class="th-rekap">H</th><th class="th-rekap">I</th><th class="th-rekap">A</th><th class="th-rekap">L</th></tr>`;
             document.getElementById('thWeb').innerHTML=h;
-            let b=""; Object.values(mk).sort().forEach(n=>{
+
+            let b="";
+            kList.forEach(n=>{
                 let cH=0, cI=0, cA=0, cL=0, row=`<td class="nama-fixed">${n}</td>`;
                 for(let i=1;i<=last;i++){
-                    let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), isMng=(d.getDay()===0), isL=hl[t], data=ad[t]?ad[t][n]:null, s="-", cl="", info="";
+                    let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t);
+                    let isMinggu = (d.getDay()===0), isSetLibur = hl[t];
+                    let data=ad[t]?ad[t][n]:null, sW="-", clW="", infoW="";
+                    
                     if(data){
-                        if(data.Izin){s="I";cl="s-i";cI++;info=data.Izin.note||"Izin";}
-                        else if(data.Masuk){
-                            if(isMng||isL){s="L";cl="s-l";cL++;} else {s="H";cl=(data.Masuk.status==="Terlambat")?"s-late":"s-v";cH++;}
-                            info=data.Masuk.waktu + (data.Pulang?` | ${data.Pulang.waktu}`:"");
+                        if(data.Izin){ sW="I"; clW="s-i"; cI++; infoW = data.Izin.note || "Izin"; }
+                        else if(data.Masuk){ 
+                            if(isMinggu || isSetLibur) { sW="L"; clW="s-l"; cL++; } 
+                            else { sW="H"; clW=(data.Masuk.status==="Terlambat")?"s-late":"s-v"; cH++; }
+                            infoW = data.Masuk.waktu + (data.Pulang ? ` | ${data.Pulang.waktu}` : "");
                         }
-                    } else if(isMng){s="MNG";cl="s-mng";} else if(isL){s="OFF";cl="s-off";}
-                    else if(t < todayFull && t >= TGL_MULAI_SISTEM){s="A";cl="s-a";cA++;}
-                    row+=`<td class="${i===tglSkrg?'today-col':''}"><div class="s-cell ${cl}">${s}<span class="jam-text">${info}</span></div></td>`;
+                    } 
+                    else if(isMinggu){ sW="MNG"; clW="s-mng"; }
+                    else if(isSetLibur){ sW="OFF"; clW="s-off"; }
+                    else if(t < todayFull && t >= TGL_MULAI_SISTEM){ sW="A"; clW="s-a"; cA++; }
+                    
+                    row+=`<td class="${i===tglSkrg?'today-col':''}"><div class="s-cell ${clW}">${sW}<span class="jam-text">${infoW}</span></div></td>`;
                 }
                 b+=`<tr>${row}<td class="rekap-akhir">${cH}</td><td class="rekap-akhir">${cI}</td><td class="rekap-akhir">${cA}</td><td class="rekap-akhir">${cL}</td></tr>`;
-            }); document.getElementById('tbWeb').innerHTML=b;
+            });
+            document.getElementById('tbWeb').innerHTML=b;
+            
+            // Auto-Scroll ke tanggal hari ini
             setTimeout(() => {
-                const scrollArea = document.getElementById('scrollArea'); const target = document.getElementById(`tgl-${tglSkrg}`);
-                if(target && scrollArea) scrollArea.scrollTo({ left: target.offsetLeft - (scrollArea.offsetWidth/2), behavior: 'smooth' });
-            }, 500);
+                const scrollArea = document.getElementById('scrollArea');
+                const target = document.getElementById(`tgl-${tglSkrg}`);
+                if(target && scrollArea) {
+                    const offset = target.offsetLeft - (scrollArea.offsetWidth / 2) + (target.offsetWidth / 2);
+                    scrollArea.scrollTo({ left: offset, behavior: 'smooth' });
+                }
+            }, 600);
         }
 
-        // LOGIKA STOK
-        function saveS(){
-            let b=document.getElementById('sB').value, t=document.getElementById('sT').value, k=document.getElementById('sK').value, q=parseInt(document.getElementById('sQ').value);
-            if(q) db.ref(`stok_v6/${t.slice(0,7)}/${b}/${k}`).transaction(c=>(c||0)+q).then(()=>alert("Disimpan!"));
+        // ================= LOGIKA STOK (MODUL STOK) =================
+        function saveStok(){
+            let itm=document.getElementById('sItem').value, tgl=document.getElementById('sTgl').value, kat=document.getElementById('sKategori').value, qty=parseInt(document.getElementById('sQty').value);
+            if(!qty || qty <= 0) return alert("Isi jumlah barang!");
+            
+            db.ref(`stok_v6/${tgl.slice(0,7)}/${itm}/${kat}`).transaction(curr=>(curr||0)+qty).then(()=>{
+                alert("Stok Berhasil Disimpan!");
+                document.getElementById('sQty').value = "";
+            });
         }
-        function bS(){
-            let f=document.getElementById('sT').value.slice(0,7), h="";
-            ["Kempu","Derigen 18L","Derigen 5L","Botol 1L","Mesin Minyak"].forEach(b=>{
-                let d=(st[f]&&st[f][b])?st[f][b]:{}, r=(d.rekon||0)-(d.j_u||0);
-                h+=`<tr><td class="nama-fixed">${b}</td><td>${d.m_ktr||0}</td><td>${d.rekon||0}</td><td>${d.j_u||0}</td><td style="color:var(--s);font-weight:800">${r}</td></tr>`;
-            }); document.getElementById('tbStok').innerHTML=h;
+
+        function renderStok(){
+            let filter = document.getElementById('sTgl').value.slice(0,7), h="";
+            ["Kempu", "Derigen 18L", "Derigen 5L", "Botol 1L", "Mesin Minyak"].forEach(item=>{
+                let data = (stData[filter] && stData[filter][item]) ? stData[filter][item] : {};
+                let ready = (data.rekon || 0) - (data.j_u || 0);
+                h += `<tr><td class="nama-fixed">${item}</td><td>${data.m_ktr||0}</td><td>${data.rekon||0}</td><td>${data.j_u||0}</td><td style="color:var(--s);font-weight:800">${ready}</td></tr>`;
+            });
+            document.getElementById('tbStok').innerHTML=h;
         }
+
         function doExcel(){
             const table = document.getElementById("rekapTable").outerHTML;
-            const blob = new Blob([table], {type: "application/vnd.ms-excel"});
+            const template = `<html><head><style>table { border-collapse:collapse; } th { background-color: #2563eb; color: #ffffff; border:1px solid black; } td { border:1px solid black; text-align:center; }</style></head><body>${table}</body></html>`;
+            const blob = new Blob([template], {type: "application/vnd.ms-excel"});
             const url = URL.createObjectURL(blob);
-            const a = document.createElement("a"); a.href = url; a.download = `REKAP_AGN.xls`; a.click();
+            const a = document.createElement("a"); a.href = url; a.download = `REKAP_AGN_${document.getElementById('fB').value}.xls`; a.click();
         }
     </script>
 </body>
