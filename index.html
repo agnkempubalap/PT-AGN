@@ -2,36 +2,42 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v79.1 - FULL SYSTEM</title>
+    <title>PT-AGN v79.2 - UI RESTORE</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
     <style>
-        /* CSS TETAP KONSISTEN DENGAN VERSI SEBELUMNYA */
+        /* [LOCK] KEMBALI KE STYLE v77.6 ASLI MAS */
         :root{--p:#2563eb;--s:#00C853;--d:#ef4444;--w:#FFD600;--bg:#0f172a;--c:#1e293b;--t:#f8fafc;--b:#334155;--iz:#f59e0b;--al:#37474F}
         body[data-theme="light"]{--bg:#f1f5f9;--c:#ffffff;--t:#1e293b;--b:#cbd5e1}
         body{font-family:'Plus Jakarta Sans',sans-serif;margin:0;background:var(--bg);color:var(--t);padding:10px;transition:0.3s}
         .container{max-width:1450px;margin:0 auto}
         header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
         .logo-box{display:flex;align-items:center;gap:12px}
-        .logo-box img{width:55px;height:55px;border-radius:50%;border:2px solid var(--p)}
-        .card{background:var(--c);padding:15px;border-radius:18px;margin-bottom:12px;border:1px solid var(--b)}
-        h3{margin:0 0 12px;font-size:10px;color:var(--iz);text-transform:uppercase;letter-spacing:1px;font-weight:800}
-        input,button,select{border-radius:10px;font-size:13px;height:48px;border:1px solid var(--b);background:var(--bg);color:var(--t);width:100%;box-sizing:border-box;outline:none;padding:0 10px}
+        .logo-box img{width:60px;height:60px;border-radius:50%;background:#000;border:3px solid var(--p);object-fit:cover}
+        .card{background:var(--c);padding:18px;border-radius:18px;margin-bottom:12px;border:1px solid var(--b);box-shadow:0 4px 6px -1px rgba(0,0,0,0.1)}
+        h3{margin:0 0 15px;font-size:11px;color:var(--iz);text-transform:uppercase;letter-spacing:1px;font-weight:800}
+        input,button,select{border-radius:12px;font-size:14px;height:52px;border:1px solid var(--b);background:var(--bg);color:var(--t);width:100%;box-sizing:border-box;outline:none;padding:0 12px}
         .btn{display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;border:none;color:#fff}
-        .page-nav { display: flex; gap: 5px; margin-bottom: 10px; }
-        .nav-btn { flex: 1; height: 40px; border-radius: 10px; border: 1px solid var(--b); background: var(--c); color: var(--t); font-size: 11px; font-weight: 800; cursor: pointer; }
-        .nav-btn.active { background: var(--p); color: #fff; }
+        
+        /* NAVIGASI PAGE */
+        .page-nav { display: flex; gap: 8px; margin-bottom: 12px; }
+        .nav-btn { flex: 1; height: 45px; border-radius: 12px; border: 1px solid var(--b); background: var(--c); color: var(--t); font-weight: 800; font-size: 12px; cursor: pointer; }
+        .nav-btn.active { background: var(--p); color: #fff; box-shadow: 0 4px 12px rgba(37,99,235,0.3); }
         .page-content { display: none; }
         .page-content.active { display: block; }
+
+        /* TABLE KEMBALI RAPAT */
         .table-wrap{overflow-x:auto; border-radius:12px; border:1px solid var(--b); background:var(--c)}
         .table-web{width:100%;border-collapse:separate;border-spacing:0;font-size:10px; color:var(--t)}
-        .table-web th, .table-web td{border-bottom:1px solid var(--b);border-right:1px solid var(--b);padding:6px 2px;text-align:center;min-width:35px}
+        .table-web th, .table-web td{border-bottom:1px solid var(--b);border-right:1px solid var(--b);padding:8px 1px;text-align:center;min-width:35px}
         .nama-fixed{position:sticky !important;left:0;background-color:var(--c) !important;z-index:10;min-width:110px !important;text-align:left !important;padding-left:10px !important;font-weight:700; border-right: 2px solid var(--p) !important}
-        .s-cell{border-radius:6px;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;font-weight:900;margin: 0 auto}
+        
+        /* CELL STYLE */
+        .s-cell{border-radius:6px;width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:10px;margin:0 auto}
         .s-v{background:var(--s);color:#fff} .s-mng{background:#64748b;color:#fff}
-        .stok-log-text { font-size: 8px; color: var(--w); line-height: 1.1; display: block; min-height: 20px; white-space: pre-line}
-        .edit-cell{background: rgba(255,255,255,0.05); color: var(--w); border:none; text-align:center; width:45px; height:25px; border-radius:4px; font-weight:800}
+        .stok-log-text { font-size: 7px; color: var(--w); line-height: 1; display: block; max-width: 33px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; margin-top: 2px}
+        .edit-cell{background:rgba(255,255,255,0.05); color:var(--w); border:none; text-align:center; width:45px; height:25px; border-radius:4px; font-weight:800; font-size:10px}
     </style>
 </head>
 <body data-theme="dark">
@@ -39,9 +45,9 @@
         <header>
             <div class="logo-box">
                 <img id="mainLogo" src="https://ui-avatars.com/api/?name=AGN&background=000&color=fff">
-                <div><h2 style="margin:0;font-size:1.1rem">PT AGN</h2><span style="font-size:9px;color:var(--p);font-weight:800">v79.1 FINAL SYNC</span></div>
+                <div><h2 style="margin:0;font-size:1.3rem">PT AGN</h2><span style="font-size:10px;color:var(--p);font-weight:800">ULTRA SYNC v79.2</span></div>
             </div>
-            <button class="nav-btn" style="width:50px; flex:none" onclick="toggleT()">🌓</button>
+            <button class="nav-btn" style="width:50px; flex:none; border-radius:50%" onclick="toggleT()">🌓</button>
         </header>
 
         <div class="page-nav no-print">
@@ -50,75 +56,62 @@
             <button class="nav-btn" onclick="switchPage('master')">⚙️ MASTER</button>
         </div>
 
-        <!-- PAGE ABSEN -->
         <div id="page-absen" class="page-content active">
             <div class="card no-print">
-                <div style="display:flex;gap:8px">
-                    <input list="lk" id="iNama" placeholder="Nama Karyawan...">
+                <div style="display:flex;gap:10px">
+                    <input list="lk" id="iNama" placeholder="Nama..." style="flex:1">
                     <datalist id="lk"></datalist>
-                    <button class="btn" style="background:var(--p); width:80px" onclick="pAbsen('Masuk')">MASUK</button>
-                    <button class="btn" style="background:var(--d); width:80px" onclick="pAbsen('Pulang')">PULANG</button>
+                    <button class="btn" style="background:var(--p); width:70px" onclick="pAbsen('Masuk')">MASUK</button>
+                    <button class="btn" style="background:var(--d); width:70px" onclick="pAbsen('Pulang')">PULANG</button>
                 </div>
             </div>
-            <div class="card table-card">
-                <div style="display:flex; justify-content:space-between; margin-bottom:10px">
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; margin-bottom:12px">
                     <input type="month" id="fB" style="width:140px; height:40px" onchange="rRekap()">
-                    <button class="btn" style="background:#1d6f42; width:80px; height:40px; font-size:10px" onclick="doExcel()">EXCEL</button>
+                    <button class="btn" style="background:#1d6f42; width:80px; height:40px; font-size:11px" onclick="doExcel()">EXCEL</button>
                 </div>
                 <div class="table-wrap"><table class="table-web" id="rekapTable"><thead id="thWeb"></thead><tbody id="tbWeb"></tbody></table></div>
             </div>
         </div>
 
-        <!-- PAGE STOK -->
         <div id="page-stok" class="page-content">
             <div class="card">
-                <h3 id="labelBulan">LAPORAN STOK</h3>
+                <h3 id="labelBulan">STOK</h3>
                 <div class="table-wrap">
                     <table class="table-web">
-                        <thead>
-                            <tr style="background:var(--bg)">
-                                <th class="nama-fixed">ITEM</th>
-                                <th>AWAL KTR</th><th>AWAL RDY</th><th>MSK KTR</th><th>MSK RDY</th><th>REKON</th><th>JUAL U</th><th>JUAL A</th><th style="color:var(--s)">SISA RDY</th><th style="color:var(--w)">TOTAL</th>
-                            </tr>
-                        </thead>
+                        <thead><tr style="background:var(--bg)"><th class="nama-fixed">ITEM</th><th>AW KTR</th><th>AW RDY</th><th>+KTR</th><th>+RDY</th><th>REKON</th><th>-UMUM</th><th>-AGEN</th><th style="color:var(--s)">READY</th><th style="color:var(--w)">TOTAL</th></tr></thead>
                         <tbody id="tbStok"></tbody>
                     </table>
                 </div>
             </div>
-
             <div class="card no-print">
-                <h3>⚡ INPUT TRANSAKSI</h3>
+                <h3>INPUT TRANSAKSI</h3>
                 <div style="display:flex; gap:8px; margin-bottom:8px">
                     <select id="sB" style="flex:1.5"></select>
                     <input type="date" id="sT" style="flex:1">
                 </div>
                 <div style="display:flex; gap:8px">
                     <select id="sP" style="flex:1.5">
-                        <option value="m_ktr">Masuk (Kotor) [+]</option>
-                        <option value="m_rdy">Masuk (Ready) [+]</option>
-                        <option value="rekon">Rekondisi [Ktr-Rdy]</option>
-                        <option value="j_u">Jual Umum [-]</option>
-                        <option value="j_a">Jual Agen [-]</option>
+                        <option value="m_ktr">Masuk (Kotor)</option><option value="m_rdy">Masuk (Ready)</option>
+                        <option value="rekon">Rekondisi</option><option value="j_u">Jual Umum</option><option value="j_a">Jual Agen</option>
                     </select>
                     <input type="number" id="sQ" placeholder="Qty" style="flex:0.5">
-                    <button class="btn" style="background:var(--s); width:80px" onclick="upSt()">OK</button>
+                    <button class="btn" style="background:var(--s); width:60px" onclick="upSt()">OK</button>
                 </div>
             </div>
         </div>
 
-        <!-- PAGE MASTER -->
         <div id="page-master" class="page-content">
             <div class="card">
-                <h3>➕ TAMBAH BARANG BARU</h3>
+                <h3>TAMBAH ITEM</h3>
                 <input type="text" id="newB" placeholder="Nama Barang..." style="margin-bottom:8px">
                 <div style="display:flex; gap:8px; margin-bottom:8px">
-                    <input type="number" id="initK" placeholder="Awal Kotor">
-                    <input type="number" id="initR" placeholder="Awal Ready">
+                    <input type="number" id="initK" placeholder="Awal Ktr"><input type="number" id="initR" placeholder="Awal Rdy">
                 </div>
                 <button class="btn" style="background:var(--p)" onclick="addMasterB()">SIMPAN</button>
             </div>
             <div class="card">
-                <h3>🗑️ HAPUS ITEM</h3>
+                <h3>HAPUS ITEM</h3>
                 <select id="delB" style="margin-bottom:8px"></select>
                 <button class="btn" style="background:var(--d)" onclick="delMasterB()">HAPUS</button>
             </div>
@@ -131,9 +124,8 @@
         let mk={}, ad={}, st={}, mb={};
 
         window.onload=()=>{
-            const now = new Date();
-            document.getElementById('fB').value=now.toISOString().slice(0,7);
-            document.getElementById('sT').value=now.toISOString().split('T')[0];
+            const n=new Date(); document.getElementById('fB').value=n.toISOString().slice(0,7);
+            document.getElementById('sT').value=n.toISOString().split('T')[0];
             db.ref('master_karyawan').on('value',s=>{mk=s.val()||{}; uDl(); rRekap();});
             db.ref('absensi').on('value',s=>{ad=s.val()||{}; rRekap();});
             db.ref('master_barang_v5').on('value',s=>{mb=s.val()||{}; bldStok(); uMasterDl();});
@@ -146,119 +138,60 @@
             event.target.classList.add('active');
         }
 
-        // --- STOK LOGIC ---
-        function addMasterB(){
-            const n=document.getElementById('newB').value, k=parseInt(document.getElementById('initK').value)||0, r=parseInt(document.getElementById('initR').value)||0;
-            if(n) db.ref(`master_barang_v5/${n}`).set({ak:k, ar:r});
-        }
-        function delMasterB(){
-            const b=document.getElementById('delB').value;
-            if(confirm(`Hapus ${b}?`)) db.ref(`master_barang_v5/${b}`).remove();
-        }
-        function uMasterDl(){
-            const opt = Object.keys(mb).map(b=>`<option value="${b}">${b}</option>`).join('');
-            document.getElementById('sB').innerHTML=opt; document.getElementById('delB').innerHTML=opt;
-        }
+        function uDl(){ document.getElementById('lk').innerHTML=Object.values(mk).sort().map(n=>`<option value="${n}">`).join(''); }
+        function uMasterDl(){ const o=Object.keys(mb).map(b=>`<option value="${b}">${b}</option>`).join(''); document.getElementById('sB').innerHTML=o; document.getElementById('delB').innerHTML=o; }
+        function addMasterB(){ const n=document.getElementById('newB').value, k=parseInt(document.getElementById('initK').value)||0, r=parseInt(document.getElementById('initR').value)||0; if(n) db.ref(`master_barang_v5/${n}`).set({ak:k, ar:r}); }
+        function delMasterB(){ const b=document.getElementById('delB').value; if(b && confirm('Hapus?')) db.ref(`master_barang_v5/${b}`).remove(); }
 
-        function upSt(manualField, val, item, bln, tglFull){
-            if(manualField){
-                db.ref(`stok_v5/${bln}/${item}/${manualField}`).set(parseInt(val));
-                return;
-            }
-            const b=document.getElementById('sB').value, t=document.getElementById('sT').value, p=document.getElementById('sP').value, q=parseInt(document.getElementById('sQ').value);
-            if(!q) return;
-            // Simpan Transaksi Harian untuk Log Kalender
-            db.ref(`stok_harian/${t}/${b}/${p}`).transaction(c=>(c||0)+q);
-            // Simpan Akumulasi Bulanan
-            db.ref(`stok_v5/${t.slice(0,7)}/${b}/${p}`).transaction(c=>(c||0)+q);
-            alert("Tersimpan!");
+        function upSt(f,v,i,b){
+            if(f){ db.ref(`stok_v5/${b}/${i}/${f}`).set(parseInt(v)); return; }
+            const bi=document.getElementById('sB').value, ti=document.getElementById('sT').value, pi=document.getElementById('sP').value, qi=parseInt(document.getElementById('sQ').value);
+            if(!qi) return;
+            db.ref(`stok_harian/${ti}/${bi}/${pi}`).transaction(c=>(c||0)+qi);
+            db.ref(`stok_v5/${ti.slice(0,7)}/${bi}/${pi}`).transaction(c=>(c||0)+qi);
+            alert("OK!");
         }
 
         function bldStok(){
-            const blnActive = document.getElementById('fB').value;
-            document.getElementById('labelBulan').innerText = "LAPORAN STOK " + blnActive;
-            let prevBln = getPrevMonth(blnActive);
-            let h=""; 
-            Object.keys(mb).forEach(b=>{
-                const data = (st[blnActive] && st[blnActive][b]) ? st[blnActive][b] : {};
-                const prevData = (st[prevBln] && st[prevBln][b]) ? st[prevBln][b] : {};
-                
-                // Saldo Awal Otomatis dari Sisa Akhir Bulan Lalu
-                let startK = mb[b].ak, startR = mb[b].ar;
-                if(st[prevBln] && st[prevBln][b]){
-                    const pd = st[prevBln][b];
-                    startK = (pd.manual_ak !== undefined) ? pd.manual_ak : (mb[b].ak + (pd.m_ktr||0) - (pd.rekon||0));
-                    startR = (pd.manual_ar !== undefined) ? pd.manual_ar : (mb[b].ar + (pd.m_rdy||0) + (pd.rekon||0) - (pd.j_u||0) - (pd.j_a||0));
-                }
-
-                const sK = (data.manual_ak !== undefined) ? data.manual_ak : startK;
-                const sR = (data.manual_ar !== undefined) ? data.manual_ar : startR;
-                const mk=data.m_ktr||0, mr=data.m_rdy||0, rk=data.rekon||0, ju=data.j_u||0, ja=data.j_a||0;
-                const finalK = sK + mk - rk;
-                const finalR = sR + mr + rk - ju - ja;
-
-                h+=`<tr><td class="nama-fixed">${b}</td>
-                <td><input class="edit-cell" value="${sK}" onchange="upSt('manual_ak', this.value, '${b}', '${blnActive}')"></td>
-                <td><input class="edit-cell" value="${sR}" onchange="upSt('manual_ar', this.value, '${b}', '${blnActive}')"></td>
-                <td>${mk}</td><td>${mr}</td><td>${rk}</td><td>${ju}</td><td>${ja}</td>
-                <td style="color:var(--s);font-weight:800">${finalR}</td>
-                <td style="color:var(--w);font-weight:800">${finalK+finalR}</td></tr>`;
-            });
-            document.getElementById('tbStok').innerHTML=h;
+            const active=document.getElementById('fB').value;
+            let prev=new Date(active+"-01"); prev.setMonth(prev.getMonth()-1); let pb=prev.toISOString().slice(0,7);
+            let h=""; Object.keys(mb).forEach(b=>{
+                const d=st[active]?st[active][b]||{}:{}, pd=st[pb]?st[pb][b]||{}:{};
+                let sk=(pd.manual_ak!==undefined)?pd.manual_ak:(mb[b].ak+(pd.m_ktr||0)-(pd.rekon||0));
+                let sr=(pd.manual_ar!==undefined)?pd.manual_ar:(mb[b].ar+(pd.m_rdy||0)+(pd.rekon||0)-(pd.j_u||0)-(pd.j_a||0));
+                const startK=(d.manual_ak!==undefined)?d.manual_ak:sk, startR=(d.manual_ar!==undefined)?d.manual_ar:sr;
+                const finalR=startR+(d.m_rdy||0)+(d.rekon||0)-(d.j_u||0)-(d.j_a||0), finalK=startK+(d.m_ktr||0)-(d.rekon||0);
+                h+=`<tr><td class="nama-fixed">${b}</td><td><input class="edit-cell" value="${startK}" onchange="upSt('manual_ak',this.value,'${b}','${active}')"></td><td><input class="edit-cell" value="${startR}" onchange="upSt('manual_ar',this.value,'${b}','${active}')"></td><td>${d.m_ktr||0}</td><td>${d.m_rdy||0}</td><td>${d.rekon||0}</td><td>${d.j_u||0}</td><td>${d.j_a||0}</td><td style="color:var(--s);font-weight:800">${finalR}</td><td style="color:var(--w);font-weight:800">${finalK+finalR}</td></tr>`;
+            }); document.getElementById('tbStok').innerHTML=h;
         }
 
-        function getPrevMonth(m){
-            let d = new Date(m + "-01"); d.setMonth(d.getMonth() - 1);
-            return d.toISOString().slice(0,7);
-        }
-
-        // --- REKAP ABSEN & LOG STOK ---
         function rRekap(){
             const f=document.getElementById('fB').value; if(!f) return;
             const [y,m]=f.split('-'), last=new Date(y,m,0).getDate();
-            let h=`<tr><th class="nama-fixed">NAMA</th>`;
-            for(let i=1;i<=last;i++) h+=`<th>${i}</th>`;
-            h+=`</tr>`; document.getElementById('thWeb').innerHTML=h;
-
-            let b=""; 
-            // Baris Karyawan
-            Object.values(mk).sort().forEach(n=>{
+            let h=`<tr><th class="nama-fixed">NAMA</th>`; for(let i=1;i<=last;i++) h+=`<th>${i}</th>`;
+            document.getElementById('thWeb').innerHTML=h+"</tr>";
+            let b=""; Object.values(mk).sort().forEach(n=>{
                 let row=`<td class="nama-fixed">${n}</td>`;
                 for(let i=1;i<=last;i++){
                     let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=ad[t]?ad[t][n]:null, isM=new Date(t).getDay()===0;
-                    let cl = d ? "s-v" : (isM ? "s-mng" : "");
-                    row+=`<td><div class="s-cell ${cl}">${d?'H':(isM?'M':'')}</div></td>`;
+                    row+=`<td><div class="s-cell ${d?'s-v':(isM?'s-mng':'')}">${d?'H':(isM?'M':'')}</div></td>`;
                 }
                 b+=`<tr>${row}</tr>`;
             });
-
-            // BARIS LOG STOK (MUNYALAKAN LAGI)
-            db.ref('stok_harian').once('value', snapshot => {
-                const sh = snapshot.val() || {};
-                let logRow = `<td class="nama-fixed" style="color:var(--w)">LOG STOK</td>`;
+            db.ref('stok_harian').once('value',s=>{
+                const sh=s.val()||{}; let lr=`<td class="nama-fixed" style="color:var(--w)">LOG STOK</td>`;
                 for(let i=1;i<=last;i++){
-                    let t=`${y}-${m}-${String(i).padStart(2,'0')}`, logTxt = "";
-                    if(sh[t]){
-                        Object.keys(sh[t]).forEach(item => {
-                            const d = sh[t][item];
-                            if(d.m_ktr || d.m_rdy) logTxt += `+${item}\n`;
-                            if(d.j_u || d.j_a) logTxt += `-${item}\n`;
-                            if(d.rekon) logTxt += `R:${item}\n`;
-                        });
-                    }
-                    logRow += `<td><span class="stok-log-text">${logTxt || '-'}</span></td>`;
+                    let t=`${y}-${m}-${String(i).padStart(2,'0')}`, txt="";
+                    if(sh[t]) Object.keys(sh[t]).forEach(item=>{ const d=sh[t][item]; if(d.m_ktr||d.m_rdy)txt+=`+${item} `; if(d.j_u||d.j_a)txt+=`-${item} `; if(d.rekon)txt+=`R `; });
+                    lr+=`<td><span class="stok-log-text">${txt||'-'}</span></td>`;
                 }
-                document.getElementById('tbWeb').innerHTML = b + `<tr style="background:rgba(255,214,0,0.05)">${logRow}</tr>`;
-            });
+                document.getElementById('tbWeb').innerHTML=b+`<tr style="background:rgba(255,214,0,0.05)">${lr}</tr>`;
+            }); bldStok();
         }
 
         function toggleT(){ document.body.setAttribute('data-theme', document.body.getAttribute('data-theme')==='dark'?'light':'dark'); }
-        function uDl(){ document.getElementById('lk').innerHTML = Object.values(mk).sort().map(n=>`<option value="${n}">`).join(''); }
-        function pAbsen(ty){
-            let n=document.getElementById('iNama').value, t=new Date().toISOString().split('T')[0];
-            if(n) db.ref(`absensi/${t}/${n}/${ty}`).set({w:new Date().getHours()});
-        }
-        function doExcel(){ const table = document.getElementById("rekapTable").outerHTML; const blob = new Blob([table], {type: "application/vnd.ms-excel"}); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `REKAP_AGN_${document.getElementById('fB').value}.xls`; a.click(); }
+        function pAbsen(ty){ let n=document.getElementById('iNama').value, t=new Date().toISOString().split('T')[0]; if(n) db.ref(`absensi/${t}/${n}/${ty}`).set({w:new Date().getHours()}); }
+        function doExcel(){ const t=document.getElementById("rekapTable").outerHTML; const b=new Blob([t],{type:"application/vnd.ms-excel"}); const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download=`REKAP_AGN_${document.getElementById('fB').value}.xls`; a.click(); }
     </script>
 </body>
 </html>
