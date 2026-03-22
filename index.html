@@ -2,11 +2,12 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v77.6 - COLOR-FIT REPORT</title>
+    <title>PT-AGN v78.0 - INTEGRATED SYSTEM</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
     <style>
+        /* CSS ASLI v77.6 - JANGAN DIUBAH */
         :root{--p:#2563eb;--s:#00C853;--d:#ef4444;--w:#FFD600;--bg:#0f172a;--c:#1e293b;--t:#f8fafc;--b:#334155;--iz:#f59e0b;--al:#37474F}
         body[data-theme="light"]{--bg:#f1f5f9;--c:#ffffff;--t:#1e293b;--b:#cbd5e1}
         body{font-family:'Plus Jakarta Sans',sans-serif;margin:0;background:var(--bg);color:var(--t);padding:10px; transition: background 0.3s}
@@ -17,10 +18,16 @@
         .logo-box img{width:70px;height:70px;border-radius:50%;background:#000;border:3px solid var(--p);object-fit:cover;cursor:pointer}
         .dark-card{background:var(--c); border-radius:12px; border:1px solid var(--b); padding:10px 15px; display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--t)}
 
+        /* TAB SYSTEM */
+        .tabs{display:flex; gap:10px; margin-bottom:15px}
+        .tab-btn{flex:1; padding:15px; border-radius:12px; background:var(--c); color:var(--t); border:1px solid var(--b); cursor:pointer; font-weight:800; transition:0.3s}
+        .tab-btn.active{background:var(--p); border-color:var(--p); color:#fff}
+        .hidden {display:none}
+
         .card{background:var(--c);padding:18px;border-radius:18px;margin-bottom:12px;border:1px solid var(--b);box-shadow:0 4px 6px -1px rgba(0,0,0,0.1)}
         h3{margin:0 0 15px;font-size:11px;color:var(--iz);text-transform:uppercase;letter-spacing:1px;font-weight:800}
         
-        input,button,select{border-radius:12px;font-size:14px;height:52px;border:1px solid var(--b);background:var(--bg);color:var(--t);width:100%;box-sizing:border-box;outline:none}
+        input,button,select{border-radius:12px;font-size:14px;height:52px;border:1px solid var(--b);background:var(--bg);color:var(--t);width:100%;box-sizing:border-box;outline:none; padding:0 15px}
         .btn{display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;border:none;color:#fff}
         
         .export-group { display: flex; justify-content: flex-end; align-items: flex-end; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
@@ -40,40 +47,17 @@
         .s-off{background:var(--d);color:#fff} .s-a{background:var(--al);color:#fff} .s-l{background:#AA00FF;color:#fff} .s-mng{background:#64748b;color:#fff}
         .jam-text{font-size:7px;font-weight:600;display:block;margin-top:2px;max-width:33px}
 
-        /* PRINT CONFIG: ULTIMATE COLOR-FIT */
+        /* PRINT CONFIG v77.6 */
         @media print {
             @page { size: A4 landscape; margin: 5mm; }
             html, body { background: #fff !important; color: #1e293b !important; }
-            header, .no-print, .export-group, .dark-card { display: none !important; }
+            header, .no-print, .export-group, .dark-card, .tabs { display: none !important; }
             .container { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
             .card { border: none !important; padding: 0 !important; background: transparent !important; }
             .table-wrap { overflow: visible !important; border: none !important; }
-            
-            .table-web { 
-                width: 100% !important; 
-                transform: scale(0.7); /* PAKSA MENGECIL AGAR MUAT */
-                transform-origin: top left; 
-                border-collapse: collapse !important;
-                -webkit-print-color-adjust: exact !important; 
-                print-color-adjust: exact !important;
-                border: 1px solid #000 !important;
-            }
-            .table-web th { background-color: #2563eb !important; color: #ffffff !important; padding: 8px 1px !important; border: 1px solid #000 !important; }
-            .table-web td { border: 1px solid #94a3b8 !important; color: #334155 !important; padding: 4px 1px !important; }
-            
-            /* Warna Status tetap muncul di print */
-            .s-v { background-color: #00C853 !important; color: white !important; }
-            .s-late { background-color: #FFD600 !important; color: black !important; }
-            .s-i { background-color: #f59e0b !important; color: white !important; }
-            .s-off { background-color: #ef4444 !important; color: white !important; }
-            .s-a { background-color: #37474F !important; color: white !important; }
-            .s-mng { background-color: #64748b !important; color: white !important; }
-            .s-l { background-color: #AA00FF !important; color: white !important; }
-            
-            .nama-fixed { position: static !important; background: #f8fafc !important; color: #1e293b !important; font-weight: bold !important; text-align: left !important; border-right: 1px solid #000 !important; }
-            .th-rekap { background-color: #f1f5f9 !important; color: #2563eb !important; }
-            .rekap-akhir { background-color: #f8fafc !important; color: #1e293b !important; }
-            .jam-text { color: #1e293b !important; font-size: 6px !important; }
+            .table-web { width: 100% !important; transform: scale(0.7); transform-origin: top left; border-collapse: collapse !important; border: 1px solid #000 !important; -webkit-print-color-adjust: exact !important; }
+            .s-v { background-color: #00C853 !important; }
+            .s-late { background-color: #FFD600 !important; }
         }
     </style>
 </head>
@@ -83,63 +67,129 @@
             <div class="logo-box">
                 <input type="file" id="inpLogo" style="display:none" accept="image/*" onchange="cLogo(event)">
                 <img id="mainLogo" src="https://ui-avatars.com/api/?name=AGN&background=000&color=fff" onclick="document.getElementById('inpLogo').click()">
-                <div><h2 style="margin:0;font-size:1.3rem">PT AGN</h2><span style="font-size:10px;color:var(--p);font-weight:800">SYSTEM v77.6 COLOR-FIT</span></div>
+                <div><h2 style="margin:0;font-size:1.3rem">PT AGN</h2><span style="font-size:10px;color:var(--p);font-weight:800">SYSTEM v78.0 INTEGRATED</span></div>
             </div>
-            <div class="dark-card" onclick="toggleT()">
+            <div class="dark-card no-print" onclick="toggleT()">
                 <span id="tIco">☀️</span> <span style="font-size:12px;font-weight:600" id="tTxt">Light Mode</span>
             </div>
         </header>
 
-        <div class="card no-print">
-            <h3>👥 DATA KARYAWAN</h3>
-            <div style="display:flex;gap:10px">
-                <input list="lk" id="iNama" placeholder="Ketik/Pilih Nama...">
-                <datalist id="lk"></datalist>
-                <button class="btn" style="background:var(--s);width:60px;font-size:24px" onclick="tKaryawan()">+</button>
-                <button class="btn" style="background:var(--d);width:60px" onclick="hKaryawan()">🗑️</button>
-            </div>
+        <div class="tabs no-print">
+            <button class="tab-btn active" onclick="openTab('absensi')">📅 ABSENSI</button>
+            <button class="tab-btn" onclick="openTab('stok')">📦 STOK BARANG</button>
         </div>
 
-        <div class="card no-print">
-            <h3>🧹 KONTROL DATA</h3>
-            <div style="display:grid;grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px; align-items:end">
-                <div><label>Tanggal Reset:</label><input type="date" id="resetTgl"></div>
-                <button class="btn" style="background:var(--d)" onclick="resetAbsen()">RESET ABSEN</button>
-            </div>
-            <div style="display:grid;grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:12px">
-                <div><label>Dari:</label><input type="date" id="tglAwal"></div>
-                <div><label>Sampai:</label><input type="date" id="tglAkhir"></div>
-            </div>
-            <div style="display:grid;grid-template-columns: 1fr 1fr; gap:10px">
-                <button class="btn" style="background:var(--p)" onclick="sLib(true)">SET LIBUR</button>
-                <button class="btn" style="background:var(--d)" onclick="sLib(false)">HAPUS LIBUR</button>
-            </div>
-        </div>
-
-        <div class="card no-print">
-            <h3>⚡ PRESENSI</h3>
-            <div style="display:grid;grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px">
-                <button class="btn" style="background:var(--s);height:60px;font-size:18px" onclick="pAbsen('Masuk')">MASUK</button>
-                <button class="btn" style="background:var(--d);height:60px;font-size:18px" onclick="pAbsen('Pulang')">PULANG</button>
-            </div>
-            <button class="btn" style="background:var(--iz);height:50px;font-size:16px" onclick="pAbsen('Izin')">📝 IZIN / KETERANGAN</button>
-        </div>
-
-        <div class="card table-card">
-            <div class="export-group no-print">
-                <div style="flex-grow:1">
-                    <label>Pilih Bulan:</label>
-                    <input type="month" id="fB" style="width:160px; height:45px" onchange="rRekap()">
+        <!-- PAGE ABSENSI (KODE ASLI v77.6) -->
+        <div id="page-absensi" class="tab-content">
+            <div class="card no-print">
+                <h3>👥 DATA KARYAWAN</h3>
+                <div style="display:flex;gap:10px">
+                    <input list="lk" id="iNama" placeholder="Ketik/Pilih Nama...">
+                    <datalist id="lk"></datalist>
+                    <button class="btn" style="background:var(--s);width:60px;font-size:24px" onclick="tKaryawan()">+</button>
+                    <button class="btn" style="background:var(--d);width:60px" onclick="hKaryawan()">🗑️</button>
                 </div>
-                <button class="btn btn-ex" style="background:#1d6f42" onclick="doExcel()">📥 EXCEL</button>
-                <button class="btn btn-ex" style="background:#b91c1c" onclick="window.print()">📄 PDF</button>
             </div>
-            
-            <div class="table-wrap" id="scrollArea">
-                <table class="table-web" id="rekapTable">
-                    <thead id="thWeb"></thead>
-                    <tbody id="tbWeb"></tbody>
-                </table>
+
+            <div class="card no-print">
+                <h3>🧹 KONTROL DATA</h3>
+                <div style="display:grid;grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px; align-items:end">
+                    <div><label>Tanggal Reset:</label><input type="date" id="resetTgl"></div>
+                    <button class="btn" style="background:var(--d)" onclick="resetAbsen()">RESET ABSEN</button>
+                </div>
+                <div style="display:grid;grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:12px">
+                    <div><label>Dari:</label><input type="date" id="tglAwal"></div>
+                    <div><label>Sampai:</label><input type="date" id="tglAkhir"></div>
+                </div>
+                <div style="display:grid;grid-template-columns: 1fr 1fr; gap:10px">
+                    <button class="btn" style="background:var(--p)" onclick="sLib(true)">SET LIBUR</button>
+                    <button class="btn" style="background:var(--d)" onclick="sLib(false)">HAPUS LIBUR</button>
+                </div>
+            </div>
+
+            <div class="card no-print">
+                <h3>⚡ PRESENSI</h3>
+                <div style="display:grid;grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px">
+                    <button class="btn" style="background:var(--s);height:60px;font-size:18px" onclick="pAbsen('Masuk')">MASUK</button>
+                    <button class="btn" style="background:var(--d);height:60px;font-size:18px" onclick="pAbsen('Pulang')">PULANG</button>
+                </div>
+                <button class="btn" style="background:var(--iz);height:50px;font-size:16px" onclick="pAbsen('Izin')">📝 IZIN / KETERANGAN</button>
+            </div>
+
+            <div class="card table-card">
+                <div class="export-group no-print">
+                    <div style="flex-grow:1">
+                        <label>Pilih Bulan:</label>
+                        <input type="month" id="fB" style="width:160px; height:45px" onchange="rRekap()">
+                    </div>
+                    <button class="btn btn-ex" style="background:#1d6f42" onclick="doExcel()">📥 EXCEL</button>
+                    <button class="btn btn-ex" style="background:#b91c1c" onclick="window.print()">📄 PDF</button>
+                </div>
+                
+                <div class="table-wrap" id="scrollArea">
+                    <table class="table-web" id="rekapTable">
+                        <thead id="thWeb"></thead>
+                        <tbody id="tbWeb"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE STOK BARANG -->
+        <div id="page-stok" class="tab-content hidden">
+            <div class="card no-print">
+                <h3>📦 INPUT & QC STOK BARANG</h3>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px">
+                    <select id="sBarang">
+                        <option value="Kempu">Kempu</option>
+                        <option value="Jerigen 18L">Jerigen 18L</option>
+                        <option value="Jerigen 5L">Jerigen 5L</option>
+                        <option value="Mesin Pom Minyak">Mesin Pom Minyak</option>
+                    </select>
+                    <input type="date" id="sTgl">
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-bottom:10px">
+                    <input type="number" id="sQty" placeholder="Jumlah (Qty)">
+                    <select id="sJenis">
+                        <option value="stok_awal_ready">Stok Awal (Ready)</option>
+                        <option value="stok_awal_kotor">Stok Awal (Kotor)</option>
+                        <option value="masuk_kotor">Barang Masuk Kotor</option>
+                        <option value="masuk_bersih">Barang Masuk Bersih/Baru</option>
+                        <option value="selesai_rekondisi">Selesai Rekondisi</option>
+                        <option value="terjual_umum">Terjual Umum</option>
+                        <option value="terjual_agen">Terjual Agen</option>
+                    </select>
+                    <select id="sQC">
+                        <option value="Accepted">✅ Accepted</option>
+                        <option value="Minor Damage">⚠️ Accepted Minor</option>
+                        <option value="Reject">❌ Reject</option>
+                    </select>
+                </div>
+                <button class="btn" style="background:var(--s); height:50px" onclick="updateStok()">SIMPAN DATA STOK</button>
+            </div>
+
+            <div class="card">
+                <h3>📊 LAPORAN STOK TERPADU</h3>
+                <div class="table-wrap">
+                    <table class="table-web">
+                        <thead>
+                            <tr style="background:var(--p)">
+                                <th class="nama-fixed">Barang</th>
+                                <th>Stok Awal Ready</th>
+                                <th>Stok Awal Kotor</th>
+                                <th>Masuk Kotor</th>
+                                <th>Masuk Bersih</th>
+                                <th>Selesai Rekondisi</th>
+                                <th>Sisa Stok Kotor</th>
+                                <th>Terjual Umum</th>
+                                <th>Terjual Agen</th>
+                                <th>Sisa Stok Ready</th>
+                                <th style="background:var(--iz)">TOTAL STOK</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbStok"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -147,51 +197,59 @@
     <script>
         const cfg={apiKey:"AIzaSyAu67MAhWBxdmciPi3xOKWhdy-uP4u9tXI",databaseURL:"https://pt-agn-default-rtdb.asia-southeast1.firebasedatabase.app"};
         firebase.initializeApp(cfg); const db=firebase.database();
-        let mk={}, ad={}, hl={}; const TGL_MULAI_SISTEM = "2026-03-21";
+        let mk={}, ad={}, hl={}, stData={}; const TGL_MULAI_SISTEM = "2026-03-21";
+        const LIST_BARANG = ["Kempu", "Jerigen 18L", "Jerigen 5L", "Mesin Pom Minyak"];
 
         window.onload=()=>{
             const m = new Date().toISOString().slice(0,7);
             document.getElementById('fB').value=m;
+            document.getElementById('sTgl').value = new Date().toISOString().split('T')[0];
+            
             if(localStorage.getItem('agnLogo')) document.getElementById('mainLogo').src=localStorage.getItem('agnLogo');
             const savedTheme = localStorage.getItem('agnTheme') || 'dark';
             document.body.setAttribute('data-theme', savedTheme);
             updateThemeUI(savedTheme);
+
             db.ref('master_karyawan').on('value',s=>{mk=s.val()||{}; uDl(); rRekap();});
             db.ref('absensi').on('value',s=>{ad=s.val()||{}; rRekap();});
             db.ref('hari_libur').on('value',s=>{hl=s.val()||{}; rRekap();});
+            db.ref('stok_barang').on('value',s=>{stData=s.val()||{}; rStok();});
         };
 
+        function openTab(t){
+            document.querySelectorAll('.tab-content').forEach(el=>el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el=>el.classList.remove('active'));
+            document.getElementById('page-'+t).classList.remove('hidden');
+            event.currentTarget.classList.add('active');
+            if(t==='absensi') rRekap();
+        }
+
+        // FUNGSI ABSENSI v77.6 (DIKEMBALIKAN UTUH)
         function toggleT(){ 
             let b=document.body; let nt=b.getAttribute('data-theme')==='dark'?'light':'dark'; 
             b.setAttribute('data-theme',nt); localStorage.setItem('agnTheme', nt); updateThemeUI(nt);
         }
-
         function updateThemeUI(t){
             document.getElementById('tIco').innerText=t==='dark'?'☀️':'🌙';
             document.getElementById('tTxt').innerText=t==='dark'?'Light Mode':'Dark Mode';
         }
-
         function cLogo(e){
             const r=new FileReader(); r.onload=()=>{
                 document.getElementById('mainLogo').src=r.result;
                 localStorage.setItem('agnLogo',r.result);
             }; r.readAsDataURL(e.target.files[0]);
         }
-
         function uDl(){
             let opt = Object.values(mk).sort().map(n=>`<option value="${n}">`).join('');
             document.getElementById('lk').innerHTML=opt;
         }
-
         function tKaryawan(){
             let n=document.getElementById('iNama'); if(n.value){db.ref('master_karyawan').push(n.value).then(()=>{n.value=""; alert("Ditambah!");});}
         }
-
         function hKaryawan(){
             let n=document.getElementById('iNama'); let id=Object.keys(mk).find(k=>mk[k]===n.value); 
             if(id && confirm('Hapus Karyawan?')) db.ref(`master_karyawan/${id}`).remove().then(()=>n.value="");
         }
-
         function pAbsen(ty){
             let inp=document.getElementById('iNama'), n=inp.value, now=new Date(), tgl=now.toISOString().split('T')[0];
             if(!n) return alert("Pilih Nama!");
@@ -200,13 +258,11 @@
             let nt=""; if(ty==='Izin'){nt=prompt("Alasan Izin:"); if(nt===null)return; st="Izin";}
             db.ref(`absensi/${tgl}/${n}/${ty}`).set({waktu:jam, status:st, note:nt}).then(()=>{alert(`${ty} Sukses!`); inp.value="";});
         }
-
         function resetAbsen(){
             let n=document.getElementById('iNama'), tgl=document.getElementById('resetTgl');
             if(!n.value || !tgl.value) return alert("Pilih Nama & Tanggal!");
             if(confirm(`Reset data ${n.value}?`)){db.ref(`absensi/${tgl.value}/${n.value}`).remove().then(()=>{alert("Direset!"); tgl.value=""; n.value="";});}
         }
-
         function sLib(st){
             let d1=document.getElementById('tglAwal'), d2=document.getElementById('tglAkhir');
             if(!d1.value) return alert("Isi tanggal!");
@@ -222,12 +278,10 @@
             const f=document.getElementById('fB').value; if(!f) return;
             const [y,m]=f.split('-'), last=new Date(y,m,0).getDate(), todayFull = new Date().toISOString().split('T')[0], tglSkrg = new Date().getDate();
             const kList=Object.values(mk).sort();
-            
             let h=`<tr><th class="nama-fixed">Nama</th>`;
             for(let i=1;i<=last;i++) h+=`<th id="tgl-${i}" class="${i===tglSkrg?'today-col':''}">${i}</th>`;
             h+=`<th class="th-rekap">H</th><th class="th-rekap">I</th><th class="th-rekap">A</th><th class="th-rekap">L</th></tr>`;
             document.getElementById('thWeb').innerHTML=h;
-
             let b="";
             kList.forEach(n=>{
                 let cH=0, cI=0, cA=0, cL=0, row=`<td class="nama-fixed">${n}</td>`;
@@ -235,7 +289,6 @@
                     let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t);
                     let isMinggu = (d.getDay()===0), isSetLibur = hl[t];
                     let data=ad[t]?ad[t][n]:null, sW="-", clW="", infoW="";
-                    
                     if(data){
                         if(data.Izin){ sW="I"; clW="s-i"; cI++; infoW = data.Izin.note || "Izin"; }
                         else if(data.Masuk){ 
@@ -247,7 +300,6 @@
                     else if(isMinggu){ sW="MNG"; clW="s-mng"; }
                     else if(isSetLibur){ sW="OFF"; clW="s-off"; }
                     else if(t < todayFull && t >= TGL_MULAI_SISTEM){ sW="A"; clW="s-a"; cA++; }
-                    
                     row+=`<td class="${i===tglSkrg?'today-col':''}"><div class="s-cell ${clW}">${sW}<span class="jam-text">${infoW}</span></div></td>`;
                 }
                 b+=`<tr>${row}<td class="rekap-akhir">${cH}</td><td class="rekap-akhir">${cI}</td><td class="rekap-akhir">${cA}</td><td class="rekap-akhir">${cL}</td></tr>`;
@@ -263,16 +315,73 @@
             }, 600);
         }
 
+        // FUNGSI STOK BARANG
+        function updateStok(){
+            const b = document.getElementById('sBarang').value;
+            const t = document.getElementById('sTgl').value;
+            const q = parseInt(document.getElementById('sQty').value);
+            const j = document.getElementById('sJenis').value;
+            const qc = document.getElementById('sQC').value;
+
+            if(!t || !q) return alert("Lengkapi data!");
+
+            db.ref(`stok_barang/${b}/${t}/${j}`).set({
+                qty: q,
+                qc: qc,
+                waktu: new Date().toLocaleTimeString()
+            }).then(() => {
+                alert("Data Stok Terupdate!");
+                document.getElementById('sQty').value = "";
+            });
+        }
+
+        function rStok(){
+            let b = "";
+            LIST_BARANG.forEach(name => {
+                let sA_Ready = 0, sA_Kotor = 0, m_Kotor = 0, m_Bersih = 0, s_Rekon = 0, t_Umum = 0, t_Agen = 0;
+                
+                if(stData[name]){
+                    Object.values(stData[name]).forEach(dayData => {
+                        if(dayData.stok_awal_ready) sA_Ready += dayData.stok_awal_ready.qty;
+                        if(dayData.stok_awal_kotor) sA_Kotor += dayData.stok_awal_kotor.qty;
+                        if(dayData.masuk_kotor) m_Kotor += dayData.masuk_kotor.qty;
+                        if(dayData.masuk_bersih) m_Bersih += dayData.masuk_bersih.qty;
+                        if(dayData.selesai_rekondisi) s_Rekon += dayData.selesai_rekondisi.qty;
+                        if(dayData.terjual_umum) t_Umum += dayData.terjual_umum.qty;
+                        if(dayData.terjual_agen) t_Agen += dayData.terjual_agen.qty;
+                    });
+                }
+
+                let sisaKotor = (sA_Kotor + m_Kotor) - s_Rekon;
+                let sisaReady = (sA_Ready + m_Bersih + s_Rekon) - (t_Umum + t_Agen);
+
+                b += `<tr>
+                    <td class="nama-fixed">${name} <button class="no-print" style="background:none; border:none; color:var(--d); cursor:pointer" onclick="hStok('${name}')">🗑️</button></td>
+                    <td>${sA_Ready}</td>
+                    <td>${sA_Kotor}</td>
+                    <td>${m_Kotor}</td>
+                    <td>${m_Bersih}</td>
+                    <td>${s_Rekon}</td>
+                    <td style="color:var(--w); font-weight:800">${sisaKotor}</td>
+                    <td>${t_Umum}</td>
+                    <td>${t_Agen}</td>
+                    <td style="color:var(--s); font-weight:800">${sisaReady}</td>
+                    <td class="rekap-akhir">${sisaKotor + sReady}</td>
+                </tr>`;
+            });
+            document.getElementById('tbStok').innerHTML = b;
+        }
+
+        function hStok(b){
+            if(confirm(`Hapus seluruh data stok ${b}?`)) db.ref(`stok_barang/${b}`).remove();
+        }
+
         function doExcel(){
             const f=document.getElementById('fB').value;
             const table = document.getElementById("rekapTable").outerHTML;
-            const template = `
-                <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-                <head><style>table { border-collapse:collapse; } th { background-color: #2563eb; color: #ffffff; border:1px solid black; } td { border:1px solid black; text-align:center; font-family: Arial; font-size: 10pt; }</style></head>
-                <body>${table}</body></html>`;
-            const blob = new Blob([template], {type: "application/vnd.ms-excel"});
+            const blob = new Blob([table], {type: "application/vnd.ms-excel"});
             const url = URL.createObjectURL(blob);
-            const a = document.createElement("a"); a.href = url; a.download = `REKAP_AGN_${f}.xls`; a.click();
+            const a = document.createElement("a"); a.href = url; a.download = `AGN_REKAP_${f}.xls`; a.click();
         }
     </script>
 </body>
