@@ -212,4 +212,46 @@
             Object.values(mk).sort().forEach(n=>{
                 let cH=0, cI=0, cA=0, row=`<td class="nama-fixed">${n}</td>`;
                 for(let i=1;i<=last;i++){
-                    let t=`${y}-${m}-${String(i).padStart(2,'0')}`, data=ad
+                    let t=`${y}-${m}-${String(i).padStart(2,'0')}`, data=ad[t]?ad[t][n]:null, isM=(new Date(t).getDay()===0), s="-", cl="", j="";
+                    if(data){
+                        if(data.Izin){s="I"; cl="s-i"; cI++; j=data.Izin.note||"";}
+                        else if(data.Masuk){s="H"; cl=(data.Masuk.status==="Terlambat")?"s-late":"s-v"; cH++; j=data.Masuk.waktu+(data.Pulang?`|${data.Pulang.waktu}`:"");}
+                    } else if(isM){s="M"; cl="s-mng";} else if(t<tFull && t>=TGL_START){s="A"; cl="s-a"; cA++;}
+                    row+=`<td class="${i===tSkrg?'today-col':''}"><div class="s-cell ${cl}">${s}<span class="jam-text">${j}</span></div></td>`;
+                }
+                b+=`<tr>${row}<td class="rekap-akhir">${cH}</td><td class="rekap-akhir">${cI}</td><td class="rekap-akhir">${cA}</td></tr>`;
+            });
+            document.getElementById('tbWeb').innerHTML=b;
+            // FITUR GULIR OTOMATIS
+            setTimeout(()=>{ let sc=document.getElementById('scrollArea'), tg=document.getElementById(`tgl-${tSkrg}`); if(tg && sc) sc.scrollTo({left:tg.offsetLeft-150, behavior:'smooth'}); }, 500);
+        }
+
+        // --- STOK LOGIC ---
+        function uBrg(){ document.getElementById('sBrg').innerHTML = Object.values(mb).sort().map(b=>`<option value="${b}">${b}</option>`).join(''); }
+        function tBrg(){ let n=document.getElementById('mBrg'); if(n.value) db.ref('master_barang').push(n.value).then(()=>n.value=""); }
+        function vStok(){
+            const b=document.getElementById('sBrg').value, t=document.getElementById('sTgl').value, q=parseInt(document.getElementById('sQty').value);
+            if(!b || isNaN(q)) return alert("Isi Qty!");
+            db.ref(`stok_barang/${t}`).push({barang:b, jenis:document.getElementById('sJns').value, qty:q}).then(()=>document.getElementById('sQty').value="");
+        }
+        function rStok(){
+            let items=Object.values(mb).sort(), res={};
+            items.forEach(i=>res[i]={awal_ready:0,awal_kotor:0,masuk_kotor:0,masuk_bersih:0,rekon:0,jual_u:0,jual_a:0});
+            Object.keys(sd).forEach(t=>{ Object.values(sd[t]).forEach(e=>{ if(res[e.barang]) res[e.barang][e.jenis]+=e.qty; })});
+            let h=`<tr><th class="nama-fixed">Barang</th><th>Aw-Rdy</th><th>Aw-Ktr</th><th>+Ktr</th><th>+Brs</th><th>Rekon</th><th>J-Um</th><th>J-Ag</th><th style="background:var(--s)">Ready</th><th style="background:var(--iz)">Kotor</th></tr>`;
+            let b="";
+            items.forEach(i=>{
+                const s=res[i], rdy=(s.awal_ready+s.masuk_bersih+s.rekon)-(s.jual_u+s.jual_a), ktr=(s.awal_kotor+s.masuk_kotor)-s.rekon;
+                b+=`<tr><td class="nama-fixed">${i}</td><td>${s.awal_ready}</td><td>${s.awal_kotor}</td><td>${s.masuk_kotor}</td><td>${s.masuk_bersih}</td><td>${s.rekon}</td><td>${s.jual_u}</td><td>${s.jual_a}</td><td style="font-weight:bold;color:var(--s)">${rdy}</td><td style="font-weight:bold;color:var(--iz)">${ktr}</td></tr>`;
+            });
+            document.getElementById('thSt').innerHTML=h; document.getElementById('tbSt').innerHTML=b;
+        }
+        function renderLog(){
+            const t=document.getElementById('sTgl').value, log=sd[t]||{};
+            document.getElementById('stokLog').innerHTML = Object.keys(log).map(id=>`<div class="log-row"><span>${log[id].barang} (${log[id].jenis}): ${log[id].qty}</span><span class="del-stok" onclick="hpsS('${t}','${id}')">HAPUS 🗑️</span></div>`).reverse().join('');
+        }
+        function hpsS(t,id){ if(confirm('Hapus data ini?')) db.ref(`stok_barang/${t}/${id}`).remove(); }
+        function doEx(id,n){ const blob=new Blob([document.getElementById(id).outerHTML], {type:"application/vnd.ms-excel"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=`${n}_AGN.xls`; a.click(); }
+    </script>
+</body>
+</html>
