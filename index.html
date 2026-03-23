@@ -182,6 +182,8 @@
                         <option value="awal_kotor">Awal Kotor</option>
                         <option value="masuk_kotor">Masuk Kotor</option>
                         <option value="masuk_bersih">Masuk Bersih</option>
+                        <option value="qc_accepted">QC Accepted</option>
+                        <option value="qc_rejected">QC Rejected</option>
                         <option value="rekon">Rekon</option>
                         <option value="jual_u">Jual Umum</option>
                         <option value="jual_a">Jual Agen</option>
@@ -410,7 +412,7 @@
             let res = {};
             
             items.forEach(i => {
-                res[i] = { awal_ready:0, awal_kotor:0, masuk_kotor:0, masuk_bersih:0, rekon:0, jual_u:0, jual_a:0 };
+                res[i] = { awal_ready:0, awal_kotor:0, masuk_kotor:0, masuk_bersih:0, qc_accepted:0, qc_rejected:0, rekon:0, jual_u:0, jual_a:0 };
             });
 
             Object.keys(sd).forEach(tgl => {
@@ -421,13 +423,15 @@
                 });
             });
 
-            // FIX: NAMA KOLOM DIPANJANGIN
+            // FIX: NAMA KOLOM QC DITAMBAHKAN DAN TIDAK DISINGKAT
             let h = `<tr>
                 <th class="nama-fixed" style="background:var(--p)">Nama Barang</th>
                 <th>Awal Ready</th>
                 <th>Awal Kotor</th>
                 <th>Masuk Kotor</th>
                 <th>Masuk Bersih</th>
+                <th>QC Accepted</th>
+                <th>QC Rejected</th>
                 <th>Rekon</th>
                 <th>Jual Umum</th>
                 <th>Jual Agen</th>
@@ -438,8 +442,9 @@
             let b = "";
             items.forEach(i => {
                 const s = res[i];
-                const totReady = (s.awal_ready + s.masuk_bersih + s.rekon) - (s.jual_u + s.jual_a);
-                const totKotor = (s.awal_kotor + s.masuk_kotor) - s.rekon;
+                // Asumsi formula: QC Accepted menambah stok ready, QC Rejected mengurangi kotor tapi tidak jadi ready.
+                const totReady = (s.awal_ready + s.masuk_bersih + s.rekon + s.qc_accepted) - (s.jual_u + s.jual_a);
+                const totKotor = (s.awal_kotor + s.masuk_kotor) - s.rekon - s.qc_accepted - s.qc_rejected;
 
                 b += `<tr>
                     <td class="nama-fixed">${i}</td>
@@ -447,6 +452,8 @@
                     <td>${s.awal_kotor}</td>
                     <td>${s.masuk_kotor}</td>
                     <td>${s.masuk_bersih}</td>
+                    <td>${s.qc_accepted}</td>
+                    <td>${s.qc_rejected}</td>
                     <td>${s.rekon}</td>
                     <td>${s.jual_u}</td>
                     <td>${s.jual_a}</td>
