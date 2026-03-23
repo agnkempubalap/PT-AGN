@@ -145,6 +145,57 @@
             </div>
         </div>
     </div>
+<div class="card no-print">
+    <h3>📦 INPUT GUDANG & QC</h3>
+    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px">
+        <div class="card" style="margin:0; border:1px solid var(--p)">
+            <label style="font-size:10px">1. QUALITY CONTROL (QC)</label>
+            <select id="stokJenis" style="margin-top:5px"><option value="Baru">Baru</option><option value="Bekas">Bekas</option></select>
+            <select id="stokStatus" style="margin-top:5px"><option value="Accepted">Accepted</option><option value="Accepted With Minor Damage">Minor Damage</option><option value="Reject">Reject</option></select>
+            <input type="number" id="stokQtyQC" placeholder="Qty QC" style="margin-top:5px">
+            <button class="btn" style="background:var(--p); margin-top:5px; height:40px" onclick="saveFlow('QC')">SIMPAN QC</button>
+        </div>
+        <div class="card" style="margin:0; border:1px solid var(--iz)">
+            <label style="font-size:10px">2. UPDATE REKONDISI</label>
+            <input type="number" id="stokQtyRekon" placeholder="Qty Selesai Rekon">
+            <div style="height:85px"></div>
+            <button class="btn" style="background:var(--iz); margin-top:5px; height:40px" onclick="saveFlow('REKONDISI')">UPDATE HASIL</button>
+        </div>
+        <div class="card" style="margin:0; border:1px solid var(--s)">
+            <label style="font-size:10px">3. PENJUALAN</label>
+            <select id="stokJual" style="margin-top:5px"><option value="Umum">Jual Umum</option><option value="Agen">Jual Agen</option></select>
+            <input type="number" id="stokQtyJual" placeholder="Qty Keluar" style="margin-top:5px">
+            <div style="height:45px"></div>
+            <button class="btn" style="background:var(--s); margin-top:5px; height:40px" onclick="saveFlow('PENJUALAN')">SIMPAN JUAL</button>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h3>📊 LAPORAN STOK BARANG (LOGIKA OTOMATIS)</h3>
+    <div class="table-wrap">
+        <table class="table-web" id="stokTable">
+            <thead>
+                <tr style="background:var(--p); color:#fff">
+                    <th rowspan="2">NAMA BARANG</th>
+                    <th colspan="2">STOK AWAL BULAN</th>
+                    <th colspan="2">HASIL QUALITY CONTROL</th>
+                    <th rowspan="2" style="background:var(--iz)">JUMLAH REKONDISI</th>
+                    <th colspan="2">SALDO AKHIR GUDANG</th>
+                    <th colspan="2">PENJUALAN</th>
+                    <th rowspan="2" style="background:#fff; color:#000">TOTAL STOK</th>
+                </tr>
+                <tr style="background:var(--p); color:#fff">
+                    <th>STOK KOTOR AWAL</th><th>STOK READY AWAL</th>
+                    <th>MASUK BERSIH/BARU</th><th>MASUK BEKAS</th>
+                    <th style="background:rgba(245,158,11,0.2)">SISA BARANG KOTOR</th><th style="background:rgba(0,200,83,0.2)">STOK READY</th>
+                    <th>JUAL UMUM</th><th>JUAL AGEN</th>
+                </tr>
+            </thead>
+            <tbody id="tbStok"></tbody>
+        </table>
+    </div>
+</div>
 
     <script>
         const cfg={apiKey:"AIzaSyAu67MAhWBxdmciPi3xOKWhdy-uP4u9tXI",databaseURL:"https://pt-agn-default-rtdb.asia-southeast1.firebasedatabase.app"};
@@ -277,6 +328,87 @@
             const blob = new Blob([document.getElementById(id).outerHTML], {type:"application/vnd.ms-excel"});
             const a = document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=`${name}_${document.getElementById('fB').value}.xls`; a.click();
         }
+// --- 1. FUNGSI UNTUK SIMPAN DATA KE FIREBASE ---
+function saveFlow(step) {
+    const bulan = document.getElementById('fB').value;
+    const tglInput = new Date().toISOString().split('T')[0];
+    let qty = 0, detail = {};
+
+    if(step==='QC') {
+        qty = parseInt(document.getElementById('stokQtyQC').value);
+        detail = { jenis: document.getElementById('stokJenis').value, status: document.getElementById('stokStatus').value };
+    } else if(step==='REKONDISI') {
+        qty = parseInt(document.getElementById('stokQtyRekon').value);
+    } else {
+        qty = parseInt(document.getElementById('stokQtyJual').value);
+        detail = { via: document.getElementById('stokJual').value };
+    }
+
+    if(!qty) return alert("Isi angka dulu Mas!");
+    
+    db.ref('stok_flow').push({ bulan, tgl: tglInput, step, qty, detail, ts: Date.now() }).then(() => {
+        alert("Data Berhasil Disimpan!");
+        // Reset form agar kosong kembali
+        if(document.getElementById('stokQtyQC')) document.getElementById('stokQtyQC').value = "";
+        if(document.getElementById('stokQtyRekon')) document.getElementById('stokQtyRekon').value = "";
+        if(document.getElementById('stokQtyJual')) document.getElementById('stokQtyJual').value = "";
+    });
+}
+
+// --- 2. FUNGSI MESIN HITUNG STOK OTOMATIS ---
+function renderStok() {
+    const f = document.getElementById('fB').value;
+    // Variabel penampung hitungan
+    let r = { awalKotor:0, awalReady:0, baru:0, bekas:0, rekon:0, umum:0, agen:0 };
+    
+    Object.values(flow).forEach(e => {
+        // A. Hitung Saldo Awal (Data bulan-bulan sebelum bulan terpilih)
+        if(e.bulan < f) {
+            if(e.step==='QC' && e.detail.status!=='Reject') {
+                if(e.detail.jenis==='Bekas') r.awalKotor += e.qty; else r.awalReady += e.qty;
+            } else if(e.step==='REKONDISI') {
+                r.awalKotor -= e.qty; r.awalReady += e.qty;
+            } else if(e.step==='PENJUALAN') {
+                r.awalReady -= e.qty;
+            }
+        } 
+        // B. Hitung Transaksi Bulan Berjalan (Bulan yang sedang dilihat)
+        else if(e.bulan === f) {
+            if(e.step==='QC' && e.detail.status!=='Reject') {
+                if(e.detail.jenis==='Baru') r.baru += e.qty; 
+                else if(e.detail.jenis==='Bekas') r.bekas += e.qty;
+            } else if(e.step==='REKONDISI') {
+                r.rekon += e.qty;
+            } else if(e.step==='PENJUALAN') {
+                if(e.detail.via==='Umum') r.umum += e.qty; else r.agen += e.qty;
+            }
+        }
+    });
+
+    // Rumus Matematika Sesuai Alur Mas
+    const sisaKotor = (r.awalKotor + r.bekas) - r.rekon;
+    const sisaReady = (r.awalReady + r.baru + r.rekon) - (r.umum + r.agen);
+
+    // Masukkan hasil hitungan ke tabel HTML (ID: tbStok)
+    const tableBody = document.getElementById('tbStok');
+    if(tableBody) {
+        tableBody.innerHTML = `
+            <tr>
+                <td style="font-weight:800; text-align:left; padding-left:10px">IBC TANK 1000L</td>
+                <td>${r.awalKotor}</td>
+                <td>${r.awalReady}</td>
+                <td>${r.baru}</td>
+                <td>${r.bekas}</td>
+                <td style="color:#f59e0b; font-weight:800">${r.rekon}</td>
+                <td style="background:rgba(245,158,11,0.1); font-weight:800">${sisaKotor}</td>
+                <td style="background:rgba(0,200,83,0.1); font-weight:800">${sisaReady}</td>
+                <td>${r.umum}</td>
+                <td>${r.agen}</td>
+                <td style="background:#0f172a; color:#fff; font-weight:900; border:2px solid #2563eb">${sisaKotor + sisaReady}</td>
+            </tr>`;
+    }
+}
+
     </script>
 </body>
 </html>
