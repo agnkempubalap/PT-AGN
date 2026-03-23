@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v84.0 - PREMIUM SYSTEM</title>
+    <title>PT-AGN v85.0 - TOTAL INTEGRATED</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
@@ -17,6 +17,7 @@
         .logo-box img{width:70px;height:70px;border-radius:50%;background:#000;border:3px solid var(--p);object-fit:cover;cursor:pointer}
         .dark-card{background:var(--c); border-radius:12px; border:1px solid var(--b); padding:10px 15px; display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--t)}
 
+        /* TAB SYSTEM */
         .tabs-nav { display: flex; gap: 10px; margin-bottom: 15px; }
         .t-btn { flex: 1; padding: 15px; border-radius: 12px; background: var(--c); color: var(--t); border: 1px solid var(--b); cursor: pointer; font-weight: 800; font-size: 12px; text-transform: uppercase; }
         .t-btn.active { background: var(--p); border-color: var(--p); color: #fff; }
@@ -28,26 +29,34 @@
         input,button,select{border-radius:12px;font-size:14px;height:52px;border:1px solid var(--b);background:var(--bg);color:var(--t);width:100%;box-sizing:border-box;outline:none; padding:0 15px}
         .btn{display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;border:none;color:#fff}
         
+        .export-group { display: flex; justify-content: flex-end; align-items: flex-end; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
+        .btn-ex { width: 100px; height: 45px; font-size: 11px; border-radius: 10px; }
+
         .table-wrap{overflow-x:auto; border-radius:12px; border:1px solid var(--b); background:var(--c); scroll-behavior: smooth}
         .table-web{width:100%;border-collapse:separate;border-spacing:0;font-size:10px; color:var(--t)}
         .table-web th, .table-web td{border-bottom:1px solid var(--b);border-right:1px solid var(--b);padding:8px 1px;text-align:center;min-width:35px}
         
         .nama-fixed{position:sticky !important;left:0;background-color:var(--c) !important;z-index:10;min-width:110px !important;text-align:left !important;padding-left:10px !important;font-weight:700; border-right: 2px solid var(--p) !important}
         .brd-heavy{border-right: 3px solid var(--p) !important; border-left: 3px solid var(--p) !important;}
-        
-        .s-cell{border-radius:6px;width:35px;height:35px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;font-size:10px;margin: 0 auto;}
+        .today-col{background: rgba(37, 99, 235, 0.15) !important;}
+        .rekap-akhir{background:var(--bg) !important; color:var(--t) !important; font-weight:800; min-width:30px !important}
+        .th-rekap{background:var(--bg) !important; color:var(--iz) !important; font-weight:800}
+
+        .s-cell{border-radius:6px;width:35px;height:35px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;font-size:10px;margin: 0 auto; -webkit-print-color-adjust: exact; print-color-adjust: exact;}
         .s-v{background:var(--s);color:#fff} .s-late{background:var(--w);color:#000} .s-i{background:var(--iz);color:#fff}
         .s-off{background:var(--d);color:#fff} .s-a{background:var(--al);color:#fff} .s-l{background:#AA00FF;color:#fff} .s-mng{background:#64748b;color:#fff}
         .jam-text{font-size:7px;font-weight:600;display:block;margin-top:2px;max-width:33px; overflow:hidden;}
 
         .log-box { margin-top: 10px; max-height: 200px; overflow-y: auto; background: var(--bg); border-radius: 12px; }
         .log-row { display: flex; justify-content: space-between; align-items:center; padding: 10px; border-bottom: 1px solid var(--b); font-size: 11px; }
-        .del-btn { background: var(--d); color: #fff; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 10px; }
 
         @media print {
             @page { size: A4 landscape; margin: 5mm; }
-            header, .no-print, .tabs-nav { display: none !important; }
-            .table-web { transform: scale(0.65); transform-origin: top left; }
+            html, body { background: #fff !important; color: #1e293b !important; }
+            header, .no-print, .tabs-nav, .export-group, .dark-card { display: none !important; }
+            .container { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
+            .table-web { transform: scale(0.65); transform-origin: top left; border-collapse: collapse !important; border: 1px solid #000 !important; }
+            .nama-fixed { position: static !important; background: #f8fafc !important; border-right: 1px solid #000 !important; }
         }
     </style>
 </head>
@@ -55,64 +64,87 @@
     <div class="container">
         <header>
             <div class="logo-box">
-                <input type="file" id="inpLogo" style="display:none" onchange="cLogo(event)">
+                <input type="file" id="inpLogo" style="display:none" accept="image/*" onchange="cLogo(event)">
                 <img id="mainLogo" src="https://ui-avatars.com/api/?name=AGN&background=000&color=fff" onclick="document.getElementById('inpLogo').click()">
-                <div><h2 style="margin:0;font-size:1.3rem">PT AGN</h2><span style="font-size:10px;color:var(--p);font-weight:800">SYSTEM v84.0 PREMIUM</span></div>
+                <div><h2 style="margin:0;font-size:1.3rem">PT AGN</h2><span style="font-size:10px;color:var(--p);font-weight:800">SYSTEM v85.0 TOTAL</span></div>
             </div>
             <div class="dark-card" onclick="toggleT()"><span id="tIco">☀️</span></div>
         </header>
 
         <div class="tabs-nav no-print">
-            <button id="btnAbsen" class="t-btn active" onclick="goTab('absen')">📅 ABSENSI</button>
+            <button id="btnAbsen" class="t-btn active" onclick="goTab('absen')">📅 ABSENSI KARYAWAN</button>
             <button id="btnStok" class="t-btn" onclick="goTab('stok')">📦 STOK GUDANG</button>
         </div>
 
         <div id="page-absen">
             <div class="card no-print">
-                <h3>👥 KARYAWAN</h3>
+                <h3>👥 DATA KARYAWAN</h3>
                 <div style="display:flex;gap:10px">
                     <input list="lk" id="iNama" placeholder="Ketik/Pilih Nama...">
                     <datalist id="lk"></datalist>
-                    <button class="btn" style="background:var(--s);width:60px" onclick="tKaryawan()">+</button>
+                    <button class="btn" style="background:var(--s);width:60px;font-size:24px" onclick="tKaryawan()">+</button>
                     <button class="btn" style="background:var(--d);width:60px" onclick="hKaryawan()">🗑️</button>
                 </div>
             </div>
 
             <div class="card no-print">
-                <h3>⚡ PRESENSI & LEMBUR</h3>
-                <div style="display:grid;grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px">
-                    <button class="btn" style="background:var(--s);height:60px" onclick="pAbsen('Masuk')">MASUK</button>
-                    <button class="btn" style="background:var(--d);height:60px" onclick="pAbsen('Pulang')">PULANG</button>
+                <h3>🧹 KONTROL DATA</h3>
+                <div style="display:grid;grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px; align-items:end">
+                    <div><label>Tanggal Reset:</label><input type="date" id="resetTgl"></div>
+                    <button class="btn" style="background:var(--d)" onclick="resetAbsen()">RESET ABSEN</button>
                 </div>
-                <div style="display:grid;grid-template-columns: 1fr 1fr; gap:12px">
-                    <button class="btn" style="background:var(--iz);height:50px" onclick="pAbsen('Izin')">📝 IZIN</button>
-                    <button class="btn" style="background:#AA00FF;height:50px" onclick="pAbsen('Lembur')">🔥 LEMBUR</button>
+                <div style="display:grid;grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:12px">
+                    <div><label>Dari:</label><input type="date" id="tglAwal"></div>
+                    <div><label>Sampai:</label><input type="date" id="tglAkhir"></div>
+                </div>
+                <div style="display:grid;grid-template-columns: 1fr 1fr; gap:10px">
+                    <button class="btn" style="background:var(--p)" onclick="sLib(true)">SET LIBUR</button>
+                    <button class="btn" style="background:var(--d)" onclick="sLib(false)">HAPUS LIBUR</button>
                 </div>
             </div>
 
-            <div class="card">
-                <div style="display:flex; justify-content:space-between; margin-bottom:15px">
-                    <input type="month" id="fB" style="width:160px" onchange="rRekap()">
-                    <div style="display:flex; gap:5px">
-                        <button class="btn" style="background:#1d6f42; width:80px; font-size:10px" onclick="doExcel('rekapTable')">EXCEL</button>
-                        <button class="btn" style="background:#b91c1c; width:80px; font-size:10px" onclick="window.print()">PDF</button>
-                    </div>
+            <div class="card no-print">
+                <h3>⚡ PRESENSI</h3>
+                <div style="display:grid;grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px">
+                    <button class="btn" style="background:var(--s);height:60px;font-size:18px" onclick="pAbsen('Masuk')">MASUK</button>
+                    <button class="btn" style="background:var(--d);height:60px;font-size:18px" onclick="pAbsen('Pulang')">PULANG</button>
                 </div>
-                <div class="table-wrap"><table class="table-web" id="rekapTable"><thead id="thWeb"></thead><tbody id="tbWeb"></tbody></table></div>
+                <div style="display:grid;grid-template-columns: 1fr 1fr; gap:12px">
+                    <button class="btn" style="background:var(--iz);height:50px;font-size:16px" onclick="pAbsen('Izin')">📝 IZIN</button>
+                    <button class="btn" style="background:#AA00FF;height:50px;font-size:16px" onclick="pAbsen('Lembur')">🔥 LEMBUR</button>
+                </div>
+            </div>
+
+            <div class="card table-card">
+                <div class="export-group no-print">
+                    <div style="flex-grow:1">
+                        <label>Pilih Bulan:</label>
+                        <input type="month" id="fB" style="width:160px; height:45px" onchange="rRekap()">
+                    </div>
+                    <button class="btn btn-ex" style="background:#1d6f42" onclick="doExcel('rekapTable')">📥 EXCEL</button>
+                    <button class="btn btn-ex" style="background:#b91c1c" onclick="window.print()">📄 PDF</button>
+                </div>
+                <div class="table-wrap" id="scrollArea">
+                    <table class="table-web" id="rekapTable">
+                        <thead id="thWeb"></thead>
+                        <tbody id="tbWeb"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
         <div id="page-stok" class="hidden">
             <div class="card no-print">
-                <h3>📦 BARANG</h3>
+                <h3>📦 MASTER BARANG</h3>
                 <div style="display:flex; gap:8px">
                     <input type="text" id="mBrg" placeholder="Nama Barang Baru...">
                     <button class="btn" style="background:var(--s); width:60px" onclick="tBrg()">+</button>
+                    <button class="btn" style="background:var(--d); width:60px" onclick="hBrg()">🗑️</button>
                 </div>
             </div>
 
             <div class="card no-print">
-                <h3>📥 INPUT AKTIVITAS</h3>
+                <h3>📥 INPUT AKTIVITAS STOK</h3>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px">
                     <select id="sBrg"><option value="">Pilih Barang...</option></select>
                     <input type="date" id="sTgl" onchange="renderLog()">
@@ -140,7 +172,7 @@
             </div>
 
             <div class="card no-print">
-                <h3>🕒 LOG HARIAN</h3>
+                <h3>🕒 LOG HARIAN (AUTO CLEAR)</h3>
                 <div id="flowLog" class="log-box"></div>
             </div>
 
@@ -166,12 +198,14 @@
     <script>
         const cfg={apiKey:"AIzaSyAu67MAhWBxdmciPi3xOKWhdy-uP4u9tXI",databaseURL:"https://pt-agn-default-rtdb.asia-southeast1.firebasedatabase.app"};
         firebase.initializeApp(cfg); const db=firebase.database();
-        let mk={}, ad={}, hl={}, mb={}, sd={}; const TGL_SISTEM = "2026-03-21";
+        let mk={}, ad={}, hl={}, mb={}, sd={}; const TGL_MULAI_SISTEM = "2026-03-21";
 
         window.onload=()=>{
             const d = new Date();
             document.getElementById('fB').value=d.toISOString().slice(0,7);
             document.getElementById('sTgl').value = d.toISOString().slice(0,10);
+            if(localStorage.getItem('agnLogo')) document.getElementById('mainLogo').src=localStorage.getItem('agnLogo');
+            
             db.ref('master_karyawan').on('value',s=>{mk=s.val()||{}; uDl(); rRekap();});
             db.ref('absensi').on('value',s=>{ad=s.val()||{}; rRekap();});
             db.ref('hari_libur').on('value',s=>{hl=s.val()||{}; rRekap();});
@@ -180,61 +214,80 @@
             goTab(localStorage.getItem('agnTab') || 'absen');
         };
 
-        function goTab(t){ localStorage.setItem('agnTab', t); document.getElementById('page-absen').classList.toggle('hidden', t!=='absen'); document.getElementById('page-stok').classList.toggle('hidden', t!=='stok'); }
+        function goTab(t){ localStorage.setItem('agnTab', t); document.getElementById('page-absen').classList.toggle('hidden', t!=='absen'); document.getElementById('page-stok').classList.toggle('hidden', t!=='stok'); document.getElementById('btnAbsen').classList.toggle('active', t==='absen'); document.getElementById('btnStok').classList.toggle('active', t==='stok'); }
         function toggleT(){ let b=document.body; b.setAttribute('data-theme', b.getAttribute('data-theme')==='dark'?'light':'dark'); }
         function cLogo(e){ const r=new FileReader(); r.onload=()=>{ document.getElementById('mainLogo').src=r.result; localStorage.setItem('agnLogo',r.result); }; r.readAsDataURL(e.target.files[0]); }
 
-        // ABSENSI
-        function uDl(){ document.getElementById('lk').innerHTML = Object.values(mk).sort().map(n=>`<option value="${n}">`).join(''); }
-        function tKaryawan(){ let n=document.getElementById('iNama'); if(n.value) db.ref('master_karyawan').push(n.value).then(()=>{ alert("Karyawan Ditambah!"); n.value=""; }); }
-        function hKaryawan(){ let n=document.getElementById('iNama').value, id=Object.keys(mk).find(k=>mk[k]===n); if(id && confirm('Hapus?')) db.ref(`master_karyawan/${id}`).remove().then(()=>document.getElementById('iNama').value=""); }
-        
+        // --- FUNGSI ABSENSI v77.6 UTUH ---
+        function uDl(){ let opt = Object.values(mk).sort().map(n=>`<option value="${n}">`).join(''); document.getElementById('lk').innerHTML=opt; }
+        function tKaryawan(){ let n=document.getElementById('iNama'); if(n.value){db.ref('master_karyawan').push(n.value).then(()=>{n.value=""; alert("Karyawan Ditambah!");});}}
+        function hKaryawan(){ let n=document.getElementById('iNama'); let id=Object.keys(mk).find(k=>mk[k]===n.value); if(id && confirm('Hapus Karyawan?')) db.ref(`master_karyawan/${id}`).remove().then(()=>n.value=""); }
         function pAbsen(ty){
-            let n=document.getElementById('iNama').value, now=new Date(); if(!n) return alert("Pilih Nama!");
-            let tgl=now.toISOString().slice(0,10), jam=now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+            let inp=document.getElementById('iNama'), n=inp.value, now=new Date(), tgl=now.toISOString().split('T')[0];
+            if(!n) return alert("Pilih Nama!");
+            let jam=now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
             let st="Hadir"; if(ty==='Masuk' && (now.getHours()>9 || (now.getHours()===9 && now.getMinutes()>0))) st="Terlambat";
-            let nt=""; if(ty==='Izin'){nt=prompt("Alasan:"); if(!nt)return; st="Izin";}
+            let nt=""; if(ty==='Izin'){nt=prompt("Alasan Izin:"); if(nt===null)return; st="Izin";}
             if(ty==='Lembur') st="Lembur";
-            db.ref(`absensi/${tgl}/${n}/${ty}`).set({waktu:jam, status:st, note:nt}).then(()=>{
-                alert(`${ty} Berhasil!`); document.getElementById('iNama').value=""; rRekap();
-            });
+            db.ref(`absensi/${tgl}/${n}/${ty}`).set({waktu:jam, status:st, note:nt}).then(()=>{alert(`${ty} Sukses!`); inp.value="";});
         }
-
+        function resetAbsen(){
+            let n=document.getElementById('iNama'), tgl=document.getElementById('resetTgl');
+            if(!n.value || !tgl.value) return alert("Pilih Nama & Tanggal!");
+            if(confirm(`Reset data ${n.value}?`)){db.ref(`absensi/${tgl.value}/${n.value}`).remove().then(()=>{alert("Direset!"); tgl.value=""; n.value="";});}
+        }
+        function sLib(st){
+            let d1=document.getElementById('tglAwal'), d2=document.getElementById('tglAkhir'); if(!d1.value) return alert("Isi tanggal!");
+            let start = new Date(d1.value); let end = d2.value ? new Date(d2.value) : new Date(d1.value);
+            while(start <= end){ db.ref(`hari_libur/${start.toISOString().split('T')[0]}`).set(st?true:null); start.setDate(start.getDate() + 1); }
+            alert(st?"Set Libur!":"Hapus Libur!"); d1.value=""; d2.value="";
+        }
         function rRekap(){
             const f=document.getElementById('fB').value; if(!f) return;
-            const [y,m]=f.split('-'), last=new Date(y,m,0).getDate(), tglSkrg=new Date().getDate(), todayFull=new Date().toISOString().split('T')[0];
-            let h=`<tr><th class="nama-fixed">Nama</th>`; for(let i=1;i<=last;i++) h+=`<th class="${i===tglSkrg?'today-col':''}">${i}</th>`; h+=`<th>H</th><th>I</th><th>A</th><th>L</th></tr>`;
+            const [y,m]=f.split('-'), last=new Date(y,m,0).getDate(), todayFull = new Date().toISOString().split('T')[0], tglSkrg = new Date().getDate();
+            let h=`<tr><th class="nama-fixed">Nama</th>`;
+            for(let i=1;i<=last;i++) h+=`<th id="tgl-${i}" class="${i===tglSkrg?'today-col':''}">${i}</th>`;
+            h+=`<th class="th-rekap">H</th><th class="th-rekap">I</th><th class="th-rekap">A</th><th class="th-rekap">L</th></tr>`;
             document.getElementById('thWeb').innerHTML=h;
             let b=""; Object.values(mk).sort().forEach(n=>{
                 let cH=0, cI=0, cA=0, cL=0, row=`<td class="nama-fixed">${n}</td>`;
                 for(let i=1;i<=last;i++){
-                    let t=`${y}-${m}-${String(i).padStart(2,'0')}`, data=ad[t]?ad[t][n]:null, sW="-", clW="", infoW="";
+                    let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t);
+                    let isMinggu = (d.getDay()===0), isSetLibur = hl[t], data=ad[t]?ad[t][n]:null, sW="-", clW="", infoW="";
                     if(data){
                         if(data.Lembur) { sW="L"; clW="s-l"; cL++; infoW="Lembur"; }
-                        else if(data.Izin) { sW="I"; clW="s-i"; cI++; infoW=data.Izin.note; }
-                        else if(data.Masuk) { sW="H"; clW=(data.Masuk.status==="Terlambat")?"s-late":"s-v"; cH++; infoW=data.Masuk.waktu; }
-                    } else if(t < todayFull && t >= TGL_SISTEM && !hl[t] && new Date(t).getDay()!==0) { sW="A"; clW="s-a"; cA++; }
-                    row+=`<td class="${i===tglSkrg?'today-col':''}"><div class="s-cell ${clW}">${sW}<span class="jam-text">${infoW||""}</span></div></td>`;
+                        else if(data.Izin){ sW="I"; clW="s-i"; cI++; infoW = data.Izin.note || "Izin"; }
+                        else if(data.Masuk){ 
+                            if(isMinggu || isSetLibur) { sW="L"; clW="s-l"; cL++; } 
+                            else { sW="H"; clW=(data.Masuk.status==="Terlambat")?"s-late":"s-v"; cH++; }
+                            infoW = data.Masuk.waktu;
+                        }
+                    } 
+                    else if(isMinggu){ sW="MNG"; clW="s-mng"; }
+                    else if(isSetLibur){ sW="OFF"; clW="s-off"; }
+                    else if(t < todayFull && t >= TGL_MULAI_SISTEM){ sW="A"; clW="s-a"; cA++; }
+                    row+=`<td class="${i===tglSkrg?'today-col':''}"><div class="s-cell ${clW}">${sW}<span class="jam-text">${infoW}</span></div></td>`;
                 }
-                b+=`<tr>${row}<td>${cH}</td><td>${cI}</td><td>${cA}</td><td>${cL}</td></tr>`;
+                b+=`<tr>${row}<td class="rekap-akhir">${cH}</td><td class="rekap-akhir">${cI}</td><td class="rekap-akhir">${cA}</td><td class="rekap-akhir">${cL}</td></tr>`;
             });
             document.getElementById('tbWeb').innerHTML=b;
         }
 
-        // STOK
+        // --- FUNGSI STOK LOGIKA INTEGRATED ---
         function uBrg(){ document.getElementById('sBrg').innerHTML = '<option value="">Pilih Barang...</option>' + Object.values(mb).sort().map(b=>`<option value="${b}">${b}</option>`).join(''); }
         function tBrg(){ let n=document.getElementById('mBrg'); if(n.value) db.ref('master_barang').push(n.value).then(()=>{ alert("Barang Ditambah!"); n.value=""; }); }
+        function hBrg(){ let b=document.getElementById('sBrg').value; let id=Object.keys(mb).find(k=>mb[k]===b); if(id && confirm('Hapus Barang?')) db.ref(`master_barang/${id}`).remove(); }
         
         function saveF(step){
             const brg=document.getElementById('sBrg').value, tgl=document.getElementById('sTgl').value;
-            if(!brg||!tgl) return alert("Lengkapi Data!");
+            if(!brg||!tgl) return alert("Pilih Barang & Tgl!");
             let data = { barang:brg, type:step, ts:Date.now() };
             if(step==='qc'){ data.kond=document.getElementById('qcK').value; data.stat=document.getElementById('qcS').value; data.qty=parseInt(document.getElementById('qQC').value); }
             else if(step==='rekon'){ data.qty=parseInt(document.getElementById('qRek').value); }
             else if(step==='jual'){ data.jns=document.getElementById('jnsJ').value; data.qty=parseInt(document.getElementById('qJual').value); }
-            if(!data.qty || data.qty<=0) return alert("Isi Jumlah!");
+            if(!data.qty || data.qty<=0) return alert("Isi qty!");
             db.ref(`stok_flow/${tgl}`).push(data).then(()=>{
-                alert("Data Stok Disimpan!");
+                alert("Berhasil!");
                 ["qQC","qRek","qJual"].forEach(id=>document.getElementById(id).value="");
             });
         }
@@ -242,4 +295,25 @@
         function rStok(){
             const items = Object.values(mb).sort(); let rk = {};
             items.forEach(i=>rk[i]={ak:0, ar:0, qacc:0, qamd:0, qrej:0, mbru:0, mbks:0, rkn:0, ju:0, ja:0});
-            Object
+            Object.keys(sd).forEach(t=>{ Object.values(sd[t]).forEach(e=>{
+                const r=rk[e.barang]; if(!r)return;
+                if(e.type==='qc'){ r[`q${e.stat}`]+=e.qty; if(e.stat!=='rej'){ if(e.kond==='baru')r.mbru+=e.qty; else r.mbks+=e.qty; } }
+                else if(e.type==='rekon') r.rkn+=e.qty; else if(e.type==='jual') r[e.jns==='umum'?'ju':'ja']+=e.qty;
+            });});
+            let h=""; items.forEach(i=>{
+                const d=rk[i]; const sk = (d.ak + d.mbks) - d.rkn; const sr = (d.ar + d.mbru + d.rkn) - (d.ju + d.ja);
+                h+=`<tr><td class="nama-fixed">${i}</td><td class="brd-heavy">${d.ak}</td><td class="brd-heavy">${d.ar}</td><td>${d.qacc}</td><td>${d.qamd}</td><td>${d.qrej}</td><td>${d.mbru}</td><td>${d.mbks}</td><td>${d.rkn}</td><td>${d.ju}</td><td>${d.ja}</td><td style="color:var(--iz)">${sk}</td><td style="color:var(--w)">${sr}</td><td style="font-weight:900">${sk+sr}</td></tr>`;
+            });
+            document.getElementById('tbStok').innerHTML=h;
+        }
+
+        function renderLog(){ 
+            const t=document.getElementById('sTgl').value, d=sd[t]||{}; let h="";
+            Object.keys(d).reverse().forEach(id=>{ const e=d[id]; h+=`<div class="log-row"><span><b>${e.barang}</b>: ${e.type} (${e.qty})</span><button style="background:var(--d);color:#fff;border:none;padding:5px;border-radius:5px;cursor:pointer" onclick="hFlow('${t}','${id}')">HAPUS</button></div>`; });
+            document.getElementById('flowLog').innerHTML=h || '<p style="text-align:center;font-size:10px">Belum ada input</p>';
+        }
+        function hFlow(t,id){ if(confirm('Hapus log?')) db.ref(`stok_flow/${t}/${id}`).remove(); }
+        function doExcel(id){ const blob = new Blob([document.getElementById(id).outerHTML],{type:'application/vnd.ms-excel'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='REPORT.xls'; a.click(); }
+    </script>
+</body>
+</html>
