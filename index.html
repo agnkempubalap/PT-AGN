@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v79.2 - ULTIMATE STABLE</title>
+    <title>PT-AGN v80.1 - GUDANG PRO SYSTEM</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
@@ -19,22 +19,22 @@
         .t-btn.active { background: var(--p); border-color: var(--p); color: #fff; }
         .hidden { display: none !important; }
         .card{background:var(--c);padding:18px;border-radius:18px;margin-bottom:12px;border:1px solid var(--b);box-shadow:0 4px 6px -1px rgba(0,0,0,0.1)}
-        h3{margin:0 0 15px;font-size:11px;color:var(--iz);text-transform:uppercase;letter-spacing:1px;font-weight:800}
-        input,button,select{border-radius:12px;font-size:14px;height:52px;border:1px solid var(--b);background:var(--bg);color:var(--t);width:100%;box-sizing:border-box;outline:none; padding:0 15px}
+        h3{margin:0 0 10px;font-size:11px;color:var(--iz);text-transform:uppercase;letter-spacing:1px;font-weight:800}
+        input,button,select{border-radius:12px;font-size:14px;height:48px;border:1px solid var(--b);background:var(--bg);color:var(--t);width:100%;box-sizing:border-box;outline:none; padding:0 12px}
         .btn{display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;border:none;color:#fff}
         .table-wrap{overflow-x:auto; border-radius:12px; border:1px solid var(--b); background:var(--c); scroll-behavior: smooth}
         .table-web{width:100%;border-collapse:separate;border-spacing:0;font-size:10px; color:var(--t)}
-        .table-web th, .table-web td{border-bottom:1px solid var(--b);border-right:1px solid var(--b);padding:8px 2px;text-align:center;min-width:35px}
-        .nama-fixed{position:sticky !important;left:0;background-color:var(--c) !important;z-index:10;min-width:110px !important;text-align:left !important;padding-left:10px !important;font-weight:700; border-right: 2px solid var(--p) !important}
-        .today-col { background: rgba(37, 99, 235, 0.15) !important; border-left: 2px solid var(--p); border-right: 2px solid var(--p); }
+        .table-web th, .table-web td{border-bottom:1px solid var(--b);border-right:1px solid var(--b);padding:8px 4px;text-align:center;min-width:35px}
+        .nama-fixed{position:sticky !important;left:0;background-color:var(--c) !important;z-index:10;min-width:120px !important;text-align:left !important;padding-left:10px !important;font-weight:700; border-right: 2px solid var(--p) !important}
+        .today-col { background: rgba(37, 99, 235, 0.15) !important; }
         .s-cell{border-radius:6px;width:35px;height:35px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;font-size:10px;margin: 0 auto;}
         .s-v{background:var(--s);color:#fff} .s-late{background:var(--w);color:#000} .s-i{background:var(--iz);color:#fff}
         .s-off{background:var(--d);color:#fff} .s-a{background:var(--al);color:#fff} .s-l{background:#AA00FF;color:#fff} .s-mng{background:#64748b;color:#fff}
-        .jam-text{font-size:7px;font-weight:600;display:block;margin-top:2px;max-width:33px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;}
-        .log-box { margin-top: 10px; max-height: 200px; overflow-y: auto; background: var(--bg); border-radius: 10px; padding: 5px; }
-        .log-row { display: flex; justify-content: space-between; align-items:center; padding: 10px; border-bottom: 1px solid var(--b); font-size: 11px; }
-        .del-btn { background: var(--d); color: #fff; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 10px; font-weight: bold; width: auto !important; height: auto !important; }
-        @media print { .no-print, header, .tabs-nav, #btnManual { display: none !important; } body { background: white !important; color: black !important; } .table-web { transform: scale(0.6); transform-origin: top left; } .card { border:none; padding:0; } }
+        .jam-text{font-size:7px;font-weight:600;display:block;margin-top:2px}
+        .log-box { margin-top: 10px; max-height: 150px; overflow-y: auto; background: var(--bg); border-radius: 10px; }
+        .log-row { display: flex; justify-content: space-between; align-items:center; padding: 8px 12px; border-bottom: 1px solid var(--b); font-size: 11px; }
+        .manual-mode { background: #4c1d95 !important; border-color: #8b5cf6 !important; }
+        @media print { .no-print { display: none !important; } .table-web { transform: scale(0.65); transform-origin: top left; } }
     </style>
 </head>
 <body data-theme="dark">
@@ -42,25 +42,25 @@
         <header>
             <div class="logo-box">
                 <img src="https://ui-avatars.com/api/?name=AGN&background=000&color=fff">
-                <div><h2 style="margin:0;font-size:1.2rem">PT AGN</h2><span style="font-size:10px;color:var(--p);font-weight:800">SYSTEM v79.2 STABLE</span></div>
+                <div><h2 style="margin:0;font-size:1.1rem">PT AGN GUDANG</h2><span style="font-size:9px;color:var(--p);font-weight:800">VERSION 80.1 PRO</span></div>
             </div>
-            <div style="display:flex; gap:10px">
-                <button onclick="toggleT()" style="width:110px; height:40px; font-size:11px; background:var(--c); color:var(--t); border:1px solid var(--b)">🌓 THEME</button>
-                <button onclick="toggleManual()" id="btnManual" style="height:40px; width:130px; font-size:11px; background:var(--b)">🛠️ MANUAL: OFF</button>
+            <div style="display:flex; gap:8px">
+                <button onclick="toggleT()" style="width:45px; height:45px; background:var(--c)">🌓</button>
+                <button onclick="toggleManual()" id="btnManual" style="width:140px; font-size:11px; background:var(--b)">🛠️ MODE EDIT: OFF</button>
             </div>
         </header>
 
         <div class="tabs-nav no-print">
             <button id="btnAbsen" class="t-btn active" onclick="goTab('absen')">📅 ABSENSI</button>
-            <button id="btnStok" class="t-btn" onclick="goTab('stok')">📦 GUDANG & FLOW</button>
+            <button id="btnStok" class="t-btn" onclick="goTab('stok')">📦 STOK & GUDANG</button>
         </div>
 
         <!-- PAGE ABSENSI -->
         <div id="page-absen">
             <div class="card no-print">
-                <h3>👥 DATA KARYAWAN</h3>
+                <h3>👥 MANAJEMEN KARYAWAN</h3>
                 <div style="display:flex;gap:10px">
-                    <input list="lk" id="iNama" placeholder="Ketik/Pilih Nama...">
+                    <input list="lk" id="iNama" placeholder="Cari Nama Karyawan...">
                     <datalist id="lk"></datalist>
                     <button class="btn" style="background:var(--s);width:60px;font-size:24px" onclick="tKaryawan()">+</button>
                     <button class="btn" style="background:var(--d);width:60px" onclick="hKaryawan()">🗑️</button>
@@ -68,23 +68,19 @@
             </div>
 
             <div class="card no-print">
-                <h3>⚡ PRESENSI & KONTROL</h3>
                 <div style="display:grid;grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px">
-                    <button class="btn" style="background:var(--s);height:60px;font-size:18px" onclick="pAbsen('Masuk')">MASUK</button>
-                    <button class="btn" style="background:var(--d);height:60px;font-size:18px" onclick="pAbsen('Pulang')">PULANG</button>
+                    <button class="btn" style="background:var(--s);height:60px;font-size:16px" onclick="pAbsen('Masuk')">ABSEN MASUK</button>
+                    <button class="btn" style="background:var(--d);height:60px;font-size:16px" onclick="pAbsen('Pulang')">ABSEN PULANG</button>
                 </div>
-                <div style="display:grid;grid-template-columns: 1.5fr 1fr; gap:10px">
-                    <button class="btn" style="background:var(--iz);height:50px" onclick="pAbsen('Izin')">📝 IZIN / KET</button>
-                    <button class="btn" style="background:var(--al);height:50px" onclick="resetAbsen()">🗑️ RESET</button>
-                </div>
+                <button class="btn" style="background:var(--iz);height:45px" onclick="pAbsen('Izin')">📝 IZIN / KETERANGAN</button>
             </div>
 
             <div class="card">
                 <div class="no-print" style="display:flex; justify-content:space-between; margin-bottom:15px; gap:10px">
-                    <input type="month" id="fB" style="width:160px" onchange="rRekap()">
+                    <input type="month" id="fB" style="width:150px" onchange="rRekap()">
                     <div style="display:flex; gap:5px">
-                        <button class="btn" style="background:#1d6f42; width:90px; height:45px; font-size:11px" onclick="doExcel('rekapTable')">EXCEL</button>
-                        <button class="btn" style="background:#b91c1c; width:90px; height:45px; font-size:11px" onclick="window.print()">PDF</button>
+                        <button class="btn" style="background:#1d6f42; width:90px; height:40px; font-size:10px" onclick="doExcel('rekapTable')">EXCEL</button>
+                        <button class="btn" style="background:#b91c1c; width:90px; height:40px; font-size:10px" onclick="window.print()">PDF</button>
                     </div>
                 </div>
                 <div class="table-wrap" id="scrollAreaAbsen"><table class="table-web" id="rekapTable"><thead id="thWeb"></thead><tbody id="tbWeb"></tbody></table></div>
@@ -94,57 +90,69 @@
         <!-- PAGE STOK -->
         <div id="page-stok" class="hidden">
             <div class="card no-print">
-                <h3>🔄 INPUT FLOW GUDANG</h3>
+                <h3>📦 KELOLA BARANG</h3>
+                <div style="display:flex; gap:8px">
+                    <input type="text" id="mBrg" placeholder="Nama Barang Baru...">
+                    <button class="btn" style="background:var(--s); width:60px" onclick="tBrg()">+</button>
+                    <button class="btn" style="background:var(--iz); width:60px" onclick="eBrg()">✏️</button>
+                    <button class="btn" style="background:var(--d); width:60px" onclick="hBrg()">🗑️</button>
+                </div>
+            </div>
+
+            <div class="card no-print">
                 <div style="display:grid; grid-template-columns: 1.5fr 1fr; gap:10px; margin-bottom:15px">
                     <select id="sBrg"><option value="">Pilih Barang...</option></select>
                     <input type="date" id="sTgl" onchange="renderLog()">
                 </div>
                 
-                <div style="background:rgba(255,255,255,0.03); padding:15px; border-radius:12px; margin-bottom:10px; border:1px solid var(--b)">
-                    <h3 style="color:var(--p); margin-bottom:10px">1. QC & MASUK</h3>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr auto; gap:8px">
-                        <select id="qcKondisi"><option value="baru">Baru</option><option value="bekas">Bekas</option></select>
-                        <select id="qcStatus"><option value="acc">Acc</option><option value="amd">AMD</option><option value="rej">Rej</option></select>
-                        <input type="number" id="qtyQC" placeholder="Qty">
-                        <button class="btn" style="background:var(--p); width:60px" onclick="saveFlow('qc')">OK</button>
-                    </div>
-                </div>
-
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
-                    <div style="background:rgba(255,255,255,0.03); padding:15px; border-radius:12px; border:1px solid var(--b)">
-                        <h3 style="color:var(--iz)">2. REKONDISI</h3>
-                        <div style="display:flex; gap:8px">
-                            <input type="number" id="qtyRekon" placeholder="Qty">
-                            <button class="btn" style="background:var(--iz); width:60px" onclick="saveFlow('rekon')">OK</button>
+                <div style="display:grid; grid-template-columns: 1fr 1.2fr 1fr; gap:10px">
+                    <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:12px; border:1px solid var(--b)">
+                        <h3 style="color:var(--p)">1. QC & MASUK</h3>
+                        <div style="display:grid; gap:5px">
+                            <select id="qcKondisi"><option value="baru">Baru</option><option value="bekas">Bekas</option></select>
+                            <select id="qcStatus"><option value="acc">Accepted</option><option value="amd">Acc w/ AMD</option><option value="rej">Reject</option></select>
+                            <input type="number" id="qtyQC" placeholder="Qty">
+                            <button class="btn" style="background:var(--p); height:40px" onclick="saveFlow('qc')">OK</button>
                         </div>
                     </div>
-                    <div style="background:rgba(255,255,255,0.03); padding:15px; border-radius:12px; border:1px solid var(--b)">
-                        <h3 style="color:var(--s)">3. JUAL</h3>
-                        <div style="display:grid; grid-template-columns: 1fr auto; gap:8px">
-                            <select id="jnsJual"><option value="umum">Umum</option><option value="agen">Agen</option></select>
+                    <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:12px; border:1px solid var(--b)">
+                        <h3 style="color:var(--iz)">2. REKONDISI</h3>
+                        <div style="display:grid; gap:5px">
+                            <input type="number" id="qtyRekon" placeholder="Qty Selesai">
+                            <p style="font-size:9px; color:var(--b); margin:0">*Otomatis Bekas -> Ready</p>
+                            <button class="btn" style="background:var(--iz); height:40px" onclick="saveFlow('rekon')">OK</button>
+                        </div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:12px; border:1px solid var(--b)">
+                        <h3 style="color:var(--s)">3. PENJUALAN</h3>
+                        <div style="display:grid; gap:5px">
+                            <select id="jnsJual"><option value="umum">Jual Umum</option><option value="agen">Jual Agen</option></select>
                             <input type="number" id="qtyJual" placeholder="Qty">
-                            <button class="btn" style="background:var(--s); width:60px" onclick="saveFlow('jual')">OK</button>
+                            <button class="btn" style="background:var(--s); height:40px" onclick="saveFlow('jual')">OK</button>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="card">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px">
-                    <h3>📊 REKAP SALDO GUDANG</h3>
-                    <button class="btn" style="background:#1d6f42; width:100px; height:35px; font-size:10px" onclick="doExcel('mainStTable')">EXCEL STOK</button>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
+                    <h3>📊 LAPORAN STOK GUDANG</h3>
+                    <div style="display:flex; gap:5px">
+                        <button onclick="pindahBulan()" class="btn" style="background:var(--al); font-size:9px; padding:0 10px; height:30px">⏭️ PINDAH BULAN</button>
+                        <button class="btn" style="background:#1d6f42; width:80px; height:30px; font-size:10px" onclick="doExcel('mainStTable')">EXCEL</button>
+                    </div>
                 </div>
                 <div class="table-wrap"><table class="table-web" id="mainStTable">
                     <thead>
                         <tr style="background:var(--b)">
-                            <th rowspan="2" class="nama-fixed">Barang</th>
-                            <th colspan="2">AWAL</th><th colspan="3" style="background:var(--p)">QC GATE</th>
+                            <th rowspan="2" class="nama-fixed">Nama Barang</th>
+                            <th colspan="2">STOK AWAL</th><th colspan="3" style="background:var(--p)">QC GATE (IN)</th>
                             <th colspan="2" style="background:var(--al)">INVENTORY</th><th style="background:var(--iz)">PROSES</th>
-                            <th colspan="2" style="background:var(--d)">SALES</th><th colspan="3" style="background:var(--s)">AKHIR</th>
+                            <th colspan="2" style="background:var(--d)">PENJUALAN</th><th colspan="3" style="background:var(--s)">STOK AKHIR</th>
                         </tr>
                         <tr style="background:var(--b)">
-                            <th>Kotor</th><th>Ready</th><th>Acc</th><th>AMD</th><th>Rej</th>
-                            <th>M.Baru</th><th>M.Bekas</th><th>Rekon</th><th>Umum</th><th>Agen</th>
+                            <th>Kotor</th><th>Ready</th><th>ACC</th><th>AMD</th><th>REJ</th>
+                            <th>M.Bersih</th><th>M.Bekas</th><th>Rekon</th><th>Umum</th><th>Agen</th>
                             <th>S.KOTOR</th><th>S.READY</th><th style="background:var(--t);color:#000">TOTAL</th>
                         </tr>
                     </thead>
@@ -153,7 +161,7 @@
             </div>
 
             <div class="card no-print">
-                <h3>🗑️ LOG TRANSAKSI</h3>
+                <h3>🕒 LOG TRANSAKSI HARI INI</h3>
                 <div id="flowLog" class="log-box"></div>
             </div>
         </div>
@@ -189,8 +197,8 @@
         }
 
         function scrollToToday(){
-            const today = new Date().getDate();
-            const el = document.getElementById('today-marker');
+            const todayDate = new Date().getDate();
+            const el = document.getElementById(`tgl-${todayDate}`);
             if(el) el.scrollIntoView({behavior:'smooth', inline:'center', block:'nearest'});
         }
 
@@ -210,12 +218,9 @@
 
         function rRekap(){
             const f=document.getElementById('fB').value; if(!f) return;
-            const [y,m]=f.split('-'); const last=new Date(y,m,0).getDate();
-            const todayDate = new Date().getDate();
-            const todayFull = new Date().toISOString().slice(0,10);
-            
+            const [y,m]=f.split('-'); const last=new Date(y,m,0).getDate(), todayFull=new Date().toISOString().slice(0,10), tglSkrg=new Date().getDate();
             let h=`<tr><th class="nama-fixed">Nama</th>`;
-            for(let i=1;i<=last;i++) h+=`<th ${i===todayDate?'id="today-marker" class="today-col"':''}>${i}</th>`;
+            for(let i=1;i<=last;i++) h+=`<th id="tgl-${i}" class="${i===tglSkrg?'today-col':''}">${i}</th>`;
             h+=`<th>H</th><th>I</th><th>A</th><th>L</th></tr>`;
             document.getElementById('thWeb').innerHTML=h;
             
@@ -223,9 +228,8 @@
             Object.values(mk).sort().forEach(n=>{
                 let cH=0, cI=0, cA=0, cL=0, row=`<td class="nama-fixed">${n}</td>`;
                 for(let i=1;i<=last;i++){
-                    let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t);
-                    let isMinggu = (d.getDay()===0), isSetLibur = hl[t], data=ad[t]?ad[t][n]:null;
-                    let sW="-", clW="", infoW="", isToday = (i===todayDate);
+                    let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t), isMinggu=(d.getDay()===0), isSetLibur=hl[t], data=ad[t]?ad[t][n]:null;
+                    let sW="-", clW="", infoW="";
                     if(data){
                         if(data.Izin){ sW="I"; clW="s-i"; cI++; infoW=data.Izin.note; }
                         else if(data.Masuk){ 
@@ -236,23 +240,26 @@
                     } else if(isMinggu) { sW="MNG"; clW="s-mng"; }
                     else if(isSetLibur) { sW="OFF"; clW="s-off"; }
                     else if(t < todayFull && t >= TGL_MULAI_SISTEM && ad[t]) { sW="A"; clW="s-a"; cA++; }
-                    row+=`<td class="${isToday?'today-col':''}"><div class="s-cell ${clW}">${sW}<span class="jam-text">${infoW||""}</span></div></td>`;
+                    row+=`<td class="${i===tglSkrg?'today-col':''}"><div class="s-cell ${clW}">${sW}<span class="jam-text">${infoW||""}</span></div></td>`;
                 }
                 b+=`<tr>${row}<td>${cH}</td><td>${cI}</td><td>${cA}</td><td>${cL}</td></tr>`;
             });
             document.getElementById('tbWeb').innerHTML=b;
         }
 
-        function resetAbsen(){
-            let n=document.getElementById('iNama').value, now=new Date().toISOString().slice(0,10);
-            if(!n) return alert("Pilih Nama!");
-            if(confirm('Hapus absen '+n+' hari ini?')) db.ref(`absensi/${now}/${n}`).remove();
-        }
-
-        // --- STOK ---
+        // --- STOK LOGIC ---
         function uBrg(){ document.getElementById('sBrg').innerHTML = '<option value="">Pilih Barang...</option>' + Object.values(mb).sort().map(b=>`<option value="${b}">${b}</option>`).join(''); }
         function tBrg(){ let n=document.getElementById('mBrg'); if(n.value) db.ref('master_barang').push(n.value).then(()=>n.value=""); }
-        function toggleManual(){ isManual=!isManual; document.getElementById('btnManual').innerText=isManual?"🛠️ MANUAL: ON":"🛠️ MANUAL: OFF"; rStok(); }
+        function hBrg(){ let b=document.getElementById('mBrg').value; let id=Object.keys(mb).find(k=>mb[k]===b); if(id && confirm('Hapus Barang?')) db.ref(`master_barang/${id}`).remove(); }
+        function eBrg(){ let b=document.getElementById('mBrg').value; let id=Object.keys(mb).find(k=>mb[k]===b); if(id){ let n=prompt("Nama Baru:", b); if(n) db.ref(`master_barang/${id}`).set(n); } }
+
+        function toggleManual(){ 
+            isManual=!isManual; 
+            const btn = document.getElementById('btnManual');
+            btn.innerText=isManual?"🛠️ MODE EDIT: ON":"🛠️ MODE EDIT: OFF"; 
+            btn.classList.toggle('manual-mode', isManual);
+            rStok(); 
+        }
 
         function saveFlow(step){
             const brg=document.getElementById('sBrg').value, tgl=document.getElementById('sTgl').value;
@@ -268,15 +275,26 @@
         function rStok(){
             const items = Object.values(mb).sort(); let rk = {};
             items.forEach(i=>rk[i]={ak:0, ar:0, qacc:0, qamd:0, qrej:0, mbru:0, mbks:0, rkn:0, ju:0, ja:0});
-            Object.keys(sd).forEach(t=>{ Object.values(sd[t]).forEach(e=>{
-                const r=rk[e.barang]; if(!r)return;
-                if(e.type==='qc'){ r[`q${e.status}`]+=e.qty; if(e.status!=='rej'){ if(e.kondisi==='baru')r.mbru+=e.qty; else r.mbks+=e.qty; } }
-                else if(e.type==='rekon')r.rkn+=e.qty; else if(e.type==='jual')r[e.jns==='umum'?'ju':'ja']+=e.qty;
-                else if(e.type==='manual')r[e.f]+=e.qty;
-            })});
+            
+            Object.keys(sd).forEach(t=>{ 
+                Object.values(sd[t]).forEach(e=>{
+                    const r=rk[e.barang]; if(!r)return;
+                    if(e.type==='qc'){ 
+                        r[`q${e.status}`]+=e.qty; 
+                        if(e.status!=='rej'){ if(e.kondisi==='baru')r.mbru+=e.qty; else r.mbks+=e.qty; } 
+                    }
+                    else if(e.type==='rekon') r.rkn+=e.qty; 
+                    else if(e.type==='jual') r[e.jns==='umum'?'ju':'ja']+=e.qty;
+                    else if(e.type==='manual') r[e.f]+=e.qty;
+                });
+            });
+
             let h=""; items.forEach(i=>{
-                const d=rk[i], sk=(d.ak+d.mbks)-d.rkn, sr=(d.ar+d.mbru+d.rkn)-(d.ju+d.ja);
-                h+=`<tr><td class="nama-fixed">${i}</td><td ${isManual?`onclick="edM('${i}','ak')"`:''}>${d.ak}</td><td ${isManual?`onclick="edM('${i}','ar')"`:''}>${d.ar}</td>
+                const d=rk[i];
+                const sk = (d.ak + d.mbks) - d.rkn; // Sisa Kotor = Stok Awal Kotor + Masuk Bekas - Direkon
+                const sr = (d.ar + d.mbru + d.rkn) - (d.ju + d.ja); // Sisa Ready = Stok Awal Ready + Masuk Baru + Selesai Rekon - Terjual
+                h+=`<tr><td class="nama-fixed">${i}</td>
+                <td ${isManual?`onclick="edM('${i}','ak')"`:''}>${d.ak}</td><td ${isManual?`onclick="edM('${i}','ar')"`:''}>${d.ar}</td>
                 <td>${d.qacc}</td><td>${d.qamd}</td><td>${d.qrej}</td><td>${d.mbru}</td><td>${d.mbks}</td><td>${d.rkn}</td><td>${d.ju}</td><td>${d.ja}</td>
                 <td style="color:var(--iz);font-weight:800">${sk}</td><td style="color:var(--w);font-weight:800">${sr}</td><td style="background:var(--t);color:#000;font-weight:900">${sk+sr}</td></tr>`;
             });
@@ -284,16 +302,36 @@
         }
 
         function edM(b,f){ let v=prompt(`Edit manual ${f} (${b}):`); if(v!==null) db.ref(`stok_flow/${document.getElementById('sTgl').value}`).push({barang:b,type:'manual',f:f,qty:parseInt(v)}); }
+        
         function renderLog(){ 
             const t=document.getElementById('sTgl').value, d=sd[t]||{}; let h="";
-            Object.keys(d).reverse().forEach(id=>{ const e=d[id]; h+=`<div class="log-row"><span>${e.barang} - ${e.type.toUpperCase()} ${e.qty}</span><button class="del-btn" onclick="hFlow('${t}','${id}')">DEL</button></div>`; });
+            Object.keys(d).reverse().forEach(id=>{ const e=d[id]; h+=`<div class="log-row"><span><b>${e.barang}</b>: ${e.type.toUpperCase()} (${e.qty})</span><button style="background:var(--d); border:none; color:#fff; padding:4px 8px; border-radius:4px; font-size:9px" onclick="hFlow('${t}','${id}')">HAPUS</button></div>`; });
             document.getElementById('flowLog').innerHTML=h;
         }
-        function hFlow(t,id){ if(confirm('Hapus log?')) db.ref(`stok_flow/${t}/${id}`).remove(); }
+        function hFlow(t,id){ if(confirm('Hapus log ini?')) db.ref(`stok_flow/${t}/${id}`).remove(); }
+
+        function pindahBulan(){
+            if(confirm('PERINGATAN: Fitur ini akan memindahkan SISA AKHIR menjadi STOK AWAL. Pastikan semua data bulan ini sudah beres! Lanjut?')){
+                const items = Object.values(mb);
+                items.forEach(i=>{
+                    // Ambil kalkulasi terakhir dan simpan sebagai stok awal permanen (manual type)
+                    const row = Array.from(document.querySelectorAll('#tbFlow tr')).find(tr => tr.cells[0].innerText === i);
+                    if(row){
+                        const sKotor = parseInt(row.cells[11].innerText);
+                        const sReady = parseInt(row.cells[12].innerText);
+                        // Reset semua flow lama dan set saldo awal baru
+                        db.ref('stok_flow').remove();
+                        db.ref(`stok_flow/${new Date().toISOString().slice(0,10)}`).push({barang:i, type:'manual', f:'ak', qty:sKotor});
+                        db.ref(`stok_flow/${new Date().toISOString().slice(0,10)}`).push({barang:i, type:'manual', f:'ar', qty:sReady});
+                    }
+                });
+                alert("Bulan Baru Dimulai!");
+            }
+        }
         
         function doExcel(id){ 
             const blob = new Blob([document.getElementById(id).outerHTML],{type:'application/vnd.ms-excel'});
-            const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=id+'.xls'; a.click(); 
+            const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='LAPORAN_'+id+'.xls'; a.click(); 
         }
     </script>
 </body>
