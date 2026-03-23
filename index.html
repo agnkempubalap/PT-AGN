@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v77.9 - GUDANG & QC FIXED</title>
+    <title>PT-AGN v78.0 - GUDANG & QC ULTIMATE</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
@@ -11,45 +11,37 @@
         body[data-theme="light"]{--bg:#f1f5f9;--c:#ffffff;--t:#1e293b;--b:#cbd5e1}
         body{font-family:'Plus Jakarta Sans',sans-serif;margin:0;background:var(--bg);color:var(--t);padding:10px; transition: background 0.3s}
         .container{max-width:1450px;margin:0 auto}
-        
         header{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px}
         .logo-box{display:flex;align-items:center;gap:12px}
         .logo-box img{width:70px;height:70px;border-radius:50%;background:#000;border:3px solid var(--p);object-fit:cover;cursor:pointer}
         .dark-card{background:var(--c); border-radius:12px; border:1px solid var(--b); padding:10px 15px; display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--t)}
-
         .tabs-nav { display: flex; gap: 10px; margin-bottom: 15px; }
         .t-btn { flex: 1; padding: 15px; border-radius: 12px; background: var(--c); color: var(--t); border: 1px solid var(--b); cursor: pointer; font-weight: 800; font-size: 12px; text-transform: uppercase; }
         .t-btn.active { background: var(--p); border-color: var(--p); color: #fff; }
         .hidden { display: none !important; }
-
         .card{background:var(--c);padding:18px;border-radius:18px;margin-bottom:12px;border:1px solid var(--b);box-shadow:0 4px 6px -1px rgba(0,0,0,0.1)}
         h3{margin:0 0 15px;font-size:11px;color:var(--iz);text-transform:uppercase;letter-spacing:1px;font-weight:800}
-        
         input,button,select{border-radius:12px;font-size:14px;height:52px;border:1px solid var(--b);background:var(--bg);color:var(--t);width:100%;box-sizing:border-box;outline:none; padding:0 15px}
         .btn{display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;border:none;color:#fff}
-        
         .export-group { display: flex; justify-content: flex-end; align-items: flex-end; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
-        .btn-ex { width: 140px; height: 45px; font-size: 11px; border-radius: 10px; padding:0!important; }
-
-        .table-wrap{overflow-x:auto; border-radius:12px; border:1px solid var(--b); background:var(--c); margin-bottom: 20px}
+        .btn-ex { width: 100px; height: 45px; font-size: 11px; border-radius: 10px; padding:0!important; }
+        .table-wrap{overflow-x:auto; border-radius:12px; border:1px solid var(--b); background:var(--c); scroll-behavior: smooth}
         .table-web{width:100%;border-collapse:separate;border-spacing:0;font-size:10px; color:var(--t)}
         .table-web th, .table-web td{border-bottom:1px solid var(--b);border-right:1px solid var(--b);padding:8px 4px;text-align:center;min-width:60px}
-        
         .nama-fixed{position:sticky !important;left:0;background-color:var(--c) !important;z-index:10;min-width:120px !important;text-align:left !important;padding-left:10px !important;font-weight:700; border-right: 2px solid var(--p) !important}
         .nama-fixed-qc{position:sticky !important;left:0;background-color:var(--c) !important;z-index:10;min-width:120px !important;text-align:left !important;padding-left:10px !important;font-weight:700; border-right: 2px solid var(--iz) !important}
-        
+        .s-cell{border-radius:6px;width:35px;height:35px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;font-size:10px;margin: 0 auto;}
+        .s-v{background:var(--s);color:#fff} .s-late{background:var(--w);color:#000} .s-i{background:var(--iz);color:#fff}
+        .s-off{background:var(--d);color:#fff} .s-a{background:var(--al);color:#fff} .s-l{background:#AA00FF;color:#fff} .s-mng{background:#64748b;color:#fff}
         .log-box { margin-top: 10px; max-height: 200px; overflow-y: auto; }
         .log-row { display: flex; justify-content: space-between; align-items:center; padding: 10px; border-bottom: 1px solid var(--b); font-size: 12px; }
         .del-btn { background: var(--d); color: #fff; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 10px; font-weight: bold; }
-
         @media print {
-            header, .no-print, .tabs-nav { display: none !important; }
-            body { background: white !important; color: black !important; padding: 0 !important; }
-            .card { border: none !important; box-shadow: none !important; background: transparent !important; margin: 0 !important; padding: 0 !important; }
-            .table-wrap { overflow: visible !important; border: none !important; }
-            .table-web { width: 100% !important; border: 1px solid black !important; font-size: 9px !important; }
-            .table-web th, .table-web td { border: 1px solid black !important; color: black !important; }
-            .nama-fixed, .nama-fixed-qc { position: static !important; background: #eee !important; border: 1px solid black !important; }
+            header, .no-print, .export-group, .dark-card, .tabs-nav { display: none !important; }
+            body { background: white !important; color: black !important; }
+            .card { border: none !important; background: transparent !important; }
+            .table-web { transform: scale(0.85); transform-origin: top left; width: 100% !important; border: 1px solid #000 !important; }
+            .table-web th, .table-web td { border: 1px solid #000 !important; color: black !important; }
         }
     </style>
 </head>
@@ -59,7 +51,7 @@
             <div class="logo-box">
                 <input type="file" id="inpLogo" style="display:none" accept="image/*" onchange="cLogo(event)">
                 <img id="mainLogo" src="https://ui-avatars.com/api/?name=AGN&background=000&color=fff" onclick="document.getElementById('inpLogo').click()">
-                <div><h2 style="margin:0;font-size:1.3rem">PT AGN</h2><span style="font-size:10px;color:var(--p);font-weight:800">SYSTEM v77.9 GUDANG-FIX</span></div>
+                <div><h2 style="margin:0;font-size:1.3rem">PT AGN</h2><span style="font-size:10px;color:var(--p);font-weight:800">SYSTEM v78.0 FINAL-STOK</span></div>
             </div>
             <div class="dark-card" onclick="toggleT()">
                 <span id="tIco">☀️</span> <span style="font-size:12px;font-weight:600" id="tTxt">Light Mode</span>
@@ -84,9 +76,9 @@
             <div class="card">
                 <div class="export-group no-print">
                     <input type="month" id="fB" style="width:160px" onchange="rRekap()">
-                    <button class="btn btn-ex" style="background:#1d6f42" onclick="doExcel()">📥 EXCEL ABSEN</button>
+                    <button class="btn btn-ex" style="background:#1d6f42" onclick="doExcel()">📥 EXCEL</button>
                 </div>
-                <div class="table-wrap">
+                <div class="table-wrap" id="scrollArea">
                     <table class="table-web" id="rekapTable"><thead id="thWeb"></thead><tbody id="tbWeb"></tbody></table>
                 </div>
             </div>
@@ -137,19 +129,17 @@
                 </div>
             </div>
 
-            <div class="card" id="printableArea">
+            <div class="card">
                 <div class="export-group no-print">
-                    <h3 style="flex-grow:1; margin:0">📊 LAPORAN GUDANG & QC</h3>
-                    <button class="btn btn-ex" style="background:#1d6f42" onclick="doExcelStokQC()">📥 EXCEL GABUNG</button>
-                    <button class="btn btn-ex" style="background:#b91c1c" onclick="window.print()">📄 PDF GABUNG</button>
+                    <h3 style="flex-grow:1; margin:0; color:var(--p)">📊 REKAP GUDANG & QC</h3>
+                    <button class="btn btn-ex" style="background:#1d6f42" onclick="doExcelStok()">📥 EXCEL</button>
+                    <button class="btn btn-ex" style="background:#b91c1c" onclick="window.print()">📄 PDF</button>
                 </div>
-                
-                <h3 style="color:var(--p)">[1] REKAP STOK GUDANG</h3>
+                <h3 style="color:var(--p)">[1] STOK GUDANG</h3>
                 <div class="table-wrap">
                     <table class="table-web" id="stTable"><thead id="thSt"></thead><tbody id="tbSt"></tbody></table>
                 </div>
-
-                <h3 style="color:var(--iz)">[2] REKAP LOG QUALITY CONTROL (QC)</h3>
+                <h3 style="color:var(--iz); margin-top:20px">[2] LOG QUALITY CONTROL</h3>
                 <div class="table-wrap">
                     <table class="table-web" id="qcTable"><thead id="thQc"></thead><tbody id="tbQc"></tbody></table>
                 </div>
@@ -165,7 +155,7 @@
     <script>
         const cfg={apiKey:"AIzaSyAu67MAhWBxdmciPi3xOKWhdy-uP4u9tXI",databaseURL:"https://pt-agn-default-rtdb.asia-southeast1.firebasedatabase.app"};
         firebase.initializeApp(cfg); const db=firebase.database();
-        let mk={}, ad={}, mb={}, sd={};
+        let mk={}, ad={}, hl={}, mb={}, sd={};
 
         window.onload=()=>{
             const d = new Date();
@@ -227,13 +217,10 @@
                 jnsNama = sel.options[sel.selectedIndex].text;
             }
 
-            if(!brg || !jns || isNaN(qty)) return alert("Lengkapi data!");
+            if(!brg || !jns || isNaN(qty)) return alert("Data tidak lengkap!");
 
             db.ref(`stok_barang/${tgl}`).push({
-                barang: brg,
-                jenis: jns,
-                jenis_nama: jnsNama,
-                qty: qty
+                barang: brg, jenis: jns, jenis_nama: jnsNama, qty: qty
             }).then(() => {
                 if(mode === 'stok') document.getElementById('sQtyStok').value = "";
                 else document.getElementById('sQtyQC').value = "";
@@ -249,7 +236,6 @@
                 Object.values(sd[t]).forEach(e => { if(res[e.barang]) res[e.barang][e.jenis] += e.qty; });
             });
 
-            // HEADER TABEL STOK TETAP UTUH SESUAI PERINTAH
             let hS = `<tr><th class="nama-fixed">Nama Barang</th><th>Awal Ready</th><th>Awal Kotor</th><th>Masuk Kotor</th><th>Masuk Bersih/Baru</th><th>Rekon</th><th>Jual Umum</th><th>Jual Agen</th><th style="background:var(--p)">STOK READY</th></tr>`;
             let bS = "";
             let hQ = `<tr><th class="nama-fixed-qc">Nama Barang</th><th>Accepted</th><th>Accepted Minor Damage</th><th>Reject</th><th style="background:var(--iz)">TOTAL QC</th></tr>`;
@@ -277,19 +263,6 @@
 
         function hStok(t,id){ if(confirm('Hapus?')) db.ref(`stok_barang/${t}/${id}`).remove(); }
 
-        function doExcelStokQC(){
-            const sT = document.getElementById("stTable").outerHTML;
-            const qT = document.getElementById("qcTable").outerHTML;
-            const template = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><style>table{border-collapse:collapse;} th{background:#2563eb;color:white;border:1px solid black;padding:5px;} td{border:1px solid black;text-align:center;padding:5px;}</style></head><body><h2>STOK GUDANG</h2>${sT}<br><h2>QC REPORT</h2>${qT}</body></html>`;
-            const blob = new Blob([template], {type: "application/vnd.ms-excel"});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a"); a.href = url; a.download = `LAPORAN_GUDANG_QC_AGN.xls`; a.click();
-        }
-
-        function cLogo(e){
-            const r=new FileReader(); r.onload=()=>{ document.getElementById('mainLogo').src=r.result; }; r.readAsDataURL(e.target.files[0]);
-        }
-        
         function rRekap(){
             const b = document.getElementById('fB').value; if(!b) return;
             const [y, m] = b.split('-');
@@ -312,11 +285,16 @@
             document.getElementById('tbWeb').innerHTML = row;
         }
 
-        function doExcel(){
-            const html = document.getElementById("rekapTable").outerHTML;
-            const blob = new Blob([html], {type: "application/vnd.ms-excel"});
+        function doExcelStok(){
+            const sT = document.getElementById("stTable").outerHTML;
+            const template = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><style>table{border-collapse:collapse;} th{background:#2563eb;color:white;border:1px solid black;} td{border:1px solid black;text-align:center;}</style></head><body>${sT}</body></html>`;
+            const blob = new Blob([template], {type: "application/vnd.ms-excel"});
             const url = URL.createObjectURL(blob);
-            const a = document.createElement("a"); a.href = url; a.download = `ABSENSI_AGN_${document.getElementById('fB').value}.xls`; a.click();
+            const a = document.createElement("a"); a.href = url; a.download = `REKAP_AGN_STOK.xls`; a.click();
+        }
+
+        function cLogo(e){
+            const r=new FileReader(); r.onload=()=>{ document.getElementById('mainLogo').src=r.result; }; r.readAsDataURL(e.target.files[0]);
         }
     </script>
 </body>
