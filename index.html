@@ -27,6 +27,7 @@
         h3{margin:0 0 15px;font-size:11px;color:var(--iz);text-transform:uppercase;letter-spacing:1px;font-weight:800}
         
         input,button,select{border-radius:12px;font-size:14px;height:52px;border:1px solid var(--b);background:var(--bg);color:var(--t);width:100%;box-sizing:border-box;outline:none; padding:0 15px}
+        select optgroup { background: var(--b); color: #fff; font-weight: bold; }
         .btn{display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;border:none;color:#fff}
         
         .export-group { display: flex; justify-content: flex-end; align-items: flex-end; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
@@ -37,6 +38,7 @@
         .table-web th, .table-web td{border-bottom:1px solid var(--b);border-right:1px solid var(--b);padding:8px 1px;text-align:center;min-width:35px}
         
         .nama-fixed{position:sticky !important;left:0;background-color:var(--c) !important;z-index:10;min-width:110px !important;text-align:left !important;padding-left:10px !important;font-weight:700; border-right: 2px solid var(--p) !important}
+        .nama-fixed-qc{position:sticky !important;left:0;background-color:var(--c) !important;z-index:10;min-width:110px !important;text-align:left !important;padding-left:10px !important;font-weight:700; border-right: 2px solid var(--iz) !important}
         .today-col{background: rgba(37, 99, 235, 0.15) !important;}
         .rekap-akhir{background:var(--bg) !important; color:var(--t) !important; font-weight:800; min-width:30px !important}
         .th-rekap{background:var(--bg) !important; color:var(--iz) !important; font-weight:800}
@@ -58,7 +60,7 @@
             html, body { background: #fff !important; color: #1e293b !important; }
             header, .no-print, .export-group, .dark-card, .tabs-nav { display: none !important; }
             .container { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
-            .card { border: none !important; padding: 0 !important; background: transparent !important; }
+            .card { border: none !important; padding: 0 !important; background: transparent !important; margin-bottom: 20px !important; }
             .table-wrap { overflow: visible !important; border: none !important; }
             
             .table-web { 
@@ -81,7 +83,7 @@
             .s-mng { background-color: #64748b !important; color: white !important; }
             .s-l { background-color: #AA00FF !important; color: white !important; }
             
-            .nama-fixed { position: static !important; background: #f8fafc !important; color: #1e293b !important; font-weight: bold !important; text-align: left !important; border-right: 1px solid #000 !important; }
+            .nama-fixed, .nama-fixed-qc { position: static !important; background: #f8fafc !important; color: #1e293b !important; font-weight: bold !important; text-align: left !important; border-right: 1px solid #000 !important; }
             .th-rekap { background-color: #f1f5f9 !important; color: #2563eb !important; }
             .rekap-akhir { background-color: #f8fafc !important; color: #1e293b !important; }
             .jam-text { color: #1e293b !important; font-size: 6px !important; }
@@ -171,33 +173,39 @@
             </div>
 
             <div class="card no-print">
-                <h3>📦 INPUT AKTIVITAS STOK</h3>
+                <h3>📦 INPUT AKTIVITAS STOK & QC</h3>
                 <div style="display:grid; grid-template-columns: 1.5fr 1fr; gap:10px; margin-bottom:10px">
                     <select id="sBrg"><option value="">Pilih Barang...</option></select>
                     <input type="date" id="sTgl" onchange="renderLog()">
                 </div>
                 <div style="display:grid; grid-template-columns: 1.5fr 1fr auto; gap:10px">
                     <select id="sJns">
-                        <option value="awal_ready">Awal Ready</option>
-                        <option value="awal_kotor">Awal Kotor</option>
-                        <option value="masuk_kotor">Masuk Kotor</option>
-                        <option value="masuk_bersih">Masuk Bersih</option>
-                        <option value="qc_accepted">QC Accepted</option>
-                        <option value="qc_rejected">QC Rejected</option>
-                        <option value="rekon">Rekon</option>
-                        <option value="jual_u">Jual Umum</option>
-                        <option value="jual_a">Jual Agen</option>
+                        <optgroup label="STOK UTAMA">
+                            <option value="awal_ready">Awal Ready</option>
+                            <option value="awal_kotor">Awal Kotor</option>
+                            <option value="masuk_kotor">Masuk Kotor</option>
+                            <option value="masuk_bersih">Masuk Bersih</option>
+                            <option value="rekon">Rekon</option>
+                            <option value="jual_u">Jual Umum</option>
+                            <option value="jual_a">Jual Agen</option>
+                        </optgroup>
+                        <optgroup label="LOG QC BARANG MASUK">
+                            <option value="qc_a">Accepted</option>
+                            <option value="qc_amd">Accepted with Minor Damage</option>
+                            <option value="qc_r">Reject</option>
+                        </optgroup>
                     </select>
                     <input type="number" id="sQty" placeholder="Jumlah / Qty">
                     <button class="btn" style="background:var(--p); width:80px" onclick="vStok()">SAVE</button>
                 </div>
             </div>
 
+            <!-- TABEL 1: GUDANG UTAMA -->
             <div class="card">
                 <div class="export-group no-print">
-                    <h3 style="flex-grow:1; margin:0">📊 REKAP GUDANG KESELURUHAN</h3>
+                    <h3 style="flex-grow:1; margin:0; color:var(--p)">📊 REKAP GUDANG KESELURUHAN</h3>
                     <button class="btn btn-ex" style="background:#1d6f42" onclick="doExcelStok()">📥 EXCEL STOK</button>
-                    <button class="btn btn-ex" style="background:#b91c1c" onclick="window.print()">📄 PDF STOK</button>
+                    <button class="btn btn-ex" style="background:#b91c1c" onclick="window.print()">📄 PDF CETAK</button>
                 </div>
                 <div class="table-wrap">
                     <table class="table-web" id="stTable">
@@ -207,8 +215,22 @@
                 </div>
             </div>
 
+            <!-- TABEL 2: LOG QC MASUK -->
+            <div class="card">
+                <div class="export-group no-print">
+                    <h3 style="flex-grow:1; margin:0; color:var(--iz)">📋 REKAP QC BARANG MASUK</h3>
+                    <button class="btn btn-ex" style="background:#1d6f42" onclick="doExcelQC()">📥 EXCEL QC</button>
+                </div>
+                <div class="table-wrap">
+                    <table class="table-web" id="qcTable">
+                        <thead id="thQc"></thead>
+                        <tbody id="tbQc"></tbody>
+                    </table>
+                </div>
+            </div>
+
             <div class="card no-print">
-                <h3>🗑️ LOG INPUT STOK (BERDASARKAN TANGGAL DI ATAS)</h3>
+                <h3>🗑️ LOG INPUT STOK & QC (BERDASARKAN TANGGAL)</h3>
                 <div id="stokLog" class="log-box"></div>
             </div>
         </div>
@@ -403,7 +425,7 @@
                 qty: q
             }).then(() => {
                 document.getElementById('sQty').value="";
-                alert("Stok berhasil diinput!");
+                alert("Data berhasil diinput!");
             });
         }
 
@@ -411,10 +433,16 @@
             let items = Object.values(mb).sort();
             let res = {};
             
+            // Setup field untuk Stok Utama & QC
             items.forEach(i => {
-                res[i] = { awal_ready:0, awal_kotor:0, masuk_kotor:0, masuk_bersih:0, qc_accepted:0, qc_rejected:0, rekon:0, jual_u:0, jual_a:0 };
+                res[i] = { 
+                    awal_ready:0, awal_kotor:0, masuk_kotor:0, masuk_bersih:0, 
+                    rekon:0, jual_u:0, jual_a:0,
+                    qc_a:0, qc_amd:0, qc_r:0 
+                };
             });
 
+            // Akumulasi Data
             Object.keys(sd).forEach(tgl => {
                 Object.values(sd[tgl]).forEach(entry => {
                     if(res[entry.barang] && res[entry.barang][entry.jenis] !== undefined) {
@@ -423,47 +451,69 @@
                 });
             });
 
-            // FIX: NAMA KOLOM QC DITAMBAHKAN DAN TIDAK DISINGKAT
-            let h = `<tr>
+            // HEADER TABEL 1: STOK UTAMA
+            let hSt = `<tr>
                 <th class="nama-fixed" style="background:var(--p)">Nama Barang</th>
                 <th>Awal Ready</th>
                 <th>Awal Kotor</th>
                 <th>Masuk Kotor</th>
                 <th>Masuk Bersih</th>
-                <th>QC Accepted</th>
-                <th>QC Rejected</th>
                 <th>Rekon</th>
                 <th>Jual Umum</th>
                 <th>Jual Agen</th>
                 <th style="background:var(--s)">TOT READY</th>
                 <th style="background:var(--iz)">TOT KOTOR</th>
             </tr>`;
+
+            // HEADER TABEL 2: LOG QC
+            let hQc = `<tr>
+                <th class="nama-fixed-qc" style="background:var(--iz)">Nama Barang</th>
+                <th>Accepted</th>
+                <th>Accepted with Minor Damage</th>
+                <th>Reject</th>
+                <th style="background:var(--p)">TOTAL QC MASUK</th>
+            </tr>`;
             
-            let b = "";
+            let bSt = "";
+            let bQc = "";
+
             items.forEach(i => {
                 const s = res[i];
-                // Asumsi formula: QC Accepted menambah stok ready, QC Rejected mengurangi kotor tapi tidak jadi ready.
-                const totReady = (s.awal_ready + s.masuk_bersih + s.rekon + s.qc_accepted) - (s.jual_u + s.jual_a);
-                const totKotor = (s.awal_kotor + s.masuk_kotor) - s.rekon - s.qc_accepted - s.qc_rejected;
-
-                b += `<tr>
+                
+                // Kalkulasi Stok Utama (Terpisah dari QC)
+                const totReady = (s.awal_ready + s.masuk_bersih + s.rekon) - (s.jual_u + s.jual_a);
+                const totKotor = (s.awal_kotor + s.masuk_kotor) - s.rekon;
+                
+                bSt += `<tr>
                     <td class="nama-fixed">${i}</td>
                     <td>${s.awal_ready}</td>
                     <td>${s.awal_kotor}</td>
                     <td>${s.masuk_kotor}</td>
                     <td>${s.masuk_bersih}</td>
-                    <td>${s.qc_accepted}</td>
-                    <td>${s.qc_rejected}</td>
                     <td>${s.rekon}</td>
                     <td>${s.jual_u}</td>
                     <td>${s.jual_a}</td>
                     <td style="font-weight:bold; color:var(--s)">${totReady}</td>
                     <td style="font-weight:bold; color:var(--iz)">${totKotor}</td>
                 </tr>`;
+
+                // Kalkulasi QC Masuk
+                const totQc = s.qc_a + s.qc_amd + s.qc_r;
+                
+                bQc += `<tr>
+                    <td class="nama-fixed-qc">${i}</td>
+                    <td>${s.qc_a}</td>
+                    <td>${s.qc_amd}</td>
+                    <td>${s.qc_r}</td>
+                    <td style="font-weight:bold; color:var(--p)">${totQc}</td>
+                </tr>`;
             });
 
-            document.getElementById('thSt').innerHTML = h;
-            document.getElementById('tbSt').innerHTML = b;
+            document.getElementById('thSt').innerHTML = hSt;
+            document.getElementById('tbSt').innerHTML = bSt;
+            
+            document.getElementById('thQc').innerHTML = hQc;
+            document.getElementById('tbQc').innerHTML = bQc;
         }
 
         function renderLog(){
@@ -503,6 +553,17 @@
             const blob = new Blob([template], {type: "application/vnd.ms-excel"});
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a"); a.href = url; a.download = `REKAP_STOK_AGN.xls`; a.click();
+        }
+
+        function doExcelQC(){
+            const table = document.getElementById("qcTable").outerHTML;
+            const template = `
+                <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+                <head><style>table { border-collapse:collapse; } th { background-color: #f59e0b; color: #ffffff; border:1px solid black; } td { border:1px solid black; text-align:center; font-family: Arial; font-size: 10pt; }</style></head>
+                <body>${table}</body></html>`;
+            const blob = new Blob([template], {type: "application/vnd.ms-excel"});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a"); a.href = url; a.download = `REKAP_QC_AGN.xls`; a.click();
         }
     </script>
 </body>
