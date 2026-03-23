@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v77.8 - GUDANG & QC INTEGRATED</title>
+    <title>PT-AGN v77.9 - GUDANG & QC FIXED</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
@@ -33,7 +33,7 @@
 
         .table-wrap{overflow-x:auto; border-radius:12px; border:1px solid var(--b); background:var(--c); margin-bottom: 20px}
         .table-web{width:100%;border-collapse:separate;border-spacing:0;font-size:10px; color:var(--t)}
-        .table-web th, .table-web td{border-bottom:1px solid var(--b);border-right:1px solid var(--b);padding:8px 4px;text-align:center;min-width:45px}
+        .table-web th, .table-web td{border-bottom:1px solid var(--b);border-right:1px solid var(--b);padding:8px 4px;text-align:center;min-width:60px}
         
         .nama-fixed{position:sticky !important;left:0;background-color:var(--c) !important;z-index:10;min-width:120px !important;text-align:left !important;padding-left:10px !important;font-weight:700; border-right: 2px solid var(--p) !important}
         .nama-fixed-qc{position:sticky !important;left:0;background-color:var(--c) !important;z-index:10;min-width:120px !important;text-align:left !important;padding-left:10px !important;font-weight:700; border-right: 2px solid var(--iz) !important}
@@ -59,7 +59,7 @@
             <div class="logo-box">
                 <input type="file" id="inpLogo" style="display:none" accept="image/*" onchange="cLogo(event)">
                 <img id="mainLogo" src="https://ui-avatars.com/api/?name=AGN&background=000&color=fff" onclick="document.getElementById('inpLogo').click()">
-                <div><h2 style="margin:0;font-size:1.3rem">PT AGN</h2><span style="font-size:10px;color:var(--p);font-weight:800">SYSTEM v77.8 GUDANG-FIT</span></div>
+                <div><h2 style="margin:0;font-size:1.3rem">PT AGN</h2><span style="font-size:10px;color:var(--p);font-weight:800">SYSTEM v77.9 GUDANG-FIX</span></div>
             </div>
             <div class="dark-card" onclick="toggleT()">
                 <span id="tIco">☀️</span> <span style="font-size:12px;font-weight:600" id="tTxt">Light Mode</span>
@@ -113,7 +113,7 @@
                         <option value="awal_ready">Awal Ready</option>
                         <option value="awal_kotor">Awal Kotor</option>
                         <option value="masuk_kotor">Masuk Kotor</option>
-                        <option value="masuk_bersih">Masuk Bersih</option>
+                        <option value="masuk_bersih">Masuk Bersih/Baru</option>
                         <option value="rekon">Rekon</option>
                         <option value="jual_u">Jual Umum</option>
                         <option value="jual_a">Jual Agen</option>
@@ -227,7 +227,7 @@
                 jnsNama = sel.options[sel.selectedIndex].text;
             }
 
-            if(!brg || !jns || isNaN(qty)) return alert("Data tidak lengkap!");
+            if(!brg || !jns || isNaN(qty)) return alert("Lengkapi data!");
 
             db.ref(`stok_barang/${tgl}`).push({
                 barang: brg,
@@ -249,7 +249,8 @@
                 Object.values(sd[t]).forEach(e => { if(res[e.barang]) res[e.barang][e.jenis] += e.qty; });
             });
 
-            let hS = `<tr><th class="nama-fixed">Nama Barang</th><th>Awal Ready</th><th>Awal Kotor</th><th>Masuk Kotor</th><th>Masuk Bersih</th><th>Rekon</th><th>Jual Umum</th><th>Jual Agen</th><th style="background:var(--p)">STOK READY</th></tr>`;
+            // HEADER TABEL STOK TETAP UTUH SESUAI PERINTAH
+            let hS = `<tr><th class="nama-fixed">Nama Barang</th><th>Awal Ready</th><th>Awal Kotor</th><th>Masuk Kotor</th><th>Masuk Bersih/Baru</th><th>Rekon</th><th>Jual Umum</th><th>Jual Agen</th><th style="background:var(--p)">STOK READY</th></tr>`;
             let bS = "";
             let hQ = `<tr><th class="nama-fixed-qc">Nama Barang</th><th>Accepted</th><th>Accepted Minor Damage</th><th>Reject</th><th style="background:var(--iz)">TOTAL QC</th></tr>`;
             let bQ = "";
@@ -279,23 +280,16 @@
         function doExcelStokQC(){
             const sT = document.getElementById("stTable").outerHTML;
             const qT = document.getElementById("qcTable").outerHTML;
-            const template = `
-                <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-                <head><style>table { border-collapse:collapse; margin-bottom:20px; font-family:sans-serif; } th { background:#2563eb; color:white; border:1px solid black; padding:5px; } td { border:1px solid black; text-align:center; padding:5px; }</style></head>
-                <body>
-                    <h2>LAPORAN STOK GUDANG</h2>${sT}
-                    <br><h2>LAPORAN QUALITY CONTROL (QC)</h2>${qT}
-                </body></html>`;
+            const template = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><style>table{border-collapse:collapse;} th{background:#2563eb;color:white;border:1px solid black;padding:5px;} td{border:1px solid black;text-align:center;padding:5px;}</style></head><body><h2>STOK GUDANG</h2>${sT}<br><h2>QC REPORT</h2>${qT}</body></html>`;
             const blob = new Blob([template], {type: "application/vnd.ms-excel"});
             const url = URL.createObjectURL(blob);
-            const a = document.createElement("a"); a.href = url; a.download = `LAPORAN_GABUNGAN_AGN.xls`; a.click();
+            const a = document.createElement("a"); a.href = url; a.download = `LAPORAN_GUDANG_QC_AGN.xls`; a.click();
         }
 
         function cLogo(e){
             const r=new FileReader(); r.onload=()=>{ document.getElementById('mainLogo').src=r.result; }; r.readAsDataURL(e.target.files[0]);
         }
         
-        // --- ABSENSI REKAP SCRIPT (Simplified version for integrated) ---
         function rRekap(){
             const b = document.getElementById('fB').value; if(!b) return;
             const [y, m] = b.split('-');
@@ -316,6 +310,13 @@
                 row += `</tr>`;
             });
             document.getElementById('tbWeb').innerHTML = row;
+        }
+
+        function doExcel(){
+            const html = document.getElementById("rekapTable").outerHTML;
+            const blob = new Blob([html], {type: "application/vnd.ms-excel"});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a"); a.href = url; a.download = `ABSENSI_AGN_${document.getElementById('fB').value}.xls`; a.click();
         }
     </script>
 </body>
