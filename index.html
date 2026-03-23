@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v78.0 - GUDANG & QC ULTIMATE</title>
+    <title>PT-AGN v78.1 - REPAIR TOTAL</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
@@ -27,22 +27,17 @@
         .btn-ex { width: 100px; height: 45px; font-size: 11px; border-radius: 10px; padding:0!important; }
         .table-wrap{overflow-x:auto; border-radius:12px; border:1px solid var(--b); background:var(--c); scroll-behavior: smooth}
         .table-web{width:100%;border-collapse:separate;border-spacing:0;font-size:10px; color:var(--t)}
-        .table-web th, .table-web td{border-bottom:1px solid var(--b);border-right:1px solid var(--b);padding:8px 4px;text-align:center;min-width:60px}
-        .nama-fixed{position:sticky !important;left:0;background-color:var(--c) !important;z-index:10;min-width:120px !important;text-align:left !important;padding-left:10px !important;font-weight:700; border-right: 2px solid var(--p) !important}
-        .nama-fixed-qc{position:sticky !important;left:0;background-color:var(--c) !important;z-index:10;min-width:120px !important;text-align:left !important;padding-left:10px !important;font-weight:700; border-right: 2px solid var(--iz) !important}
+        .table-web th, .table-web td{border-bottom:1px solid var(--b);border-right:1px solid var(--b);padding:8px 1px;text-align:center;min-width:35px}
+        .nama-fixed{position:sticky !important;left:0;background-color:var(--c) !important;z-index:10;min-width:110px !important;text-align:left !important;padding-left:10px !important;font-weight:700; border-right: 2px solid var(--p) !important}
+        .nama-fixed-qc{position:sticky !important;left:0;background-color:var(--c) !important;z-index:10;min-width:110px !important;text-align:left !important;padding-left:10px !important;font-weight:700; border-right: 2px solid var(--iz) !important}
         .s-cell{border-radius:6px;width:35px;height:35px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;font-size:10px;margin: 0 auto;}
         .s-v{background:var(--s);color:#fff} .s-late{background:var(--w);color:#000} .s-i{background:var(--iz);color:#fff}
         .s-off{background:var(--d);color:#fff} .s-a{background:var(--al);color:#fff} .s-l{background:#AA00FF;color:#fff} .s-mng{background:#64748b;color:#fff}
+        .jam-text{font-size:7px;font-weight:600;display:block;margin-top:2px;max-width:33px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;}
         .log-box { margin-top: 10px; max-height: 200px; overflow-y: auto; }
         .log-row { display: flex; justify-content: space-between; align-items:center; padding: 10px; border-bottom: 1px solid var(--b); font-size: 12px; }
         .del-btn { background: var(--d); color: #fff; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 10px; font-weight: bold; }
-        @media print {
-            header, .no-print, .export-group, .dark-card, .tabs-nav { display: none !important; }
-            body { background: white !important; color: black !important; }
-            .card { border: none !important; background: transparent !important; }
-            .table-web { transform: scale(0.85); transform-origin: top left; width: 100% !important; border: 1px solid #000 !important; }
-            .table-web th, .table-web td { border: 1px solid #000 !important; color: black !important; }
-        }
+        @media print { header, .no-print, .export-group, .dark-card, .tabs-nav { display: none !important; } body { background: white !important; color: black !important; } .table-web { transform: scale(0.7); transform-origin: top left; width: 100% !important; border: 1px solid #000 !important; } .table-web th, .table-web td { border: 1px solid #000 !important; } }
     </style>
 </head>
 <body data-theme="dark">
@@ -51,7 +46,7 @@
             <div class="logo-box">
                 <input type="file" id="inpLogo" style="display:none" accept="image/*" onchange="cLogo(event)">
                 <img id="mainLogo" src="https://ui-avatars.com/api/?name=AGN&background=000&color=fff" onclick="document.getElementById('inpLogo').click()">
-                <div><h2 style="margin:0;font-size:1.3rem">PT AGN</h2><span style="font-size:10px;color:var(--p);font-weight:800">SYSTEM v78.0 FINAL-STOK</span></div>
+                <div><h2 style="margin:0;font-size:1.3rem">PT AGN</h2><span style="font-size:10px;color:var(--p);font-weight:800">SYSTEM v78.1 REPAIR-TOTAL</span></div>
             </div>
             <div class="dark-card" onclick="toggleT()">
                 <span id="tIco">☀️</span> <span style="font-size:12px;font-weight:600" id="tTxt">Light Mode</span>
@@ -71,12 +66,40 @@
                     <input list="lk" id="iNama" placeholder="Ketik/Pilih Nama...">
                     <datalist id="lk"></datalist>
                     <button class="btn" style="background:var(--s);width:60px;font-size:24px" onclick="tKaryawan()">+</button>
+                    <button class="btn" style="background:var(--d);width:60px" onclick="hKaryawan()">🗑️</button>
                 </div>
             </div>
+
+            <div class="card no-print">
+                <h3>🧹 KONTROL DATA</h3>
+                <div style="display:grid;grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px; align-items:end">
+                    <div><label>Tanggal Reset:</label><input type="date" id="resetTgl"></div>
+                    <button class="btn" style="background:var(--d)" onclick="resetAbsen()">RESET ABSEN</button>
+                </div>
+                <div style="display:grid;grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:12px">
+                    <div><label>Dari:</label><input type="date" id="tglAwal"></div>
+                    <div><label>Sampai:</label><input type="date" id="tglAkhir"></div>
+                </div>
+                <div style="display:grid;grid-template-columns: 1fr 1fr; gap:10px">
+                    <button class="btn" style="background:var(--p)" onclick="sLib(true)">SET LIBUR</button>
+                    <button class="btn" style="background:var(--d)" onclick="sLib(false)">HAPUS LIBUR</button>
+                </div>
+            </div>
+
+            <div class="card no-print">
+                <h3>⚡ PRESENSI</h3>
+                <div style="display:grid;grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px">
+                    <button class="btn" style="background:var(--s);height:60px;font-size:18px" onclick="pAbsen('Masuk')">MASUK</button>
+                    <button class="btn" style="background:var(--d);height:60px;font-size:18px" onclick="pAbsen('Pulang')">PULANG</button>
+                </div>
+                <button class="btn" style="background:var(--iz);height:50px;font-size:16px" onclick="pAbsen('Izin')">📝 IZIN / KETERANGAN</button>
+            </div>
+
             <div class="card">
                 <div class="export-group no-print">
-                    <input type="month" id="fB" style="width:160px" onchange="rRekap()">
+                    <input type="month" id="fB" style="width:160px; height:45px" onchange="rRekap()">
                     <button class="btn btn-ex" style="background:#1d6f42" onclick="doExcel()">📥 EXCEL</button>
+                    <button class="btn btn-ex" style="background:#b91c1c" onclick="window.print()">📄 PDF</button>
                 </div>
                 <div class="table-wrap" id="scrollArea">
                     <table class="table-web" id="rekapTable"><thead id="thWeb"></thead><tbody id="tbWeb"></tbody></table>
@@ -87,8 +110,11 @@
         <!-- PAGE STOK & QC -->
         <div id="page-stok" class="hidden">
             <div class="card no-print">
-                <h3>🛠️ TAMBAH BARANG BARU</h3>
-                <div style="display:flex;gap:10px"><input type="text" id="mBrg" placeholder="Nama Barang..."><button class="btn" style="background:var(--s);width:80px" onclick="tBrg()">ADD</button></div>
+                <h3>🛠️ MASTER BARANG</h3>
+                <div style="display:flex;gap:10px">
+                    <input type="text" id="mBrg" placeholder="Nama Barang...">
+                    <button class="btn" style="background:var(--s);width:80px" onclick="tBrg()">ADD</button>
+                </div>
             </div>
 
             <div class="card no-print">
@@ -97,11 +123,10 @@
                     <select id="sBrg"><option value="">Pilih Barang...</option></select>
                     <input type="date" id="sTgl" onchange="renderLog()">
                 </div>
-                
                 <h3 style="font-size:9px; color:var(--p)">[ INPUT STOK UTAMA ]</h3>
                 <div style="display:grid; grid-template-columns: 1.5fr 1fr auto; gap:10px; margin-bottom:15px">
                     <select id="sJnsStok">
-                        <option value="" disabled selected>Pilih Jenis Stok...</option>
+                        <option value="" disabled selected>Jenis Stok...</option>
                         <option value="awal_ready">Awal Ready</option>
                         <option value="awal_kotor">Awal Kotor</option>
                         <option value="masuk_kotor">Masuk Kotor</option>
@@ -110,39 +135,31 @@
                         <option value="jual_u">Jual Umum</option>
                         <option value="jual_a">Jual Agen</option>
                     </select>
-                    <input type="number" id="sQtyStok" placeholder="Jumlah Stok">
+                    <input type="number" id="sQtyStok" placeholder="Qty">
                     <button class="btn" style="background:var(--p); width:80px" onclick="vStok('stok')">SAVE</button>
                 </div>
-
                 <hr style="border:0; border-top:1px solid var(--b); margin:15px 0">
-
                 <h3 style="font-size:9px; color:var(--iz)">[ INPUT LOG QC ]</h3>
                 <div style="display:grid; grid-template-columns: 1.5fr 1fr auto; gap:10px">
                     <select id="sJnsQC">
-                        <option value="" disabled selected>Pilih Status QC...</option>
+                        <option value="" disabled selected>Status QC...</option>
                         <option value="qc_acc">Accepted</option>
                         <option value="qc_amd">Accepted Minor Damage</option>
                         <option value="qc_rej">Reject</option>
                     </select>
-                    <input type="number" id="sQtyQC" placeholder="Jumlah QC">
+                    <input type="number" id="sQtyQC" placeholder="Qty">
                     <button class="btn" style="background:var(--iz); width:80px" onclick="vStok('qc')">SAVE</button>
                 </div>
             </div>
 
             <div class="card">
                 <div class="export-group no-print">
-                    <h3 style="flex-grow:1; margin:0; color:var(--p)">📊 REKAP GUDANG & QC</h3>
-                    <button class="btn btn-ex" style="background:#1d6f42" onclick="doExcelStok()">📥 EXCEL</button>
-                    <button class="btn btn-ex" style="background:#b91c1c" onclick="window.print()">📄 PDF</button>
+                    <button class="btn btn-ex" style="background:#1d6f42; width:140px" onclick="doExcelStok()">📥 EXCEL GUDANG</button>
                 </div>
-                <h3 style="color:var(--p)">[1] STOK GUDANG</h3>
-                <div class="table-wrap">
-                    <table class="table-web" id="stTable"><thead id="thSt"></thead><tbody id="tbSt"></tbody></table>
-                </div>
-                <h3 style="color:var(--iz); margin-top:20px">[2] LOG QUALITY CONTROL</h3>
-                <div class="table-wrap">
-                    <table class="table-web" id="qcTable"><thead id="thQc"></thead><tbody id="tbQc"></tbody></table>
-                </div>
+                <h3 style="color:var(--p)">📊 REKAP STOK GUDANG</h3>
+                <div class="table-wrap"><table class="table-web" id="stTable"><thead id="thSt"></thead><tbody id="tbSt"></tbody></table></div>
+                <h3 style="color:var(--iz); margin-top:20px">📋 REKAP QUALITY CONTROL</h3>
+                <div class="table-wrap"><table class="table-web" id="qcTable"><thead id="thQc"></thead><tbody id="tbQc"></tbody></table></div>
             </div>
 
             <div class="card no-print">
@@ -155,7 +172,7 @@
     <script>
         const cfg={apiKey:"AIzaSyAu67MAhWBxdmciPi3xOKWhdy-uP4u9tXI",databaseURL:"https://pt-agn-default-rtdb.asia-southeast1.firebasedatabase.app"};
         firebase.initializeApp(cfg); const db=firebase.database();
-        let mk={}, ad={}, hl={}, mb={}, sd={};
+        let mk={}, ad={}, hl={}, mb={}, sd={}; const TGL_MULAI_SISTEM = "2026-03-21";
 
         window.onload=()=>{
             const d = new Date();
@@ -165,6 +182,7 @@
             
             db.ref('master_karyawan').on('value',s=>{mk=s.val()||{}; uDl(); rRekap();});
             db.ref('absensi').on('value',s=>{ad=s.val()||{}; rRekap();});
+            db.ref('hari_libur').on('value',s=>{hl=s.val()||{}; rRekap();});
             db.ref('master_barang').on('value',s=>{mb=s.val()||{}; uBrg(); rStok();});
             db.ref('stok_barang').on('value',s=>{sd=s.val()||{}; rStok(); renderLog();});
         };
@@ -190,6 +208,73 @@
             let n=document.getElementById('iNama'); if(n.value) db.ref('master_karyawan').push(n.value).then(()=>n.value="");
         }
 
+        function hKaryawan(){
+            let n=document.getElementById('iNama'); let id=Object.keys(mk).find(k=>mk[k]===n.value); 
+            if(id && confirm('Hapus?')) db.ref(`master_karyawan/${id}`).remove().then(()=>n.value="");
+        }
+
+        function pAbsen(ty){
+            let inp=document.getElementById('iNama'), n=inp.value, now=new Date();
+            let tgl=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+            if(!n) return alert("Pilih Nama!");
+            let jam=now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+            let st="Hadir"; if(ty==='Masuk' && (now.getHours()>9 || (now.getHours()===9 && now.getMinutes()>0))) st="Terlambat";
+            let nt=""; if(ty==='Izin'){nt=prompt("Alasan Izin:"); if(nt===null)return; st="Izin";}
+            db.ref(`absensi/${tgl}/${n}/${ty}`).set({waktu:jam, status:st, note:nt}).then(()=>{alert(`${ty} Sukses!`); inp.value="";});
+        }
+
+        function resetAbsen(){
+            let n=document.getElementById('iNama'), tgl=document.getElementById('resetTgl');
+            if(!n.value || !tgl.value) return alert("Pilih Nama & Tanggal!");
+            if(confirm(`Reset data ${n.value}?`)){db.ref(`absensi/${tgl.value}/${n.value}`).remove().then(()=>alert("Direset!"));}
+        }
+
+        function sLib(st){
+            let d1=document.getElementById('tglAwal'), d2=document.getElementById('tglAkhir');
+            if(!d1.value) return alert("Isi tanggal!");
+            let start = new Date(d1.value); let end = d2.value ? new Date(d2.value) : new Date(d1.value);
+            while(start <= end){
+                let tglLibur = `${start.getFullYear()}-${String(start.getMonth()+1).padStart(2,'0')}-${String(start.getDate()).padStart(2,'0')}`;
+                db.ref(`hari_libur/${tglLibur}`).set(st?true:null);
+                start.setDate(start.getDate() + 1);
+            }
+            alert("Selesai!");
+        }
+
+        function rRekap(){
+            const f=document.getElementById('fB').value; if(!f) return;
+            const [y,m]=f.split('-'); const last=new Date(y,m,0).getDate();
+            const todayFull = new Date().toISOString().slice(0,10);
+            let h=`<tr><th class="nama-fixed">Nama</th>`;
+            for(let i=1;i<=last;i++) h+=`<th>${i}</th>`;
+            h+=`<th>H</th><th>I</th><th>A</th><th>L</th></tr>`;
+            document.getElementById('thWeb').innerHTML=h;
+            let b="";
+            Object.values(mk).sort().forEach(n=>{
+                let cH=0, cI=0, cA=0, cL=0, row=`<td class="nama-fixed">${n}</td>`;
+                for(let i=1;i<=last;i++){
+                    let t=`${y}-${m}-${String(i).padStart(2,'0')}`, d=new Date(t);
+                    let isMinggu = (d.getDay()===0), isSetLibur = hl[t], data=ad[t]?ad[t][n]:null;
+                    let sW="-", clW="", infoW="";
+                    let hariAktif = ad[t] && Object.keys(ad[t]).length > 0;
+                    if(data){
+                        if(data.Izin){ sW="I"; clW="s-i"; cI++; infoW=data.Izin.note; }
+                        else if(data.Masuk){ 
+                            if(isMinggu || isSetLibur) { sW="L"; clW="s-l"; cL++; } 
+                            else { sW="H"; clW=(data.Masuk.status==="Terlambat")?"s-late":"s-v"; cH++; }
+                            infoW = data.Masuk.waktu + (data.Pulang ? `|${data.Pulang.waktu}`:"");
+                        }
+                    } 
+                    else if(isMinggu) { sW="MNG"; clW="s-mng"; }
+                    else if(isSetLibur) { sW="OFF"; clW="s-off"; }
+                    else if(hariAktif && t < todayFull && t >= TGL_MULAI_SISTEM) { sW="A"; clW="s-a"; cA++; }
+                    row+=`<td><div class="s-cell ${clW}">${sW}<span class="jam-text">${infoW||""}</span></div></td>`;
+                }
+                b+=`<tr>${row}<td>${cH}</td><td>${cI}</td><td>${cA}</td><td>${cL}</td></tr>`;
+            });
+            document.getElementById('tbWeb').innerHTML=b;
+        }
+
         function uBrg(){
             let opt = '<option value="">Pilih Barang...</option>';
             opt += Object.values(mb).sort().map(b=>`<option value="${b}">${b}</option>`).join('');
@@ -201,100 +286,60 @@
         }
 
         function vStok(mode){
-            const brg = document.getElementById('sBrg').value;
-            const tgl = document.getElementById('sTgl').value;
+            const brg = document.getElementById('sBrg').value, tgl = document.getElementById('sTgl').value;
             let jns, qty, jnsNama;
-
             if(mode === 'stok'){
                 const sel = document.getElementById('sJnsStok');
-                jns = sel.value;
-                qty = parseInt(document.getElementById('sQtyStok').value);
+                jns = sel.value; qty = parseInt(document.getElementById('sQtyStok').value);
                 jnsNama = sel.options[sel.selectedIndex].text;
             } else {
                 const sel = document.getElementById('sJnsQC');
-                jns = sel.value;
-                qty = parseInt(document.getElementById('sQtyQC').value);
+                jns = sel.value; qty = parseInt(document.getElementById('sQtyQC').value);
                 jnsNama = sel.options[sel.selectedIndex].text;
             }
-
-            if(!brg || !jns || isNaN(qty)) return alert("Data tidak lengkap!");
-
-            db.ref(`stok_barang/${tgl}`).push({
-                barang: brg, jenis: jns, jenis_nama: jnsNama, qty: qty
-            }).then(() => {
-                if(mode === 'stok') document.getElementById('sQtyStok').value = "";
-                else document.getElementById('sQtyQC').value = "";
-            });
+            if(!brg || !jns || isNaN(qty)) return alert("Isi Qty!");
+            db.ref(`stok_barang/${tgl}`).push({ barang: brg, jenis: jns, jenis_nama: jnsNama, qty: qty })
+            .then(() => { document.getElementById('sQtyStok').value = ""; document.getElementById('sQtyQC').value = ""; });
         }
 
         function rStok(){
-            let items = Object.values(mb).sort();
-            let res = {};
+            let items = Object.values(mb).sort(), res = {};
             items.forEach(i => res[i] = { awal_ready:0, awal_kotor:0, masuk_kotor:0, masuk_bersih:0, rekon:0, jual_u:0, jual_a:0, qc_acc:0, qc_amd:0, qc_rej:0 });
-
-            Object.keys(sd).forEach(t => {
-                Object.values(sd[t]).forEach(e => { if(res[e.barang]) res[e.barang][e.jenis] += e.qty; });
-            });
-
+            Object.keys(sd).forEach(t => { Object.values(sd[t]).forEach(e => { if(res[e.barang]) res[e.barang][e.jenis] += e.qty; }); });
             let hS = `<tr><th class="nama-fixed">Nama Barang</th><th>Awal Ready</th><th>Awal Kotor</th><th>Masuk Kotor</th><th>Masuk Bersih/Baru</th><th>Rekon</th><th>Jual Umum</th><th>Jual Agen</th><th style="background:var(--p)">STOK READY</th></tr>`;
             let bS = "";
             let hQ = `<tr><th class="nama-fixed-qc">Nama Barang</th><th>Accepted</th><th>Accepted Minor Damage</th><th>Reject</th><th style="background:var(--iz)">TOTAL QC</th></tr>`;
             let bQ = "";
-
             items.forEach(i => {
-                const s = res[i];
-                const tr = (s.awal_ready + s.masuk_bersih + s.rekon) - (s.jual_u + s.jual_a);
+                const s = res[i]; const tr = (s.awal_ready + s.masuk_bersih + s.rekon) - (s.jual_u + s.jual_a);
                 const tq = s.qc_acc + s.qc_amd + s.qc_rej;
-                bS += `<tr><td class="nama-fixed">${i}</td><td>${s.awal_ready}</td><td>${s.awal_kotor}</td><td>${s.masuk_kotor}</td><td>${s.masuk_bersih}</td><td>${s.rekon}</td><td>${s.jual_u}</td><td>${s.jual_a}</td><td style="font-weight:800">${tr}</td></tr>`;
-                bQ += `<tr><td class="nama-fixed-qc">${i}</td><td>${s.qc_acc}</td><td>${s.qc_amd}</td><td>${s.qc_rej}</td><td style="font-weight:800">${tq}</td></tr>`;
+                bS += `<tr><td class="nama-fixed">${i}</td><td>${s.awal_ready}</td><td>${s.awal_kotor}</td><td>${s.masuk_kotor}</td><td>${s.masuk_bersih}</td><td>${s.rekon}</td><td>${s.jual_u}</td><td>${s.jual_a}</td><td>${tr}</td></tr>`;
+                bQ += `<tr><td class="nama-fixed-qc">${i}</td><td>${s.qc_acc}</td><td>${s.qc_amd}</td><td>${s.qc_rej}</td><td>${tq}</td></tr>`;
             });
             document.getElementById('thSt').innerHTML=hS; document.getElementById('tbSt').innerHTML=bS;
             document.getElementById('thQc').innerHTML=hQ; document.getElementById('tbQc').innerHTML=bQ;
         }
 
         function renderLog(){
-            const t=document.getElementById('sTgl').value, logA=document.getElementById('stokLog'), d=sd[t]||{};
+            const t=document.getElementById('sTgl').value, d=sd[t]||{};
             let h = "";
-            Object.keys(d).reverse().forEach(id => {
-                h += `<div class="log-row"><span><b>${d[id].barang}</b> - ${d[id].jenis_nama}: ${d[id].qty}</span><button class="del-btn" onclick="hStok('${t}','${id}')">DEL</button></div>`;
-            });
-            logA.innerHTML = h || "Tidak ada inputan.";
+            Object.keys(d).reverse().forEach(id => { h += `<div class="log-row"><span>${d[id].barang} - ${d[id].jenis_nama}: ${d[id].qty}</span><button class="del-btn" onclick="hStok('${t}','${id}')">DEL</button></div>`; });
+            document.getElementById('stokLog').innerHTML = h || "No data.";
         }
 
         function hStok(t,id){ if(confirm('Hapus?')) db.ref(`stok_barang/${t}/${id}`).remove(); }
-
-        function rRekap(){
-            const b = document.getElementById('fB').value; if(!b) return;
-            const [y, m] = b.split('-');
-            const ld = new Date(y, m, 0).getDate();
-            let h = `<tr><th class="nama-fixed">Nama</th>`;
-            for(let i=1; i<=ld; i++) h += `<th>${i}</th>`;
-            h += `</tr>`;
-            document.getElementById('thWeb').innerHTML = h;
-
-            let row = "";
-            Object.values(mk).sort().forEach(n => {
-                row += `<tr><td class="nama-fixed">${n}</td>`;
-                for(let i=1; i<=ld; i++){
-                    let dt = `${y}-${m}-${String(i).padStart(2,'0')}`;
-                    let s = ad[dt] && ad[dt][n] ? '✅' : '-';
-                    row += `<td>${s}</td>`;
-                }
-                row += `</tr>`;
-            });
-            document.getElementById('tbWeb').innerHTML = row;
+        
+        function doExcel(){
+            const html = document.getElementById("rekapTable").outerHTML;
+            const blob = new Blob([html], {type: "application/vnd.ms-excel"});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a"); a.href = url; a.download = `ABSENSI_AGN.xls`; a.click();
         }
-
         function doExcelStok(){
             const sT = document.getElementById("stTable").outerHTML;
-            const template = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><style>table{border-collapse:collapse;} th{background:#2563eb;color:white;border:1px solid black;} td{border:1px solid black;text-align:center;}</style></head><body>${sT}</body></html>`;
-            const blob = new Blob([template], {type: "application/vnd.ms-excel"});
+            const blob = new Blob([sT], {type: "application/vnd.ms-excel"});
             const url = URL.createObjectURL(blob);
-            const a = document.createElement("a"); a.href = url; a.download = `REKAP_AGN_STOK.xls`; a.click();
-        }
-
-        function cLogo(e){
-            const r=new FileReader(); r.onload=()=>{ document.getElementById('mainLogo').src=r.result; }; r.readAsDataURL(e.target.files[0]);
+            const a = document.createElement("a"); a.href = url; a.download = `STOK_AGN.xls`; a.click();
         }
     </script>
 </body>
