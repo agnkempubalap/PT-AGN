@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v77.6 - COLOR-FIT REPORT</title>
+    <title>PT-AGN v77.6 - STOK INTEGRATED</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
@@ -17,20 +17,28 @@
         .logo-box img{width:70px;height:70px;border-radius:50%;background:#000;border:3px solid var(--p);object-fit:cover;cursor:pointer}
         .dark-card{background:var(--c); border-radius:12px; border:1px solid var(--b); padding:10px 15px; display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--t)}
 
+        /* TAB SYSTEM STOK BARANG */
+        .tabs-nav { display: flex; gap: 10px; margin-bottom: 15px; }
+        .t-btn { flex: 1; padding: 15px; border-radius: 12px; background: var(--c); color: var(--t); border: 1px solid var(--b); cursor: pointer; font-weight: 800; font-size: 12px; text-transform: uppercase; }
+        .t-btn.active { background: var(--p); border-color: var(--p); color: #fff; }
+        .hidden { display: none !important; }
+
         .card{background:var(--c);padding:18px;border-radius:18px;margin-bottom:12px;border:1px solid var(--b);box-shadow:0 4px 6px -1px rgba(0,0,0,0.1)}
         h3{margin:0 0 15px;font-size:11px;color:var(--iz);text-transform:uppercase;letter-spacing:1px;font-weight:800}
         
-        input,button,select{border-radius:12px;font-size:14px;height:52px;border:1px solid var(--b);background:var(--bg);color:var(--t);width:100%;box-sizing:border-box;outline:none}
+        input,button,select{border-radius:12px;font-size:14px;height:52px;border:1px solid var(--b);background:var(--bg);color:var(--t);width:100%;box-sizing:border-box;outline:none; padding:0 15px}
+        select optgroup { background: var(--b); color: #fff; font-weight: bold; }
         .btn{display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;border:none;color:#fff}
         
         .export-group { display: flex; justify-content: flex-end; align-items: flex-end; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
-        .btn-ex { width: 100px; height: 45px; font-size: 11px; border-radius: 10px; }
+        .btn-ex { width: 100px; height: 45px; font-size: 11px; border-radius: 10px; padding:0!important; }
 
         .table-wrap{overflow-x:auto; border-radius:12px; border:1px solid var(--b); background:var(--c); scroll-behavior: smooth}
         .table-web{width:100%;border-collapse:separate;border-spacing:0;font-size:10px; color:var(--t)}
         .table-web th, .table-web td{border-bottom:1px solid var(--b);border-right:1px solid var(--b);padding:8px 1px;text-align:center;min-width:35px}
         
         .nama-fixed{position:sticky !important;left:0;background-color:var(--c) !important;z-index:10;min-width:110px !important;text-align:left !important;padding-left:10px !important;font-weight:700; border-right: 2px solid var(--p) !important}
+        .nama-fixed-qc{position:sticky !important;left:0;background-color:var(--c) !important;z-index:10;min-width:110px !important;text-align:left !important;padding-left:10px !important;font-weight:700; border-right: 2px solid var(--iz) !important}
         .today-col{background: rgba(37, 99, 235, 0.15) !important;}
         .rekap-akhir{background:var(--bg) !important; color:var(--t) !important; font-weight:800; min-width:30px !important}
         .th-rekap{background:var(--bg) !important; color:var(--iz) !important; font-weight:800}
@@ -38,20 +46,26 @@
         .s-cell{border-radius:6px;width:35px;height:35px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;font-size:10px;margin: 0 auto; -webkit-print-color-adjust: exact; print-color-adjust: exact;}
         .s-v{background:var(--s);color:#fff} .s-late{background:var(--w);color:#000} .s-i{background:var(--iz);color:#fff}
         .s-off{background:var(--d);color:#fff} .s-a{background:var(--al);color:#fff} .s-l{background:#AA00FF;color:#fff} .s-mng{background:#64748b;color:#fff}
-        .jam-text{font-size:7px;font-weight:600;display:block;margin-top:2px;max-width:33px}
+        
+        .jam-text{font-size:7px;font-weight:600;display:block;margin-top:2px;max-width:33px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;}
+
+        /* STOK LOG STYLES */
+        .log-box { margin-top: 10px; max-height: 200px; overflow-y: auto; }
+        .log-row { display: flex; justify-content: space-between; align-items:center; padding: 10px; border-bottom: 1px solid var(--b); font-size: 12px; }
+        .del-btn { background: var(--d); color: #fff; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 10px; font-weight: bold; }
 
         /* PRINT CONFIG: ULTIMATE COLOR-FIT */
         @media print {
             @page { size: A4 landscape; margin: 5mm; }
             html, body { background: #fff !important; color: #1e293b !important; }
-            header, .no-print, .export-group, .dark-card { display: none !important; }
+            header, .no-print, .export-group, .dark-card, .tabs-nav { display: none !important; }
             .container { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
-            .card { border: none !important; padding: 0 !important; background: transparent !important; }
+            .card { border: none !important; padding: 0 !important; background: transparent !important; margin-bottom: 20px !important; }
             .table-wrap { overflow: visible !important; border: none !important; }
             
             .table-web { 
                 width: 100% !important; 
-                transform: scale(0.7); /* PAKSA MENGECIL AGAR MUAT */
+                transform: scale(0.7);
                 transform-origin: top left; 
                 border-collapse: collapse !important;
                 -webkit-print-color-adjust: exact !important; 
@@ -61,7 +75,6 @@
             .table-web th { background-color: #2563eb !important; color: #ffffff !important; padding: 8px 1px !important; border: 1px solid #000 !important; }
             .table-web td { border: 1px solid #94a3b8 !important; color: #334155 !important; padding: 4px 1px !important; }
             
-            /* Warna Status tetap muncul di print */
             .s-v { background-color: #00C853 !important; color: white !important; }
             .s-late { background-color: #FFD600 !important; color: black !important; }
             .s-i { background-color: #f59e0b !important; color: white !important; }
@@ -70,7 +83,7 @@
             .s-mng { background-color: #64748b !important; color: white !important; }
             .s-l { background-color: #AA00FF !important; color: white !important; }
             
-            .nama-fixed { position: static !important; background: #f8fafc !important; color: #1e293b !important; font-weight: bold !important; text-align: left !important; border-right: 1px solid #000 !important; }
+            .nama-fixed, .nama-fixed-qc { position: static !important; background: #f8fafc !important; color: #1e293b !important; font-weight: bold !important; text-align: left !important; border-right: 1px solid #000 !important; }
             .th-rekap { background-color: #f1f5f9 !important; color: #2563eb !important; }
             .rekap-akhir { background-color: #f8fafc !important; color: #1e293b !important; }
             .jam-text { color: #1e293b !important; font-size: 6px !important; }
@@ -90,56 +103,135 @@
             </div>
         </header>
 
-        <div class="card no-print">
-            <h3>👥 DATA KARYAWAN</h3>
-            <div style="display:flex;gap:10px">
-                <input list="lk" id="iNama" placeholder="Ketik/Pilih Nama...">
-                <datalist id="lk"></datalist>
-                <button class="btn" style="background:var(--s);width:60px;font-size:24px" onclick="tKaryawan()">+</button>
-                <button class="btn" style="background:var(--d);width:60px" onclick="hKaryawan()">🗑️</button>
-            </div>
+        <div class="tabs-nav no-print">
+            <button id="btnAbsen" class="t-btn active" onclick="goTab('absen')">📅 ABSENSI KARYAWAN</button>
+            <button id="btnStok" class="t-btn" onclick="goTab('stok')">📦 STOK BARANG GUDANG</button>
         </div>
 
-        <div class="card no-print">
-            <h3>🧹 KONTROL DATA</h3>
-            <div style="display:grid;grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px; align-items:end">
-                <div><label>Tanggal Reset:</label><input type="date" id="resetTgl"></div>
-                <button class="btn" style="background:var(--d)" onclick="resetAbsen()">RESET ABSEN</button>
-            </div>
-            <div style="display:grid;grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:12px">
-                <div><label>Dari:</label><input type="date" id="tglAwal"></div>
-                <div><label>Sampai:</label><input type="date" id="tglAkhir"></div>
-            </div>
-            <div style="display:grid;grid-template-columns: 1fr 1fr; gap:10px">
-                <button class="btn" style="background:var(--p)" onclick="sLib(true)">SET LIBUR</button>
-                <button class="btn" style="background:var(--d)" onclick="sLib(false)">HAPUS LIBUR</button>
-            </div>
-        </div>
-
-        <div class="card no-print">
-            <h3>⚡ PRESENSI</h3>
-            <div style="display:grid;grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px">
-                <button class="btn" style="background:var(--s);height:60px;font-size:18px" onclick="pAbsen('Masuk')">MASUK</button>
-                <button class="btn" style="background:var(--d);height:60px;font-size:18px" onclick="pAbsen('Pulang')">PULANG</button>
-            </div>
-            <button class="btn" style="background:var(--iz);height:50px;font-size:16px" onclick="pAbsen('Izin')">📝 IZIN / KETERANGAN</button>
-        </div>
-
-        <div class="card table-card">
-            <div class="export-group no-print">
-                <div style="flex-grow:1">
-                    <label>Pilih Bulan:</label>
-                    <input type="month" id="fB" style="width:160px; height:45px" onchange="rRekap()">
+        <div id="page-absen">
+            <div class="card no-print">
+                <h3>👥 DATA KARYAWAN</h3>
+                <div style="display:flex;gap:10px">
+                    <input list="lk" id="iNama" placeholder="Ketik/Pilih Nama...">
+                    <datalist id="lk"></datalist>
+                    <button class="btn" style="background:var(--s);width:60px;font-size:24px" onclick="tKaryawan()">+</button>
+                    <button class="btn" style="background:var(--d);width:60px" onclick="hKaryawan()">🗑️</button>
                 </div>
-                <button class="btn btn-ex" style="background:#1d6f42" onclick="doExcel()">📥 EXCEL</button>
-                <button class="btn btn-ex" style="background:#b91c1c" onclick="window.print()">📄 PDF</button>
             </div>
-            
-            <div class="table-wrap" id="scrollArea">
-                <table class="table-web" id="rekapTable">
-                    <thead id="thWeb"></thead>
-                    <tbody id="tbWeb"></tbody>
-                </table>
+
+            <div class="card no-print">
+                <h3>🧹 KONTROL DATA</h3>
+                <div style="display:grid;grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px; align-items:end">
+                    <div><label>Tanggal Reset:</label><input type="date" id="resetTgl"></div>
+                    <button class="btn" style="background:var(--d)" onclick="resetAbsen()">RESET ABSEN</button>
+                </div>
+                <div style="display:grid;grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:12px">
+                    <div><label>Dari:</label><input type="date" id="tglAwal"></div>
+                    <div><label>Sampai:</label><input type="date" id="tglAkhir"></div>
+                </div>
+                <div style="display:grid;grid-template-columns: 1fr 1fr; gap:10px">
+                    <button class="btn" style="background:var(--p)" onclick="sLib(true)">SET LIBUR</button>
+                    <button class="btn" style="background:var(--d)" onclick="sLib(false)">HAPUS LIBUR</button>
+                </div>
+            </div>
+
+            <div class="card no-print">
+                <h3>⚡ PRESENSI</h3>
+                <div style="display:grid;grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px">
+                    <button class="btn" style="background:var(--s);height:60px;font-size:18px" onclick="pAbsen('Masuk')">MASUK</button>
+                    <button class="btn" style="background:var(--d);height:60px;font-size:18px" onclick="pAbsen('Pulang')">PULANG</button>
+                </div>
+                <button class="btn" style="background:var(--iz);height:50px;font-size:16px" onclick="pAbsen('Izin')">📝 IZIN / KETERANGAN</button>
+            </div>
+
+            <div class="card table-card">
+                <div class="export-group no-print">
+                    <div style="flex-grow:1">
+                        <label>Pilih Bulan:</label>
+                        <input type="month" id="fB" style="width:160px; height:45px" onchange="rRekap()">
+                    </div>
+                    <button class="btn btn-ex" style="background:#1d6f42" onclick="doExcel()">📥 EXCEL</button>
+                    <button class="btn btn-ex" style="background:#b91c1c" onclick="window.print()">📄 PDF</button>
+                </div>
+                
+                <div class="table-wrap" id="scrollArea">
+                    <table class="table-web" id="rekapTable">
+                        <thead id="thWeb"></thead>
+                        <tbody id="tbWeb"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-stok" class="hidden">
+            <div class="card no-print">
+                <h3>🛠️ TAMBAH BARANG BARU</h3>
+                <div style="display:flex;gap:10px">
+                    <input type="text" id="mBrg" placeholder="Ketik Nama Barang...">
+                    <button class="btn" style="background:var(--s);width:80px" onclick="tBrg()">TAMBAH</button>
+                </div>
+            </div>
+
+            <div class="card no-print">
+                <h3>📦 INPUT AKTIVITAS STOK & QC</h3>
+                <div style="display:grid; grid-template-columns: 1.5fr 1fr; gap:10px; margin-bottom:10px">
+                    <select id="sBrg"><option value="">Pilih Barang...</option></select>
+                    <input type="date" id="sTgl" onchange="renderLog()">
+                </div>
+                <div style="display:grid; grid-template-columns: 1.5fr 1fr auto; gap:10px">
+                    <select id="sJns">
+                        <optgroup label="STOK UTAMA">
+                            <option value="awal_ready">Awal Ready</option>
+                            <option value="awal_kotor">Awal Kotor</option>
+                            <option value="masuk_kotor">Masuk Kotor</option>
+                            <option value="masuk_bersih">Masuk Bersih</option>
+                            <option value="rekon">Rekon</option>
+                            <option value="jual_u">Jual Umum</option>
+                            <option value="jual_a">Jual Agen</option>
+                        </optgroup>
+                        <optgroup label="LOG QC BARANG MASUK">
+                            <option value="qc_a">Accepted</option>
+                            <option value="qc_amd">Accepted with Minor Damage</option>
+                            <option value="qc_r">Reject</option>
+                        </optgroup>
+                    </select>
+                    <input type="number" id="sQty" placeholder="Jumlah / Qty">
+                    <button class="btn" style="background:var(--p); width:80px" onclick="vStok()">SAVE</button>
+                </div>
+            </div>
+
+            <!-- TABEL 1: GUDANG UTAMA -->
+            <div class="card">
+                <div class="export-group no-print">
+                    <h3 style="flex-grow:1; margin:0; color:var(--p)">📊 REKAP GUDANG KESELURUHAN</h3>
+                    <button class="btn btn-ex" style="background:#1d6f42" onclick="doExcelStok()">📥 EXCEL STOK</button>
+                    <button class="btn btn-ex" style="background:#b91c1c" onclick="window.print()">📄 PDF CETAK</button>
+                </div>
+                <div class="table-wrap">
+                    <table class="table-web" id="stTable">
+                        <thead id="thSt"></thead>
+                        <tbody id="tbSt"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TABEL 2: LOG QC MASUK -->
+            <div class="card">
+                <div class="export-group no-print">
+                    <h3 style="flex-grow:1; margin:0; color:var(--iz)">📋 REKAP QC BARANG MASUK</h3>
+                    <button class="btn btn-ex" style="background:#1d6f42" onclick="doExcelQC()">📥 EXCEL QC</button>
+                </div>
+                <div class="table-wrap">
+                    <table class="table-web" id="qcTable">
+                        <thead id="thQc"></thead>
+                        <tbody id="tbQc"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card no-print">
+                <h3>🗑️ LOG INPUT STOK & QC (BERDASARKAN TANGGAL)</h3>
+                <div id="stokLog" class="log-box"></div>
             </div>
         </div>
     </div>
@@ -148,18 +240,40 @@
         const cfg={apiKey:"AIzaSyAu67MAhWBxdmciPi3xOKWhdy-uP4u9tXI",databaseURL:"https://pt-agn-default-rtdb.asia-southeast1.firebasedatabase.app"};
         firebase.initializeApp(cfg); const db=firebase.database();
         let mk={}, ad={}, hl={}; const TGL_MULAI_SISTEM = "2026-03-21";
+        
+        let mb={}, sd={};
 
         window.onload=()=>{
-            const m = new Date().toISOString().slice(0,7);
+            const d = new Date();
+            const m = d.toISOString().slice(0,7);
+            const today = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+            
             document.getElementById('fB').value=m;
+            document.getElementById('sTgl').value = today;
+
+            const lastTab = localStorage.getItem('agnTab') || 'absen';
+            goTab(lastTab);
+
             if(localStorage.getItem('agnLogo')) document.getElementById('mainLogo').src=localStorage.getItem('agnLogo');
             const savedTheme = localStorage.getItem('agnTheme') || 'dark';
             document.body.setAttribute('data-theme', savedTheme);
             updateThemeUI(savedTheme);
+            
             db.ref('master_karyawan').on('value',s=>{mk=s.val()||{}; uDl(); rRekap();});
             db.ref('absensi').on('value',s=>{ad=s.val()||{}; rRekap();});
             db.ref('hari_libur').on('value',s=>{hl=s.val()||{}; rRekap();});
+
+            db.ref('master_barang').on('value',s=>{mb=s.val()||{}; uBrg(); rStok();});
+            db.ref('stok_barang').on('value',s=>{sd=s.val()||{}; rStok(); renderLog();});
         };
+
+        function goTab(t){
+            localStorage.setItem('agnTab', t);
+            document.getElementById('page-absen').classList.toggle('hidden', t!=='absen');
+            document.getElementById('page-stok').classList.toggle('hidden', t!=='stok');
+            document.getElementById('btnAbsen').classList.toggle('active', t==='absen');
+            document.getElementById('btnStok').classList.toggle('active', t==='stok');
+        }
 
         function toggleT(){ 
             let b=document.body; let nt=b.getAttribute('data-theme')==='dark'?'light':'dark'; 
@@ -193,7 +307,8 @@
         }
 
         function pAbsen(ty){
-            let inp=document.getElementById('iNama'), n=inp.value, now=new Date(), tgl=now.toISOString().split('T')[0];
+            let inp=document.getElementById('iNama'), n=inp.value, now=new Date();
+            let tgl=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
             if(!n) return alert("Pilih Nama!");
             let jam=now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
             let st="Hadir"; if(ty==='Masuk' && (now.getHours()>9 || (now.getHours()===9 && now.getMinutes()>0))) st="Terlambat";
@@ -212,7 +327,8 @@
             if(!d1.value) return alert("Isi tanggal!");
             let start = new Date(d1.value); let end = d2.value ? new Date(d2.value) : new Date(d1.value);
             while(start <= end){
-                db.ref(`hari_libur/${start.toISOString().split('T')[0]}`).set(st?true:null);
+                let tglLibur = `${start.getFullYear()}-${String(start.getMonth()+1).padStart(2,'0')}-${String(start.getDate()).padStart(2,'0')}`;
+                db.ref(`hari_libur/${tglLibur}`).set(st?true:null);
                 start.setDate(start.getDate() + 1);
             }
             alert(st?"Set Libur!":"Hapus Libur!"); d1.value=""; d2.value="";
@@ -220,7 +336,11 @@
 
         function rRekap(){
             const f=document.getElementById('fB').value; if(!f) return;
-            const [y,m]=f.split('-'), last=new Date(y,m,0).getDate(), todayFull = new Date().toISOString().split('T')[0], tglSkrg = new Date().getDate();
+            const [y,m]=f.split('-'); 
+            const last=new Date(y,m,0).getDate();
+            const dNow = new Date();
+            const todayFull = `${dNow.getFullYear()}-${String(dNow.getMonth()+1).padStart(2,'0')}-${String(dNow.getDate()).padStart(2,'0')}`;
+            const tglSkrg = dNow.getDate();
             const kList=Object.values(mk).sort();
             
             let h=`<tr><th class="nama-fixed">Nama</th>`;
@@ -236,6 +356,9 @@
                     let isMinggu = (d.getDay()===0), isSetLibur = hl[t];
                     let data=ad[t]?ad[t][n]:null, sW="-", clW="", infoW="";
                     
+                    // KUNCI ALPA BUG: Hari dianggap aktif absen jika minimal ada 1 data masuk
+                    let hariAktif = ad[t] && Object.keys(ad[t]).length > 0;
+                    
                     if(data){
                         if(data.Izin){ sW="I"; clW="s-i"; cI++; infoW = data.Izin.note || "Izin"; }
                         else if(data.Masuk){ 
@@ -246,7 +369,7 @@
                     } 
                     else if(isMinggu){ sW="MNG"; clW="s-mng"; }
                     else if(isSetLibur){ sW="OFF"; clW="s-off"; }
-                    else if(t < todayFull && t >= TGL_MULAI_SISTEM){ sW="A"; clW="s-a"; cA++; }
+                    else if(hariAktif && t < todayFull && t >= TGL_MULAI_SISTEM){ sW="A"; clW="s-a"; cA++; }
                     
                     row+=`<td class="${i===tglSkrg?'today-col':''}"><div class="s-cell ${clW}">${sW}<span class="jam-text">${infoW}</span></div></td>`;
                 }
@@ -273,6 +396,174 @@
             const blob = new Blob([template], {type: "application/vnd.ms-excel"});
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a"); a.href = url; a.download = `REKAP_AGN_${f}.xls`; a.click();
+        }
+        
+        function uBrg(){
+            let opt = '<option value="">Pilih Barang...</option>';
+            opt += Object.values(mb).sort().map(b=>`<option value="${b}">${b}</option>`).join('');
+            document.getElementById('sBrg').innerHTML = opt;
+        }
+
+        function tBrg(){
+            let n=document.getElementById('mBrg'); 
+            if(n.value) db.ref('master_barang').push(n.value).then(()=>{ n.value=""; alert("Barang ditambahkan!"); });
+        }
+
+        function vStok(){
+            const b = document.getElementById('sBrg').value;
+            const t = document.getElementById('sTgl').value;
+            const j = document.getElementById('sJns').value;
+            const jName = document.getElementById('sJns').options[document.getElementById('sJns').selectedIndex].text;
+            const q = parseInt(document.getElementById('sQty').value);
+
+            if(!b || isNaN(q)) return alert("Lengkapi pilihan barang dan jumlah/qty!");
+            
+            db.ref(`stok_barang/${t}`).push({
+                barang: b, 
+                jenis: j,
+                jenis_nama: jName, 
+                qty: q
+            }).then(() => {
+                document.getElementById('sQty').value="";
+                alert("Data berhasil diinput!");
+            });
+        }
+
+        function rStok(){
+            let items = Object.values(mb).sort();
+            let res = {};
+            
+            // Setup field untuk Stok Utama & QC
+            items.forEach(i => {
+                res[i] = { 
+                    awal_ready:0, awal_kotor:0, masuk_kotor:0, masuk_bersih:0, 
+                    rekon:0, jual_u:0, jual_a:0,
+                    qc_a:0, qc_amd:0, qc_r:0 
+                };
+            });
+
+            // Akumulasi Data
+            Object.keys(sd).forEach(tgl => {
+                Object.values(sd[tgl]).forEach(entry => {
+                    if(res[entry.barang] && res[entry.barang][entry.jenis] !== undefined) {
+                        res[entry.barang][entry.jenis] += entry.qty;
+                    }
+                });
+            });
+
+            // HEADER TABEL 1: STOK UTAMA
+            let hSt = `<tr>
+                <th class="nama-fixed" style="background:var(--p)">Nama Barang</th>
+                <th>Awal Ready</th>
+                <th>Awal Kotor</th>
+                <th>Masuk Kotor</th>
+                <th>Masuk Bersih</th>
+                <th>Rekon</th>
+                <th>Jual Umum</th>
+                <th>Jual Agen</th>
+                <th style="background:var(--s)">TOT READY</th>
+                <th style="background:var(--iz)">TOT KOTOR</th>
+            </tr>`;
+
+            // HEADER TABEL 2: LOG QC
+            let hQc = `<tr>
+                <th class="nama-fixed-qc" style="background:var(--iz)">Nama Barang</th>
+                <th>Accepted</th>
+                <th>Accepted with Minor Damage</th>
+                <th>Reject</th>
+                <th style="background:var(--p)">TOTAL QC MASUK</th>
+            </tr>`;
+            
+            let bSt = "";
+            let bQc = "";
+
+            items.forEach(i => {
+                const s = res[i];
+                
+                // Kalkulasi Stok Utama (Terpisah dari QC)
+                const totReady = (s.awal_ready + s.masuk_bersih + s.rekon) - (s.jual_u + s.jual_a);
+                const totKotor = (s.awal_kotor + s.masuk_kotor) - s.rekon;
+                
+                bSt += `<tr>
+                    <td class="nama-fixed">${i}</td>
+                    <td>${s.awal_ready}</td>
+                    <td>${s.awal_kotor}</td>
+                    <td>${s.masuk_kotor}</td>
+                    <td>${s.masuk_bersih}</td>
+                    <td>${s.rekon}</td>
+                    <td>${s.jual_u}</td>
+                    <td>${s.jual_a}</td>
+                    <td style="font-weight:bold; color:var(--s)">${totReady}</td>
+                    <td style="font-weight:bold; color:var(--iz)">${totKotor}</td>
+                </tr>`;
+
+                // Kalkulasi QC Masuk
+                const totQc = s.qc_a + s.qc_amd + s.qc_r;
+                
+                bQc += `<tr>
+                    <td class="nama-fixed-qc">${i}</td>
+                    <td>${s.qc_a}</td>
+                    <td>${s.qc_amd}</td>
+                    <td>${s.qc_r}</td>
+                    <td style="font-weight:bold; color:var(--p)">${totQc}</td>
+                </tr>`;
+            });
+
+            document.getElementById('thSt').innerHTML = hSt;
+            document.getElementById('tbSt').innerHTML = bSt;
+            
+            document.getElementById('thQc').innerHTML = hQc;
+            document.getElementById('tbQc').innerHTML = bQc;
+        }
+
+        function renderLog(){
+            const t = document.getElementById('sTgl').value;
+            const logArea = document.getElementById('stokLog');
+            const data = sd[t] || {};
+            
+            if(Object.keys(data).length === 0){
+                logArea.innerHTML = `<div style="padding:10px; color:var(--b)">Belum ada inputan di tanggal ini...</div>`;
+                return;
+            }
+
+            let html = "";
+            Object.keys(data).reverse().forEach(id => {
+                const item = data[id];
+                html += `
+                <div class="log-row">
+                    <span><b>${item.barang}</b> - ${item.jenis_nama} : ${item.qty} pcs</span>
+                    <button class="del-btn" onclick="hapusStok('${t}', '${id}')">HAPUS</button>
+                </div>`;
+            });
+            logArea.innerHTML = html;
+        }
+
+        function hapusStok(tgl, id){
+            if(confirm('Yakin mau hapus inputan ini?')) {
+                db.ref(`stok_barang/${tgl}/${id}`).remove();
+            }
+        }
+
+        function doExcelStok(){
+            const table = document.getElementById("stTable").outerHTML;
+            const template = `
+                <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+                <head><style>table { border-collapse:collapse; } th { background-color: #2563eb; color: #ffffff; border:1px solid black; } td { border:1px solid black; text-align:center; font-family: Arial; font-size: 10pt; }</style></head>
+                <body>${table}</body></html>`;
+            const blob = new Blob([template], {type: "application/vnd.ms-excel"});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a"); a.href = url; a.download = `REKAP_STOK_AGN.xls`; a.click();
+        }
+
+        function doExcelQC(){
+            const table = document.getElementById("qcTable").outerHTML;
+            const template = `
+                <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+                <head><style>table { border-collapse:collapse; } th { background-color: #f59e0b; color: #ffffff; border:1px solid black; } td { border:1px solid black; text-align:center; font-family: Arial; font-size: 10pt; }</style></head>
+                <body>${table}</body></html>`;
+            const blob = new Blob([template], {type: "application/vnd.ms-excel"});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a"); a.href = url; a.download = `REKAP_QC_AGN.xls`; a.click();
         }
     </script>
 </body>
