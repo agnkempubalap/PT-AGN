@@ -2,26 +2,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PT AGN v82 ENTERPRISE</title><script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js"></script><style>
+<title>PT AGN v82 (NO LOGIN)</title><script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js"></script><style>
 body{margin:0;background:#0f172a;color:#fff;font-family:sans-serif;padding:10px}
 .card{background:#1e293b;padding:15px;border-radius:12px;margin-bottom:10px}
 input,select,button{height:45px;border-radius:10px;border:1px solid #334155;background:#0f172a;color:#fff;padding:0 10px}
 button{cursor:pointer;font-weight:bold}
-.hidden{display:none}
 .table{width:100%;border-collapse:collapse}
 .table td,.table th{border:1px solid #334155;padding:6px;text-align:center}
 </style></head>
-<body><div id="loginPage" class="card">
-<h3>Login Sistem</h3>
-<input id="email" placeholder="Email">
-<input id="password" type="password" placeholder="Password">
-<button onclick="login()">Login</button>
-</div><div id="app" class="hidden"><div class="card">
+<body><div class="card">
 <h3>Dashboard</h3>
-<p id="infoUser"></p>
 <p id="totalReady"></p>
 <p id="totalKotor"></p>
-<button onclick="logout()">Logout</button>
 </div><div class="card">
 <canvas id="chart"></canvas>
 </div><div class="card">
@@ -42,31 +34,18 @@ button{cursor:pointer;font-weight:bold}
 </div><div class="card">
 <h3>Data Stok</h3>
 <table class="table">
-<thead><tr><th>Barang</th><th>Ready</th><th>Kotor</th><th>Aksi</th></tr></thead>
+<thead><tr><th>Barang</th><th>Ready</th><th>Kotor</th></tr></thead>
 <tbody id="tb"></tbody>
 </table>
 </div><div class="card">
 <h3>Audit Log</h3>
 <div id="log"></div>
-</div></div><script>
+</div><script>
 const firebaseConfig={apiKey:"AIzaSy...",databaseURL:"https://pt-agn-default-rtdb.asia-southeast1.firebasedatabase.app"};
 firebase.initializeApp(firebaseConfig);
 const db=firebase.database();
-const auth=firebase.auth();
 
-let barangData={},stokData={},userRole='staff';
-
-function login(){
-auth.signInWithEmailAndPassword(email.value,password.value)
-.then(u=>{
-loginPage.classList.add('hidden');
-app.classList.remove('hidden');
-infoUser.innerText='Login: '+u.user.email;
-load();
-});
-}
-
-function logout(){auth.signOut().then(()=>location.reload());}
+let barangData={},stokData={};
 
 function load(){
 db.ref('master_barang').on('value',s=>{
@@ -91,17 +70,13 @@ jenis:jenis.value,
 jenisBarang:jenisBarang.value,
 qty:+qty.value,
 waktu:new Date().toISOString(),
-user:auth.currentUser.email
+user:'admin'
 });
-}
-
-function hapus(id){
-if(confirm('Hapus data?')) db.ref('stok_enterprise/'+id).remove();
 }
 
 function hitung(n){
 let r=0,k=0;
-Object.entries(stokData).forEach(([id,d])=>{
+Object.values(stokData).forEach(d=>{
 if(d.barang!==n)return;
 if(d.jenis==='qc_a'||d.jenis==='qc_amd'){
 if(d.jenisBarang==='baru') r+=d.qty; else k+=d.qty;
@@ -116,15 +91,15 @@ function render(){
 let html='';
 Object.values(barangData).forEach(n=>{
 let s=hitung(n);
-html+=`<tr><td>${n}</td><td>${s.r}</td><td>${s.k}</td><td>-</td></tr>`;
+html+=`<tr><td>${n}</td><td>${s.r}</td><td>${s.k}</td></tr>`;
 });
 tb.innerHTML=html;
 }
 
 function logRender(){
 let html='';
-Object.entries(stokData).slice(-30).reverse().forEach(([id,d])=>{
-html+=`<div>${d.waktu} | ${d.barang} | ${d.qty} | ${d.user} <button onclick="hapus('${id}')">Hapus</button></div>`;
+Object.values(stokData).slice(-30).reverse().forEach(d=>{
+html+=`<div>${d.waktu} | ${d.barang} | ${d.qty}</div>`;
 });
 log.innerHTML=html;
 }
@@ -148,5 +123,7 @@ data.push(s.r);
 });
 new Chart(chart,{type:'bar',data:{labels:labels,datasets:[{label:'Ready',data:data}]}});
 }
+
+load();
 </script></body>
 </html>
