@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v97.0 - OMNI-STOCK SYSTEM</title>
+    <title>PT-AGN v97.5 - COMPLETE SYSTEM</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
@@ -14,7 +14,8 @@
         
         header{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px}
         .logo-box{display:flex;align-items:center;gap:12px}
-        .logo-box img{width:70px;height:70px;border-radius:50%;border:3px solid var(--p);object-fit:cover;cursor:pointer}
+        .logo-box img{width:70px;height:70px;border-radius:50%;border:3px solid var(--p);object-fit:cover;cursor:pointer;background:#000}
+        .theme-card{background:var(--c); border-radius:12px; border:1px solid var(--b); padding:8px 15px; display:flex; align-items:center; gap:8px; cursor:pointer}
 
         .tabs{display:flex;gap:10px;margin-bottom:15px}
         .tab-btn{flex:1;padding:15px;border-radius:12px;background:var(--c);color:var(--t);border:1px solid var(--b);cursor:pointer;font-weight:800;font-size:12px}
@@ -27,14 +28,19 @@
         input,button,select{border-radius:12px;font-size:14px;height:52px;border:1px solid var(--b);background:var(--bg);color:var(--t);width:100%;box-sizing:border-box;outline:none;padding:0 15px}
         .btn{display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;border:none;color:#fff}
         
-        .table-wrap{overflow-x:auto; border-radius:12px; border:1px solid var(--b); background:var(--c)}
+        .table-wrap{overflow-x:auto; border-radius:12px; border:1px solid var(--b); background:var(--c); scroll-behavior: smooth}
         .table-web{width:100%;border-collapse:separate;border-spacing:0;font-size:10px; color:var(--t)}
         .table-web th, .table-web td{border-bottom:1px solid var(--b);border-right:1px solid var(--b);padding:8px 2px;text-align:center}
         .th-blue{background:var(--p); color:#fff}
         
         .nama-fixed{position:sticky !important;left:0;background-color:var(--c) !important;z-index:10;min-width:120px !important;text-align:left !important;padding-left:10px !important;font-weight:700; border-right: 2px solid var(--p) !important}
-        
-        /* Warna Khusus Tabel Stok */
+        .today-col{background: rgba(37, 99, 235, 0.15) !important;}
+
+        .s-cell{border-radius:6px;width:40px;height:40px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;font-size:10px;margin:0 auto;position:relative}
+        .s-v{background:var(--s);color:#fff} .s-late{background:var(--w);color:#000} .s-i{background:var(--iz);color:#fff}
+        .s-off{background:var(--d);color:#fff} .s-a{background:var(--al);color:#fff} .s-l{background:#AA00FF;color:#fff} .s-mng{background:#64748b;color:#fff}
+        .jam-text{font-size:7px;font-weight:700;display:block;margin-top:2px}
+
         .res-kotor{background:rgba(245,158,11,0.1); color:var(--iz); font-weight:900}
         .res-ready{background:rgba(0,200,83,0.1); color:var(--s); font-weight:900}
         .res-total{background:var(--bg); font-weight:900; border:2px solid var(--p) !important}
@@ -49,59 +55,99 @@
     <div class="container">
         <header>
             <div class="logo-box">
-                <img id="mainLogo" src="https://ui-avatars.com/api/?name=AGN&background=000&color=fff">
-                <div><h2 style="margin:0;font-size:1.3rem">PT AGN LOGISTICS</h2><span style="font-size:10px;color:var(--p);font-weight:800">SYSTEM v97.0 - OMNI-STOCK</span></div>
+                <input type="file" id="inpLogo" style="display:none" accept="image/*" onchange="cLogo(event)">
+                <img id="mainLogo" src="https://ui-avatars.com/api/?name=AGN&background=000&color=fff" onclick="document.getElementById('inpLogo').click()">
+                <div><h2 style="margin:0;font-size:1.3rem">PT AGN LOGISTICS</h2><span style="font-size:10px;color:var(--p);font-weight:800">SYSTEM v97.5 - COMPLETE RESTORE</span></div>
+            </div>
+            <div class="theme-card no-print" onclick="toggleT()">
+                <span id="tIco">☀️</span> <span style="font-size:12px;font-weight:600">Ganti Tema</span>
             </div>
         </header>
 
         <div class="tabs no-print">
-            <button class="tab-btn active" onclick="openTab('tab-stok', this)">📦 GUDANG & STOK IBC</button>
-            <button class="tab-btn" onclick="openTab('tab-absen', this)">📅 ABSENSI</button>
+            <button class="tab-btn active" onclick="openTab('tab-absen', this)">📅 ABSENSI & KALENDER</button>
+            <button class="tab-btn" onclick="openTab('tab-stok', this)">📦 GUDANG & STOK IBC</button>
         </div>
 
-        <div id="tab-stok" class="tab-content active">
+        <div id="tab-absen" class="tab-content active">
             <div class="card no-print">
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px">
-                    <input list="lb" id="sBrg" placeholder="Pilih Jenis Barang (IBC 1000L, dll)...">
-                    <datalist id="lb"></datalist>
-                    <input type="date" id="sTgl">
+                <h3>👥 DATA & PRESENSI KARYAWAN</h3>
+                <div style="display:grid; grid-template-columns: 2fr 1fr 1fr; gap:10px; margin-bottom:10px">
+                    <input list="lk" id="iNama" placeholder="Ketik/Cari Nama Karyawan...">
+                    <button class="btn" style="background:var(--s)" onclick="pAbsen('Masuk')">MASUK</button>
+                    <button class="btn" style="background:var(--d)" onclick="pAbsen('Pulang')">PULANG</button>
                 </div>
+                <datalist id="lk"></datalist>
+                <div style="display:flex; gap:10px">
+                    <button class="btn" style="background:var(--iz); flex:1" onclick="pAbsen('Izin')">📝 IZIN / KETERANGAN</button>
+                    <button class="btn" style="background:var(--p); width:50px" onclick="tKaryawan()">+</button>
+                    <button class="btn" style="background:var(--d); width:50px" onclick="hKaryawan()">🗑️</button>
+                </div>
+            </div>
 
-                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px">
-                    <div class="card" style="margin:0; border-color:var(--p)">
-                        <h3>1. QUALITY CONTROL (QC)</h3>
-                        <select id="qcK" style="margin-bottom:8px"><option value="Baru">Kondisi: Baru</option><option value="Bekas">Kondisi: Bekas</option></select>
-                        <select id="qcS" style="margin-bottom:8px"><option value="Accepted">Status: Accepted</option><option value="Accepted With Minor Damage">Status: Minor Damage</option><option value="Reject">Status: Reject</option></select>
-                        <input type="number" id="qQC" placeholder="Jumlah Qty Masuk">
-                        <button class="btn" style="background:var(--p); margin-top:10px" onclick="saveStok('qc')">INPUT QC</button>
+            <div class="card no-print">
+                <h3>🧹 KONTROL & HARI LIBUR</h3>
+                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; align-items:end">
+                    <div><label style="font-size:10px">Reset Per Orang (Pilih Tgl):</label><input type="date" id="resetTgl"></div>
+                    <button class="btn" style="background:var(--d)" onclick="resetAbsen()">BATALKAN ABSEN</button>
+                    <div style="display:flex; gap:5px">
+                        <div style="flex:1"><label style="font-size:9px">Dari:</label><input type="date" id="tglAwal"></div>
+                        <div style="flex:1"><label style="font-size:9px">Sampai:</label><input type="date" id="tglAkhir"></div>
                     </div>
-
-                    <div class="card" style="margin:0; border-color:var(--iz)">
-                        <h3>2. LOG REKONDISI</h3>
-                        <input type="number" id="qRek" placeholder="Jumlah Selesai Rekondisi">
-                        <p style="font-size:9px; color:var(--iz)">*Barang Bekas akan pindah ke Stok Ready</p>
-                        <button class="btn" style="background:var(--iz); margin-top:33px" onclick="saveStok('rekon')">UPDATE REKONDISI</button>
-                    </div>
-
-                    <div class="card" style="margin:0; border-color:var(--s)">
-                        <h3>3. PENJUALAN</h3>
-                        <select id="jnsJ" style="margin-bottom:8px"><option value="Umum">Jual Umum</option><option value="Agen">Jual Agen</option></select>
-                        <input type="number" id="qJual" placeholder="Qty Terjual">
-                        <button class="btn" style="background:var(--s); margin-top:55px" onclick="saveStok('jual')">SIMPAN PENJUALAN</button>
-                    </div>
+                </div>
+                <div style="display:flex; gap:10px; margin-top:10px">
+                    <button class="btn" style="background:var(--p); flex:1" onclick="sLib(true)">SET HARI LIBUR</button>
+                    <button class="btn" style="background:var(--d); flex:1" onclick="sLib(false)">HAPUS HARI LIBUR</button>
                 </div>
             </div>
 
             <div class="card">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px">
-                    <h3 style="margin:0">LAPORAN STOK OTOMATIS</h3>
+                <div style="display:flex; justify-content:space-between; margin-bottom:15px" class="no-print">
+                    <input type="month" id="fB" style="width:160px" onchange="rRekap()">
                     <div style="display:flex; gap:10px">
-                        <input type="month" id="fB" style="width:160px; height:40px" onchange="rStok()">
-                        <button class="btn" style="background:#1d6f42; width:100px; font-size:11px" onclick="doExcelStok()">📥 EXCEL</button>
+                        <button class="btn" style="background:#1d6f42; width:100px; font-size:11px" onclick="doExcelAbsen()">📥 EXCEL</button>
                         <button class="btn" style="background:#b91c1c; width:100px; font-size:11px" onclick="window.print()">📄 PDF</button>
                     </div>
                 </div>
+                <div class="table-wrap" id="scrollArea">
+                    <table class="table-web" id="rekapTable"><thead id="thWeb"></thead><tbody id="tbWeb"></tbody></table>
+                </div>
+            </div>
+        </div>
 
+        <div id="tab-stok" class="tab-content">
+            <div class="card no-print">
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px">
+                    <input list="lb" id="sBrg" placeholder="Pilih Jenis Barang...">
+                    <datalist id="lb"></datalist>
+                    <input type="date" id="sTgl">
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px">
+                    <div class="card" style="margin:0; border-color:var(--p)">
+                        <h3>1. QUALITY CONTROL (QC)</h3>
+                        <select id="qcK" style="margin-bottom:8px"><option value="Baru">Kondisi: Baru</option><option value="Bekas">Kondisi: Bekas</option></select>
+                        <select id="qcS" style="margin-bottom:8px"><option value="Accepted">Accepted</option><option value="Accepted With Minor Damage">Minor Damage</option><option value="Reject">Reject</option></select>
+                        <input type="number" id="qQC" placeholder="Qty">
+                        <button class="btn" style="background:var(--p); margin-top:10px" onclick="saveStok('qc')">INPUT QC</button>
+                    </div>
+                    <div class="card" style="margin:0; border-color:var(--iz)">
+                        <h3>2. REKONDISI</h3>
+                        <input type="number" id="qRek" placeholder="Selesai Rekon">
+                        <div style="height:92px"></div>
+                        <button class="btn" style="background:var(--iz)" onclick="saveStok('rekon')">UPDATE HASIL</button>
+                    </div>
+                    <div class="card" style="margin:0; border-color:var(--s)">
+                        <h3>3. PENJUALAN</h3>
+                        <select id="jnsJ" style="margin-bottom:8px"><option value="Umum">Jual Umum</option><option value="Agen">Jual Agen</option></select>
+                        <input type="number" id="qJual" placeholder="Qty Keluar">
+                        <div style="height:52px"></div>
+                        <button class="btn" style="background:var(--s)" onclick="saveStok('jual')">SIMPAN JUAL</button>
+                    </div>
+                </div>
+                <button class="btn" style="background:var(--b); margin-top:10px; height:40px" onclick="tBarang()">+ TAMBAH MASTER BARANG</button>
+            </div>
+
+            <div class="card">
                 <div class="table-wrap">
                     <table class="table-web" id="stokTable">
                         <thead>
@@ -129,21 +175,25 @@
                     </table>
                 </div>
             </div>
-        </div>
-
-        <div id="tab-absen" class="tab-content">
-            <div class="card"><h3>Fitur Absensi Aktif di Latar Belakang</h3></div>
+            <div class="card no-print">
+                <h3>LOG GUDANG TERBARU</h3>
+                <div class="table-wrap"><table class="table-web"><thead><tr><th>Tgl</th><th>Barang</th><th>Tipe</th><th>Detail</th><th>Qty</th><th>Aksi</th></tr></thead><tbody id="tbLog"></tbody></table></div>
+            </div>
         </div>
     </div>
 
     <script>
         const cfg={apiKey:"AIzaSyAu67MAhWBxdmciPi3xOKWhdy-uP4u9tXI",databaseURL:"https://pt-agn-default-rtdb.asia-southeast1.firebasedatabase.app"};
         firebase.initializeApp(cfg); const db=firebase.database();
-        let mb={}, sd={};
+        let mk={}, ad={}, hl={}, mb={}, sd={}; const MULAI = "2026-03-21";
 
         window.onload=()=>{
             const d=new Date(); document.getElementById('fB').value=d.toISOString().slice(0,7);
             document.getElementById('sTgl').value=d.toISOString().slice(0,10);
+            if(localStorage.getItem('agnLogo')) document.getElementById('mainLogo').src=localStorage.getItem('agnLogo');
+            db.ref('master_karyawan').on('value',s=>{mk=s.val()||{}; uDl(); rRekap();});
+            db.ref('absensi').on('value',s=>{ad=s.val()||{}; rRekap();});
+            db.ref('hari_libur').on('value',s=>{hl=s.val()||{}; rRekap();});
             db.ref('master_barang').on('value',s=>{mb=s.val()||{}; uBrg(); rStok();});
             db.ref('stok_flow').on('value',s=>{sd=s.val()||{}; rStok();});
         };
@@ -154,97 +204,70 @@
             document.getElementById(id).classList.add('active'); btn.classList.add('active');
         }
 
-        function uBrg(){
-            let opt = Object.values(mb).sort().map(b=>`<option value="${b}">`).join('');
-            document.getElementById('lb').innerHTML=opt;
+        function toggleT(){ 
+            let b=document.body; let nt=b.getAttribute('data-theme')==='dark'?'light':'dark'; 
+            b.setAttribute('data-theme',nt); document.getElementById('tIco').innerText=nt==='dark'?'☀️':'🌙';
         }
 
-        function saveStok(step){
-            const brg=document.getElementById('sBrg').value, tgl=document.getElementById('sTgl').value;
-            if(!brg || !tgl) return alert("Pilih Barang & Tanggal!");
-
-            let data = { barang: brg, tgl: tgl, step: step, ts: Date.now() };
-
-            if(step === 'qc'){
-                data.kondisi = document.getElementById('qcK').value;
-                data.status = document.getElementById('qcS').value;
-                data.qty = parseInt(document.getElementById('qQC').value);
-            } else if(step === 'rekon'){
-                data.qty = parseInt(document.getElementById('qRek').value);
-                data.status = "Selesai Rekondisi";
-            } else if(step === 'jual'){
-                data.status = document.getElementById('jnsJ').value;
-                data.qty = parseInt(document.getElementById('qJual').value);
-            }
-
-            if(!data.qty || data.qty <= 0) return alert("Masukkan Jumlah Qty!");
-            db.ref('stok_flow').push(data).then(()=>alert("Data Stok Berhasil Disimpan!"));
+        function cLogo(e){
+            const r=new FileReader(); r.onload=()=>{ document.getElementById('mainLogo').src=r.result; localStorage.setItem('agnLogo',r.result); };
+            r.readAsDataURL(e.target.files[0]);
         }
 
-        function rStok(){
-            const items = Object.values(mb).sort(), filterBulan = document.getElementById('fB').value;
-            let rekap = {};
-            items.forEach(i => rekap[i] = { ak:0, ar:0, acc:0, amd:0, rej:0, baru:0, bekas:0, rekon:0, umum:0, agen:0 });
+        function uDl(){ document.getElementById('lk').innerHTML=Object.values(mk).sort().map(n=>`<option value="${n}">`).join(''); }
+        function tKaryawan(){ let n=document.getElementById('iNama'); if(n.value){db.ref('master_karyawan').push(n.value).then(()=>n.value="");}}
+        function hKaryawan(){ let n=document.getElementById('iNama'); let id=Object.keys(mk).find(k=>mk[k]===n.value); if(id && confirm('Hapus?')) db.ref(`master_karyawan/${id}`).remove().then(()=>n.value="");}
 
-            // LOGIKA HITUNG SALDO OTOMATIS
-            Object.values(sd).forEach(e => {
-                let r = rekap[e.barang]; if(!r) return;
-                const eMonth = e.tgl.slice(0,7);
+        function pAbsen(ty){
+            let n=document.getElementById('iNama').value, now=new Date(), tgl=now.toISOString().split('T')[0];
+            if(!n) return alert("Pilih Nama!");
+            let jam=now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+            let st="Hadir"; if(ty==='Masuk' && (now.getHours()>9 || (now.getHours()===9 && now.getMinutes()>0))) st="Terlambat";
+            let nt=""; if(ty==='Izin'){nt=prompt("Alasan:"); if(nt===null)return; st="Izin";}
+            db.ref(`absensi/${tgl}/${n}/${ty}`).set({waktu:jam, status:st, note:nt}).then(()=>alert("OK!"));
+        }
 
-                if(eMonth < filterBulan){
-                    // Hitung Stok Awal (Saldo dari bulan-bulan sebelumnya)
-                    if(e.step === 'qc' && e.status !== 'Reject'){
-                        if(e.kondisi === 'Baru') r.ar += e.qty; else r.ak += e.qty;
-                    } else if(e.step === 'rekon'){
-                        r.ak -= e.qty; r.ar += e.qty;
-                    } else if(e.step === 'jual'){
-                        r.ar -= e.qty;
-                    }
-                } else if(eMonth === filterBulan){
-                    // Hitung Transaksi Bulan Berjalan
-                    if(e.step === 'qc'){
-                        if(e.status === 'Accepted') r.acc += e.qty;
-                        else if(e.status === 'Accepted With Minor Damage') r.amd += e.qty;
-                        else r.rej += e.qty;
+        function resetAbsen(){
+            let n=document.getElementById('iNama').value, tgl=document.getElementById('resetTgl').value;
+            if(!n || !tgl) return alert("Pilih Nama & Tgl!");
+            if(confirm('Hapus data '+n+' tgl '+tgl+'?')) db.ref(`absensi/${tgl}/${n}`).remove();
+        }
 
-                        if(e.status !== 'Reject'){
-                            if(e.kondisi === 'Baru') r.baru += e.qty; else r.bekas += e.qty;
+        function sLib(st){
+            let d1=document.getElementById('tglAwal'), d2=document.getElementById('tglAkhir');
+            if(!d1.value) return alert("Isi tanggal!");
+            let s = new Date(d1.value), e = d2.value ? new Date(d2.value) : new Date(d1.value);
+            while(s <= e){ db.ref(`hari_libur/${s.toISOString().split('T')[0]}`).set(st?true:null); s.setDate(s.getDate()+1); }
+            alert("Selesai!");
+        }
+
+        function rRekap(){
+            const f=document.getElementById('fB').value; if(!f) return;
+            const [y,m]=f.split('-'), last=new Date(y,m,0).getDate(), todayFull=new Date().toISOString().split('T')[0], tglSkrg=new Date().getDate();
+            let h=`<tr><th class="nama-fixed">Nama</th>`; 
+            for(let i=1;i<=last;i++) h+=`<th id="tgl-${i}" class="${i===tglSkrg?'today-col':''}">${i}</th>`; 
+            h+=`<th>H</th><th>I</th><th>A</th><th>L</th></tr>`;
+            document.getElementById('thWeb').innerHTML=h;
+            
+            let b=""; Object.values(mk).sort().forEach(n=>{
+                let cH=0, cI=0, cA=0, cL=0, row=`<td class="nama-fixed">${n}</td>`;
+                for(let i=1;i<=last;i++){
+                    let t=`${y}-${m}-${String(i).padStart(2,'0')}`, data=ad[t]?ad[t][n]:null, sW="-", clW="", infoW="";
+                    if(data){
+                        if(data.Izin){ sW="I"; clW="s-i"; cI++; infoW=data.Izin.note; }
+                        else if(data.Masuk){ 
+                            if(new Date(t).getDay()===0 || hl[t]){ sW="L"; clW="s-l"; cL++; }
+                            else { sW="H"; clW=(data.Masuk.status==="Terlambat")?"s-late":"s-v"; cH++; }
+                            infoW=data.Masuk.waktu + (data.Pulang ? `|${data.Pulang.waktu}` : "");
                         }
-                    } else if(e.step === 'rekon'){
-                        r.rekon += e.qty;
-                    } else if(e.step === 'jual'){
-                        if(e.status === 'Umum') r.umum += e.qty; else r.agen += e.qty;
-                    }
+                    } else if(new Date(t).getDay()===0){ sW="MNG"; clW="s-mng"; }
+                    else if(hl[t]){ sW="OFF"; clW="s-off"; }
+                    else if(t < todayFull && t >= MULAI){ sW="A"; clW="s-a"; cA++; }
+                    row+=`<td class="${i===tglSkrg?'today-col':''}"><div class="s-cell ${clW}">${sW}<span class="jam-text">${infoW||""}</span></div></td>`;
                 }
+                b+=`<tr>${row}<td>${cH}</td><td>${cI}</td><td>${cA}</td><td>${cL}</td></tr>`;
             });
-
-            let html = "";
-            items.forEach(i => {
-                const d = rekap[i];
-                const sisaKotor = (d.ak + d.bekas) - d.rekon;
-                const sisaReady = (d.ar + d.baru + d.rekon) - (d.umum + d.agen);
-                const totalGudang = sisaKotor + sisaReady;
-
-                html += `<tr>
-                    <td class="nama-fixed">${i}</td>
-                    <td>${d.ak}</td><td>${d.ar}</td>
-                    <td>${d.acc}</td><td>${d.amd}</td><td>${d.rej}</td>
-                    <td>${d.baru}</td><td>${d.bekas}</td>
-                    <td>${d.rekon}</td>
-                    <td class="res-kotor">${sisaKotor}</td><td class="res-ready">${sisaReady}</td>
-                    <td>${d.umum}</td><td>${d.agen}</td>
-                    <td class="res-total">${totalGudang}</td>
-                </tr>`;
-            });
-            document.getElementById('tbStok').innerHTML = html;
-        }
-
-        function doExcelStok(){
-            const table = document.getElementById("stokTable").outerHTML;
-            const blob = new Blob([table], {type: "application/vnd.ms-excel"});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a"); a.href = url; a.download = `LAPORAN_STOK_AGN_${document.getElementById('fB').value}.xls`; a.click();
-        }
-    </script>
-</body>
-</html>
+            document.getElementById('tbWeb').innerHTML=b;
+            setTimeout(() => {
+                const target = document.getElementById(`tgl-${tglSkrg}`);
+                if(target) document.getElementById('scrollArea').scrollTo({ left: target.offsetLeft - 15
