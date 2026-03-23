@@ -45,7 +45,6 @@
         .s-v{background:var(--s);color:#fff} .s-late{background:var(--w);color:#000} .s-i{background:var(--iz);color:#fff}
         .s-off{background:var(--d);color:#fff} .s-a{background:var(--al);color:#fff} .s-l{background:#AA00FF;color:#fff} .s-mng{background:#64748b;color:#fff}
         
-        /* FIX JAM NGELEWATIN KOTAK DI SINI MAS */
         .jam-text{font-size:7px;font-weight:600;display:block;margin-top:2px;max-width:33px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;}
 
         /* STOK LOG STYLES */
@@ -64,7 +63,7 @@
             
             .table-web { 
                 width: 100% !important; 
-                transform: scale(0.7); /* PAKSA MENGECIL AGAR MUAT */
+                transform: scale(0.7);
                 transform-origin: top left; 
                 border-collapse: collapse !important;
                 -webkit-print-color-adjust: exact !important; 
@@ -74,7 +73,6 @@
             .table-web th { background-color: #2563eb !important; color: #ffffff !important; padding: 8px 1px !important; border: 1px solid #000 !important; }
             .table-web td { border: 1px solid #94a3b8 !important; color: #334155 !important; padding: 4px 1px !important; }
             
-            /* Warna Status tetap muncul di print */
             .s-v { background-color: #00C853 !important; color: white !important; }
             .s-late { background-color: #FFD600 !important; color: black !important; }
             .s-i { background-color: #f59e0b !important; color: white !important; }
@@ -103,13 +101,11 @@
             </div>
         </header>
 
-        <!-- MENU TABS -->
         <div class="tabs-nav no-print">
             <button id="btnAbsen" class="t-btn active" onclick="goTab('absen')">📅 ABSENSI KARYAWAN</button>
             <button id="btnStok" class="t-btn" onclick="goTab('stok')">📦 STOK BARANG GUDANG</button>
         </div>
 
-        <!-- ==================== HALAMAN ABSEN (KODE ASLI MAS 100%) ==================== -->
         <div id="page-absen">
             <div class="card no-print">
                 <h3>👥 DATA KARYAWAN</h3>
@@ -165,7 +161,6 @@
             </div>
         </div>
 
-        <!-- ==================== HALAMAN STOK (FITUR BARU) ==================== -->
         <div id="page-stok" class="hidden">
             <div class="card no-print">
                 <h3>🛠️ TAMBAH BARANG BARU</h3>
@@ -222,17 +217,16 @@
         firebase.initializeApp(cfg); const db=firebase.database();
         let mk={}, ad={}, hl={}; const TGL_MULAI_SISTEM = "2026-03-21";
         
-        // Variabel Tambahan Untuk Stok
         let mb={}, sd={};
 
         window.onload=()=>{
-            const m = new Date().toISOString().slice(0,7);
-            const today = new Date().toISOString().split('T')[0];
+            const d = new Date();
+            const m = d.toISOString().slice(0,7);
+            const today = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
             
             document.getElementById('fB').value=m;
-            document.getElementById('sTgl').value = today; // Set Default Tanggal Stok
+            document.getElementById('sTgl').value = today;
 
-            // Tab Memory
             const lastTab = localStorage.getItem('agnTab') || 'absen';
             goTab(lastTab);
 
@@ -241,17 +235,14 @@
             document.body.setAttribute('data-theme', savedTheme);
             updateThemeUI(savedTheme);
             
-            // Database Karyawan & Absen
             db.ref('master_karyawan').on('value',s=>{mk=s.val()||{}; uDl(); rRekap();});
             db.ref('absensi').on('value',s=>{ad=s.val()||{}; rRekap();});
             db.ref('hari_libur').on('value',s=>{hl=s.val()||{}; rRekap();});
 
-            // Database Stok
             db.ref('master_barang').on('value',s=>{mb=s.val()||{}; uBrg(); rStok();});
             db.ref('stok_barang').on('value',s=>{sd=s.val()||{}; rStok(); renderLog();});
         };
 
-        // --- SISTEM TABS ---
         function goTab(t){
             localStorage.setItem('agnTab', t);
             document.getElementById('page-absen').classList.toggle('hidden', t!=='absen');
@@ -260,7 +251,6 @@
             document.getElementById('btnStok').classList.toggle('active', t==='stok');
         }
 
-        // --- FUNGSI ASLI ABSENSI (TIDAK ADA YANG DIRUBAH) ---
         function toggleT(){ 
             let b=document.body; let nt=b.getAttribute('data-theme')==='dark'?'light':'dark'; 
             b.setAttribute('data-theme',nt); localStorage.setItem('agnTheme', nt); updateThemeUI(nt);
@@ -293,7 +283,8 @@
         }
 
         function pAbsen(ty){
-            let inp=document.getElementById('iNama'), n=inp.value, now=new Date(), tgl=now.toISOString().split('T')[0];
+            let inp=document.getElementById('iNama'), n=inp.value, now=new Date();
+            let tgl=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
             if(!n) return alert("Pilih Nama!");
             let jam=now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
             let st="Hadir"; if(ty==='Masuk' && (now.getHours()>9 || (now.getHours()===9 && now.getMinutes()>0))) st="Terlambat";
@@ -312,7 +303,8 @@
             if(!d1.value) return alert("Isi tanggal!");
             let start = new Date(d1.value); let end = d2.value ? new Date(d2.value) : new Date(d1.value);
             while(start <= end){
-                db.ref(`hari_libur/${start.toISOString().split('T')[0]}`).set(st?true:null);
+                let tglLibur = `${start.getFullYear()}-${String(start.getMonth()+1).padStart(2,'0')}-${String(start.getDate()).padStart(2,'0')}`;
+                db.ref(`hari_libur/${tglLibur}`).set(st?true:null);
                 start.setDate(start.getDate() + 1);
             }
             alert(st?"Set Libur!":"Hapus Libur!"); d1.value=""; d2.value="";
@@ -320,7 +312,11 @@
 
         function rRekap(){
             const f=document.getElementById('fB').value; if(!f) return;
-            const [y,m]=f.split('-'), last=new Date(y,m,0).getDate(), todayFull = new Date().toISOString().split('T')[0], tglSkrg = new Date().getDate();
+            const [y,m]=f.split('-'); 
+            const last=new Date(y,m,0).getDate();
+            const dNow = new Date();
+            const todayFull = `${dNow.getFullYear()}-${String(dNow.getMonth()+1).padStart(2,'0')}-${String(dNow.getDate()).padStart(2,'0')}`;
+            const tglSkrg = dNow.getDate();
             const kList=Object.values(mk).sort();
             
             let h=`<tr><th class="nama-fixed">Nama</th>`;
@@ -336,6 +332,9 @@
                     let isMinggu = (d.getDay()===0), isSetLibur = hl[t];
                     let data=ad[t]?ad[t][n]:null, sW="-", clW="", infoW="";
                     
+                    // KUNCI ALPA BUG: Hari dianggap aktif absen jika minimal ada 1 data masuk
+                    let hariAktif = ad[t] && Object.keys(ad[t]).length > 0;
+                    
                     if(data){
                         if(data.Izin){ sW="I"; clW="s-i"; cI++; infoW = data.Izin.note || "Izin"; }
                         else if(data.Masuk){ 
@@ -346,7 +345,7 @@
                     } 
                     else if(isMinggu){ sW="MNG"; clW="s-mng"; }
                     else if(isSetLibur){ sW="OFF"; clW="s-off"; }
-                    else if(t < todayFull && t >= TGL_MULAI_SISTEM){ sW="A"; clW="s-a"; cA++; }
+                    else if(hariAktif && t < todayFull && t >= TGL_MULAI_SISTEM){ sW="A"; clW="s-a"; cA++; }
                     
                     row+=`<td class="${i===tglSkrg?'today-col':''}"><div class="s-cell ${clW}">${sW}<span class="jam-text">${infoW}</span></div></td>`;
                 }
@@ -374,8 +373,6 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a"); a.href = url; a.download = `REKAP_AGN_${f}.xls`; a.click();
         }
-
-        // ==================== FUNGSI STOK BARANG ====================
         
         function uBrg(){
             let opt = '<option value="">Pilih Barang...</option>';
@@ -412,12 +409,10 @@
             let items = Object.values(mb).sort();
             let res = {};
             
-            // Siapkan wadah 0
             items.forEach(i => {
                 res[i] = { awal_ready:0, awal_kotor:0, masuk_kotor:0, masuk_bersih:0, rekon:0, jual_u:0, jual_a:0 };
             });
 
-            // Kalkulasi
             Object.keys(sd).forEach(tgl => {
                 Object.values(sd[tgl]).forEach(entry => {
                     if(res[entry.barang] && res[entry.barang][entry.jenis] !== undefined) {
@@ -426,28 +421,24 @@
                 });
             });
 
-            // Bikin Header Tabel
+            // FIX: NAMA KOLOM DIPANJANGIN
             let h = `<tr>
                 <th class="nama-fixed" style="background:var(--p)">Nama Barang</th>
-                <th>Awal Rdy</th>
-                <th>Awal Ktr</th>
-                <th>+Kotor</th>
-                <th>+Bersih</th>
+                <th>Awal Ready</th>
+                <th>Awal Kotor</th>
+                <th>Masuk Kotor</th>
+                <th>Masuk Bersih</th>
                 <th>Rekon</th>
-                <th>Jual Um</th>
-                <th>Jual Ag</th>
+                <th>Jual Umum</th>
+                <th>Jual Agen</th>
                 <th style="background:var(--s)">TOT READY</th>
                 <th style="background:var(--iz)">TOT KOTOR</th>
             </tr>`;
             
-            // Bikin Isi Tabel
             let b = "";
             items.forEach(i => {
                 const s = res[i];
-                // Rumus sesuai request:
-                // Ready = Awal Ready + Masuk Bersih + Rekon - Jual Umum - Jual Agen
                 const totReady = (s.awal_ready + s.masuk_bersih + s.rekon) - (s.jual_u + s.jual_a);
-                // Kotor = Awal Kotor + Masuk Kotor - Rekon
                 const totKotor = (s.awal_kotor + s.masuk_kotor) - s.rekon;
 
                 b += `<tr>
@@ -479,7 +470,6 @@
             }
 
             let html = "";
-            // Reverse biar yg terbaru di atas
             Object.keys(data).reverse().forEach(id => {
                 const item = data[id];
                 html += `
