@@ -55,4 +55,246 @@
                 <img src="https://ui-avatars.com/api/?name=AGN&background=000&color=fff">
                 <div><h2 style="margin:0;font-size:1.2rem">PT AGN LOGISTICS</h2><span style="font-size:10px;color:var(--p);font-weight:800">SYSTEM v92.0 - PROFESSIONAL EDITION</span></div>
             </div>
-            <button class="btn" style="background:var(--c); width:50px" onclick
+            <button class="btn" style="background:var(--c); width:50px" onclick="toggleT()">☀️</button>
+        </header>
+
+        <div class="tabs no-print">
+            <button class="tab-btn active" onclick="openTab('tab-absen', this)">📅 ABSENSI KARYAWAN</button>
+            <button class="tab-btn" onclick="openTab('tab-stok', this)">📦 MANAJEMEN STOK IBC</button>
+        </div>
+
+        <div id="tab-absen" class="tab-content active">
+            <div class="card no-print">
+                <h3>👥 DATA KARYAWAN</h3>
+                <div style="display:flex;gap:10px">
+                    <input list="lk" id="iNama" placeholder="Pilih Nama...">
+                    <datalist id="lk"></datalist>
+                    <button class="btn" style="background:var(--s);width:50px" onclick="tKaryawan()">+</button>
+                    <button class="btn" style="background:var(--d);width:50px" onclick="hKaryawan()">🗑️</button>
+                </div>
+            </div>
+            <div class="card no-print">
+                <h3>⚡ PRESENSI</h3>
+                <div style="display:grid;grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px">
+                    <button class="btn" style="background:var(--s);height:55px" onclick="pAbsen('Masuk')">MASUK</button>
+                    <button class="btn" style="background:var(--d);height:55px" onclick="pAbsen('Pulang')">PULANG</button>
+                </div>
+                <button class="btn" style="background:var(--iz);height:45px" onclick="pAbsen('Izin')">📝 IZIN / KETERANGAN</button>
+            </div>
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; margin-bottom:15px" class="no-print">
+                    <input type="month" id="fB" style="width:160px" onchange="rRekap()">
+                    <button class="btn" style="background:#b91c1c; width:100px" onclick="window.print()">📄 PDF</button>
+                </div>
+                <div class="table-wrap"><table class="table-web" id="rekapTable"><thead id="thWeb"></thead><tbody id="tbWeb"></tbody></table></div>
+            </div>
+        </div>
+
+        <div id="tab-stok" class="tab-content">
+            <div class="card no-print">
+                <div style="display:grid; grid-template-columns: 1.5fr 1fr; gap:10px; margin-bottom:15px">
+                    <select id="sBrg"><option value="">Pilih Barang...</option></select>
+                    <input type="date" id="sTgl">
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px">
+                    <div style="border:1px solid var(--b); padding:12px; border-radius:15px">
+                        <h3 style="color:var(--p)">1. PROSES QC GATE</h3>
+                        <select id="qcK" style="margin-bottom:5px"><option value="Baru">Barang Baru</option><option value="Bekas">Barang Bekas</option></select>
+                        <select id="qcS" style="margin-bottom:5px"><option value="Accepted">Accepted</option><option value="AMD">Accepted With Minor Damage</option><option value="Reject">Reject (BS)</option></select>
+                        <input type="number" id="qQC" placeholder="Jumlah Qty">
+                        <button class="btn" style="background:var(--p); margin-top:8px" onclick="saveS('qc')">PROSES QC</button>
+                    </div>
+                    <div style="border:1px solid var(--b); padding:12px; border-radius:15px">
+                        <h3 style="color:var(--iz)">2. UPDATE REKONDISI</h3>
+                        <p style="font-size:9px; color:#94a3b8; margin-top:-10px">Barang bekas yang selesai diproses</p>
+                        <input type="number" id="qRek" placeholder="Jumlah Selesai">
+                        <div style="height:80px"></div>
+                        <button class="btn" style="background:var(--iz)" onclick="saveS('rekon')">SELESAI REKONDISI</button>
+                    </div>
+                    <div style="border:1px solid var(--b); padding:12px; border-radius:15px">
+                        <h3 style="color:var(--s)">3. PENJUALAN KELUAR</h3>
+                        <select id="jnsJ" style="margin-bottom:5px"><option value="Umum">Penjualan Umum</option><option value="Agen">Penjualan Agen</option></select>
+                        <input type="number" id="qJual" placeholder="Jumlah Keluar">
+                        <div style="height:40px"></div>
+                        <button class="btn" style="background:var(--s)" onclick="saveS('jual')">SIMPAN PENJUALAN</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px" class="no-print">
+                    <h3>LAPORAN STOK HARIAN & TOTAL GUDANG</h3>
+                    <div style="display:flex; gap:10px">
+                        <button class="btn" style="background:#1d6f42; width:100px; height:40px" onclick="doExcelStok()">📥 EXCEL</button>
+                        <button class="btn" style="background:#b91c1c; width:100px; height:40px" onclick="window.print()">📄 PDF</button>
+                    </div>
+                </div>
+                <div class="table-wrap">
+                    <table class="table-web" id="stokTable">
+                        <thead>
+                            <tr style="background:var(--bg)">
+                                <th rowspan="2" class="nama-fixed">NAMA BARANG</th>
+                                <th colspan="2">STOK AWAL (BULANAN)</th>
+                                <th colspan="3">HASIL QC GATE</th>
+                                <th colspan="2">MASUK INVENTORY</th>
+                                <th style="background:rgba(245,158,11,0.2)">PROSES</th>
+                                <th colspan="2" style="background:rgba(37,99,235,0.1)">SALDO STOK AKHIR</th>
+                                <th colspan="2">PENJUALAN</th>
+                                <th style="background:var(--t); color:var(--bg)">GLOBAL</th>
+                            </tr>
+                            <tr style="background:var(--bg)">
+                                <th>Stok Awal Kotor</th><th>Stok Awal Ready</th>
+                                <th>Accepted</th><th>AMD</th><th>Reject</th>
+                                <th>Masuk Bersih/Baru</th><th>Masuk Bekas</th>
+                                <th style="background:var(--iz); color:#000">Rekondisi</th>
+                                <th class="res-kotor">SISA STOK KOTOR</th><th class="res-ready">STOK READY</th>
+                                <th>Jual Umum</th><th>Jual Agen</th>
+                                <th>TOTAL STOK</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbStok"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card no-print">
+                <h3>📋 LOG TRANSAKSI HARI INI (KLIK SAMPAH UNTUK HAPUS)</h3>
+                <div class="table-wrap"><table class="table-web"><thead><tr><th>Tanggal</th><th>Barang</th><th>Kategori</th><th>Tipe/Status</th><th>Jumlah Qty</th><th>Aksi</th></tr></thead><tbody id="tbLog"></tbody></table></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const cfg={apiKey:"AIzaSyAu67MAhWBxdmciPi3xOKWhdy-uP4u9tXI",databaseURL:"https://pt-agn-default-rtdb.asia-southeast1.firebasedatabase.app"};
+        firebase.initializeApp(cfg); const db=firebase.database();
+        let mk={}, ad={}, hl={}, mb={}, sd={}; const TGL_MULAI = "2026-03-21";
+
+        window.onload=()=>{
+            const d=new Date(); 
+            document.getElementById('fB').value=d.toISOString().slice(0,7); 
+            document.getElementById('sTgl').value=d.toISOString().slice(0,10);
+            db.ref('master_karyawan').on('value',s=>{mk=s.val()||{}; uDl(); rRekap();});
+            db.ref('absensi').on('value',s=>{ad=s.val()||{}; rRekap();});
+            db.ref('hari_libur').on('value',s=>{hl=s.val()||{}; rRekap();});
+            db.ref('master_barang').on('value',s=>{mb=s.val()||{}; uBrg(); rStok();});
+            db.ref('stok_flow').on('value',s=>{sd=s.val()||{}; rStok();});
+        };
+
+        function openTab(id, btn){
+            document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+            document.getElementById(id).classList.add('active'); btn.classList.add('active');
+        }
+
+        function toggleT(){ let b=document.body; b.setAttribute('data-theme', b.getAttribute('data-theme')==='dark'?'light':'dark'); }
+
+        // --- ABSENSI v77.6 LOGIC ---
+        function uDl(){ document.getElementById('lk').innerHTML = Object.values(mk).sort().map(n=>`<option value="${n}">`).join(''); }
+        function tKaryawan(){ let n=document.getElementById('iNama'); if(n.value) db.ref('master_karyawan').push(n.value).then(()=>n.value=""); }
+        function hKaryawan(){ let n=document.getElementById('iNama').value, id=Object.keys(mk).find(k=>mk[k]===n); if(id && confirm('Hapus?')) db.ref(`master_karyawan/${id}`).remove(); }
+        function pAbsen(ty){
+            let n=document.getElementById('iNama').value, now=new Date(), tgl=now.toISOString().split('T')[0];
+            if(!n) return alert("Pilih Nama!");
+            let jam=now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+            let st="Hadir"; if(ty==='Masuk' && (now.getHours()>9 || (now.getHours()===9 && now.getMinutes()>0))) st="Terlambat";
+            let nt=""; if(ty==='Izin'){nt=prompt("Alasan Izin:"); if(nt===null)return; st="Izin";}
+            db.ref(`absensi/${tgl}/${n}/${ty}`).set({waktu:jam, status:st, note:nt}).then(()=>alert("Berhasil!"));
+        }
+
+        function rRekap(){
+            const f=document.getElementById('fB').value; if(!f) return;
+            const [y,m]=f.split('-'), last=new Date(y,m,0).getDate(), todayFull=new Date().toISOString().split('T')[0];
+            let h=`<tr><th class="nama-fixed">Nama Karyawan</th>`; for(let i=1;i<=last;i++) h+=`<th>${i}</th>`; h+=`</tr>`;
+            document.getElementById('thWeb').innerHTML=h;
+            let b=""; Object.values(mk).sort().forEach(n=>{
+                let row=`<td class="nama-fixed">${n}</td>`;
+                for(let i=1;i<=last;i++){
+                    let t=`${y}-${m}-${String(i).padStart(2,'0')}`, data=ad[t]?ad[t][n]:null, sW="-", clW="", infoW="";
+                    if(data){
+                        if(data.Izin){ sW="I"; clW="s-i"; infoW=data.Izin.note; }
+                        else if(data.Masuk){ sW="H"; clW=(data.Masuk.status==="Terlambat")?"s-late":"s-v"; infoW=data.Masuk.waktu; }
+                    } else if(new Date(t).getDay()===0){ sW="MNG"; clW="s-mng"; }
+                    else if(hl[t]){ sW="OFF"; clW="s-off"; }
+                    else if(t < todayFull && t >= TGL_MULAI){ sW="A"; clW="s-a"; }
+                    row+=`<td><div class="s-cell ${clW}">${sW}<span class="jam-text">${infoW||""}</span></div></td>`;
+                }
+                b+=`<tr>${row}</tr>`;
+            });
+            document.getElementById('tbWeb').innerHTML=b;
+        }
+
+        // --- STOK NEW LOGIC v92.0 ---
+        function uBrg(){ document.getElementById('sBrg').innerHTML='<option value="">Pilih Barang...</option>'+Object.values(mb).sort().map(b=>`<option value="${b}">${b}</option>`).join(''); }
+        
+        function saveS(step){
+            const brg=document.getElementById('sBrg').value, tgl=document.getElementById('sTgl').value;
+            if(!brg||!tgl) return alert("Pilih Barang & Tgl!");
+            let d={ barang:brg, tgl:tgl, step:step, ts:Date.now() };
+            if(step==='qc'){
+                d.kondisi=document.getElementById('qcK').value; d.status=document.getElementById('qcS').value; d.qty=parseInt(document.getElementById('qQC').value);
+            } else if(step==='rekon'){
+                d.qty=parseInt(document.getElementById('qRek').value);
+            } else if(step==='jual'){
+                d.status=document.getElementById('jnsJ').value; d.qty=parseInt(document.getElementById('qJual').value);
+            }
+            if(!d.qty || d.qty <= 0) return alert("Isi Jumlah Qty yang valid!");
+            db.ref('stok_flow').push(d).then(()=>alert("Data Berhasil Disimpan!"));
+        }
+
+        function rStok(){
+            const items=Object.values(mb).sort(); let rk={}; let lg="";
+            items.forEach(i=>rk[i]={ak:0, ar:0, acc:0, amd:0, rej:0, baru:0, bekas:0, rekon:0, umum:0, agen:0});
+            
+            // Urutkan data berdasarkan timestamp (terbaru diatas)
+            const sorted=Object.entries(sd).sort((a,b)=>b[1].ts-a[1].ts);
+            
+            sorted.forEach(([id,e])=>{
+                let r=rk[e.barang]; if(!r) return;
+                // Logika Hitung Otomatis
+                if(e.step==='qc'){
+                    if(e.status==='Accepted') r.acc+=e.qty; else if(e.status==='Accepted With Minor Damage') r.amd+=e.qty; else r.rej+=e.qty;
+                    if(e.status!=='Reject'){ 
+                        if(e.kondisi==='Baru') r.baru+=e.qty; else r.bekas+=e.qty; 
+                    }
+                } else if(e.step==='rekon') {
+                    r.rekon+=e.qty;
+                } else if(e.step==='jual'){
+                    if(e.status==='Umum') r.umum+=e.qty; else r.agen+=e.qty;
+                }
+                // Build Log Table
+                if(lg.length < 5000) lg+=`<tr><td>${e.tgl}</td><td>${e.barang}</td><td>${e.step.toUpperCase()}</td><td>${e.status||e.kondisi}</td><td>${e.qty}</td><td><button class="btn-del" onclick="delFlow('${id}')">🗑️</button></td></tr>`;
+            });
+            document.getElementById('tbLog').innerHTML=lg;
+
+            let b=""; items.forEach(i=>{
+                const d=rk[i];
+                const sisaKotor = (d.ak + d.bekas) - d.rekon;
+                const stokReady = (d.ar + d.baru + d.rekon) - (d.umum + d.agen);
+                const totalGlobal = sisaKotor + stokReady;
+                
+                b+=`<tr>
+                    <td class="nama-fixed">${i}</td>
+                    <td>${d.ak}</td><td>${d.ar}</td>
+                    <td>${d.acc}</td><td>${d.amd}</td><td>${d.rej}</td>
+                    <td>${d.baru}</td><td>${d.bekas}</td>
+                    <td style="background:rgba(245,158,11,0.2); font-weight:800">${d.rekon}</td>
+                    <td class="res-kotor">${sisaKotor}</td><td class="res-ready">${stokReady}</td>
+                    <td>${d.umum}</td><td>${d.agen}</td>
+                    <td style="background:var(--bg); font-weight:900; font-size:12px">${totalGlobal}</td>
+                </tr>`;
+            });
+            document.getElementById('tbStok').innerHTML=b;
+        }
+
+        function delFlow(id){ if(confirm('Hapus data transaksi ini? (Stok akan terhitung ulang otomatis)')) db.ref(`stok_flow/${id}`).remove(); }
+
+        function doExcelStok(){
+            const table = document.getElementById("stokTable").outerHTML;
+            const template = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><style>table{border-collapse:collapse;} th{background:#2563eb; color:#fff; border:1px solid #000;} td{border:1px solid #000; text-align:center;}</style></head><body>${table}</body></html>`;
+            const blob = new Blob([template], {type: "application/vnd.ms-excel"});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a"); a.href = url; a.download = `LAPORAN_STOK_AGN.xls`; a.click();
+        }
+    </script>
+</body>
+</html>
