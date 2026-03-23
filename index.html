@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v87.0 - SYSTEM INTEGRATED</title>
+    <title>PT-AGN v88.0 - FINAL SYSTEM</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
@@ -17,9 +17,8 @@
         .logo-box img{width:70px;height:70px;border-radius:50%;background:#000;border:3px solid var(--p);object-fit:cover;cursor:pointer}
         .dark-card{background:var(--c); border-radius:12px; border:1px solid var(--b); padding:10px 15px; display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--t)}
 
-        /* TAB SYSTEM */
         .tabs{display:flex;gap:10px;margin-bottom:15px}
-        .tab-btn{flex:1;padding:15px;border-radius:12px;background:var(--c);color:var(--t);border:1px solid var(--b);cursor:pointer;font-weight:800;font-size:12px}
+        .tab-btn{flex:1;padding:15px;border-radius:12px;background:var(--c);color:var(--t);border:1px solid var(--b);cursor:pointer;font-weight:800;font-size:12px;text-transform:uppercase}
         .tab-btn.active{background:var(--p);border-color:var(--p);color:#fff}
         .tab-content{display:none}
         .tab-content.active{display:block}
@@ -32,7 +31,7 @@
         
         .table-wrap{overflow-x:auto; border-radius:12px; border:1px solid var(--b); background:var(--c); scroll-behavior: smooth}
         .table-web{width:100%;border-collapse:separate;border-spacing:0;font-size:10px; color:var(--t)}
-        .table-web th, .table-web td{border-bottom:1px solid var(--b);border-right:1px solid var(--b);padding:8px 4px;text-align:center;min-width:40px}
+        .table-web th, .table-web td{border-bottom:1px solid var(--b);border-right:1px solid var(--b);padding:10px 5px;text-align:center;min-width:60px}
         
         .nama-fixed{position:sticky !important;left:0;background-color:var(--c) !important;z-index:10;min-width:110px !important;text-align:left !important;padding-left:10px !important;font-weight:700; border-right: 2px solid var(--p) !important}
         .s-cell{border-radius:6px;width:35px;height:35px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;font-size:10px;margin: 0 auto;}
@@ -42,7 +41,8 @@
 
         @media print {
             header, .no-print, .tabs { display: none !important; }
-            .table-web { transform: scale(0.65); transform-origin: top left; }
+            .table-web { transform: scale(0.6); transform-origin: top left; }
+            .nama-fixed { position: static !important; border-right: 1px solid #000 !important; }
         }
     </style>
 </head>
@@ -52,14 +52,14 @@
             <div class="logo-box">
                 <input type="file" id="inpLogo" style="display:none" onchange="cLogo(event)">
                 <img id="mainLogo" src="https://ui-avatars.com/api/?name=AGN&background=000&color=fff" onclick="document.getElementById('inpLogo').click()">
-                <div><h2 style="margin:0;font-size:1.3rem">PT AGN</h2><span style="font-size:10px;color:var(--p);font-weight:800">SYSTEM v87.0 INTEGRATED</span></div>
+                <div><h2 style="margin:0;font-size:1.3rem">PT AGN</h2><span style="font-size:10px;color:var(--p);font-weight:800">SYSTEM v88.0 PROFESSIONAL</span></div>
             </div>
             <div class="dark-card" onclick="toggleT()"><span id="tIco">☀️</span></div>
         </header>
 
         <div class="tabs no-print">
-            <button class="tab-btn active" onclick="openTab('tab-absen', this)">📅 ABSENSI KARYAWAN</button>
-            <button class="tab-btn" onclick="openTab('tab-stok', this)">📦 MANAJEMEN STOK</button>
+            <button class="tab-btn active" id="btn-absen" onclick="openTab('tab-absen', this)">📅 ABSENSI KARYAWAN</button>
+            <button class="tab-btn" id="btn-stok" onclick="openTab('tab-stok', this)">📦 MANAJEMEN STOK</button>
         </div>
 
         <div id="tab-absen" class="tab-content active">
@@ -111,33 +111,34 @@
             <div class="card no-print">
                 <h3>📦 MASTER BARANG</h3>
                 <div style="display:flex;gap:10px">
-                    <input type="text" id="mBrg" placeholder="Nama Barang Baru...">
+                    <input type="text" id="mBrg" placeholder="Nama Barang (IBC 1000L, dll)...">
                     <button class="btn" style="background:var(--s);width:60px" onclick="tBrg()">+</button>
+                    <button class="btn" style="background:var(--d);width:60px" onclick="hBrg()">🗑️</button>
                 </div>
             </div>
 
             <div class="card no-print">
-                <h3>📥 AKTIVITAS GUDANG</h3>
+                <h3>📥 AKTIVITAS GUDANG & QC</h3>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px">
                     <select id="sBrg"><option value="">Pilih Barang...</option></select>
                     <input type="date" id="sTgl">
                 </div>
                 <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px">
-                    <div style="border:1px solid var(--b); padding:10px; border-radius:12px">
-                        <h4 style="color:var(--p); margin:0 0 10px 0; font-size:12px">1. QC MASUK</h4>
+                    <div style="border:1px solid var(--b); padding:10px; border-radius:12px; background:rgba(255,255,255,0.02)">
+                        <h4 style="color:var(--p); margin:0 0 10px 0; font-size:11px">1. QC MASUK</h4>
                         <select id="qcK" style="height:35px; margin-bottom:5px"><option value="Baru">Barang Baru</option><option value="Bekas">Barang Bekas</option></select>
-                        <select id="qcS" style="height:35px; margin-bottom:5px"><option value="acc">Accepted</option><option value="amd">Accepted Minor Damage</option><option value="rej">Reject</option></select>
+                        <select id="qcS" style="height:35px; margin-bottom:5px"><option value="Accepted">Accepted</option><option value="AMD">Accepted Minor Damage</option><option value="Reject">Reject</option></select>
                         <input type="number" id="qQC" placeholder="Qty" style="height:35px; margin-bottom:5px">
                         <button class="btn" style="background:var(--p); height:35px" onclick="saveS('qc')">INPUT QC</button>
                     </div>
-                    <div style="border:1px solid var(--b); padding:10px; border-radius:12px">
-                        <h4 style="color:var(--iz); margin:0 0 10px 0; font-size:12px">2. REKONDISI</h4>
+                    <div style="border:1px solid var(--b); padding:10px; border-radius:12px; background:rgba(255,255,255,0.02)">
+                        <h4 style="color:var(--iz); margin:0 0 10px 0; font-size:11px">2. REKONDISI</h4>
                         <input type="number" id="qRek" placeholder="Qty Selesai" style="height:35px; margin-bottom:5px">
                         <div style="height:75px"></div>
                         <button class="btn" style="background:var(--iz); height:35px" onclick="saveS('rekon')">UPDATE REKONDISI</button>
                     </div>
-                    <div style="border:1px solid var(--b); padding:10px; border-radius:12px">
-                        <h4 style="color:var(--s); margin:0 0 10px 0; font-size:12px">3. PENJUALAN</h4>
+                    <div style="border:1px solid var(--b); padding:10px; border-radius:12px; background:rgba(255,255,255,0.02)">
+                        <h4 style="color:var(--s); margin:0 0 10px 0; font-size:11px">3. PENJUALAN</h4>
                         <select id="jnsJ" style="height:35px; margin-bottom:5px"><option value="Umum">Jual Umum</option><option value="Agen">Jual Agen</option></select>
                         <input type="number" id="qJual" placeholder="Qty Terjual" style="height:35px; margin-bottom:5px">
                         <div style="height:37px"></div>
@@ -148,22 +149,22 @@
 
             <div class="card">
                 <div style="display:flex; justify-content:space-between; margin-bottom:15px" class="no-print">
-                    <h3 style="margin:0">LAPORAN STOK SISTEMATIS</h3>
+                    <h3 style="margin:0">LAPORAN STOK OTOMATIS</h3>
                     <div style="display:flex;gap:5px">
-                        <button class="btn" style="background:#1d6f42; width:100px; font-size:11px" onclick="doExcel('stokTable', 'STOK')">EXCEL STOK</button>
-                        <button class="btn" style="background:#b91c1c; width:100px; font-size:11px" onclick="window.print()">PDF STOK</button>
+                        <button class="btn" style="background:#1d6f42; width:100px; font-size:11px" onclick="doExcel('stokTable', 'STOK_PT_AGN')">EXCEL</button>
+                        <button class="btn" style="background:#b91c1c; width:100px; font-size:11px" onclick="window.print()">PDF</button>
                     </div>
                 </div>
                 <div class="table-wrap">
                     <table class="table-web" id="stokTable">
-                        <thead style="background:var(--b)">
+                        <thead style="background:var(--bg)">
                             <tr>
                                 <th rowspan="2" class="nama-fixed">NAMA BARANG</th>
-                                <th colspan="2">STOK AWAL</th>
-                                <th colspan="3">SORTIR QC</th>
-                                <th colspan="2">GUDANG MASUK</th>
+                                <th colspan="2">SALDO AWAL</th>
+                                <th colspan="3">SORTIR QC GATE</th>
+                                <th colspan="2">INVENTORY MASUK</th>
                                 <th style="background:var(--iz); color:#000">PROSES</th>
-                                <th colspan="2">PENJUALAN</th>
+                                <th colspan="2">SALES / KELUAR</th>
                                 <th colspan="3" style="background:var(--s); color:#000">SALDO AKHIR</th>
                             </tr>
                             <tr>
@@ -208,7 +209,7 @@
 
         // --- ABSENSI v77.6 (LOCKED) ---
         function uDl(){ document.getElementById('lk').innerHTML = Object.values(mk).sort().map(n=>`<option value="${n}">`).join(''); }
-        function tKaryawan(){ let n=document.getElementById('iNama'); if(n.value) db.ref('master_karyawan').push(n.value).then(()=>{n.value=""; alert("Ditambah!");}); }
+        function tKaryawan(){ let n=document.getElementById('iNama'); if(n.value) db.ref('master_karyawan').push(n.value).then(()=>{n.value=""; alert("Karyawan Ditambah!");}); }
         function hKaryawan(){ let n=document.getElementById('iNama').value, id=Object.keys(mk).find(k=>mk[k]===n); if(id && confirm('Hapus?')) db.ref(`master_karyawan/${id}`).remove(); }
         function pAbsen(ty){
             let inp=document.getElementById('iNama'), n=inp.value, now=new Date(), tgl=now.toISOString().split('T')[0];
@@ -220,14 +221,14 @@
         }
         function resetAbsen(){
             let n=document.getElementById('iNama'), tgl=document.getElementById('resetTgl');
-            if(!n.value || !tgl.value) return alert("Pilih Nama & Tanggal!");
-            if(confirm('Reset?')) db.ref(`absensi/${tgl.value}/${n.value}`).remove().then(()=>{tgl.value="";});
+            if(!n.value || !tgl.value) return alert("Lengkapi data!");
+            if(confirm('Reset Absen?')) db.ref(`absensi/${tgl.value}/${n.value}`).remove();
         }
         function sLib(st){
             let d1=document.getElementById('tglAwal'), d2=document.getElementById('tglAkhir'); if(!d1.value) return;
             let s=new Date(d1.value), e=d2.value?new Date(d2.value):s;
             while(s<=e){ db.ref(`hari_libur/${s.toISOString().split('T')[0]}`).set(st?true:null); s.setDate(s.getDate()+1); }
-            alert("Berhasil!"); d1.value=""; d2.value="";
+            alert("Update Libur OK!"); d1.value=""; d2.value="";
         }
         function rRekap(){
             const f=document.getElementById('fB').value; if(!f) return;
@@ -251,69 +252,82 @@
             document.getElementById('tbWeb').innerHTML=b;
         }
 
-        // --- STOK LOGIC (SISTEMATIS) ---
+        // --- STOK LOGIC v88.0 (FIXED) ---
         function uBrg(){ document.getElementById('sBrg').innerHTML = '<option value="">Pilih Barang...</option>' + Object.values(mb).sort().map(b=>`<option value="${b}">${b}</option>`).join(''); }
-        function tBrg(){ let n=document.getElementById('mBrg'); if(n.value) db.ref('master_barang').push(n.value).then(()=>{n.value=""; alert("Barang Berhasil Ditambahkan!");}); }
+        function tBrg(){ let n=document.getElementById('mBrg'); if(n.value) db.ref('master_barang').push(n.value).then(()=>{n.value=""; alert("Barang Ditambahkan!");}); }
+        function hBrg(){ let b=document.getElementById('sBrg').value; let id=Object.keys(mb).find(k=>mb[k]===b); if(id && confirm('Hapus Barang?')) db.ref(`master_barang/${id}`).remove(); }
         
         function saveS(step){
             const brg=document.getElementById('sBrg').value, tgl=document.getElementById('sTgl').value;
             if(!brg||!tgl) return alert("Pilih Barang & Tanggal!");
-            let data = { barang:brg, step:step, tgl:tgl };
+            let data = { barang:brg, step:step, tgl:tgl, ts:Date.now() };
             if(step==='qc'){
-                data.kondisi=document.getElementById('qcK').value;
-                data.status=document.getElementById('qcS').value;
+                data.kondisi=document.getElementById('qcK').value; // Baru/Bekas
+                data.status=document.getElementById('qcS').value; // Accepted/AMD/Reject
                 data.qty=parseInt(document.getElementById('qQC').value);
             } else if(step==='rekon'){
                 data.qty=parseInt(document.getElementById('qRek').value);
             } else if(step==='jual'){
-                data.jenis=document.getElementById('jnsJ').value;
+                data.jenis=document.getElementById('jnsJ').value; // Umum/Agen
                 data.qty=parseInt(document.getElementById('qJual').value);
             }
-            if(!data.qty || data.qty <= 0) return alert("Masukkan Jumlah!");
+            if(!data.qty || data.qty <= 0) return alert("Masukkan Jumlah Valid!");
             db.ref('stok_flow').push(data).then(()=>{
-                alert("Data Tersimpan!");
+                alert("Stok Terupdate!");
                 document.getElementById('qQC').value=""; document.getElementById('qRek').value=""; document.getElementById('qJual').value="";
             });
         }
 
         function rStok(){
             const items = Object.values(mb).sort(); let rk = {};
-            items.forEach(i => rk[i] = {ak:0, ar:0, acc:0, amd:0, rej:0, bersih:0, bekas:0, rekon:0, umum:0, agen:0});
+            items.forEach(i => rk[i] = {awal_kotor:0, awal_ready:0, acc:0, amd:0, rej:0, bersih:0, bekas:0, rekon:0, umum:0, agen:0});
             
+            // Proses Flow
             Object.values(sd).forEach(e => {
                 let r = rk[e.barang]; if(!r) return;
                 if(e.step==='qc'){
-                    r[e.status]+=e.qty;
-                    if(e.status!=='rej'){
-                        if(e.kondisi==='Baru') r.bersih+=e.qty; else r.bekas+=e.qty;
+                    if(e.status==='Accepted') r.acc += e.qty;
+                    else if(e.status==='AMD') r.amd += e.qty;
+                    else r.rej += e.qty;
+
+                    if(e.status !== 'Reject'){
+                        if(e.kondisi==='Baru') r.bersih += e.qty; 
+                        else r.bekas += e.qty;
                     }
-                } else if(e.step==='rekon') r.rekon+=e.qty;
-                else if(e.step==='jual') r[e.jenis==='Umum'?'umum':'agen']+=e.qty;
+                } else if(e.step==='rekon') {
+                    r.rekon += e.qty;
+                } else if(e.step==='jual') {
+                    if(e.jenis==='Umum') r.umum += e.qty; else r.agen += e.qty;
+                }
             });
 
             let b=""; items.forEach(i => {
                 const d=rk[i];
-                const sisaKotor = (d.ak + d.bekas) - d.rekon;
-                const stokReady = (d.ar + d.bersih + d.rekon) - (d.umum + d.agen);
+                // Logika: Sisa Kotor = (Awal + Masuk Bekas) - Yang sudah direkon
+                const sisaKotor = (d.awal_kotor + d.bekas) - d.rekon;
+                // Logika: Stok Ready = (Awal + Masuk Baru + Hasil Rekon) - Terjual
+                const stokReady = (d.awal_ready + d.bersih + d.rekon) - (d.umum + d.agen);
+                
                 b+=`<tr>
                     <td class="nama-fixed">${i}</td>
-                    <td>${d.ak}</td><td>${d.ar}</td>
-                    <td>${d.acc}</td><td>${d.amd}</td><td>${d.rej}</td>
+                    <td>${d.awal_kotor}</td><td>${d.awal_ready}</td>
+                    <td>${d.acc}</td><td>${d.amd}</td><td style="color:var(--d)">${d.rej}</td>
                     <td>${d.bersih}</td><td>${d.bekas}</td>
-                    <td style="background:rgba(245,158,11,0.1)">${d.rekon}</td>
+                    <td style="background:rgba(245,158,11,0.1); font-weight:bold">${d.rekon}</td>
                     <td>${d.umum}</td><td>${d.agen}</td>
                     <td style="font-weight:800; color:var(--iz)">${sisaKotor}</td>
                     <td style="font-weight:800; color:var(--s)">${stokReady}</td>
-                    <td style="font-weight:900; background:var(--bg)">${sisaKotor + stokReady}</td>
+                    <td style="font-weight:900; background:rgba(255,255,255,0.05)">${sisaKotor + stokReady}</td>
                 </tr>`;
             });
-            document.getElementById('tbStok').innerHTML=b;
+            document.getElementById('tbStok').innerHTML=b || '<tr><td colspan="14">Belum ada data barang.</td></tr>';
         }
 
         function doExcel(id, name){
-            const html = document.getElementById(id).outerHTML;
+            const table = document.getElementById(id);
+            const html = table.outerHTML;
             const blob = new Blob([html], {type:'application/vnd.ms-excel'});
-            const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`REPORT_${name}.xls`; a.click();
+            const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`${name}.xls`; a.click();
         }
     </script>
 </body>
