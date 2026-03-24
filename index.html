@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KEMPU BALAP ERP - V164 CLEAN</title>
+    <title>KEMPU BALAP ERP - V165 FIX NAN</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -193,15 +193,14 @@
 
         function addM(p, id) { const v=document.getElementById(id).value; if(v){ db.ref('master_'+p).push(v); document.getElementById(id).value=""; notify("Berhasil Ditambah!"); }}
         
-        // --- LOGIKA SEMBUNYIKAN DAFTAR (TAPI TETAP MASUK DROPDOWN) ---
         function updateK() {
-            const unique = [...new Set(Object.values(mk))].sort();
+            const unique = [...new Set(Object.values(mk))].filter(Boolean).sort();
             document.getElementById('selK').innerHTML = unique.map(v=>`<option value="${v}">${v}</option>`).join('');
             document.getElementById('actK').innerHTML = unique.map(v=>`<option value="${v}">${v}</option>`).join('');
             document.getElementById('listK').innerHTML = unique.map(v=>`<option value="${v}">`).join('');
         }
         function updateB(b) {
-            const unique = [...new Set(Object.values(b))].sort();
+            const unique = [...new Set(Object.values(b))].filter(Boolean).sort();
             document.getElementById('selB').innerHTML = unique.map(v=>`<option value="${v}">${v}</option>`).join('');
         }
 
@@ -220,7 +219,7 @@
 
         function renderAbsen() {
             const fM=document.getElementById('fM').value, [y,m]=fM.split('-'), last=new Date(y,m,0).getDate(), today = new Date().toISOString().split('T')[0];
-            const names = [...new Set(Object.values(mk))].sort();
+            const names = [...new Set(Object.values(mk))].filter(Boolean).sort();
             let firstDate = "9999-12-31"; Object.keys(ad).forEach(d => { if(d < firstDate) firstDate = d; });
             let h=`<tr><th class="sticky-col">NAMA</th>`;
             for(let i=1; i<=last; i++) h+=`<th>${i}</th>`;
@@ -279,13 +278,13 @@
             if(a==='Masuk') upah=(pr.Bongkar*(q/50))/nT; 
             else if(a==='Muat') upah=(pr.Muat*(q/50))/nT;
             else if(a==='Rekondisi'){ let p=b.includes('Kempu')?pr.Kempu:(b.includes('18L')?pr['Jerigen 18L']:pr['Jerigen 5L']); upah=(p*q)/nT; }
-            timL.forEach(p=>{ db.ref('log_aktivitas').push({ tgl:t, nama:p, act:a, gaji:upah, ico:"📦" }); });
+            timL.forEach(p=>{ db.ref('log_aktivitas').push({ tgl:t, nama:p, act:a, gaji:upah || 0, ico:"📦" }); });
             notify("Data Masuk!"); ['stQty','stTim'].forEach(id=>document.getElementById(id).value="");
         }
 
         function saveAct() {
             const t=document.getElementById('absTgl').value, n=document.getElementById('actK').value, tp=document.getElementById('actT').value;
-            db.ref('log_aktivitas').push({ tgl:t, nama:n, act:tp, gaji:pr[tp], ico:"🚛" });
+            db.ref('log_aktivitas').push({ tgl:t, nama:n, act:tp, gaji:pr[tp] || 0, ico:"🚛" });
             notify("Aktivitas Masuk!");
         }
 
@@ -304,12 +303,21 @@
         }
 
         function renderGaji() {
-            const fM=document.getElementById('fM').value, names = [...new Set(Object.values(mk))].sort();
-            let b="", totG=0; names.forEach(n=>{
-                let tot=0; Object.values(la).forEach(l=>{ if(l.nama===n && l.tgl.startsWith(fM)) tot+=l.gaji; });
-                totG+=tot; b+=`<tr><td class="sticky-col">${n}</td><td>Rp ${Math.round(tot).toLocaleString()}</td><td><button onclick="notify('Cetak Slip...')">SLIP</button></td></tr>`;
+            const fM=document.getElementById('fM').value, names = [...new Set(Object.values(mk))].filter(Boolean).sort();
+            let b="", totG = 0; 
+            names.forEach(n=>{
+                let tot = 0; 
+                Object.values(la).forEach(l=>{ 
+                    if(l.nama===n && l.tgl.startsWith(fM)) {
+                        let g = parseFloat(l.gaji);
+                        if(!isNaN(g)) tot += g; // FIX NAN: Hanya tambah jika angka valid
+                    }
+                });
+                totG += tot; 
+                b+=`<tr><td class="sticky-col">${n}</td><td>Rp ${Math.round(tot).toLocaleString()}</td><td><button onclick="notify('Cetak Slip...')">SLIP</button></td></tr>`;
             });
-            document.getElementById('tbG').innerHTML=b; document.getElementById('dG').innerText="Rp "+Math.round(totG).toLocaleString();
+            document.getElementById('tbG').innerHTML=b; 
+            document.getElementById('dG').innerText="Rp "+Math.round(totG).toLocaleString();
         }
 
         function updateP() {
