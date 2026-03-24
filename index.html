@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kempu Balap OMNI V400</title>
+    <title>Kempu Balap OMNI V410</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -39,7 +39,6 @@
         .modal-content { background: white; border-radius: 16px; width: 100%; max-width: 450px; max-height: 85vh; overflow-y: auto; padding: 20px; }
         .op-section { background: #f8fafc; padding: 10px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid var(--p); }
         .op-item { display: flex; justify-content: space-between; align-items: center; font-size: 11px; padding: 8px 0; border-bottom: 1px solid #e2e8f0; }
-        .list-item { display: inline-flex; align-items: center; background: #f1f5f9; padding: 5px 10px; border-radius: 20px; margin: 2px; font-size: 11px; font-weight: 600; }
     </style>
 </head>
 <body>
@@ -52,7 +51,7 @@
                 <div id="opAbsen"></div>
             </div>
             <div class="op-section">
-                <h4>📦 AKTIVITAS LAIN</h4>
+                <h4>📦 AKTIVITAS / BORONGAN</h4>
                 <div id="opAct"></div>
             </div>
             <button class="btn" style="background:var(--t)" onclick="closeModal()">TUTUP</button>
@@ -78,7 +77,7 @@
             </div>
 
             <div class="card">
-                <h3>📅 Set Libur</h3>
+                <h3>📅 Set Libur (Rentang/Single)</h3>
                 <div class="grid-2">
                     <input type="date" id="libS">
                     <input type="date" id="libE">
@@ -92,12 +91,12 @@
                     <input type="date" id="absTgl">
                     <select id="selK"></select>
                 </div>
-                <input type="text" id="ketIzin" placeholder="Keterangan Izin/Sakit" style="margin-bottom:8px">
+                <input type="text" id="ketIzin" placeholder="Keterangan Izin/Sakit/Pulang Cepat" style="margin-bottom:8px">
                 <div class="grid-2">
                     <button class="btn" style="background:var(--s)" onclick="saveAbs('Hadir')">MASUK</button>
                     <button class="btn" style="background:#8b5cf6" onclick="saveAbs('Izin')">IZIN</button>
                 </div>
-                <button class="btn" style="background:var(--t); margin-top:4px" onclick="saveAbs('Pulang')">PULANG (JAM SEKARANG)</button>
+                <button class="btn" style="background:var(--t); margin-top:4px" onclick="saveAbs('Pulang')">PULANG (REAL TIME)</button>
             </div>
 
             <div class="card">
@@ -111,22 +110,39 @@
         </div>
 
         <div id="tab-stok" class="tab-content">
-            <div class="card"><h3>📦 Stok Kempu/Barang</h3>
-                <div class="grid-2"><input type="text" id="sn" placeholder="Nama Barang..."><input type="number" id="sj" placeholder="Jumlah..."></div>
-                <button class="btn" style="background:var(--p)" onclick="addStok()">UPDATE STOK</button>
+            <div class="card">
+                <h3>📦 Kelola Stok Barang</h3>
+                <div class="grid-2">
+                    <input type="text" id="sn" placeholder="Nama Barang...">
+                    <input type="number" id="sj" placeholder="Jumlah...">
+                </div>
+                <button class="btn" style="background:var(--p)" onclick="addStok()">SIMPAN STOK</button>
             </div>
-            <div id="listStok" class="card"></div>
+            <div class="card">
+                <h3>📦 Daftar Stok Saat Ini</h3>
+                <div id="listStok"></div>
+            </div>
         </div>
 
         <div id="tab-aktivitas" class="tab-content">
-            <div class="card"><h3>🛠️ Input Aktivitas Gudang</h3>
+            <div class="card">
+                <h3>🛠️ Catat Aktivitas / Borongan</h3>
                 <input type="date" id="actTgl" style="margin-bottom:8px">
-                <input type="text" id="actDesc" placeholder="Contoh: Bongkar Kempu 100...">
+                <input type="text" id="actDesc" placeholder="Contoh: Bongkar 50 Kempu / Muat IBC...">
                 <button class="btn" style="background:var(--p); margin-top:8px" onclick="saveAct()">SIMPAN AKTIVITAS</button>
             </div>
+            <div class="card">
+                <h3>📜 Aktivitas Terbaru (Hari Ini)</h3>
+                <div id="listActToday"></div>
+            </div>
         </div>
-        
-        <div id="tab-gaji" class="tab-content"><div class="card"><h3>💰 Rekap Gaji</h3><p>Fitur Gaji Otomatis.</p></div></div>
+
+        <div id="tab-gaji" class="tab-content">
+            <div class="card">
+                <h3>💰 Rekap Gaji Karyawan</h3>
+                <p>Klik di Kalender untuk melihat detail jam kerja & izin masing-masing.</p>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -145,6 +161,7 @@
                 DATA = s.val() || {}; 
                 renderAll(); 
                 renderStok(); 
+                renderActList();
                 if(currentOpenDate) showDetail(currentOpenDate); 
             }); 
         };
@@ -156,39 +173,10 @@
             b.classList.add('active');
         }
 
-        function showDetail(tgl) {
-            currentOpenDate = tgl;
-            document.getElementById('opTglTitle').innerText = "Detail: " + tgl;
-            let hAbs = "", hAct = "";
-            const abs = DATA.absensi?.[tgl] || {}, act = DATA.aktivitas?.[tgl] || {};
-            Object.entries(abs).forEach(([n, v]) => {
-                hAbs += `<div class="op-item"><span><b>${n}</b>: ${v.s} (${v.in||''}-${v.out||''})<br><small>${v.ket||''}</small></span><button onclick="delAbs('${tgl}','${n}')" style="background:red; color:white; border:none; padding:5px; border-radius:5px">HAPUS</button></div>`;
-            });
-            Object.entries(act).forEach(([id, v]) => {
-                hAct += `<div class="op-item"><span>• ${v.desc}</span><button onclick="delAct('${tgl}','${id}')" style="background:gray; color:white; border:none; padding:5px; border-radius:5px">X</button></div>`;
-            });
-            document.getElementById('opAbsen').innerHTML = hAbs || "Kosong";
-            document.getElementById('opAct').innerHTML = hAct || "Kosong";
-            document.getElementById('modalOp').style.display = 'flex';
-        }
-
-        function closeModal() { currentOpenDate = ""; document.getElementById('modalOp').style.display = 'none'; }
-        function delAbs(t, n) { if(confirm('Hapus?')) db.ref(`absensi/${t}/${n}`).remove(); }
-        function delAct(t, id) { if(confirm('Hapus?')) db.ref(`aktivitas/${t}/${id}`).remove(); }
-
-        function saveAbs(st) {
-            const n = document.getElementById('selK').value, tgl = document.getElementById('absTgl').value, ket = document.getElementById('ketIzin').value;
-            if(!n) return alert("Pilih Nama!");
-            const isLib = DATA.master_libur?.[tgl] || new Date(tgl).getDay() === 0;
-            let up = { s: (st==='Hadir' && isLib)?'Lembur':st, ket: ket };
-            const jamNow = new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}).replace('.',':');
-            if(st==='Hadir') up.in = jamNow; if(st==='Pulang') up.out = jamNow;
-            db.ref(`absensi/${tgl}/${n}`).update(up).then(()=>document.getElementById('ketIzin').value="");
-        }
-
+        // --- ABSENSI & KALENDER ---
         function renderAll() {
             const kArr = Object.entries(DATA.master_karyawan || {}), fM = document.getElementById('fM').value, [y, m] = fM.split('-'), last = new Date(y, m, 0).getDate();
-            document.getElementById('listK').innerHTML = kArr.map(k => `<span class="list-item">${k[1]} <b onclick="db.ref('master_karyawan/${k[0]}').remove()" style="color:red; margin-left:5px">×</b></span>`).join('');
+            document.getElementById('listK').innerHTML = kArr.map(k => `<span style="background:#f1f5f9; padding:5px 10px; border-radius:15px; margin:2px; display:inline-block; font-size:11px">${k[1]} <b onclick="db.ref('master_karyawan/${k[0]}').remove()" style="color:red; cursor:pointer">×</b></span>`).join('');
             document.getElementById('selK').innerHTML = kArr.map(k => `<option value="${k[1]}">${k[1]}</option>`).join('');
             let th = `<tr><th class="sticky-col">NAMA</th>`;
             for(let i=1; i<=last; i++) th += `<th>${i}</th>`;
@@ -205,15 +193,43 @@
             document.getElementById('tbA').innerHTML = tbA;
         }
 
-        function renderStok() {
-            const stok = DATA.stok || {};
-            let h = "<h3>Daftar Stok</h3>";
-            Object.entries(stok).forEach(([id, v]) => { h += `<div class="op-item"><span><b>${v.nama}</b>: ${v.jml} unit</span><button onclick="db.ref('stok/${id}').remove()" style="background:red; color:white; border:none; padding:5px; border-radius:5px">X</button></div>`; });
-            document.getElementById('listStok').innerHTML = h;
+        function saveAbs(st) {
+            const n = document.getElementById('selK').value, tgl = document.getElementById('absTgl').value, ket = document.getElementById('ketIzin').value;
+            if(!n) return alert("Pilih Nama!");
+            const isLib = DATA.master_libur?.[tgl] || new Date(tgl).getDay() === 0;
+            let up = { s: (st==='Hadir' && isLib)?'Lembur':st, ket: ket };
+            const jamNow = new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}).replace('.',':');
+            if(st==='Hadir') up.in = jamNow; if(st==='Pulang') up.out = jamNow;
+            db.ref(`absensi/${tgl}/${n}`).update(up).then(()=>document.getElementById('ketIzin').value="");
         }
 
+        // --- STOK & AKTIVITAS ---
+        function renderStok() {
+            const stok = DATA.stok || {}; let h = "";
+            Object.entries(stok).forEach(([id, v]) => { h += `<div class="op-item"><span><b>${v.nama}</b>: ${v.jml} unit</span><button onclick="db.ref('stok/${id}').remove()" style="background:red; color:white; border:none; padding:5px 8px; border-radius:5px">X</button></div>`; });
+            document.getElementById('listStok').innerHTML = h || "Belum ada stok.";
+        }
         function addStok() { const n=document.getElementById('sn').value, j=document.getElementById('sj').value; if(n&&j) db.ref('stok').push({nama:n, jml:j}).then(()=>{document.getElementById('sn').value=""; document.getElementById('sj').value=""}); }
+
+        function renderActList() {
+            const today = document.getElementById('actTgl').value, acts = DATA.aktivitas?.[today] || {}; let h = "";
+            Object.entries(acts).forEach(([id, v]) => { h += `<div class="op-item"><span>• ${v.desc}</span><button onclick="db.ref('aktivitas/${today}/${id}').remove()" style="background:gray; color:white; border:none; padding:5px; border-radius:5px">X</button></div>`; });
+            document.getElementById('listActToday').innerHTML = h || "Tidak ada aktivitas hari ini.";
+        }
         function saveAct() { const t=document.getElementById('actTgl').value, d=document.getElementById('actDesc').value; if(d) db.ref(`aktivitas/${t}`).push({desc:d}).then(()=>document.getElementById('actDesc').value=""); }
+
+        // --- MODAL & LAINNYA ---
+        function showDetail(tgl) {
+            currentOpenDate = tgl; document.getElementById('opTglTitle').innerText = "Detail Tanggal: " + tgl;
+            let hAbs = "", hAct = ""; const abs = DATA.absensi?.[tgl] || {}, act = DATA.aktivitas?.[tgl] || {};
+            Object.entries(abs).forEach(([n, v]) => { hAbs += `<div class="op-item"><span><b>${n}</b>: ${v.s} (${v.in||''}-${v.out||''})<br><small>${v.ket||''}</small></span><button onclick="delAbs('${tgl}','${n}')" style="background:red; color:white; border:none; padding:5px; border-radius:5px">HAPUS</button></div>`; });
+            Object.entries(act).forEach(([id, v]) => { hAct += `<div class="op-item"><span>• ${v.desc}</span><button onclick="delAct('${tgl}','${id}')" style="background:gray; color:white; border:none; padding:5px; border-radius:5px">X</button></div>`; });
+            document.getElementById('opAbsen').innerHTML = hAbs || "Kosong"; document.getElementById('opAct').innerHTML = hAct || "Kosong";
+            document.getElementById('modalOp').style.display = 'flex';
+        }
+        function closeModal() { currentOpenDate = ""; document.getElementById('modalOp').style.display = 'none'; }
+        function delAbs(t, n) { if(confirm('Hapus?')) db.ref(`absensi/${t}/${n}`).remove(); }
+        function delAct(t, id) { if(confirm('Hapus?')) db.ref(`aktivitas/${t}/${id}`).remove(); }
         function saveLibur() { const s=document.getElementById('libS').value, e=document.getElementById('libE').value; if(!s) return; let end=e||s; let curr=new Date(s); while(curr<=new Date(end)){ db.ref(`master_libur/${curr.toISOString().split('T')[0]}`).set(true); curr.setDate(curr.getDate()+1); } alert("Berhasil!"); }
         function addM(p, i) { const v=document.getElementById(i).value; if(v) db.ref(p).push(v).then(()=>document.getElementById(i).value=""); }
         function exportExcel() { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById('tableAbsen')), `Absen_${document.getElementById('fM').value}.xlsx`); }
