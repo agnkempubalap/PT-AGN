@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v82.0 - INTEGRATED TABLE SYSTEM</title>
+    <title>PT-AGN v82.0 - INTEGRATED FLOW SYSTEM</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
@@ -14,7 +14,7 @@
         .nav-btn { padding: 12px; background: var(--c); border: 1px solid var(--b); color: var(--t); border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 10px; text-align: center; opacity: 0.5; transition: 0.3s}
         .nav-btn.active { background: var(--p); border-color: var(--p); color: #fff; opacity: 1; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4); }
         .card{background:var(--c);padding:18px;border-radius:18px;margin-bottom:12px;border:1px solid var(--b)}
-        h3{margin:0 0 10px;font-size:11px;color:var(--iz);text-transform:uppercase;letter-spacing:1px;font-weight:800}
+        h3{margin:0 0 12px;font-size:11px;color:var(--iz);text-transform:uppercase;letter-spacing:1px;font-weight:800}
         .grid-2{display:grid; grid-template-columns: 1fr 1fr; gap:10px}
         input,button,select{border-radius:12px;font-size:14px;min-height:45px;border:1px solid var(--b);background:var(--bg);color:var(--t);width:100%;box-sizing:border-box;padding:0 15px; outline:none}
         .btn{display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;border:none;color:#fff}
@@ -26,7 +26,7 @@
         .s-h{background:var(--s)} .s-i{background:var(--iz)} .s-a{background:var(--d)} .s-l{background:var(--lb)} .s-m{background:var(--sun)} .s-off{background:var(--al)} .s-t{background:var(--te)}
         .box-icon{position: absolute; top: -5px; right: -5px; font-size: 10px; background: #fff; color: #000; border-radius: 4px; width: 15px; height: 15px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.5)}
         .hidden { display: none; }
-        th.stok-head { background: var(--b); color: #fff; font-size: 9px; }
+        .stok-header { background: var(--b); font-weight: 800; color: var(--w); }
     </style>
 </head>
 <body>
@@ -40,27 +40,27 @@
 
         <div id="tab-absen" class="tab-content">
             <div class="card no-print">
-                <h3>👥 MANAJEMEN KARYAWAN & LIBUR RENTANG</h3>
+                <h3>👥 PENGATURAN KARYAWAN & LIBUR RENTANG</h3>
                 <div class="grid-2">
-                    <input type="text" id="inKar" placeholder="Nama Karyawan">
-                    <div style="display:flex; gap:5px"><button class="btn" style="background:var(--s); width:50%" onclick="addKar()">+</button><button class="btn" style="background:var(--d); width:50%" onclick="delKar()">-</button></div>
+                    <input type="text" id="inKar" placeholder="Tambah Nama Karyawan">
+                    <div style="display:flex; gap:5px"><button class="btn" style="background:var(--s); flex:1" onclick="addKar()">+</button><button class="btn" style="background:var(--d); flex:1" onclick="delKar()">-</button></div>
                 </div>
                 <div class="grid-2" style="margin-top:10px">
                     <input type="date" id="liburS" title="Mulai Libur">
                     <input type="date" id="liburE" title="Selesai Libur">
                 </div>
-                <button class="btn" style="background:var(--p); margin-top:10px; width:100%" onclick="setLiburMassal()">SET RENTANG LIBUR</button>
+                <button class="btn" style="background:var(--p); margin-top:10px; width:100%" onclick="setLiburRange()">SIMPAN RENTANG HARI LIBUR</button>
             </div>
             
             <div class="card no-print">
-                <h3>⚡ PANEL ABSENSI & RESET</h3>
+                <h3>⚡ PANEL ABSENSI (IN: 09:00 | OUT: 16:00)</h3>
                 <div class="grid-2">
-                    <input list="lk" id="selKar" placeholder="Pilih Karyawan">
+                    <input list="lk" id="selKar" placeholder="Cari Nama...">
                     <input type="date" id="resetTgl">
                 </div>
                 <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:8px; margin-top:10px">
                     <button class="btn" style="background:var(--s)" onclick="sendAbsen('Masuk')">MASUK</button>
-                    <button class="btn" style="background:var(--iz)" onclick="sendAbsen('Ijin')">IJIN</button>
+                    <button class="btn" style="background:var(--iz)" onclick="sendAbsen('IJIN')">IJIN</button>
                     <button class="btn" style="background:var(--al)" onclick="sendAbsen('Pulang')">PULANG</button>
                     <button class="btn" style="background:var(--d)" onclick="doReset()">RESET</button>
                 </div>
@@ -68,54 +68,53 @@
 
             <div class="card">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
-                    <h3>📊 REKAP ABSENSI (📦 = ADA STOK)</h3>
+                    <h3>📊 KALENDER ABSENSI & STOK (📦)</h3>
                     <input type="month" id="fB" onchange="renderAll()" style="width:130px; height:35px" class="no-print">
                 </div>
                 <div class="table-wrap"><table class="table-web"><thead id="thA"></thead><tbody id="tbA"></tbody></table></div>
-                <button class="btn no-print" style="background:#b91c1c; width:100%" onclick="window.print()">EXPORT PDF / PRINT</button>
             </div>
         </div>
 
         <div id="tab-stok" class="tab-content hidden">
             <div class="card no-print">
-                <h3>📦 INPUT BARANG & QC (MASUK/KELUAR)</h3>
+                <h3>📦 MANAJEMEN BARANG & QC</h3>
                 <div class="grid-2">
                     <input type="date" id="stokTgl">
                     <select id="selBrg"></select>
                 </div>
                 <div class="grid-2" style="margin-top:10px">
-                    <select id="qcJenis"><option value="Bekas">Jenis: Bekas (Kotor)</option><option value="Baru">Jenis: Baru (Bersih)</option></select>
-                    <select id="qcHasil"><option value="Accepted">QC: Accepted</option><option value="Minor">QC: Accepted Minor</option><option value="Reject">QC: Reject</option></select>
+                    <select id="qcJenis"><option value="Bekas">Bekas (Kotor)</option><option value="Baru">Baru (Bersih)</option></select>
+                    <select id="qcHasil"><option value="Accepted">Accepted</option><option value="Minor">Accepted Minor</option><option value="Reject">Reject</option></select>
                 </div>
                 <div class="grid-2" style="margin-top:10px">
                     <input type="number" id="qcQty" placeholder="Jumlah Qty">
-                    <button class="btn" style="background:var(--p)" onclick="saveStok('Masuk')">SIMPAN MASUK</button>
+                    <button class="btn" style="background:var(--p)" onclick="saveStok('Masuk')">CATAT MASUK</button>
                 </div>
                 <hr style="border:0; border-top:1px solid var(--b); margin:15px 0">
                 <div class="grid-2">
                     <input type="number" id="rekoQty" placeholder="Qty Rekondisi">
-                    <button class="btn" style="background:var(--lb)" onclick="saveStok('Rekondisi')">PROSES REKONDISI</button>
+                    <button class="btn" style="background:var(--lb)" onclick="saveStok('Rekondisi')">REKONDISI</button>
                 </div>
                 <div class="grid-2" style="margin-top:10px">
                     <select id="jualTipe"><option value="Umum">Jual Umum</option><option value="Mitra">Jual Mitra/Agen</option></select>
-                    <input type="number" id="jualQty" placeholder="Qty Jual">
+                    <input type="number" id="jualQty" placeholder="Qty Terjual">
                 </div>
-                <button class="btn" style="background:var(--s); margin-top:10px; width:100%" onclick="saveStok('Jual')">SIMPAN PENJUALAN</button>
+                <button class="btn" style="background:var(--s); margin-top:10px; width:100%" onclick="saveStok('Jual')">CATAT PENJUALAN</button>
             </div>
 
             <div class="card">
-                <h3>📊 TABEL REKAP STOK BULANAN</h3>
+                <h3>📊 TABEL REKAP FLOW STOK (PER BULAN)</h3>
                 <div class="table-wrap">
                     <table class="table-web">
                         <thead>
                             <tr>
-                                <th rowspan="2">Nama Barang</th>
-                                <th colspan="2" class="stok-head">STOK AWAL</th>
-                                <th colspan="2" class="stok-head">MASUK (QC)</th>
-                                <th rowspan="2" class="stok-head">REKONDISI</th>
-                                <th colspan="2" class="stok-head">PENJUALAN</th>
-                                <th colspan="2" class="stok-head">SISA AKHIR</th>
-                                <th rowspan="2" class="stok-head">TOTAL</th>
+                                <th rowspan="2">NAMA BARANG</th>
+                                <th colspan="2" class="stok-header">STOK AWAL</th>
+                                <th colspan="2" class="stok-header">MASUK (QC)</th>
+                                <th rowspan="2" class="stok-header">REKONDISI</th>
+                                <th colspan="2" class="stok-header">PENJUALAN</th>
+                                <th colspan="2" class="stok-header">SISA AKHIR</th>
+                                <th rowspan="2" class="stok-header">TOTAL</th>
                             </tr>
                             <tr>
                                 <th>Kotor</th><th>Baru</th><th>Kotor</th><th>Baru</th>
@@ -125,13 +124,14 @@
                         <tbody id="tbStokRekap"></tbody>
                     </table>
                 </div>
+                <button class="btn no-print" style="background:#1d6f42; width:100%" onclick="exportExcelStok()">EXPORT REKAP STOK (EXCEL)</button>
             </div>
 
             <div class="card">
-                <h3>📜 LOG AKTIVITAS HARIAN</h3>
+                <h3>📜 LOG HARIAN STOK</h3>
                 <div class="table-wrap">
                     <table class="table-web">
-                        <thead><tr><th>Tgl</th><th>Barang</th><th>Aksi</th><th>Qty</th><th>Detail</th><th>Hapus</th></tr></thead>
+                        <thead><tr><th>Tgl</th><th>Barang</th><th>Aksi</th><th>Qty</th><th>Detail</th><th>Aksi</th></tr></thead>
                         <tbody id="logStok"></tbody>
                     </table>
                 </div>
@@ -163,41 +163,43 @@
             document.getElementById('tab-'+t).classList.remove('hidden'); b.classList.add('active');
         }
 
-        /* ABSEN LOGIC */
+        /* --- ABSEN LOGIC --- */
         function uL(){ document.getElementById('lk').innerHTML=Object.values(mk).sort().map(n=>`<option value="${n}">`).join(''); }
         function addKar(){ let v=document.getElementById('inKar').value; if(v)db.ref('master_karyawan').push(v).then(()=>document.getElementById('inKar').value=""); }
-        function delKar(){ let v=document.getElementById('selKar').value; let id=Object.keys(mk).find(k=>mk[k]===v); if(id && confirm('Hapus?'))db.ref(`master_karyawan/${id}`).remove(); }
+        function delKar(){ let v=document.getElementById('selKar').value; let id=Object.keys(mk).find(k=>mk[k]===v); if(id && confirm('Hapus karyawan ini?'))db.ref(`master_karyawan/${id}`).remove(); }
         
-        function setLiburMassal(){
+        function setLiburRange(){
             let s = new Date(document.getElementById('liburS').value);
             let e = new Date(document.getElementById('liburE').value);
-            if(!s || !e) return alert("Pilih tanggal!");
+            if(!s || !e) return alert("Pilih tanggal mulai & selesai!");
             while(s <= e){
                 db.ref(`hari_libur/${s.toISOString().split('T')[0]}`).set(true);
                 s.setDate(s.getDate() + 1);
             }
-            alert("Rentang Libur Tersimpan!");
+            alert("Rentang Libur Berhasil Disimpan!");
         }
 
         function sendAbsen(ty){
-            let n=document.getElementById('selKar').value, t=new Date().toISOString().split('T')[0]; if(!n) return alert("Pilih Nama!");
+            let n=document.getElementById('selKar').value, t=new Date().toISOString().split('T')[0];
+            if(!n) return alert("Pilih Nama!");
             let now = new Date(), jamStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-            if(ty==='Ijin'){ let k=prompt("Keterangan:"); if(k) db.ref(`absensi/${t}/${n}`).update({status:'Ijin', note:k}); }
+            if(ty==='IJIN'){ let k=prompt("Keterangan Ijin:"); if(k) db.ref(`absensi/${t}/${n}`).update({status:'Ijin', note:k}); }
             else if(ty==='Masuk'){ let isT=(now.getHours()>9||(now.getHours()===9&&now.getMinutes()>0)); db.ref(`absensi/${t}/${n}`).update({masuk:jamStr, status:isT?'Telat':'Hadir'}); }
             else if(ty==='Pulang'){ db.ref(`absensi/${t}/${n}`).update({pulang:jamStr}); }
         }
-        function doReset(){ let n=document.getElementById('selKar').value, t=document.getElementById('resetTgl').value; if(n && t && confirm('Reset?')) db.ref(`absensi/${t}/${n}`).remove(); }
+        function doReset(){ let n=document.getElementById('selKar').value, t=document.getElementById('resetTgl').value; if(n && t && confirm('Hapus data absen tanggal ini?')) db.ref(`absensi/${t}/${n}`).remove(); }
 
-        /* STOK LOGIC */
-        function uBrgList(){ document.getElementById('selBrg').innerHTML = Object.values(brg).map(v=>`<option value="${v}">${v}</option>`).join(''); }
+        /* --- STOK LOGIC (FLOW & CARRYOVER) --- */
+        function uBrgList(){ document.getElementById('selBrg').innerHTML = Object.values(brg).sort().map(v=>`<option value="${v}">${v}</option>`).join(''); }
         function saveStok(aksi){
             let b=document.getElementById('selBrg').value, t=document.getElementById('stokTgl').value;
-            let q=parseInt(document.getElementById(aksi==='Masuk'?'qcQty':(aksi==='Rekondisi'?'rekoQty':'jualQty')).value);
-            if(!b || !q || !t) return alert("Isi Lengkap!");
+            let qtyId = aksi==='Masuk'?'qcQty':(aksi==='Rekondisi'?'rekoQty':'jualQty');
+            let q=parseInt(document.getElementById(qtyId).value);
+            if(!b || !q || !t) return alert("Data Belum Lengkap!");
             let data = { tgl:t, barang:b, aksi:aksi, qty:q };
             if(aksi==='Masuk'){ data.jenis=document.getElementById('qcJenis').value; data.hasil=document.getElementById('qcHasil').value; }
             if(aksi==='Jual'){ data.tipe=document.getElementById('jualTipe').value; }
-            db.ref('stok_log').push(data).then(()=>alert("Stok Berhasil Dicatat!"));
+            db.ref('stok_log').push(data).then(()=>{ alert("Berhasil!"); document.getElementById(qtyId).value=""; });
         }
 
         function renderStok(){
@@ -223,18 +225,18 @@
                         }
                     });
                 });
-                html += `<tr><td class="nama-fixed">${bName}</td><td>${r.saK}</td><td>${r.saB}</td><td>${r.mK}</td><td>${r.mB}</td><td>${r.rek}</td><td>${r.jU}</td><td>${r.jM}</td><td style="background:#312e81">${r.siK}</td><td style="background:#064e3b">${r.siB}</td><td style="font-weight:800">${r.siK+r.siB}</td></tr>`;
+                html += `<tr><td class="nama-fixed">${bName}</td><td>${r.saK}</td><td>${r.saB}</td><td>${r.mK}</td><td>${r.mB}</td><td>${r.rek}</td><td>${r.jU}</td><td>${r.jM}</td><td style="background:#1e293b; color:var(--s)">${r.siK}</td><td style="background:#1e293b; color:var(--s)">${r.siB}</td><td style="font-weight:800; background:var(--b)">${r.siK+r.siB}</td></tr>`;
             });
             document.getElementById('tbStokRekap').innerHTML = html;
             
             let logHtml = "";
             Object.keys(st).reverse().forEach(k=>{
-                let d=st[k]; if(d.tgl.startsWith(currentMonth)) logHtml+=`<tr><td>${d.tgl}</td><td>${d.barang}</td><td>${d.aksi}</td><td>${d.qty}</td><td>${d.jenis||d.tipe||'-'}</td><td><button onclick="db.ref('stok_log/${k}').remove()" style="background:var(--d); border:none; color:#fff; padding:2px 8px; border-radius:4px">X</button></td></tr>`;
+                let d=st[k]; if(d.tgl.startsWith(currentMonth)) logHtml+=`<tr><td>${d.tgl}</td><td>${d.barang}</td><td>${d.aksi}</td><td>${d.qty}</td><td>${d.jenis||d.tipe||'-'}</td><td><button onclick="db.ref('stok_log/${k}').remove()" style="background:var(--d); border:none; color:#fff; border-radius:4px; padding:2px 8px">X</button></td></tr>`;
             });
             document.getElementById('logStok').innerHTML = logHtml;
         }
 
-        /* RENDER KALENDER */
+        /* --- RENDER KALENDER --- */
         function renderAll(shouldScroll=false){
             const f=document.getElementById('fB').value, [y,m]=f.split('-'), last=new Date(y,m,0).getDate(), kList=Object.values(mk).sort();
             const now = new Date(), todayStr = now.toISOString().split('T')[0], jamNow = now.getHours(), dateNow = now.getDate();
@@ -263,9 +265,7 @@
                             info=`<span style="font-size:7px;display:block">${data.masuk||''}</span><span style="font-size:7px">${data.pulang||''}</span>`;
                         }
                     } else {
-                        // Logika Otomatis Alpa untuk hari kemarin ke belakang
                         if(tglStr < todayStr && !isM && !isL){ sW="A"; cl="s-a"; c.A++; }
-                        // Logika Alpa hari ini jika sudah lewat jam 4 sore
                         else if(tglStr === todayStr && !isM && !isL && jamNow >= 16){ sW="A"; cl="s-a"; c.A++; }
                     }
                     row+=`<td><div class="s-box ${cl}">${sW}${info}${box}</div></td>`;
@@ -275,6 +275,11 @@
             document.getElementById('tbA').innerHTML=b;
             if(shouldScroll && y==now.getFullYear()) setTimeout(()=>document.getElementById(`tgl-${dateNow}`).scrollIntoView({inline:"center"}),500);
             renderStok();
+        }
+
+        function exportExcelStok(){
+            const blob = new Blob([document.getElementById('tbStokRekap').parentElement.outerHTML], {type: "application/vnd.ms-excel"});
+            const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `REKAP_STOK_${document.getElementById('fB').value}.xls`; a.click();
         }
     </script>
 </body>
