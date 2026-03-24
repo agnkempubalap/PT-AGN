@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kempu Balap OMNI V350</title>
+    <title>Kempu Balap OMNI V360</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -18,7 +18,7 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         .card { background: var(--c); padding: 15px; border-radius: 12px; margin-bottom: 12px; border: 1px solid var(--b); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        h3 { margin: 0 0 12px; font-size: 11px; color: var(--p); text-transform: uppercase; border-left: 4px solid var(--p); padding-left: 8px; }
+        h3 { margin: 0 0 10px; font-size: 11px; color: var(--p); text-transform: uppercase; border-left: 4px solid var(--p); padding-left: 8px; }
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
         input, select { width: 100%; height: 42px; background: #f1f5f9; border: 1px solid var(--b); border-radius: 8px; padding: 0 10px; font-size: 13px; }
         .btn { border: none; border-radius: 8px; padding: 10px; font-weight: 800; cursor: pointer; width: 100%; color: white; font-size: 10px; text-align: center; }
@@ -32,37 +32,27 @@
         .bg-sun { background: #fee2e2 !important; color: #b91c1c !important; border: 1px solid #fca5a5; } 
         .bg-lib { background: #f1f5f9 !important; color: #94a3b8 !important; }
         .txt-jam { font-size: 7px; font-weight: 400; opacity: 0.9; margin-top: 2px; }
-        
-        /* Modal Style */
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 15px; }
         .modal-content { background: white; border-radius: 16px; width: 100%; max-width: 450px; max-height: 85vh; overflow-y: auto; padding: 20px; }
         .op-section { background: #f8fafc; padding: 10px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid var(--p); }
-        .op-section h4 { margin: 0 0 5px; font-size: 10px; color: var(--p); text-transform: uppercase; }
-        .op-item { font-size: 11px; margin-bottom: 3px; border-bottom: 1px dashed #e2e8f0; padding-bottom: 2px; }
+        .op-item { display: flex; justify-content: space-between; align-items: center; font-size: 11px; padding: 5px 0; border-bottom: 1px solid #e2e8f0; }
+        .list-item { display: inline-flex; align-items: center; background: #f1f5f9; padding: 5px 10px; border-radius: 20px; margin: 2px; font-size: 11px; }
     </style>
 </head>
 <body>
 
     <div id="modalOp" class="modal" onclick="this.style.display='none'">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <h3 id="opTglTitle" style="font-size: 14px; border:none; padding:0; margin-bottom:15px;"></h3>
-            
+            <h3 id="opTglTitle"></h3>
             <div class="op-section">
-                <h4>👥 ABSENSI KARYAWAN</h4>
+                <h4>👥 ABSENSI & HAPUS</h4>
                 <div id="opAbsen"></div>
             </div>
-
             <div class="op-section">
-                <h4>📦 BONGKAR / MUAT</h4>
-                <div id="opBongkar"></div>
+                <h4>📦 AKTIVITAS GUDANG</h4>
+                <div id="opAct"></div>
             </div>
-
-            <div class="op-section">
-                <h4>🛠️ AKTIVITAS LAIN</h4>
-                <div id="opLain"></div>
-            </div>
-
-            <button class="btn" style="background:var(--t); margin-top:10px;" onclick="document.getElementById('modalOp').style.display='none'">TUTUP</button>
+            <button class="btn" style="background:var(--t)" onclick="document.getElementById('modalOp').style.display='none'">TUTUP</button>
         </div>
     </div>
 
@@ -85,31 +75,37 @@
             </div>
 
             <div class="card">
-                <h3>📅 Input Absensi / Aktivitas</h3>
+                <h3>📅 Set Libur Rentang (Long Holiday)</h3>
+                <div class="grid-2">
+                    <div><small>Mulai:</small><input type="date" id="libS"></div>
+                    <div><small>Sampai:</small><input type="date" id="libE"></div>
+                </div>
+                <button class="btn" style="background:var(--d)" onclick="saveLibur()">SIMPAN LIBUR PANJANG</button>
+            </div>
+
+            <div class="card">
+                <h3>📅 Input Absensi</h3>
                 <div class="grid-2">
                     <div><small>Tanggal:</small><input type="date" id="absTgl"></div>
-                    <div><small>Karyawan:</small><select id="selK"></select></div>
+                    <div><small>Nama:</small><select id="selK"></select></div>
                 </div>
-                <div class="grid-2" style="margin-top:10px">
-                    <button class="btn" style="background:var(--s)" onclick="saveAbs('Hadir')">ABSEN MASUK</button>
-                    <button class="btn" style="background:var(--t)" onclick="saveAbs('Pulang')">ABSEN PULANG</button>
+                <div class="grid-2">
+                    <button class="btn" style="background:var(--s)" onclick="saveAbs('Hadir')">MASUK</button>
+                    <button class="btn" style="background:var(--t)" onclick="saveAbs('Pulang')">PULANG</button>
                 </div>
             </div>
 
             <div class="card">
-                <h3>📅 Kalender Operasional <input type="month" id="fM" onchange="renderAll()" style="width:130px; height:30px"></h3>
-                <p style="font-size: 8px; color: orange; margin-bottom: 5px;">*Klik kotak tanggal untuk melihat detail operasional hari itu.</p>
+                <h3>📅 Kalender <input type="month" id="fM" onchange="renderAll()" style="width:130px; height:30px"></h3>
                 <div class="table-wrap"><table><thead id="thA"></thead><tbody id="tbA"></tbody></table></div>
             </div>
         </div>
 
-        <div id="tab-stok" class="tab-content">
-            <div class="card"><h3>📦 Stok Barang</h3></div>
-        </div>
         <div id="tab-aktivitas" class="tab-content">
-            <div class="card"><h3>🛠️ Input Aktivitas Gudang</h3>
-                <input type="text" id="actDesc" placeholder="Contoh: Bongkar 50 kempu...">
-                <button class="btn" style="background:var(--p); margin-top:5px" onclick="saveAktivitas()">SIMPAN AKTIVITAS</button>
+            <div class="card">
+                <h3>🛠️ Catat Aktivitas</h3>
+                <input type="text" id="actDesc" placeholder="Contoh: Bongkar 50 Kempu">
+                <button class="btn" style="background:var(--p); margin-top:5px" onclick="saveAct()">SIMPAN</button>
             </div>
         </div>
     </div>
@@ -133,66 +129,68 @@
             b.classList.add('active');
         }
 
-        function showOpDetail(tgl) {
-            document.getElementById('opTglTitle').innerText = "📅 Operasional: " + tgl;
-            
-            // 1. Ambil Absen
-            const abs = DATA.absensi?.[tgl] || {};
-            let hAbs = "";
-            Object.entries(abs).forEach(([n, v]) => {
-                hAbs += `<div class="op-item"><b>${n}</b>: ${v.s} (${v.in||''}-${v.out||''})</div>`;
-            });
-            document.getElementById('opAbsen').innerHTML = hAbs || "<i>Tidak ada absensi</i>";
-
-            // 2. Ambil Aktivitas (Bongkar/Muat & Lainnya)
-            const acts = DATA.aktivitas?.[tgl] || {};
-            let hBongkar = "", hLain = "";
-            Object.values(acts).forEach(v => {
-                const text = v.desc.toLowerCase();
-                if(text.includes('bongkar') || text.includes('muat')) hBongkar += `<div class="op-item">• ${v.desc}</div>`;
-                else hLain += `<div class="op-item">• ${v.desc}</div>`;
-            });
-            document.getElementById('opBongkar').innerHTML = hBongkar || "<i>Tidak ada data bongkar/muat</i>";
-            document.getElementById('opLain').innerHTML = hLain || "<i>Tidak ada aktivitas lain</i>";
-
-            document.getElementById('modalOp').style.display = 'flex';
-        }
-
-        function saveAktivitas() {
-            const tgl = document.getElementById('absTgl').value;
-            const desc = document.getElementById('actDesc').value;
-            if(!desc) return;
-            db.ref(`aktivitas/${tgl}`).push({desc: desc}).then(() => {
-                document.getElementById('actDesc').value = "";
-                alert("Aktivitas tersimpan!");
-            });
+        function saveLibur() {
+            const s = document.getElementById('libS').value, e = document.getElementById('libE').value;
+            if(!s || !e) return alert("Pilih Rentang Tanggal!");
+            let curr = new Date(s);
+            while(curr <= new Date(e)) {
+                db.ref(`master_libur/${curr.toISOString().split('T')[0]}`).set(true);
+                curr.setDate(curr.getDate()+1);
+            }
+            alert("Libur disimpan!");
         }
 
         function saveAbs(st) {
             const n = document.getElementById('selK').value, tgl = document.getElementById('absTgl').value;
             if(!n) return;
             const isLib = DATA.master_libur?.[tgl] || new Date(tgl).getDay() === 0;
-            let up = { s: (st === 'Hadir' && isLib) ? 'Lembur' : st };
-            if(st==='Hadir') up.in = new Date().toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
+            let up = { s: (st==='Hadir' && isLib)?'Lembur':st };
+            if(st==='Hadir') up.in = new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
             if(st==='Pulang') up.out = '16:00';
             db.ref(`absensi/${tgl}/${n}`).update(up);
         }
 
+        function showDetail(tgl) {
+            document.getElementById('opTglTitle').innerText = "Detail " + tgl;
+            let hAbs = "", hAct = "";
+            const abs = DATA.absensi?.[tgl] || {}, act = DATA.aktivitas?.[tgl] || {};
+            
+            Object.entries(abs).forEach(([n, v]) => {
+                hAbs += `<div class="op-item">
+                    <span><b>${n}</b> (${v.in||''}-${v.out||''})</span>
+                    <button onclick="delAbs('${tgl}','${n}')" style="background:red; color:white; border:none; padding:3px 8px; border-radius:4px; font-size:9px">HAPUS</button>
+                </div>`;
+            });
+            Object.entries(act).forEach(([id, v]) => {
+                hAct += `<div class="op-item"><span>• ${v.desc}</span><button onclick="delAct('${tgl}','${id}')" style="background:gray; color:white; border:none; padding:3px 8px; border-radius:4px; font-size:9px">X</button></div>`;
+            });
+            document.getElementById('opAbsen').innerHTML = hAbs || "Kosong";
+            document.getElementById('opAct').innerHTML = hAct || "Kosong";
+            document.getElementById('modalOp').style.display = 'flex';
+        }
+
+        function delAbs(t, n) { if(confirm('Hapus absen '+n+'?')) db.ref(`absensi/${t}/${n}`).remove(); }
+        function delAct(t, id) { if(confirm('Hapus aktivitas?')) db.ref(`aktivitas/${t}/${id}`).remove(); }
+        function saveAct() {
+            const t = document.getElementById('absTgl').value, d = document.getElementById('actDesc').value;
+            if(d) db.ref(`aktivitas/${t}`).push({desc:d}).then(()=>document.getElementById('actDesc').value="");
+        }
+
         function renderAll() {
             const kArr = Object.entries(DATA.master_karyawan || {}), fM = document.getElementById('fM').value, [y, m] = fM.split('-'), last = new Date(y, m, 0).getDate();
-            document.getElementById('listK').innerHTML = kArr.map(k => `<span class="list-item">${k[1]} <b class="del-btn" onclick="db.ref('master_karyawan/${k[0]}').remove()">×</b></span>`).join('');
+            document.getElementById('listK').innerHTML = kArr.map(k => `<span class="list-item">${k[1]} <b onclick="db.ref('master_karyawan/${k[0]}').remove()" style="color:red;margin-left:5px">×</b></span>`).join('');
             document.getElementById('selK').innerHTML = kArr.map(k => `<option value="${k[1]}">${k[1]}</option>`).join('');
-
+            
             let th = `<tr><th class="sticky-col">NAMA</th>`;
-            for(let i=1; i<=last; i++) { th += `<th style="${new Date(y, m-1, i).getDay()===0?'color:red':''}">${i}</th>`; }
+            for(let i=1; i<=last; i++) th += `<th>${i}</th>`;
             document.getElementById('thA').innerHTML = th + `</tr>`;
 
             let tbA = ""; kArr.forEach(k => {
                 let row = `<td class="sticky-col">${k[1]}</td>`;
                 for(let i=1; i<=last; i++){
-                    const tgl = `${y}-${m}-${String(i).padStart(2,'0')}`, d = DATA.absensi?.[tgl]?.[k[1]], isSun = new Date(tgl).getDay() === 0;
-                    let cls = d ? (d.s==='Lembur'?'bg-l':(d.s==='Hadir'?'bg-h':'bg-i')) : (isSun?'bg-sun':'');
-                    row += `<td onclick="showOpDetail('${tgl}')"><div class="badge ${cls}">${d?d.s[0]:(isSun?'M':'-')}<span class="txt-jam">${d?d.in||'':''}</span></div></td>`;
+                    const tgl = `${y}-${m}-${String(i).padStart(2,'0')}`, d = DATA.absensi?.[tgl]?.[k[1]], isSun = new Date(tgl).getDay()===0, isL = DATA.master_libur?.[tgl];
+                    let cls = d ? (d.s==='Lembur'?'bg-l':(d.s==='Hadir'?'bg-h':'bg-i')) : (isSun?'bg-sun':(isL?'bg-lib':''));
+                    row += `<td onclick="showDetail('${tgl}')"><div class="badge ${cls}">${d?d.s[0]:(isSun?'M':(isL?'L':'-'))}</div></td>`;
                 }
                 tbA += `<tr>${row}</tr>`;
             });
