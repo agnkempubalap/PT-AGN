@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kempu Balap OMNI V110</title>
+    <title>Kempu Balap OMNI V111</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
@@ -15,22 +15,31 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Plus Jakarta Sans', sans-serif; }
         body { margin: 0; background: var(--bg); color: var(--t); font-size: 13px; }
         .nav-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; position: sticky; top: 0; z-index: 1000; background: var(--p); padding: 8px; }
-        .nav-btn { padding: 12px 2px; background: rgba(255,255,255,0.1); border: none; color: white; border-radius: 8px; cursor: pointer; font-weight: 800; font-size: 8px; text-transform: uppercase; }
+        .nav-btn { padding: 10px 2px; background: rgba(255,255,255,0.1); border: none; color: white; border-radius: 8px; cursor: pointer; font-weight: 800; font-size: 8px; text-transform: uppercase; }
         .nav-btn.active { background: white; color: var(--p); }
         .container { padding: 10px; max-width: 1200px; margin: 0 auto; padding-bottom: 80px; }
         .card { background: var(--c); padding: 15px; border-radius: 15px; margin-bottom: 10px; border: 1px solid var(--b); }
         h3 { margin: 0 0 10px; font-size: 10px; color: var(--p); text-transform: uppercase; border-left: 3px solid var(--p); padding-left: 8px; }
         input, select { width: 100%; height: 42px; background: #f8fafc; border: 1px solid var(--b); border-radius: 10px; padding: 0 12px; margin-bottom: 8px; font-size: 13px; outline: none; }
         .btn { border: none; border-radius: 10px; padding: 12px; font-weight: 800; cursor: pointer; width: 100%; color: white; margin-bottom: 5px; font-size: 11px; }
-        .table-res { overflow-x: auto; width: 100%; border-radius: 10px; border: 1px solid var(--b); background: white; }
-        table { width: 100%; border-collapse: collapse; min-width: 900px; font-size: 11px; }
-        th { background: #f8fafc; padding: 8px; color: #64748b; border-bottom: 2px solid var(--b); }
-        td { padding: 6px; border-bottom: 1px solid var(--b); text-align: center; }
-        .sticky-col { position: sticky; left: 0; background: white; z-index: 5; border-right: 2px solid var(--b); min-width: 110px; font-weight: 800; }
-        .badge { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 6px; font-weight: 800; color: white; font-size: 10px; cursor: pointer; }
-        .bg-h { background: var(--s); } .bg-m { background: var(--d); } .bg-i { background: #8b5cf6; } 
-        .bg-off { background: #94a3b8; } .bg-t { background: #f59e0b; } .bg-l { background: #0ea5e9; } .bg-a { background: #000; }
-        .today-hl { border: 2px solid var(--p) !important; background: #eff6ff; }
+        
+        /* Table Scroll Setup */
+        .table-res { overflow-x: auto; width: 100%; border-radius: 10px; border: 1px solid var(--b); background: white; scroll-behavior: smooth; }
+        table { width: 100%; border-collapse: collapse; min-width: 1000px; font-size: 11px; table-layout: fixed; }
+        th, td { width: 35px; text-align: center; border: 1px solid var(--b); padding: 5px 2px; }
+        .sticky-col { position: sticky; left: 0; background: white !important; z-index: 10; width: 100px !important; font-weight: 800; border-right: 2px solid var(--b); }
+        
+        /* Indikator Warna */
+        .badge { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 6px; font-weight: 800; color: white; font-size: 10px; cursor: pointer; }
+        .bg-h { background: var(--s); } 
+        .bg-m { background: var(--d) !important; } /* Minggu Merah */
+        .bg-i { background: #8b5cf6; } 
+        .bg-off { background: #94a3b8; } 
+        .bg-t { background: #f59e0b; } 
+        .bg-l { background: #0ea5e9; } 
+        .bg-a { background: #000; }
+        .today-hl { background: #eff6ff !important; border: 2px solid var(--p) !important; }
+        
         #toast { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 8px 16px; border-radius: 20px; z-index: 3000; display: none; font-weight: 700; font-size: 11px; }
         .hidden { display: none !important; }
     </style>
@@ -51,38 +60,32 @@
             <div class="card">
                 <h3>👥 Data Karyawan & Libur</h3>
                 <div style="display:grid; grid-template-columns: 2fr 1fr; gap:5px">
-                    <input type="text" id="inK" placeholder="Nama Karyawan...">
-                    <button class="btn" style="background:var(--p)" onclick="addM('master_karyawan', 'inK')">TAMBAH</button>
+                    <input type="text" id="inK" placeholder="Nama...">
+                    <button class="btn" style="background:var(--p)" onclick="addM('master_karyawan', 'inK')">+</button>
                 </div>
-                <div id="listK" style="display:flex; flex-wrap:wrap; gap:5px; margin: 10px 0"></div>
-                
+                <div id="listK" style="display:flex; flex-wrap:wrap; gap:5px; margin: 8px 0"></div>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px">
                     <input type="date" id="libS">
                     <input type="date" id="libE">
                 </div>
-                <button class="btn" style="background:#64748b" onclick="setLibur()">SET TANGGAL LIBUR (OFF)</button>
+                <button class="btn" style="background:#64748b" onclick="setLibur()">SET TGL LIBUR/OFF</button>
             </div>
 
             <div class="card">
-                <h3>📅 Kalender Real-Time</h3>
+                <h3>📅 Kalender (Auto-Scroll Hari Ini)</h3>
                 <input type="month" id="fM" onchange="renderAll()">
                 <div class="table-res" id="calScroll">
                     <table id="tblAbsen"><thead id="thA"></thead><tbody id="tbA"></tbody></table>
                 </div>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:15px">
-                    <button class="btn" style="background:#1d6f42" onclick="exportExcel()">EXPORT EXCEL</button>
-                    <button class="btn" style="background:#b91c1c" onclick="exportPDF()">DOWNLOAD PDF</button>
+                    <button class="btn" style="background:#1d6f42" onclick="exportExcel()">EXCEL</button>
+                    <button class="btn" style="background:#b91c1c" onclick="exportPDF()">PDF</button>
                 </div>
             </div>
         </div>
-
-        <div id="tab-stok" class="tab-content hidden"><div class="card"><h3>📦 Stok</h3></div></div>
-        <div id="tab-aktivitas" class="tab-content hidden"><div class="card"><h3>🛠️ Aktivitas</h3></div></div>
-        <div id="tab-gaji" class="tab-content hidden"><div class="card"><h3>💰 Gaji</h3></div></div>
     </div>
 
     <script>
-        // Konfigurasi Firebase Mas
         const firebaseConfig = {
             apiKey: "AIzaSyAu67MAhWBxdmciPi3xOKWhdy-uP4u9tXI",
             authDomain: "pt-agn.firebaseapp.com",
@@ -100,34 +103,10 @@
             document.getElementById('fM').value = now.toISOString().slice(0, 7);
             db.ref('/').on('value', s => { 
                 DATA = s.val() || {}; 
-                renderAll(); 
+                renderAll();
+                setTimeout(scrollToToday, 500); // Geser ke hari ini otomatis
             });
         };
-
-        function notify(m) { const t = document.getElementById('toast'); t.innerText = m; t.style.display='block'; setTimeout(()=>t.style.display='none', 2000); }
-
-        function tab(t, b) {
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-            document.getElementById('tab-' + t).classList.remove('hidden');
-            document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
-            b.classList.add('active');
-        }
-
-        function addM(p, id) {
-            const v = document.getElementById(id).value;
-            if(v) db.ref(p).push(v).then(() => { document.getElementById(id).value=""; notify("Berhasil!"); });
-        }
-
-        function setLibur() {
-            const s = new Date(document.getElementById('libS').value), e = new Date(document.getElementById('libE').value);
-            if(isNaN(s) || isNaN(e)) return alert("Set tanggal dulu!");
-            let c = new Date(s);
-            while(c <= e) {
-                db.ref(`master_libur/${c.toISOString().split('T')[0]}`).set(true);
-                c.setDate(c.getDate()+1);
-            }
-            notify("Hari Libur Disimpan!");
-        }
 
         function renderAll() {
             const kArr = Object.entries(DATA.master_karyawan || {});
@@ -135,10 +114,16 @@
             const [y, m] = fM.split('-'), last = new Date(y, m, 0).getDate();
             const tToday = new Date().toISOString().split('T')[0];
 
+            // Render Header
             let th = `<tr><th class="sticky-col">NAMA</th>`;
-            for (let i = 1; i <= last; i++) th += `<th class="${y+'-'+m+'-'+String(i).padStart(2,'0')===tToday?'today-hl':''}">${i}</th>`;
+            for (let i = 1; i <= last; i++) {
+                const tglStr = `${y}-${m}-${String(i).padStart(2,'0')}`;
+                const isToday = tglStr === tToday;
+                th += `<th id="col-${i}" class="${isToday ? 'today-hl' : ''}">${i}</th>`;
+            }
             document.getElementById('thA').innerHTML = th + `</tr>`;
 
+            // Render Body
             let tb = "";
             kArr.forEach(([id, name]) => {
                 let row = `<td class="sticky-col">${name}</td>`;
@@ -150,11 +135,13 @@
                     
                     let txt = "-", cls = "";
                     
-                    // --- LOGIKA PRIORITAS V110 ---
+                    // --- LOGIKA SAKTI V111 ---
                     if (isSun) { 
-                        txt = "M"; cls = "bg-m"; // Minggu adalah PRIORITAS UTAMA
+                        // MINGGU HARUS MERAH APAPUN KONDISINYA
+                        txt = "M"; cls = "bg-m"; 
                     } else if (isLibur) {
-                        txt = "Off"; cls = "bg-off"; // Libur hanya jika bukan Minggu
+                        // LIBUR HANYA JIKA BUKAN MINGGU
+                        txt = "Off"; cls = "bg-off";
                     }
 
                     // TIMPA JIKA ADA INPUT MANUAL (H, I, L, A, T)
@@ -164,29 +151,64 @@
                         if(d.s==='Telat') { txt='T'; cls='bg-t'; }
                         if(d.s==='Lembur') { txt='L'; cls='bg-l'; }
                         if(d.s==='Alpa') { txt='A'; cls='bg-a'; }
-                        if(d.s==='Off') { txt='Off'; cls='bg-off'; }
+                        if(d.s==='Off' && !isSun) { txt='Off'; cls='bg-off'; }
+                        if(d.s==='Off' && isSun) { txt='M'; cls='bg-m'; } // Jika input Off di hari Minggu, tetap tampil M
                     }
 
-                    row += `<td><div class="badge ${cls}" onclick="resetA('${tgl}','${name}')">${txt}</div></td>`;
+                    row += `<td class="${tgl === tToday ? 'today-hl' : ''}"><div class="badge ${cls}" onclick="resetA('${tgl}','${name}')">${txt}</div></td>`;
                 }
                 tb += `<tr>${row}</tr>`;
             });
             document.getElementById('tbA').innerHTML = tb;
         }
 
-        function resetA(t, n) { if(confirm("Hapus data tgl "+t+"?")) db.ref(`absensi/${t}/${n}`).remove(); }
-
-        // EXPORT LOGIC
-        function exportExcel() {
-            const wb = XLSX.utils.table_to_book(document.getElementById('tblAbsen'));
-            XLSX.writeFile(wb, `Absen_KempuBalap_${document.getElementById('fM').value}.xlsx`);
+        function scrollToToday() {
+            const now = new Date();
+            const fM = document.getElementById('fM').value;
+            const currentMonth = now.toISOString().slice(0, 7);
+            
+            if (fM === currentMonth) {
+                const day = now.getDate();
+                const target = document.getElementById(`col-${day}`);
+                const container = document.getElementById('calScroll');
+                if (target && container) {
+                    // Geser container ke posisi kolom hari ini
+                    const offset = target.offsetLeft - 120; // 120 adalah kompensasi sticky column
+                    container.scrollLeft = offset;
+                }
+            }
         }
 
+        // Fungsi bantu lainnya tetap sama
+        function notify(m) { const t = document.getElementById('toast'); t.innerText = m; t.style.display='block'; setTimeout(()=>t.style.display='none', 2000); }
+        function tab(t, b) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+            document.getElementById('tab-' + t).classList.remove('hidden');
+            document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
+            b.classList.add('active');
+            if(t==='absen') setTimeout(scrollToToday, 100);
+        }
+        function addM(p, id) {
+            const v = document.getElementById(id).value;
+            if(v) db.ref(p).push(v).then(() => { document.getElementById(id).value=""; notify("Berhasil!"); });
+        }
+        function setLibur() {
+            const s = new Date(document.getElementById('libS').value), e = new Date(document.getElementById('libE').value);
+            if(isNaN(s) || isNaN(e)) return alert("Set tanggal!");
+            let c = new Date(s);
+            while(c <= e) {
+                db.ref(`master_libur/${c.toISOString().split('T')[0]}`).set(true);
+                c.setDate(c.getDate()+1);
+            }
+            notify("Libur Disimpan!");
+        }
+        function resetA(t, n) { if(confirm("Hapus data tgl "+t+"?")) db.ref(`absensi/${t}/${n}`).remove(); }
+        function exportExcel() { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById('tblAbsen')), `Absen_${document.getElementById('fM').value}.xlsx`); }
         function exportPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('l', 'mm', 'a4');
-            doc.text(`Rekap Absensi Kempu Balap: ${document.getElementById('fM').value}`, 10, 10);
-            doc.autoTable({ html: '#tblAbsen', startY: 20, styles: { fontSize: 6, cellPadding: 1 } });
+            doc.text(`Absensi: ${document.getElementById('fM').value}`, 10, 10);
+            doc.autoTable({ html: '#tblAbsen', startY: 20, styles: { fontSize: 6 } });
             doc.save(`Absen_${document.getElementById('fM').value}.pdf`);
         }
     </script>
