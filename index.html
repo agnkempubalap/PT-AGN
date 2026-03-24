@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kempu Balap OMNI V380</title>
+    <title>Kempu Balap OMNI V390</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -48,8 +48,12 @@
         <div class="modal-content" onclick="event.stopPropagation()">
             <h3 id="opTglTitle"></h3>
             <div class="op-section">
-                <h4>👥 ABSENSI (KLIK HAPUS JIKA SALAH)</h4>
+                <h4>👥 ABSENSI KARYAWAN</h4>
                 <div id="opAbsen"></div>
+            </div>
+            <div class="op-section">
+                <h4>📦 AKTIVITAS / BORONGAN</h4>
+                <div id="opAct"></div>
             </div>
             <button class="btn" style="background:var(--t)" onclick="document.getElementById('modalOp').style.display='none'">TUTUP</button>
         </div>
@@ -58,31 +62,40 @@
     <div class="nav-grid">
         <button class="nav-btn active" onclick="switchTab('absen', this)">ABSEN</button>
         <button class="nav-btn" onclick="switchTab('stok', this)">STOK</button>
-        <button class="nav-btn" onclick="switchTab('aktivitas', this)">AKTIV</button>
+        <button class="nav-btn" onclick="switchTab('aktivitas', this)">AKTV</button>
         <button class="nav-btn" onclick="switchTab('gaji', this)">GAJI</button>
     </div>
 
     <div class="container">
         <div id="tab-absen" class="tab-content active">
             <div class="card">
-                <h3>📅 Set Libur (Single/Rentang)</h3>
+                <h3>👥 Master Karyawan</h3>
                 <div class="grid-2">
-                    <div><small>Mulai:</small><input type="date" id="libS"></div>
-                    <div><small>Sampai:</small><input type="date" id="libE"></div>
+                    <input type="text" id="inK" placeholder="Nama Baru...">
+                    <button class="btn" style="background:var(--p)" onclick="addM('master_karyawan', 'inK')">TAMBAH</button>
+                </div>
+                <div id="listK"></div>
+            </div>
+
+            <div class="card">
+                <h3>📅 Set Libur</h3>
+                <div class="grid-2">
+                    <input type="date" id="libS">
+                    <input type="date" id="libE">
                 </div>
                 <button class="btn" style="background:var(--d)" onclick="saveLibur()">SIMPAN HARI LIBUR</button>
             </div>
 
             <div class="card">
-                <h3>📅 Input Absensi / Izin</h3>
+                <h3>📅 Input Absensi</h3>
                 <div class="grid-2">
                     <input type="date" id="absTgl">
                     <select id="selK"></select>
                 </div>
-                <input type="text" id="ketIzin" placeholder="Keterangan Izin / Pulang Cepat (Opsional)" style="margin-bottom:8px">
+                <input type="text" id="ketIzin" placeholder="Keterangan Izin/Pulang Cepat" style="margin-bottom:8px">
                 <div class="grid-2">
                     <button class="btn" style="background:var(--s)" onclick="saveAbs('Hadir')">MASUK</button>
-                    <button class="btn" style="background:#8b5cf6" onclick="saveAbs('Izin')">IZIN / SAKIT</button>
+                    <button class="btn" style="background:#8b5cf6" onclick="saveAbs('Izin')">IZIN</button>
                 </div>
                 <button class="btn" style="background:var(--t); margin-top:4px" onclick="saveAbs('Pulang')">PULANG (JAM SEKARANG)</button>
             </div>
@@ -96,6 +109,27 @@
                 </div>
             </div>
         </div>
+
+        <div id="tab-stok" class="tab-content">
+            <div class="card">
+                <h3>📦 Kelola Stok Barang</h3>
+                <div class="grid-2">
+                    <input type="text" id="namaBarang" placeholder="Nama Barang...">
+                    <input type="number" id="jmlBarang" placeholder="Jumlah...">
+                </div>
+                <button class="btn" style="background:var(--p)" onclick="addStok()">UPDATE STOK</button>
+            </div>
+            <div id="listStok" class="card"></div>
+        </div>
+
+        <div id="tab-aktivitas" class="tab-content">
+            <div class="card">
+                <h3>🛠️ Catat Aktivitas / Borongan</h3>
+                <input type="date" id="actTgl" style="margin-bottom:8px">
+                <input type="text" id="actDesc" placeholder="Contoh: Bongkar 50 Kempu / Muat IBC">
+                <button class="btn" style="background:var(--p); margin-top:8px" onclick="saveAct()">SIMPAN AKTIVITAS</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -106,27 +140,42 @@
         let currentOpenDate = "";
 
         window.onload = () => { 
-            document.getElementById('fM').value = new Date().toISOString().slice(0, 7); 
-            document.getElementById('absTgl').value = new Date().toISOString().split('T')[0];
-            db.ref('/').on('value', s => { DATA = s.val() || {}; renderAll(); if(currentOpenDate) showDetail(currentOpenDate); }); 
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('fM').value = today.slice(0, 7); 
+            document.getElementById('absTgl').value = today;
+            document.getElementById('actTgl').value = today;
+            db.ref('/').on('value', s => { DATA = s.val() || {}; renderAll(); renderStok(); if(currentOpenDate) showDetail(currentOpenDate); }); 
         };
+
+        function switchTab(t, b) {
+            document.querySelectorAll('.tab-content').forEach(x => x.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(x => x.classList.remove('active'));
+            document.getElementById('tab-' + t).classList.add('active');
+            b.classList.add('active');
+        }
 
         function showDetail(tgl) {
             currentOpenDate = tgl;
-            document.getElementById('opTglTitle').innerText = "Detail " + tgl;
-            let hAbs = "";
-            const abs = DATA.absensi?.[tgl] || {};
+            document.getElementById('opTglTitle').innerText = "Detail Operasional: " + tgl;
+            let hAbs = "", hAct = "";
+            const abs = DATA.absensi?.[tgl] || {}, act = DATA.aktivitas?.[tgl] || {};
+            
             Object.entries(abs).forEach(([n, v]) => {
                 hAbs += `<div class="op-item">
                     <span><b>${n}</b>: ${v.s} (${v.in||''}-${v.out||''}) <br> <span class="ket-izin">${v.ket||''}</span></span>
-                    <button onclick="delAbs('${tgl}','${n}')" style="background:red; color:white; border:none; padding:5px 10px; border-radius:6px;">HAPUS</button>
+                    <button onclick="delAbs('${tgl}','${n}')" style="background:red; color:white; border:none; padding:5px; border-radius:6px;">HAPUS</button>
                 </div>`;
             });
+            Object.entries(act).forEach(([id, v]) => {
+                hAct += `<div class="op-item"><span>• ${v.desc}</span><button onclick="delAct('${tgl}','${id}')" style="background:gray; border:none; color:white; padding:5px; border-radius:6px;">X</button></div>`;
+            });
             document.getElementById('opAbsen').innerHTML = hAbs || "<i>Kosong</i>";
+            document.getElementById('opAct').innerHTML = hAct || "<i>Kosong</i>";
             document.getElementById('modalOp').style.display = 'flex';
         }
 
         function delAbs(t, n) { if(confirm('Hapus?')) db.ref(`absensi/${t}/${n}`).remove(); }
+        function delAct(t, id) { if(confirm('Hapus?')) db.ref(`aktivitas/${t}/${id}`).remove(); }
 
         function saveAbs(st) {
             const n = document.getElementById('selK').value, tgl = document.getElementById('absTgl').value, ket = document.getElementById('ketIzin').value;
@@ -136,15 +185,12 @@
             const jamNow = new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}).replace('.',':');
             if(st==='Hadir') up.in = jamNow;
             if(st==='Pulang') up.out = jamNow;
-            db.ref(`absensi/${tgl}/${n}`).update(up).then(() => { document.getElementById('ketIzin').value = ""; });
+            db.ref(`absensi/${tgl}/${n}`).update(up).then(()=>document.getElementById('ketIzin').value="");
         }
 
-        function saveLibur() {
-            const s = document.getElementById('libS').value, e = document.getElementById('libE').value;
-            if(!s) return;
-            let end = e ? e : s;
-            let curr = new Date(s); while(curr <= new Date(end)) { db.ref(`master_libur/${curr.toISOString().split('T')[0]}`).set(true); curr.setDate(curr.getDate()+1); }
-            alert("Berhasil!");
+        function saveAct() {
+            const t = document.getElementById('actTgl').value, d = document.getElementById('actDesc').value;
+            if(d) db.ref(`aktivitas/${t}`).push({desc:d}).then(()=>document.getElementById('actDesc').value="");
         }
 
         function renderAll() {
@@ -166,27 +212,8 @@
             document.getElementById('tbA').innerHTML = tbA;
         }
 
-        function switchTab(t, b) {
-            document.querySelectorAll('.tab-content').forEach(x => x.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(x => x.classList.remove('active'));
-            document.getElementById('tab-' + t).classList.add('active');
-            b.classList.add('active');
-        }
-
-        function exportExcel() {
-            const wb = XLSX.utils.table_to_book(document.getElementById('tableAbsen'));
-            XLSX.writeFile(wb, `Rekap_Absen_${document.getElementById('fM').value}.xlsx`);
-        }
-
-        function exportPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('l', 'mm', 'a4');
-            doc.text(`Rekap Absensi ${document.getElementById('fM').value}`, 14, 10);
-            doc.autoTable({ html: '#tableAbsen', startY: 15, styles: { fontSize: 7 } });
-            doc.save(`Rekap_Absen_${document.getElementById('fM').value}.pdf`);
-        }
-
-        function addM(p, i) { const v = document.getElementById(i).value; if(v) db.ref(p).push(v).then(()=>document.getElementById(i).value=""); }
-    </script>
-</body>
-</html>
+        function renderStok() {
+            const stok = DATA.stok || {};
+            let h = "<h3>Daftar Stok</h3>";
+            Object.entries(stok).forEach(([id, v]) => {
+                h += `<div class="op-item"><span><b>${v.nama}</b>: ${v.jml} unit</span> <button onclick="db.ref('stok/${
