@@ -318,28 +318,3 @@
 
                 html += `<tr>
                     <td class="nama-fixed">${name}</td>
-                    <td>${data.awal_ready}</td><td>${data.awal_kotor}</td>
-                    <td>${data.qc_acc}</td><td>${data.qc_minor}</td><td style="color:var(--d)">${data.qc_rej}</td>
-                    <td>${data.masuk_baru}</td><td style="background:rgba(245, 158, 11, 0.1)">${data.rekondisi}</td>
-                    <td>${data.jual_umum}</td><td>${data.jual_agen}</td>
-                    <td style="font-weight:800; color:var(--s)">${sisa_ready}</td>
-                    <td style="font-weight:800; color:var(--iz)">${sisa_kotor}</td>
-                </tr>`;
-            });
-            document.getElementById('tbStok').innerHTML = html;
-        }
-
-        function doExcel(id, filename){
-            const table = document.getElementById(id).outerHTML;
-            const blob = new Blob([table], {type: "application/vnd.ms-excel"});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a"); a.href = url; a.download = `${filename}_${document.getElementById('fB').value}.xls`; a.click();
-        }
-
-        function cLogo(e){
-            const r=new FileReader(); r.onload=()=>{ document.getElementById('mainLogo').src=r.result; localStorage.setItem('agnLogo',r.result); };
-            r.readAsDataURL(e.target.files[0]);
-        }
-    </script>
-</body>
-</html>
