@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN v78.1 - ABSENSI ADVANCED</title>
+    <title>PT-AGN v78.2 - ABSENSI CORE SYSTEM</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
@@ -11,32 +11,28 @@
         body{font-family:'Plus Jakarta Sans',sans-serif;margin:0;background:var(--bg);color:var(--t);padding:10px}
         .container{max-width:1500px;margin:0 auto}
         
-        /* NAV & TABS */
         .nav-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 15px; }
         .nav-btn { padding: 12px; background: var(--c); border: 1px solid var(--b); color: var(--t); border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 11px; text-align: center; opacity: 0.6; }
         .nav-btn.active { background: var(--p); border-color: var(--p); color: #fff; opacity: 1; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }
 
-        /* UI COMPONENTS */
         .card{background:var(--c);padding:18px;border-radius:18px;margin-bottom:12px;border:1px solid var(--b)}
         h3{margin:0 0 15px;font-size:11px;color:var(--iz);text-transform:uppercase;letter-spacing:1px;font-weight:800}
         .grid-2{display:grid; grid-template-columns:1fr 1fr; gap:10px}
         input,button,select{border-radius:12px;font-size:14px;height:50px;border:1px solid var(--b);background:var(--bg);color:var(--t);width:100%;box-sizing:border-box;padding:0 15px; outline:none}
         .btn{display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;border:none;color:#fff}
         
-        /* TABLE & CALENDAR */
         .table-wrap{overflow-x:auto; border-radius:12px; border:1px solid var(--b); background:var(--c)}
         .table-web{width:100%;border-collapse:separate;border-spacing:0;font-size:10px}
-        .table-web th, .table-web td{border-bottom:1px solid var(--b);border-right:1px solid var(--b);padding:6px 2px;text-align:center;min-width:40px}
+        .table-web th, .table-web td{border-bottom:1px solid var(--b);border-right:1px solid var(--b);padding:6px 2px;text-align:center;min-width:42px}
         .nama-fixed{position:sticky;left:0;background:var(--c)!important;z-index:10;min-width:130px;text-align:left!important;padding-left:10px!important;border-right:2px solid var(--p)!important}
         
-        /* INDICATORS */
-        .s-box{width:36px;height:36px;border-radius:6px;display:inline-flex;flex-direction:column;justify-content:center;align-items:center;font-weight:800;font-size:10px;margin:0 auto}
+        .s-box{width:38px;height:38px;border-radius:6px;display:inline-flex;flex-direction:column;justify-content:center;align-items:center;font-weight:800;font-size:10px;margin:0 auto}
         .s-h{background:var(--s);color:#fff} .s-i{background:var(--iz);color:#fff} .s-a{background:var(--d);color:#fff} 
         .s-l{background:var(--lb);color:#fff} .s-m{background:var(--sun);color:#fff} .s-off{background:var(--al);color:#fff}
         .jam{font-size:7px;display:block;margin-top:1px;font-weight:400;line-height:1}
-        .note-txt{font-size:6px; color:var(--w); font-style:italic; max-width:35px; overflow:hidden; white-space:nowrap}
+        .note-tip{font-size:6px; color:var(--w); font-style:italic; margin-top:1px; max-width:35px; overflow:hidden}
 
-        @media print{ .no-print{display:none!important} .table-web{transform:scale(0.65);transform-origin:top left} }
+        @media print{ .no-print{display:none!important} .table-web{transform:scale(0.6);transform-origin:top left} }
     </style>
 </head>
 <body>
@@ -50,9 +46,9 @@
 
         <div id="tabAbsen">
             <div class="card no-print">
-                <h3>👥 PENGATURAN KARYAWAN</h3>
+                <h3>👥 DATA KARYAWAN</h3>
                 <div class="grid-2">
-                    <input type="text" id="inKar" placeholder="Nama Lengkap Karyawan">
+                    <input type="text" id="inKar" placeholder="Ketik Nama Baru">
                     <div style="display:flex; gap:5px">
                         <button class="btn" style="background:var(--s)" onclick="addKar()">TAMBAH</button>
                         <button class="btn" style="background:var(--d)" onclick="delKar()">HAPUS</button>
@@ -62,30 +58,37 @@
 
             <div class="card no-print">
                 <h3>⚡ INPUT PRESENSI</h3>
-                <input list="lk" id="selKar" placeholder="Cari Nama Karyawan..." style="margin-bottom:10px">
-                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px; margin-bottom:10px">
+                <input list="lk" id="selKar" placeholder="Pilih Nama Karyawan..." style="margin-bottom:10px">
+                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px">
                     <button class="btn" style="background:var(--s)" onclick="sendAbsen('Masuk')">MASUK</button>
                     <button class="btn" style="background:var(--iz)" onclick="sendAbsen('Ijin')">IJIN</button>
                     <button class="btn" style="background:var(--d)" onclick="sendAbsen('Pulang')">PULANG</button>
                 </div>
-                <button class="btn" style="background:var(--al); height:40px; font-size:12px" onclick="resetToday()">🔄 RESET ABSEN NAMA INI (HARI INI)</button>
+            </div>
+
+            <div class="card no-print" style="border-color:var(--d)">
+                <h3>🔄 RESET DATA (SALAH INPUT)</h3>
+                <div class="grid-2">
+                    <input type="date" id="resetTgl">
+                    <button class="btn" style="background:var(--al)" onclick="doReset()">HAPUS DATA NAMA & TGL INI</button>
+                </div>
             </div>
 
             <div class="card no-print">
-                <h3>🗓️ MANAJEMEN HARI LIBUR / OFF</h3>
+                <h3>🗓️ SET HARI LIBUR / OFF</h3>
                 <div class="grid-2">
                     <input type="date" id="liburStart">
                     <input type="date" id="liburEnd" placeholder="Sampai Tanggal">
                 </div>
                 <div class="grid-2" style="margin-top:10px">
-                    <button class="btn" style="background:var(--p)" onclick="setLibur(true)">SET LIBUR</button>
+                    <button class="btn" style="background:var(--p)" onclick="setLibur(true)">SIMPAN LIBUR</button>
                     <button class="btn" style="background:var(--al)" onclick="setLibur(false)">HAPUS LIBUR</button>
                 </div>
             </div>
 
             <div class="card">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px">
-                    <h3>📊 REKAP KALENDER REAL-TIME</h3>
+                    <h3>📊 REKAP REAL-TIME</h3>
                     <div style="display:flex; gap:5px" class="no-print">
                         <input type="month" id="fB" onchange="renderAll()" style="height:35px; width:140px">
                         <button class="btn" style="background:#1d6f42; width:45px" onclick="exportEx()">XL</button>
@@ -97,9 +100,6 @@
                         <thead id="thA"></thead>
                         <tbody id="tbA"></tbody>
                     </table>
-                </div>
-                <div style="margin-top:10px; font-size:10px; display:flex; gap:10px">
-                    <span><b>H</b>: Hadir</span> <span><b>I</b>: Ijin</span> <span><b>A</b>: Alpa</span> <span><b>L</b>: Lembur</span> <span><b>M</b>: Minggu</span> <span><b>OFF</b>: Libur</span>
                 </div>
             </div>
         </div>
@@ -113,8 +113,8 @@
         let mk={}, ad={}, hl={};
 
         window.onload=()=>{
-            const now = new Date();
-            document.getElementById('fB').value = now.toISOString().slice(0,7);
+            document.getElementById('fB').value = new Date().toISOString().slice(0,7);
+            document.getElementById('resetTgl').value = new Date().toISOString().split('T')[0];
             db.ref('master_karyawan').on('value',s=>{mk=s.val()||{}; uL(); renderAll();});
             db.ref('absensi').on('value',s=>{ad=s.val()||{}; renderAll();});
             db.ref('hari_libur').on('value',s=>{hl=s.val()||{}; renderAll();});
@@ -128,23 +128,21 @@
             let n=document.getElementById('selKar').value, t=new Date().toISOString().split('T')[0];
             if(!n) return alert("Pilih Nama!");
             let jam = new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
-            
             if(ty === 'Ijin'){
-                let ket = prompt("Keterangan Ijin:");
-                if(ket === null) return;
+                let ket = prompt("Alasan Ijin:"); if(ket === null) return;
                 db.ref(`absensi/${t}/${n}`).update({status:'Ijin', note:ket});
             } else if(ty === 'Masuk'){
                 db.ref(`absensi/${t}/${n}`).update({masuk:jam, status:'Hadir'});
             } else if(ty === 'Pulang'){
                 db.ref(`absensi/${t}/${n}`).update({pulang:jam});
             }
-            alert("Data diperbarui!");
+            alert("Berhasil!");
         }
 
-        function resetToday(){
-            let n=document.getElementById('selKar').value, t=new Date().toISOString().split('T')[0];
-            if(!n) return alert("Pilih Nama!");
-            if(confirm(`Hapus seluruh data absen ${n} untuk hari ini?`)) db.ref(`absensi/${t}/${n}`).remove();
+        function doReset(){
+            let n=document.getElementById('selKar').value, t=document.getElementById('resetTgl').value;
+            if(!n || !t) return alert("Pilih Nama dan Tanggal!");
+            if(confirm(`Hapus data ${n} pada tanggal ${t}?`)) db.ref(`absensi/${t}/${n}`).remove().then(()=>alert("Data dihapus!"));
         }
 
         function setLibur(isSet){
@@ -156,14 +154,15 @@
                 isSet ? db.ref(`hari_libur/${d}`).set(true) : db.ref(`hari_libur/${d}`).remove();
                 curr.setDate(curr.getDate()+1);
             }
-            alert("Setting Libur Berhasil!");
+            alert("Selesai!");
         }
 
         function renderAll(){
             const f=document.getElementById('fB').value; if(!f) return;
             const [y,m]=f.split('-'), last=new Date(y,m,0).getDate(), kList=Object.values(mk).sort();
+            const todayStr = new Date().toISOString().split('T')[0];
             
-            let h=`<tr><th class="nama-fixed">Nama Karyawan</th>`;
+            let h=`<tr><th class="nama-fixed">Karyawan</th>`;
             for(let i=1;i<=last;i++) h+=`<th>${i}</th>`;
             h+=`<th>H</th><th>I</th><th>A</th><th>L</th></tr>`;
             document.getElementById('thA').innerHTML=h;
@@ -173,33 +172,25 @@
                 let c={H:0, I:0, A:0, L:0}, row=`<td class="nama-fixed">${n}</td>`;
                 for(let i=1;i<=last;i++){
                     let tglStr=`${y}-${m}-${String(i).padStart(2,'0')}`, dObj=new Date(tglStr);
-                    let isMinggu = dObj.getDay() === 0;
-                    let isLibur = hl[tglStr];
-                    let data = ad[tglStr]?ad[tglStr][n]:null;
-                    
+                    let isMinggu = dObj.getDay() === 0, isLibur = hl[tglStr], data = ad[tglStr]?ad[tglStr][n]:null;
                     let sW="-", cl="", info="";
 
-                    // Logika Prioritas Indikator
-                    if(isMinggu){ sW="M"; cl="s-m"; }
-                    else if(isLibur){ sW="OFF"; cl="s-off"; }
+                    // LOGIKA PRIORITAS: Minggu (M) Tetap Tampil walau Libur Nasional
+                    if(isMinggu){ sW="M"; cl="s-m"; } else if(isLibur){ sW="OFF"; cl="s-off"; }
 
                     if(data){
                         if(data.status === 'Ijin'){
                             sW="I"; cl="s-i"; c.I++;
-                            info = `<span class="note-txt">${data.note||''}</span>`;
+                            info = `<span class="note-tip">${data.note||''}</span>`;
                         } else {
-                            // Cek Lembur Otomatis
                             if(isMinggu || isLibur){ sW="L"; cl="s-l"; c.L++; }
                             else { sW="H"; cl="s-h"; c.H++; }
-                            
-                            let jm = data.masuk || '--';
-                            let jp = data.pulang || '--';
-                            info = `<span class="jam">In:${jm}</span><span class="jam">Out:${jp}</span>`;
+                            info = `<span class="jam">In:${data.masuk||'--'}</span><span class="jam">Out:${data.pulang||'--'}</span>`;
                         }
                     } else {
-                        // Jika tidak ada data dan bukan minggu/libur di masa lalu, anggap Alpa (Sederhana)
-                        let today = new Date().toISOString().split('T')[0];
-                        if(tglStr < today && !isMinggu && !isLibur){ sW="A"; cl="s-a"; c.A++; }
+                        // LOGIKA ALPA: Hanya jika hari sudah lewat & bukan Minggu/Libur
+                        if(tglStr < todayStr && !isMinggu && !isLibur){ sW="A"; cl="s-a"; c.A++; }
+                        // Jika sebelum hari ini tapi hari Minggu/Libur, tetap tampil M/OFF (sW sudah terisi di atas)
                     }
 
                     row+=`<td><div class="s-box ${cl}">${sW}${info}</div></td>`;
@@ -212,7 +203,7 @@
         function exportEx(){
             const table = document.getElementById("tabelAbsen").outerHTML;
             const blob = new Blob([table], {type: "application/vnd.ms-excel"});
-            const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `REKAP_ABSEN_${document.getElementById('fB').value}.xls`; a.click();
+            const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `REKAP_AGN_${document.getElementById('fB').value}.xls`; a.click();
         }
     </script>
 </body>
