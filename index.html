@@ -1,55 +1,45 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kempu Balap OMNI V280</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <title>Kempu Balap OMNI V290</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-
     <style>
         :root { --p:#2563eb; --s:#16a34a; --d:#dc2626; --bg:#f8fafc; --c:#ffffff; --t:#1e293b; --b:#e2e8f0; }
         * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; background: var(--bg); color: var(--t); font-size: 13px; }
-        
         .nav-grid { display: grid; grid-template-columns: repeat(4, 1fr); position: sticky; top: 0; z-index: 1000; background: var(--p); padding: 5px; gap:2px; }
         .nav-btn { padding: 12px 0; background: transparent; border: none; color: white; font-weight: 800; font-size: 9px; text-transform: uppercase; border-radius: 6px; }
         .nav-btn.active { background: white; color: var(--p); }
-
         .container { padding: 12px; padding-bottom: 80px; }
         .card { background: var(--c); padding: 15px; border-radius: 12px; margin-bottom: 12px; border: 1px solid var(--b); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         h3 { margin: 0 0 12px; font-size: 11px; color: var(--p); text-transform: uppercase; border-left: 4px solid var(--p); padding-left: 8px; }
-
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
         input, select { width: 100%; height: 42px; background: #f1f5f9; border: 1px solid var(--b); border-radius: 8px; padding: 0 10px; font-size: 13px; outline: none; }
         .btn { border: none; border-radius: 8px; padding: 10px; font-weight: 800; cursor: pointer; width: 100%; color: white; font-size: 10px; }
-        
         .table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--b); background: white; }
         table { width: 100%; border-collapse: collapse; min-width: 1000px; }
         th, td { padding: 5px; border: 1px solid var(--b); text-align: center; font-size: 10px; }
         th { background: #f1f5f9; position: sticky; top: 0; }
         .sticky-col { position: sticky; left: 0; background: white !important; z-index: 10; font-weight: 800; border-right: 2px solid var(--b); width: 80px; text-align: left; padding-left: 5px; }
-        
-        /* Fixed Badge Logic */
         .badge { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; min-height: 45px; border-radius: 6px; font-weight: 800; color: white; }
-        .bg-h { background: var(--s) !important; } /* Hadir Hijau */
-        .bg-i { background: #8b5cf6 !important; } /* Izin Ungu */
-        .bg-l { background: #f59e0b !important; } /* Lembur Oranye */
-        .bg-sun { background: #fee2e2 !important; color: #b91c1c !important; border: 1px solid #fca5a5; } /* Minggu Merah Muda */
-        .bg-lib { background: #e2e8f0 !important; color: #64748b !important; } /* Libur Abu-abu */
-        .txt-jam { font-size: 7px; font-weight: 400; opacity: 0.9; margin-top: 2px; }
-
+        .bg-h { background: var(--s) !important; } 
+        .bg-i { background: #8b5cf6 !important; } 
+        .bg-l { background: #f59e0b !important; } 
+        .bg-sun { background: #fee2e2 !important; color: #b91c1c !important; border: 1px solid #fca5a5; } 
+        .bg-lib { background: #f1f5f9 !important; color: #94a3b8 !important; } 
+        .txt-jam { font-size: 7px; font-weight: 400; opacity: 0.9; margin-top: 2px; display: block; }
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 20px; }
         .modal-content { background: white; border-radius: 16px; width: 100%; max-width: 400px; padding: 20px; }
         #toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 8px 16px; border-radius: 20px; display: none; z-index: 4000; }
     </style>
 </head>
 <body>
-
     <div id="toast">✅ Berhasil!</div>
-
     <div id="modalHarian" class="modal" onclick="this.style.display='none'">
         <div class="modal-content" onclick="event.stopPropagation()">
             <h3 id="modalTitle">Detail</h3>
@@ -57,14 +47,12 @@
             <button class="btn" style="background:var(--t)" onclick="document.getElementById('modalHarian').style.display='none'">TUTUP</button>
         </div>
     </div>
-
     <div class="nav-grid">
         <button class="nav-btn active" onclick="tab('absen', this)">ABSEN</button>
         <button class="nav-btn" onclick="tab('stok', this)">STOK</button>
         <button class="nav-btn" onclick="tab('aktivitas', this)">AKTIV</button>
         <button class="nav-btn" onclick="tab('gaji', this)">GAJI</button>
     </div>
-
     <div class="container">
         <div id="tab-absen" class="tab-content">
             <div class="card">
@@ -72,7 +60,7 @@
                 <div class="grid-2"><input type="date" id="libS"><input type="date" id="libE"></div>
                 <div class="grid-2">
                     <button class="btn" style="background:var(--d)" onclick="saveLibur()">SET LIBUR</button>
-                    <button class="btn" style="background:var(--t)" onclick="db.ref('master_libur').remove()">RESET SEMUA</button>
+                    <button class="btn" style="background:var(--t)" onclick="db.ref('master_libur').remove()">RESET LIBUR</button>
                 </div>
             </div>
             <div class="card">
@@ -88,105 +76,53 @@
                 <div class="table-wrap"><table id="tblAbsen"><thead id="thA"></thead><tbody id="tbA"></tbody></table></div>
             </div>
         </div>
-        <div id="tab-stok" class="tab-content hidden"><div class="card"><h3>📦 Stok Segera Kembali</h3></div></div>
-        <div id="tab-aktivitas" class="tab-content hidden"><div class="card"><h3>🛠️ Aktivitas Segera Kembali</h3></div></div>
-        <div id="tab-gaji" class="tab-content hidden"><div class="card"><h3>💰 Gaji Segera Kembali</h3></div></div>
     </div>
-
     <script>
         const firebaseConfig = { apiKey: "AIzaSyAu67MAhWBxdmciPi3xOKWhdy-uP4u9tXI", authDomain: "pt-agn.firebaseapp.com", databaseURL: "https://pt-agn-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "pt-agn", appId: "1:810494462386:web:432a3050c054bdd8437cab" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         let DATA = {};
-
-        window.onload = () => { 
-            document.getElementById('fM').value = new Date().toISOString().slice(0, 7); 
-            db.ref('/').on('value', s => { DATA = s.val() || {}; renderAll(); }); 
-        };
-
+        window.onload = () => { document.getElementById('fM').value = new Date().toISOString().slice(0, 7); db.ref('/').on('value', s => { DATA = s.val() || {}; renderAll(); }); };
         function notify(m) { const t = document.getElementById('toast'); t.innerText=m; t.style.display='block'; setTimeout(()=>t.style.display='none', 2000); }
         function tab(t, b) { document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden')); document.getElementById('tab-' + t).classList.remove('hidden'); document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active')); b.classList.add('active'); }
-
         function saveLibur() {
-            const s = document.getElementById('libS').value, e = document.getElementById('libE').value; 
-            if(!s || !e) return alert("Pilih Tanggal!");
-            let curr = new Date(s); 
-            while(curr <= new Date(e)) { 
-                db.ref(`master_libur/${curr.toISOString().split('T')[0]}`).set(true); 
-                curr.setDate(curr.getDate()+1); 
-            } notify("Hari Libur Disimpan");
+            const s = document.getElementById('libS').value, e = document.getElementById('libE').value; if(!s || !e) return;
+            let curr = new Date(s); while(curr <= new Date(e)) { db.ref(`master_libur/${curr.toISOString().split('T')[0]}`).set(true); curr.setDate(curr.getDate()+1); } notify("Libur Disimpan");
         }
-
         function saveAbs(st) {
-            const n = document.getElementById('selK').value, tgl = new Date().toISOString().split('T')[0], now = new Date();
-            if(!n) return alert("Pilih Nama!");
-            
-            const isMinggu = now.getDay() === 0;
-            const isLiburSet = DATA.master_libur?.[tgl];
-            let finalStatus = st;
-            
-            if(st === 'Hadir' && (isMinggu || isLiburSet)) finalStatus = 'Lembur';
-
-            let up = { s: finalStatus };
+            const n = document.getElementById('selK').value, tgl = new Date().toISOString().split('T')[0], now = new Date(); if(!n) return alert("Pilih Nama!");
+            const isLib = DATA.master_libur?.[tgl] || now.getDay() === 0;
+            let up = { s: (st === 'Hadir' && isLib) ? 'Lembur' : st };
             if(st === 'Hadir') up.in = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
             if(st === 'Pulang') up.out = '16:00';
-
-            db.ref(`absensi/${tgl}/${n}`).update(up).then(()=>notify("Absen Tercatat"));
+            db.ref(`absensi/${tgl}/${n}`).update(up).then(()=>notify("Absen Ok"));
         }
-
         function openDetail(tgl) {
             let h = `<b>📅 Tanggal: ${tgl}</b><br><hr>`;
             const dAbs = DATA.absensi?.[tgl] || {};
             if(Object.keys(dAbs).length === 0) h += "<i>Tidak ada absensi</i>";
-            else {
-                Object.entries(dAbs).forEach(([n, v]) => {
-                    h += `• <b>${n}</b>: ${v.s} (${v.in||''}-${v.out||''})<br>`;
-                });
-            }
+            else { Object.entries(dAbs).forEach(([n, v]) => { h += `• <b>${n}</b>: ${v.s} (${v.in||''}-${v.out||''})<br>`; }); }
             document.getElementById('modalTitle').innerText = "Rincian Gudang";
             document.getElementById('modalBody').innerHTML = h;
             document.getElementById('modalHarian').style.display='flex';
         }
-
         function renderAll() {
             const kArr = Object.entries(DATA.master_karyawan || {}), fM = document.getElementById('fM').value, [y, m] = fM.split('-'), last = new Date(y, m, 0).getDate();
             document.getElementById('selK').innerHTML = kArr.map(k => `<option value="${k[1]}">${k[1]}</option>`).join('');
-
-            // Header Kalender
             let th = `<tr><th class="sticky-col">KARYAWAN</th>`;
-            for(let i=1; i<=last; i++) {
-                const isSun = new Date(y, m-1, i).getDay() === 0;
-                th += `<th style="${isSun?'color:red; background:#fee2e2':''}">${i}</th>`;
-            }
+            for(let i=1; i<=last; i++) { const isSun = new Date(y, m-1, i).getDay() === 0; th += `<th style="${isSun?'color:red; background:#fee2e2':''}">${i}</th>`; }
             document.getElementById('thA').innerHTML = th + `</tr>`;
-
-            // Isi Kalender
-            let tbA = ""; 
-            kArr.forEach(k => {
+            let tbA = ""; kArr.forEach(k => {
                 let row = `<td class="sticky-col">${k[1]}</td>`;
                 for(let i=1; i<=last; i++){
-                    const tgl = `${y}-${m}-${String(i).padStart(2,'0')}`;
-                    const d = DATA.absensi?.[tgl]?.[k[1]];
-                    const isSun = new Date(tgl).getDay() === 0;
-                    const isLiburSet = DATA.master_libur?.[tgl];
-                    
-                    let cls = ""; let label = "-"; let jam = "";
-
-                    // Logika Prioritas Tampilan
+                    const tgl = `${y}-${m}-${String(i).padStart(2,'0')}`, d = DATA.absensi?.[tgl]?.[k[1]], isSun = new Date(tgl).getDay() === 0, isLib = DATA.master_libur?.[tgl];
+                    let cls = "", label = "-", jam = "";
                     if(d) {
-                        if(d.s === 'Lembur') { cls = "bg-l"; label = "L"; }
-                        else if(d.s === 'Hadir') { cls = "bg-h"; label = "H"; }
-                        else if(d.s === 'Izin') { cls = "bg-i"; label = "I"; }
-                        jam = `${d.in||''}-${d.out||''}`;
-                    } else if(isSun) {
-                        cls = "bg-sun"; label = "M";
-                    } else if(isLiburSet) {
-                        cls = "bg-lib"; label = "Lib";
-                    }
-
-                    row += `<td onclick="openDetail('${tgl}')">
-                        <div class="badge ${cls}">${label}<span class="txt-jam">${jam}</span></div>
-                    </td>`;
+                        cls = d.s === 'Lembur' ? 'bg-l' : (d.s === 'Hadir' ? 'bg-h' : 'bg-i');
+                        label = d.s[0]; jam = `${d.in||''}-${d.out||''}`;
+                    } else if(isSun) { cls = "bg-sun"; label = "M"; }
+                    else if(isLib) { cls = "bg-lib"; label = "Lib"; }
+                    row += `<td onclick="openDetail('${tgl}')"><div class="badge ${cls}">${label}<span class="txt-jam">${jam}</span></div></td>`;
                 }
                 tbA += `<tr>${row}</tr>`;
             });
