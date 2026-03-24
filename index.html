@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kempu Balap OMNI V109</title>
+    <title>Kempu Balap OMNI V110</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
@@ -31,8 +31,8 @@
         .bg-h { background: var(--s); } .bg-m { background: var(--d); } .bg-i { background: #8b5cf6; } 
         .bg-off { background: #94a3b8; } .bg-t { background: #f59e0b; } .bg-l { background: #0ea5e9; } .bg-a { background: #000; }
         .today-hl { border: 2px solid var(--p) !important; background: #eff6ff; }
-        .hidden { display: none !important; }
         #toast { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 8px 16px; border-radius: 20px; z-index: 3000; display: none; font-weight: 700; font-size: 11px; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
@@ -49,49 +49,40 @@
     <div class="container">
         <div id="tab-absen" class="tab-content">
             <div class="card">
-                <h3>👥 Master Karyawan</h3>
+                <h3>👥 Data Karyawan & Libur</h3>
                 <div style="display:grid; grid-template-columns: 2fr 1fr; gap:5px">
                     <input type="text" id="inK" placeholder="Nama Karyawan...">
-                    <button class="btn" style="background:var(--p)" onclick="addM('master_karyawan', 'inK')">+</button>
+                    <button class="btn" style="background:var(--p)" onclick="addM('master_karyawan', 'inK')">TAMBAH</button>
                 </div>
                 <div id="listK" style="display:flex; flex-wrap:wrap; gap:5px; margin: 10px 0"></div>
+                
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px">
                     <input type="date" id="libS">
                     <input type="date" id="libE">
                 </div>
-                <button class="btn" style="background:#64748b" onclick="setLibur()">SET LIBUR</button>
+                <button class="btn" style="background:#64748b" onclick="setLibur()">SET TANGGAL LIBUR (OFF)</button>
             </div>
 
             <div class="card">
-                <h3>⚡ Input Presensi</h3>
-                <select id="selK"></select>
-                <input type="date" id="absTgl">
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px">
-                    <button class="btn" style="background:var(--s)" onclick="saveAbs('Hadir')">HADIR</button>
-                    <button class="btn" style="background:#8b5cf6" onclick="saveAbs('Izin')">IZIN</button>
-                </div>
-                <button class="btn" style="background:var(--d)" onclick="saveAbs('Alpa')">ALPA (A)</button>
-            </div>
-
-            <div class="card">
-                <h3>📅 Kalender Operasional</h3>
+                <h3>📅 Kalender Real-Time</h3>
                 <input type="month" id="fM" onchange="renderAll()">
                 <div class="table-res" id="calScroll">
                     <table id="tblAbsen"><thead id="thA"></thead><tbody id="tbA"></tbody></table>
                 </div>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; margin-top:10px">
-                    <button class="btn" style="background:#1d6f42" onclick="exportExcel()">EXCEL</button>
-                    <button class="btn" style="background:#b91c1c" onclick="exportPDF()">PDF</button>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:15px">
+                    <button class="btn" style="background:#1d6f42" onclick="exportExcel()">EXPORT EXCEL</button>
+                    <button class="btn" style="background:#b91c1c" onclick="exportPDF()">DOWNLOAD PDF</button>
                 </div>
             </div>
         </div>
 
-        <div id="tab-stok" class="tab-content hidden"><div class="card"><h3>📦 Stok</h3><p>Aktif di database.</p></div></div>
-        <div id="tab-aktivitas" class="tab-content hidden"><div class="card"><h3>🛠️ Aktivitas</h3><p>Aktif di database.</p></div></div>
-        <div id="tab-gaji" class="tab-content hidden"><div class="card"><h3>💰 Gaji</h3><p>Aktif di database.</p></div></div>
+        <div id="tab-stok" class="tab-content hidden"><div class="card"><h3>📦 Stok</h3></div></div>
+        <div id="tab-aktivitas" class="tab-content hidden"><div class="card"><h3>🛠️ Aktivitas</h3></div></div>
+        <div id="tab-gaji" class="tab-content hidden"><div class="card"><h3>💰 Gaji</h3></div></div>
     </div>
 
     <script>
+        // Konfigurasi Firebase Mas
         const firebaseConfig = {
             apiKey: "AIzaSyAu67MAhWBxdmciPi3xOKWhdy-uP4u9tXI",
             authDomain: "pt-agn.firebaseapp.com",
@@ -106,7 +97,6 @@
 
         window.onload = () => {
             const now = new Date();
-            document.getElementById('absTgl').value = now.toISOString().split('T')[0];
             document.getElementById('fM').value = now.toISOString().slice(0, 7);
             db.ref('/').on('value', s => { 
                 DATA = s.val() || {}; 
@@ -125,33 +115,18 @@
 
         function addM(p, id) {
             const v = document.getElementById(id).value;
-            if(v) db.ref(p).push(v).then(() => { document.getElementById(id).value=""; notify("Tersimpan!"); });
+            if(v) db.ref(p).push(v).then(() => { document.getElementById(id).value=""; notify("Berhasil!"); });
         }
 
         function setLibur() {
             const s = new Date(document.getElementById('libS').value), e = new Date(document.getElementById('libE').value);
-            if(isNaN(s) || isNaN(e)) return alert("Isi tanggal!");
+            if(isNaN(s) || isNaN(e)) return alert("Set tanggal dulu!");
             let c = new Date(s);
             while(c <= e) {
                 db.ref(`master_libur/${c.toISOString().split('T')[0]}`).set(true);
                 c.setDate(c.getDate()+1);
             }
-            notify("Libur Diset!");
-        }
-
-        function saveAbs(s) {
-            const n = document.getElementById('selK').value, t = document.getElementById('absTgl').value;
-            if(!n) return alert("Pilih Karyawan!");
-            const hr = new Date().getHours(), min = new Date().getMinutes();
-            let fs = s;
-            const isSun = new Date(t).getDay() === 0;
-            const isLibur = DATA.master_libur?.[t];
-
-            if(s === 'Hadir') {
-                if(hr >= 9 && min > 0) fs = 'Telat';
-                if(isSun || isLibur) fs = 'Lembur';
-            }
-            db.ref(`absensi/${t}/${n}`).set({ s: fs, jam: `${hr}:${min}` }).then(() => notify("Absen Sukses!"));
+            notify("Hari Libur Disimpan!");
         }
 
         function renderAll() {
@@ -160,15 +135,10 @@
             const [y, m] = fM.split('-'), last = new Date(y, m, 0).getDate();
             const tToday = new Date().toISOString().split('T')[0];
 
-            document.getElementById('selK').innerHTML = kArr.map(([id, n]) => `<option value="${n}">${n}</option>`).join('');
-            document.getElementById('listK').innerHTML = kArr.map(([id, n]) => `<div style="background:#fff;padding:4px 8px;border:1px solid #ddd;border-radius:10px;font-size:10px">${n} <b onclick="db.ref('master_karyawan/${id}').remove()">×</b></div>`).join('');
-
-            // HEADER
             let th = `<tr><th class="sticky-col">NAMA</th>`;
             for (let i = 1; i <= last; i++) th += `<th class="${y+'-'+m+'-'+String(i).padStart(2,'0')===tToday?'today-hl':''}">${i}</th>`;
             document.getElementById('thA').innerHTML = th + `</tr>`;
 
-            // BODY
             let tb = "";
             kArr.forEach(([id, name]) => {
                 let row = `<td class="sticky-col">${name}</td>`;
@@ -176,18 +146,18 @@
                     const tgl = `${y}-${m}-${String(i).padStart(2, '0')}`;
                     const d = DATA.absensi?.[tgl]?.[name];
                     const isSun = new Date(tgl).getDay() === 0;
-                    const isLibur = DATA.master_libur?.[tgl]; // Baca dari master_libur
+                    const isLibur = DATA.master_libur?.[tgl];
                     
                     let txt = "-", cls = "";
                     
-                    // Logika PRIORITAS
+                    // --- LOGIKA PRIORITAS V110 ---
                     if (isSun) { 
-                        txt = "M"; cls = "bg-m"; // Minggu Tetap M
+                        txt = "M"; cls = "bg-m"; // Minggu adalah PRIORITAS UTAMA
                     } else if (isLibur) {
-                        txt = "Off"; cls = "bg-off"; // Hari Libur
+                        txt = "Off"; cls = "bg-off"; // Libur hanya jika bukan Minggu
                     }
 
-                    // Jika ada input manual, timpa indikator kalender
+                    // TIMPA JIKA ADA INPUT MANUAL (H, I, L, A, T)
                     if (d) {
                         txt = d.s[0]; 
                         cls = `bg-${d.s.toLowerCase()[0]}`;
@@ -206,21 +176,18 @@
 
         function resetA(t, n) { if(confirm("Hapus data tgl "+t+"?")) db.ref(`absensi/${t}/${n}`).remove(); }
 
-        // --- FUNGSI EXPORT ---
+        // EXPORT LOGIC
         function exportExcel() {
-            const table = document.getElementById('tblAbsen');
-            const wb = XLSX.utils.table_to_book(table);
-            XLSX.writeFile(wb, `Absensi_KempuBalap_${document.getElementById('fM').value}.xlsx`);
-            notify("Excel Berhasil!");
+            const wb = XLSX.utils.table_to_book(document.getElementById('tblAbsen'));
+            XLSX.writeFile(wb, `Absen_KempuBalap_${document.getElementById('fM').value}.xlsx`);
         }
 
         function exportPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('l', 'mm', 'a4');
-            doc.text(`Rekap Absensi: ${document.getElementById('fM').value}`, 10, 10);
-            doc.autoTable({ html: '#tblAbsen', startY: 20, styles: { fontSize: 7 } });
-            doc.save(`Absensi_KempuBalap_${document.getElementById('fM').value}.pdf`);
-            notify("PDF Berhasil!");
+            doc.text(`Rekap Absensi Kempu Balap: ${document.getElementById('fM').value}`, 10, 10);
+            doc.autoTable({ html: '#tblAbsen', startY: 20, styles: { fontSize: 6, cellPadding: 1 } });
+            doc.save(`Absen_${document.getElementById('fM').value}.pdf`);
         }
     </script>
 </body>
