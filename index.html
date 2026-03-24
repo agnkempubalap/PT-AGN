@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kempu Balap OMNI V330</title>
+    <title>Kempu Balap OMNI V340</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -11,34 +11,27 @@
         :root { --p:#2563eb; --s:#16a34a; --d:#dc2626; --bg:#f8fafc; --c:#ffffff; --t:#1e293b; --b:#e2e8f0; }
         * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; background: var(--bg); color: var(--t); font-size: 13px; }
-        
         .nav-grid { display: grid; grid-template-columns: repeat(4, 1fr); position: sticky; top: 0; z-index: 1000; background: var(--p); padding: 5px; gap:2px; }
         .nav-btn { padding: 12px 0; background: transparent; border: none; color: white; font-weight: 800; font-size: 9px; text-transform: uppercase; border-radius: 6px; cursor: pointer; }
         .nav-btn.active { background: white; color: var(--p); }
-
         .container { padding: 12px; padding-bottom: 80px; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        
         .card { background: var(--c); padding: 15px; border-radius: 12px; margin-bottom: 12px; border: 1px solid var(--b); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         h3 { margin: 0 0 12px; font-size: 11px; color: var(--p); text-transform: uppercase; border-left: 4px solid var(--p); padding-left: 8px; }
-
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
         input, select { width: 100%; height: 42px; background: #f1f5f9; border: 1px solid var(--b); border-radius: 8px; padding: 0 10px; font-size: 13px; outline: none; }
         .btn { border: none; border-radius: 8px; padding: 10px; font-weight: 800; cursor: pointer; width: 100%; color: white; font-size: 10px; text-align: center; }
-        
         .table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--b); background: white; margin-top: 10px; }
         table { width: 100%; border-collapse: collapse; min-width: 1000px; }
         th, td { padding: 5px; border: 1px solid var(--b); text-align: center; font-size: 10px; }
         th { background: #f1f5f9; position: sticky; top: 0; z-index: 5; }
         .sticky-col { position: sticky; left: 0; background: white !important; z-index: 10; font-weight: 800; border-right: 2px solid var(--b); width: 80px; text-align: left; padding-left: 5px; }
-        
-        .badge { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; min-height: 45px; border-radius: 6px; font-weight: 800; color: white; }
+        .badge { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; min-height: 45px; border-radius: 6px; font-weight: 800; color: white; cursor: pointer; }
         .bg-h { background: var(--s) !important; } .bg-i { background: #8b5cf6 !important; } .bg-l { background: #f59e0b !important; } 
         .bg-sun { background: #fee2e2 !important; color: #b91c1c !important; border: 1px solid #fca5a5; } 
         .bg-lib { background: #f1f5f9 !important; color: #94a3b8 !important; } 
         .txt-jam { font-size: 7px; font-weight: 400; opacity: 0.9; margin-top: 2px; }
-
         .list-item { display: inline-flex; align-items: center; background: #f1f5f9; padding: 5px 10px; border-radius: 20px; margin: 2px; font-size: 11px; font-weight: 600; }
         .del-btn { color: red; margin-left: 8px; cursor: pointer; font-weight: 900; }
     </style>
@@ -63,7 +56,7 @@
                 <div id="listK"></div>
             </div>
 
-            <div class="card">
+            <div class="card" id="inputSection">
                 <h3>📅 Input Absensi</h3>
                 <div class="grid-2">
                     <div>
@@ -84,20 +77,19 @@
 
             <div class="card">
                 <h3>📅 Kalender <input type="month" id="fM" onchange="renderAll()" style="width:130px; height:30px"></h3>
+                <p style="font-size: 8px; color: orange; margin-bottom: 5px;">*Klik kotak tanggal untuk mengisi absen di tanggal tersebut.</p>
                 <div class="table-wrap"><table><thead id="thA"></thead><tbody id="tbA"></tbody></table></div>
             </div>
         </div>
 
         <div id="tab-stok" class="tab-content">
-            <div class="card"><h3>📦 Stok Barang</h3><p>Fitur stok aktif kembali.</p></div>
+            <div class="card"><h3>📦 Stok Barang</h3><p>Halaman Stok aktif.</p></div>
         </div>
-
         <div id="tab-aktivitas" class="tab-content">
-            <div class="card"><h3>🛠️ Aktivitas Gudang</h3><p>Fitur aktivitas aktif kembali.</p></div>
+            <div class="card"><h3>🛠️ Aktivitas Gudang</h3><p>Halaman Aktivitas aktif.</p></div>
         </div>
-
         <div id="tab-gaji" class="tab-content">
-            <div class="card"><h3>💰 Rekap Gaji</h3><p>Fitur gaji aktif kembali.</p></div>
+            <div class="card"><h3>💰 Rekap Gaji</h3><p>Halaman Gaji aktif.</p></div>
         </div>
     </div>
 
@@ -120,6 +112,14 @@
             btn.classList.add('active');
         }
 
+        function setAbsenDate(tgl) {
+            document.getElementById('absTgl').value = tgl;
+            document.getElementById('inputSection').scrollIntoView({behavior: "smooth"});
+            // Beri efek highlight sebentar
+            document.getElementById('inputSection').style.border = "2px solid #2563eb";
+            setTimeout(() => { document.getElementById('inputSection').style.border = "1px solid #e2e8f0"; }, 1000);
+        }
+
         function addM(path, id) {
             const v = document.getElementById(id).value.trim();
             if(v) db.ref(path).push(v).then(() => document.getElementById(id).value = "");
@@ -132,17 +132,14 @@
             let up = { s: (st === 'Hadir' && isLib) ? 'Lembur' : st };
             if(st==='Hadir') up.in = new Date().toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}).replace('.', ':');
             if(st==='Pulang') up.out = '16:00';
-            db.ref(`absensi/${tgl}/${n}`).update(up);
+            db.ref(`absensi/${tgl}/${n}`).update(up).then(() => alert("Berhasil Absen " + n + " tanggal " + tgl));
         }
 
         function renderAll() {
             const kArr = Object.entries(DATA.master_karyawan || {}), fM = document.getElementById('fM').value, [y, m] = fM.split('-'), last = new Date(y, m, 0).getDate();
-            
-            // List Master
             document.getElementById('listK').innerHTML = kArr.map(k => `<span class="list-item">${k[1]} <b class="del-btn" onclick="db.ref('master_karyawan/${k[0]}').remove()">×</b></span>`).join('');
             document.getElementById('selK').innerHTML = kArr.map(k => `<option value="${k[1]}">${k[1]}</option>`).join('');
 
-            // Kalender
             let th = `<tr><th class="sticky-col">NAMA</th>`;
             for(let i=1; i<=last; i++) {
                 const isSun = new Date(y, m-1, i).getDay() === 0;
@@ -161,7 +158,8 @@
                         label = d.s[0]; jam = `${d.in||''}-${d.out||''}`;
                     } else if(isSun) { cls = "bg-sun"; label = "M"; }
                     else if(isLib) { cls = "bg-lib"; label = "Lib"; }
-                    row += `<td><div class="badge ${cls}">${label}<span class="txt-jam">${jam}</span></div></td>`;
+                    // Tambahkan onclick="setAbsenDate('${tgl}')" ke td
+                    row += `<td onclick="setAbsenDate('${tgl}')"><div class="badge ${cls}">${label}<span class="txt-jam">${jam}</span></div></td>`;
                 }
                 tbA += `<tr>${row}</tr>`;
             });
