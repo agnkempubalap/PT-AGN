@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kempu Balap OMNI V120</title>
+    <title>Kempu Balap OMNI V125</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
@@ -12,9 +13,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
 
     <style>
-        :root { --p:#2563eb; --s:#16a34a; --d:#dc2626; --bg:#f1f5f9; --c:#ffffff; --t:#1e293b; --b:#e2e8f0; }
+        :root { --p:#2563eb; --s:#16a34a; --d:#dc2626; --bg:#f8fafc; --c:#ffffff; --t:#1e293b; --b:#e2e8f0; }
         * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; background: var(--bg); color: var(--t); font-size: 13px; overflow-x: hidden; }
+        body { margin: 0; background: var(--bg); color: var(--t); font-size: 13px; }
         
         /* Navigasi */
         .nav-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; position: sticky; top: 0; z-index: 1000; background: var(--p); padding: 8px; }
@@ -22,27 +23,27 @@
         .nav-btn.active { background: white; color: var(--p); }
 
         .container { padding: 10px; max-width: 1200px; margin: 0 auto; padding-bottom: 100px; }
-        .card { background: var(--c); padding: 15px; border-radius: 15px; margin-bottom: 12px; border: 1px solid var(--b); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        h3 { margin: 0 0 12px; font-size: 10px; color: var(--p); text-transform: uppercase; border-left: 4px solid var(--p); padding-left: 10px; }
+        .card { background: var(--c); padding: 15px; border-radius: 15px; margin-bottom: 12px; border: 1px solid var(--b); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        h3 { margin: 0 0 12px; font-size: 11px; color: var(--p); text-transform: uppercase; border-left: 4px solid var(--p); padding-left: 10px; }
 
-        /* Form */
+        /* Form & Input */
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        input, select, textarea { width: 100%; height: 45px; background: #f8fafc; border: 1px solid var(--b); border-radius: 12px; padding: 0 12px; margin-bottom: 8px; font-size: 14px; outline: none; }
-        .btn { border: none; border-radius: 12px; padding: 12px; font-weight: 800; cursor: pointer; width: 100%; color: white; margin-bottom: 5px; font-size: 11px; text-transform: uppercase; }
+        input, select, textarea { width: 100%; height: 45px; background: #f1f5f9; border: 1px solid var(--b); border-radius: 12px; padding: 0 12px; margin-bottom: 8px; font-size: 14px; outline: none; }
+        .btn { border: none; border-radius: 12px; padding: 12px; font-weight: 800; cursor: pointer; width: 100%; color: white; margin-bottom: 5px; font-size: 11px; }
         
-        /* Tabel */
+        /* Table Style */
         .table-res { overflow-x: auto; width: 100%; border-radius: 12px; border: 1px solid var(--b); background: white; scroll-behavior: smooth; }
         table { width: 100%; border-collapse: collapse; min-width: 1000px; }
         th, td { padding: 8px; border: 1px solid var(--b); text-align: center; }
-        .sticky-col { position: sticky; left: 0; background: white !important; z-index: 10; width: 120px !important; font-weight: 800; border-right: 2px solid var(--b); }
+        .sticky-col { position: sticky; left: 0; background: white !important; z-index: 10; width: 130px !important; font-weight: 800; border-right: 2px solid var(--b); }
 
-        /* Warna Absen */
+        /* Badges Kalender */
         .badge { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 8px; font-weight: 800; color: white; font-size: 10px; }
         .bg-h { background: var(--s); } .bg-m { background: var(--d) !important; } .bg-i { background: #8b5cf6; } 
         .bg-off { background: #94a3b8; } .bg-t { background: #f59e0b; } .bg-l { background: #0ea5e9; } .bg-a { background: #000; }
         .today-hl { background: #eff6ff !important; border: 2px solid var(--p) !important; }
 
-        #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 12px 24px; border-radius: 30px; z-index: 9999; display: none; }
+        #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 12px 24px; border-radius: 30px; z-index: 9999; display: none; font-weight: 700; box-shadow: 0 10px 15px rgba(0,0,0,0.2); }
         .hidden { display: none !important; }
     </style>
 </head>
@@ -61,23 +62,22 @@
         
         <div id="tab-absen" class="tab-content">
             <div class="card">
-                <h3>👥 Master Karyawan & Presensi</h3>
+                <h3>👥 Presensi & Manajemen</h3>
                 <div class="grid-2">
                     <input type="text" id="inK" placeholder="Nama Karyawan...">
                     <button class="btn" style="background:var(--p)" onclick="addM('master_karyawan', 'inK')">+</button>
                 </div>
                 <div id="listK" style="display:flex; flex-wrap:wrap; gap:5px; margin: 10px 0"></div>
-                <hr style="border:0; border-top:1px solid #eee; margin:10px 0">
                 <select id="selK"></select>
                 <div class="grid-2">
                     <button class="btn" style="background:var(--s)" onclick="saveAbs('Masuk')">MASUK</button>
                     <button class="btn" style="background:#8b5cf6" onclick="saveAbs('Izin')">IZIN</button>
                 </div>
-                <button class="btn" style="background:var(--t)" onclick="saveAbs('Pulang')">PULANG (FINISH)</button>
+                <button class="btn" style="background:var(--t)" onclick="saveAbs('Pulang')">PULANG (Pukul 16:00)</button>
             </div>
-
+            
             <div class="card">
-                <h3>📅 Libur & Kalender</h3>
+                <h3>📅 Kalender Absen & Libur</h3>
                 <div class="grid-2">
                     <input type="date" id="libS">
                     <input type="date" id="libE">
@@ -95,44 +95,42 @@
 
         <div id="tab-stok" class="tab-content hidden">
             <div class="card">
-                <h3>📦 QC & Barang Masuk</h3>
-                <input type="text" id="inB" placeholder="Tambah Nama Barang...">
-                <button class="btn" style="background:var(--p); margin-bottom:15px" onclick="addM('master_barang', 'inB')">TAMBAH MASTER BARANG</button>
-                <select id="stBrg"></select>
+                <h3>📦 QC & Stok Masuk</h3>
+                <input type="text" id="inB" placeholder="Nama Barang (Kempu/Jerigen)...">
+                <button class="btn" style="background:var(--p)" onclick="addM('master_barang', 'inB')">TAMBAH BARANG</button>
+                <select id="stBrg" style="margin-top:10px"></select>
                 <div class="grid-2">
                     <select id="stQC"><option value="Baru">Baru</option><option value="Bekas">Bekas</option></select>
-                    <select id="stRes"><option value="Accepted">Accepted</option><option value="Minor">Accepted (Minor)</option><option value="Reject">Reject</option></select>
+                    <select id="stRes"><option value="Accepted">Accepted</option><option value="Minor">Minor Damage</option><option value="Reject">Reject</option></select>
                 </div>
                 <input type="number" id="stQty" placeholder="Jumlah Pcs">
-                <button class="btn" style="background:var(--s)" onclick="saveStok()">SIMPAN STOK</button>
+                <button class="btn" style="background:var(--s)" onclick="saveStok('masuk')">SIMPAN STOK</button>
             </div>
             <div class="card">
-                <h3>📊 Tabel Stok & Penjualan</h3>
+                <h3>📊 Tabel Alur Stok (Bulanan)</h3>
                 <div class="table-res"><table id="tblStokR"><thead id="thS"></thead><tbody id="tbS"></tbody></table></div>
             </div>
         </div>
 
         <div id="tab-aktivitas" class="tab-content hidden">
             <div class="card">
-                <h3>🛠️ Input Aktivitas Harian</h3>
+                <h3>🛠️ Input Aktivitas & Borongan</h3>
                 <select id="akK"></select>
                 <select id="akJ">
                     <option value="Rekondisi Kempu">Rekondisi Kempu</option>
-                    <option value="Jerigen 18L">Rekondisi Jerigen 18L</option>
                     <option value="Muat Barang">Muat Barang (📦)</option>
                     <option value="Bongkar Barang">Bongkar Barang (📤)</option>
                     <option value="Pasang Pangkalan">Pasang Pangkalan</option>
-                    <option value="Kirim Minyak">Kirim Minyak</option>
                 </select>
-                <input type="number" id="akQ" placeholder="Quantity (Pcs/Tim)">
+                <input type="number" id="akQ" placeholder="Quantity/Pcs">
                 <button class="btn" style="background:var(--p)" onclick="saveAktivitas()">SIMPAN AKTIVITAS</button>
             </div>
             <div class="card">
-                <h3>🛍️ Belanja & Nota</h3>
-                <input type="text" id="belItem" placeholder="Keperluan Belanja...">
+                <h3>🛍️ Belanja (Nota Kamera)</h3>
+                <input type="text" id="belItem" placeholder="Barang Belanja...">
                 <input type="number" id="belNom" placeholder="Nominal Rp">
-                <input type="file" id="belFoto" capture="camera" accept="image/*">
-                <button class="btn" style="background:var(--s)" onclick="saveBelanja()">SIMPAN BELANJA</button>
+                <input type="file" capture="camera" id="belFoto">
+                <button class="btn" style="background:var(--s)" onclick="saveBelanja()">INPUT BELANJA</button>
             </div>
         </div>
 
@@ -157,20 +155,20 @@
         const db = firebase.database();
 
         let DATA = {};
-        const RATES = { "Rekondisi Kempu": 100000, "Jerigen 18L": 2000, "Pasang Pangkalan": 500000, "Muat Barang": 12000, "Bongkar Barang": 12000, "Kirim Minyak": 100000 };
+        const RATES = { 
+            "Rekondisi Kempu": 100000, 
+            "Pasang Pangkalan": 500000, 
+            "Muat Barang": 12000, 
+            "Bongkar Barang": 12000 
+        };
 
         window.onload = () => {
             const now = new Date();
             document.getElementById('fM').value = now.toISOString().slice(0, 7);
-            db.ref('/').on('value', s => { 
-                DATA = s.val() || {}; 
-                renderAll(); 
-                checkAutoAlpa();
-            });
+            db.ref('/').on('value', s => { DATA = s.val() || {}; renderAll(); checkAutoAlpa(); });
         };
 
         function notify(m) { const t = document.getElementById('toast'); t.innerText = m; t.style.display='block'; setTimeout(()=>t.style.display='none', 2000); }
-
         function tab(t, b) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
             document.getElementById('tab-' + t).classList.remove('hidden');
@@ -184,7 +182,7 @@
             if(v) db.ref(p).push(v).then(() => { document.getElementById(id).value=""; notify("Tersimpan!"); });
         }
 
-        // --- ABSEN LOGIC ---
+        // --- LOGIKA ABSEN ---
         function saveAbs(status) {
             const name = document.getElementById('selK').value, tgl = new Date().toISOString().split('T')[0];
             const now = new Date(), hr = now.getHours(), mn = now.getMinutes();
@@ -199,18 +197,17 @@
             } else {
                 db.ref(`absensi/${tgl}/${name}`).update({ s: status });
             }
-            notify("Absen " + finalS);
+            notify("Data Terupdate!");
         }
 
         function setLibur() {
             const s = new Date(document.getElementById('libS').value), e = new Date(document.getElementById('libE').value);
-            if(isNaN(s)) return alert("Set tgl!");
             let c = new Date(s);
             while(c <= e) {
                 db.ref(`master_libur/${c.toISOString().split('T')[0]}`).set(true);
                 c.setDate(c.getDate()+1);
             }
-            notify("Libur Disimpan!");
+            notify("Libur Diset!");
         }
 
         function hapusLibur() {
@@ -235,28 +232,10 @@
             }
         }
 
-        function saveAktivitas() {
-            const n = document.getElementById('akK').value, tgl = new Date().toISOString().split('T')[0];
-            const j = document.getElementById('akJ').value, q = document.getElementById('akQ').value;
-            db.ref('aktivitas').push({ n, tgl, j, q: parseInt(q) }).then(() => {
-                document.getElementById('akQ').value = "";
-                notify("Aktivitas Tersimpan!");
-            });
-        }
-
-        function saveStok() {
-            const b = document.getElementById('stBrg').value, q = document.getElementById('stQty').value;
-            const qc = document.getElementById('stQC').value, res = document.getElementById('stRes').value;
-            const tgl = new Date().toISOString().split('T')[0];
-            db.ref('stok_logs').push({ b, q: parseInt(q), qc, res, tgl }).then(() => {
-                document.getElementById('stQty').value = "";
-                notify("Stok Diupdate!");
-            });
-        }
-
+        // --- RENDER SEMUA TAB ---
         function renderAll() {
-            const kArr = Object.entries(DATA.master_karyawan || {}).map(e => e[1]);
-            const bArr = Object.values(DATA.master_barang || {});
+            const kArr = Object.values(DATA.master_karyawan || []);
+            const bArr = Object.values(DATA.master_barang || []);
             const fM = document.getElementById('fM').value;
             const [y, m] = fM.split('-'), last = new Date(y, m, 0).getDate();
             const tToday = new Date().toISOString().split('T')[0];
@@ -265,54 +244,52 @@
             document.getElementById('akK').innerHTML = kArr.map(n => `<option value="${n}">${n}</option>`).join('');
             document.getElementById('stBrg').innerHTML = bArr.map(n => `<option value="${n}">${n}</option>`).join('');
 
-            // KALENDER
+            // KALENDER ABSEN
             let th = `<tr><th class="sticky-col">KARYAWAN</th>`;
             for (let i = 1; i <= last; i++) th += `<th id="col-${i}">${i}</th>`;
-            document.getElementById('thA').innerHTML = th + `</tr>`;
+            document.getElementById('thA').innerHTML = th + `<th>REKAP</th></tr>`;
 
             let tb = "";
             kArr.forEach(name => {
-                let row = `<td class="sticky-col">${name}</td>`;
+                let row = `<td class="sticky-col">${name}</td>`, h=0, i_c=0, a=0, l=0;
                 for (let i = 1; i <= last; i++) {
                     const tgl = `${y}-${m}-${String(i).padStart(2, '0')}`;
                     const d = DATA.absensi?.[tgl]?.[name];
                     const isSun = new Date(tgl).getDay() === 0;
                     const isLibur = DATA.master_libur?.[tgl];
-                    let txt = "-", cls = "", info = "";
-                    
+                    let txt = "-", cls = "", icons = "";
+
                     if (isSun) { txt = "M"; cls = "bg-m"; }
                     else if (isLibur) { txt = "Off"; cls = "bg-off"; }
 
                     if (d) {
                         txt = d.s[0]; cls = `bg-${d.s.toLowerCase()[0]}`;
-                        if(d.s==='Telat') { txt='T'; cls='bg-t'; }
-                        if(isSun) { txt='M'; cls='bg-m'; }
-                        info = `<div style="font-size:7px; color:#666">${d.masuk || ''}</div>`;
+                        if(d.s === 'Hadir') h++; if(d.s === 'Izin') i_c++; if(d.s === 'Alpa') a++; if(d.s === 'Lembur') l++;
+                        if(isSun) { txt = "M"; cls = "bg-m"; }
                     }
-                    
-                    // Icon Aktivitas
-                    let icons = "";
-                    Object.values(DATA.aktivitas || {}).forEach(a => {
-                        if(a.n === name && a.tgl === tgl) {
-                            if(a.j.includes('Muat')) icons += "📦";
-                            if(a.j.includes('Bongkar')) icons += "📤";
+
+                    Object.values(DATA.aktivitas || {}).forEach(act => {
+                        if(act.n === name && act.tgl === tgl) {
+                            if(act.j.includes('Muat')) icons += "📦";
+                            if(act.j.includes('Bongkar')) icons += "📤";
                         }
                     });
 
-                    row += `<td class="${tgl === tToday ? 'today-hl' : ''}"><div class="badge ${cls}" onclick="resetA('${tgl}','${name}')">${txt}</div>${info}<div style="font-size:9px">${icons}</div></td>`;
+                    row += `<td class="${tgl === tToday ? 'today-hl' : ''}"><div class="badge ${cls}">${txt}</div><div style="font-size:8px">${icons}</div></td>`;
                 }
+                row += `<td>H:${h} I:${i_c} A:${a} L:${l}</td>`;
                 tb += `<tr>${row}</tr>`;
             });
             document.getElementById('tbA').innerHTML = tb;
 
-            // REKAP GAJI
+            // GAJI
             let gajiHtml = "";
             kArr.forEach(name => {
                 let total = 0;
                 Object.values(DATA.aktivitas || {}).forEach(a => {
                     if(a.n === name && a.tgl.startsWith(fM)) total += (RATES[a.j] || 0) * (a.q || 1);
                 });
-                gajiHtml += `<div class="card" style="display:flex; justify-content:space-between"><b>${name}</b> <span style="color:var(--s);font-weight:900">Rp${total.toLocaleString()}</span></div>`;
+                gajiHtml += `<div class="card" style="display:flex; justify-content:space-between"><b>${name}</b> <span>Rp${total.toLocaleString()}</span></div>`;
             });
             document.getElementById('listGaji').innerHTML = gajiHtml;
         }
@@ -323,7 +300,17 @@
             if(el) document.getElementById('calScroll').scrollLeft = el.offsetLeft - 120;
         }
 
-        function resetA(t, n) { if(confirm(`Hapus data ${n} tgl ${t}?`)) db.ref(`absensi/${t}/${n}`).remove(); }
+        function saveAktivitas() {
+            const n = document.getElementById('akK').value, j = document.getElementById('akJ').value, q = document.getElementById('akQ').value;
+            const tgl = new Date().toISOString().split('T')[0];
+            db.ref('aktivitas').push({ n, j, q: parseInt(q), tgl }).then(() => { document.getElementById('akQ').value=""; notify("Aktivitas Tersimpan!"); });
+        }
+
+        function saveStok(mode) {
+            const b = document.getElementById('stBrg').value, qc = document.getElementById('stQC').value, res = document.getElementById('stRes').value, q = document.getElementById('stQty').value;
+            const tgl = new Date().toISOString().split('T')[0];
+            db.ref('stok_logs').push({ b, qc, res, q: parseInt(q), tgl, mode }).then(() => { document.getElementById('stQty').value=""; notify("Stok Diupdate!"); });
+        }
     </script>
 </body>
 </html>
