@@ -2,199 +2,254 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN OMNI V101.0</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf-autotable.min.js"></script>
+    <title>PT-AGN OMNI V96.0 - STABLE</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
-    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root{--p:#3b82f6;--s:#22c55e;--d:#ef4444;--w:#f59e0b;--bg:#0f172a;--c:#1e293b;--t:#f8fafc;--b:#334155;--iz:#8b5cf6;--al:#64748b;--lb:#d946ef;--sun:#f43f5e;--te:#ec4899}
-        *{box-sizing:border-box} body{font-family:'Plus Jakarta Sans',sans-serif;margin:0;background:var(--bg);color:var(--t);padding:10px;font-size:12px;}
+        *{box-sizing:border-box} body{font-family:'Plus Jakarta Sans',sans-serif;margin:0;background:var(--bg);color:var(--t);padding:10px;font-size:12px;line-height:1.4}
+        .container{max-width:1600px;margin:0 auto}
         
         /* Navigasi */
-        .nav-grid { display: flex; gap: 5px; margin-bottom: 15px; position: sticky; top: 0; z-index: 2000; background: var(--bg); padding: 5px 0;}
-        .nav-btn { flex: 1; padding: 12px 5px; background: var(--c); border: 1px solid var(--b); color: var(--t); border-radius: 10px; cursor: pointer; font-weight: 800; font-size: 10px; text-transform: uppercase;}
+        .nav-grid { display: flex; gap: 6px; margin-bottom: 15px; position: sticky; top: 0; z-index: 1000; background: var(--bg); padding: 5px 0;}
+        .nav-btn { flex: 1; padding: 10px 5px; background: var(--c); border: 1px solid var(--b); color: var(--t); border-radius: 10px; cursor: pointer; font-weight: 800; font-size: 10px; text-transform: uppercase;}
         .nav-btn.active { background: var(--p); border-color: var(--p); box-shadow: 0 4px 10px rgba(59,130,246,0.4); }
 
-        .card{background:var(--c);padding:15px;border-radius:18px;margin-bottom:12px;border:1px solid var(--b);}
-        h3{margin:0 0 12px;font-size:10px;color:var(--p);text-transform:uppercase;letter-spacing:1px;font-weight:800}
-        
-        /* Tampilan Tabel yang Di-Undo ke Sistem Stabil */
-        .table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--b); background: var(--c); margin-bottom: 10px;}
-        .table-web { width: 100%; border-collapse: collapse; min-width: 900px; }
-        .table-web th { background: var(--b); color: #fff; padding: 12px 5px; font-size: 10px; border: 1px solid var(--bg); position: sticky; top: 0; z-index: 10; }
-        .table-web td { padding: 10px 5px; border: 1px solid var(--b); text-align: center; font-weight: 700; font-size: 13px; }
+        /* Card & UI */
+        .card{background:var(--c);padding:15px;border-radius:18px;margin-bottom:12px;border:1px solid var(--b); box-shadow: 0 4px 6px rgba(0,0,0,0.2)}
+        h3{margin:0 0 12px;font-size:10px;color:var(--p);text-transform:uppercase;letter-spacing:1px;font-weight:800; display: flex; align-items: center; gap: 5px;}
+        .form-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+        input, button, select { height: 42px; border-radius: 10px; border: 1px solid var(--b); background: var(--bg); color: var(--t); padding: 0 10px; width: 100%; font-size: 13px; outline: none;}
+        button { cursor: pointer; font-weight: 700; border: none; color: #fff;}
 
-        /* Fix Nama Barang Diam di Kiri tanpa Menutup Header */
-        .nama-fixed { position: sticky; left: 0; background: #1e293b !important; z-index: 15; width: 130px; border-right: 2px solid var(--p) !important; text-align: left !important; padding-left: 10px !important; }
+        /* Table Responsive - FIX UTAMA */
+        .table-wrap{ overflow-x: auto; border-radius: 12px; border: 1px solid var(--b); background: var(--bg); position: relative; }
+        .table-web{ width: 100%; border-collapse: collapse; min-width: 900px; table-layout: fixed; }
+        .table-web th{ background: var(--b); padding: 12px 6px; font-size: 9px; border-bottom: 2px solid var(--c); color: #cbd5e1; position: sticky; top: 0; z-index: 10; }
+        .table-web td{ padding: 10px 6px; border-bottom: 1px solid var(--b); text-align: center; font-weight: 700; font-size: 13px; word-break: break-all; }
         
-        /* Grup Warna Baru */
-        .c-awal { color: #60a5fa; } .c-masuk { color: #4ade80; } .c-jual { color: #fbbf24; } .c-sisa { color: #f472b6; }
-
-        /* Icon & Status */
-        .s-box { width: 35px; height: 35px; border-radius: 8px; display: inline-flex; flex-direction: column; justify-content: center; align-items: center; font-size: 9px; font-weight: 800; }
+        /* Kolom Nama Diam (Sticky) */
+        .nama-fixed{ position: sticky; left: 0; background: var(--c)!important; z-index: 20; width: 130px; border-right: 2px solid var(--p)!important; text-align: left !important; padding-left: 10px !important; color: var(--p); }
+        
+        .s-box{ width: 38px; height: 38px; border-radius: 8px; display: inline-flex; flex-direction: column; justify-content: center; align-items: center; font-size: 10px; font-weight: 800; }
         .s-h{background:var(--s)} .s-i{background:var(--iz)} .s-a{background:var(--d)} .s-l{background:var(--lb)} .s-m{background:var(--sun)} .s-off{background:var(--al)} .s-t{background:var(--te)}
-        .box-jam { font-size: 7px; margin-top: 2px; }
-        .kardus-head { color: var(--w); font-size: 10px; display: block; }
-        
-        input, button, select { height: 40px; border-radius: 10px; border: 1px solid var(--b); background: var(--bg); color: var(--t); padding: 0 10px; width: 100%; outline: none;}
+        .box-jam{ font-size: 8px; font-weight: 400; }
+        .kardus-head { color: var(--w); font-size: 9px; margin-top: 2px; }
         .hidden { display: none !important; }
-        .btn-group { display: flex; gap: 5px; margin-top: 10px; }
     </style>
 </head>
 <body>
-    <div class="nav-grid">
-        <button class="nav-btn active" onclick="tab('absen', this)">ABSEN</button>
-        <button class="nav-btn" onclick="tab('stok', this)">STOK</button>
-        <button class="nav-btn" onclick="tab('aktivitas', this)">AKTIVITAS</button>
-    </div>
+    <div class="container">
+        <div class="nav-grid">
+            <button class="nav-btn active" onclick="tab('absen', this)">ABSENSI</button>
+            <button class="nav-btn" onclick="tab('stok', this)">STOK</button>
+            <button class="nav-btn" onclick="tab('aktivitas', this)">AKTIVITAS</button>
+            <button class="nav-btn" onclick="tab('gaji', this)">GAJI</button>
+        </div>
 
-    <div id="t-absen" class="tab-content">
-        <div class="card">
-            <h3>👥 Master Karyawan</h3>
-            <div style="display:flex; gap:5px"><input type="text" id="inNK" placeholder="Nama..."><button style="background:var(--s); width:80px" onclick="svK()">OK</button></div>
-        </div>
-        <div class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
-                <h3>📊 Kalender Absen</h3>
-                <input type="month" id="fM" onchange="renA()" style="width:120px; height:30px">
+        <div id="tab-absen" class="tab-content">
+            <div class="card">
+                <h3>👥 PENGELOLAAN TIM</h3>
+                <div class="form-row">
+                    <input type="text" id="inK" style="flex:2" placeholder="Nama Karyawan...">
+                    <button style="background:var(--s); flex:1" onclick="addK()">TAMBAH</button>
+                    <button style="background:var(--d); flex:1" onclick="delK()">HAPUS</button>
+                </div>
+                <div class="form-row">
+                    <input type="date" id="lS" style="flex:1">
+                    <input type="date" id="lE" style="flex:1">
+                    <button style="background:var(--p); flex:1.5" onclick="setL()">SET LIBUR</button>
+                </div>
             </div>
-            <div class="table-wrap"><table class="table-web" id="tableAbsen"><thead id="thA"></thead><tbody id="tbA"></tbody></table></div>
-            <div class="btn-group">
-                <button style="background:var(--s); font-weight:800" onclick="exX('tableAbsen')">EXCEL</button>
-                <button style="background:var(--te); font-weight:800" onclick="exP('tableAbsen', 'ABSENSI')">PDF</button>
+            <div class="card">
+                <h3>⚡ FINGERPRINT HARIAN</h3>
+                <div class="form-row">
+                    <input list="lk" id="selK" style="flex:2" placeholder="Cari Nama...">
+                    <input type="date" id="resT" style="flex:1">
+                </div>
+                <div class="form-row">
+                    <button style="background:var(--s);flex:1" onclick="abs('Masuk')">MASUK</button>
+                    <button style="background:var(--iz);flex:1" onclick="abs('Ijin')">IJIN</button>
+                    <button style="background:var(--al);flex:1" onclick="abs('Pulang')">PULANG</button>
+                    <button style="background:var(--d);flex:1" onclick="res()">RESET</button>
+                </div>
+            </div>
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
+                    <h3>📊 REKAP KALENDER</h3>
+                    <input type="month" id="fM" onchange="renderAll()" style="width:130px; height:35px">
+                </div>
+                <div class="table-wrap"><table class="table-web" id="tableAbsen"><thead id="thA"></thead><tbody id="tbA"></tbody></table></div>
             </div>
         </div>
-    </div>
 
-    <div id="t-stok" class="tab-content hidden">
-        <div class="card">
-            <h3>📦 Transaksi Stok</h3>
-            <div style="display:grid; grid-template-columns: 1.5fr 1fr; gap:5px; margin-bottom:5px">
-                <select id="slB"></select><input type="number" id="stQ" placeholder="Qty">
+        <div id="tab-stok" class="tab-content hidden">
+            <div class="card">
+                <h3>📦 KONTROL BARANG</h3>
+                <div class="form-row">
+                    <input type="text" id="inB" style="flex:2" placeholder="Barang Baru...">
+                    <button style="background:var(--s); flex:1" onclick="addB()">TAMBAH</button>
+                    <button style="background:var(--d); flex:1" onclick="delB()">HAPUS</button>
+                </div>
+                <hr style="border:0; border-top:1px solid var(--b); margin:12px 0">
+                <div class="form-row">
+                    <input type="date" id="stT" style="flex:1.2">
+                    <select id="slB" style="flex:1.5"></select>
+                    <input type="number" id="stQ" style="flex:0.8" placeholder="Qty">
+                </div>
+                <div class="form-row">
+                    <select id="stA" onchange="tQC(this.value)" style="flex:1">
+                        <option value="Masuk">Masuk (QC)</option>
+                        <option value="Rekondisi">Rekondisi (K -> R)</option>
+                        <option value="Jual Umum">Jual Umum</option>
+                        <option value="Jual Mitra">Jual Mitra</option>
+                    </select>
+                    <div id="qcBox" style="flex:1.2; display:flex; gap:4px">
+                        <select id="qcJ"><option value="Bekas">Bekas</option><option value="Baru">Baru</option></select>
+                        <select id="qcH"><option value="Accepted">Accepted</option><option value="Reject">Reject</option></select>
+                    </div>
+                </div>
+                <button style="background:var(--p); width:100%; height:45px; font-size:14px" onclick="saveS()">SIMPAN TRANSAKSI STOK</button>
             </div>
-            <div style="display:flex; gap:5px; margin-bottom:5px">
-                <select id="stA" onchange="tQC(this.value)"><option value="Masuk">Masuk (QC)</option><option value="Rekondisi">Rekondisi</option><option value="Jual Umum">Jual Umum</option><option value="Jual Mitra">Jual Mitra</option></select>
-                <div id="qBx" style="display:none; gap:2px"><select id="qJ"><option value="Bekas">Bekas</option><option value="Baru">Baru</option></select></div>
+            
+            <div class="card">
+                <h3>📈 REKAP FLOW STOK</h3>
+                <div class="table-wrap">
+                    <table class="table-web" id="tableStok">
+                        <colgroup><col style="width:130px"><col style="width:60px" span="10"></colgroup>
+                        <thead>
+                            <tr><th class="nama-fixed" rowspan="2">NAMA BARANG</th><th colspan="2">AWAL</th><th colspan="2">MASUK</th><th rowspan="2">REKO</th><th colspan="2">JUAL</th><th colspan="3">SISA AKHIR</th></tr>
+                            <tr><th>K</th><th>R</th><th>K</th><th>R</th><th>U</th><th>M</th><th style="color:var(--te)">K</th><th style="color:var(--s)">R</th><th>TOT</th></tr>
+                        </thead>
+                        <tbody id="tbS"></tbody>
+                    </table>
+                </div>
             </div>
-            <button style="background:var(--p); font-weight:800; height:45px" onclick="svS()">SIMPAN DATA STOK</button>
+
+            <div class="card">
+                <h3>📜 LOG TERBARU</h3>
+                <div class="table-wrap">
+                    <table class="table-web" style="min-width:600px">
+                        <thead><tr><th>Tgl</th><th>Barang</th><th>Aksi</th><th>Qty</th><th>Ket</th><th>X</th></tr></thead>
+                        <tbody id="logS"></tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-        <div class="card">
-            <h3>📈 Rekap Stok Bulanan</h3>
-            <div class="table-wrap"><table class="table-web" id="tableStok">
-                <thead>
-                    <tr>
-                        <th class="nama-fixed">BARANG</th>
-                        <th class="c-awal">AWAL-K</th><th class="c-awal">AWAL-B</th>
-                        <th class="c-masuk">IN-K</th><th class="c-masuk">IN-B</th>
-                        <th style="background:var(--lb)">REKO</th>
-                        <th class="c-jual">OUT-U</th><th class="c-jual">OUT-M</th>
-                        <th class="c-sisa">SISA-K</th><th class="c-sisa">READY</th><th class="c-sisa">TOTAL</th>
-                    </tr>
-                </thead>
-                <tbody id="tbS"></tbody>
-            </table></div>
-            <div class="btn-group">
-                <button style="background:var(--s); font-weight:800" onclick="exX('tableStok')">EXCEL</button>
-                <button style="background:var(--te); font-weight:800" onclick="exP('tableStok', 'STOK')">PDF</button>
-            </div>
-        </div>
+
+        <div id="tab-aktivitas" class="tab-content hidden"><div class="card"><h3>📝 LOG AKTIVITAS</h3><p style="text-align:center; padding:20px">Modul Aktivitas Maintenance Sedang Disiapkan.</p></div></div>
+        <div id="tab-gaji" class="tab-content hidden"><div class="card"><h3>💰 PENGGAJIAN</h3><p style="text-align:center; padding:20px">Modul Hitung Gaji Otomatis Sedang Disiapkan.</p></div></div>
     </div>
+    <datalist id="lk"></datalist>
 
     <script>
         const cfg={apiKey:"AIzaSyAu67MAhWBxdmciPi3xOKWhdy-uP4u9tXI",databaseURL:"https://pt-agn-default-rtdb.asia-southeast1.firebasedatabase.app"};
         firebase.initializeApp(cfg); const db=firebase.database();
-        let mK={}, aD={}, hL={}, mB={}, sL={};
+        let mk={}, ad={}, hl={}, brg={}, sl={};
 
         window.onload=()=>{
             const t=new Date().toISOString().split('T')[0];
             document.getElementById('fM').value=t.slice(0,7);
-            db.ref('master_karyawan').on('value',s=>{mK=s.val()||{}; renA();});
-            db.ref('absensi').on('value',s=>{aD=s.val()||{}; renA();});
-            db.ref('master_barang').on('value',s=>{mB=s.val()||{}; uLB(); renS();});
-            db.ref('stok_log').on('value',s=>{sL=s.val()||{}; renS(); renA();});
+            document.getElementById('stT').value=t; document.getElementById('resT').value=t;
+            db.ref('master_karyawan').on('value',s=>{mk=s.val()||{}; uL(); rA();});
+            db.ref('absensi').on('value',s=>{ad=s.val()||{}; rA();});
+            db.ref('hari_libur').on('value',s=>{hl=s.val()||{}; rA();});
+            db.ref('master_barang').on('value',s=>{brg=s.val()||{}; uB(); rS();});
+            db.ref('stok_log').on('value',s=>{sl=s.val()||{}; rS(); rA();});
         };
 
         function tab(t, b){
             document.querySelectorAll('.tab-content').forEach(c=>c.classList.add('hidden'));
-            document.getElementById('t-'+t).classList.remove('hidden');
+            document.getElementById('tab-'+t).classList.remove('hidden');
             document.querySelectorAll('.nav-btn').forEach(n=>n.classList.remove('active'));
             b.classList.add('active');
         }
 
-        function svK(){ let v=document.getElementById('inNK').value; if(v)db.ref('master_karyawan').push(v).then(()=>document.getElementById('inNK').value=""); }
-        function uLB(){ document.getElementById('slB').innerHTML=Object.values(mB).sort().map(v=>`<option value="${v}">${v}</option>`).join(''); }
-        function tQC(v){ document.getElementById('qBx').style.display=(v==='Masuk'?'flex':'none'); }
-        function svS(){
-            let b=document.getElementById('slB').value, q=parseInt(document.getElementById('stQ').value), a=document.getElementById('stA').value;
-            if(!b||!q) return alert("Isi Qty!");
-            db.ref('stok_log').push({tgl:new Date().toISOString().split('T')[0], barang:b, aksi:a, qty:q, jenis:document.getElementById('qJ').value, hasil:'Accepted'}).then(()=>alert("Berhasil!"));
+        function uL(){ document.getElementById('lk').innerHTML=Object.values(mk).sort().map(n=>`<option value="${n}">`).join(''); }
+        function addK(){ let v=document.getElementById('inK').value; if(v)db.ref('master_karyawan').push(v).then(()=>document.getElementById('inK').value=""); }
+        function delK(){ let v=document.getElementById('selK').value; let id=Object.keys(mk).find(k=>mk[k]===v); if(id&&confirm('Hapus?'))db.ref(`master_karyawan/${id}`).remove(); }
+        function setL(){
+            let s=new Date(document.getElementById('lS').value), e=new Date(document.getElementById('lE').value);
+            if(isNaN(s.getTime())) return alert("Isi tgl!");
+            while(s<=e){ db.ref(`hari_libur/${s.toISOString().split('T')[0]}`).set(true); s.setDate(s.getDate()+1); }
+            alert("Berhasil!");
         }
 
-        function renS(){
-            const cM=document.getElementById('fM').value, bL=Object.values(mB).sort();
-            let h=""; 
+        function abs(ty){
+            let n=document.getElementById('selK').value, t=new Date().toISOString().split('T')[0]; if(!n) return alert("Pilih Nama!");
+            let now=new Date(), jam=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+            if(ty==='Ijin'){ let k=prompt("Alasan:"); if(k) db.ref(`absensi/${t}/${n}`).update({status:'Ijin', note:k}); }
+            else if(ty==='Masuk'){ let isT=(now.getHours()>9||(now.getHours()===9&&now.getMinutes()>0)); db.ref(`absensi/${t}/${n}`).update({masuk:jam, status:isT?'Telat':'Hadir'}); }
+            else if(ty==='Pulang'){ db.ref(`absensi/${t}/${n}`).update({pulang:jam}); }
+        }
+        function res(){ let n=document.getElementById('selK').value, t=document.getElementById('resT').value; if(n&&t&&confirm('Hapus?')) db.ref(`absensi/${t}/${n}`).remove(); }
+
+        function uB(){ document.getElementById('slB').innerHTML=Object.values(brg).sort().map(v=>`<option value="${v}">${v}</option>`).join(''); }
+        function addB(){ let v=document.getElementById('inB').value; if(v)db.ref('master_barang').push(v).then(()=>document.getElementById('inB').value=""); }
+        function delB(){ let v=document.getElementById('slB').value; let id=Object.keys(brg).find(k=>brg[k]===v); if(id&&confirm('Hapus?'))db.ref(`master_barang/${id}`).remove(); }
+        function tQC(v){ document.getElementById('qcBox').style.display=(v==='Masuk'?'flex':'none'); }
+        function saveS(){
+            let b=document.getElementById('slB').value, t=document.getElementById('stT').value, q=parseInt(document.getElementById('stQ').value), a=document.getElementById('stA').value;
+            if(!b||!t||!q) return alert("Lengkapi!");
+            let d={tgl:t, barang:b, aksi:a, qty:q};
+            if(a==='Masuk'){ d.jenis=document.getElementById('qcJ').value; d.hasil=document.getElementById('qcH').value; }
+            db.ref('stok_log').push(d).then(()=>alert("Tersimpan!"));
+        }
+
+        function rS(){
+            const cM=document.getElementById('fM').value, bL=Object.values(brg).sort();
+            let h="", logH=""; 
             bL.forEach(bn=>{
-                let r={saK:0, saB:0, mK:0, mB:0, rek:0, jU:0, jM:0};
-                Object.values(sL).forEach(d=>{
+                let r={saK:0, saR:0, mK:0, mR:0, rek:0, jU:0, jM:0};
+                Object.values(sl).forEach(d=>{
                     if(d.barang!==bn) return;
-                    if(d.tgl.slice(0,7) < cM){
-                        if(d.aksi==='Masuk'){ if(d.jenis==='Bekas')r.saK+=d.qty; else r.saB+=d.qty; }
-                        else if(d.aksi==='Rekondisi'){ r.saK-=d.qty; r.saB+=d.qty; }
-                        else if(d.aksi.startsWith('Jual')) r.saB-=d.qty;
-                    } else if(d.tgl.slice(0,7) === cM){
-                        if(d.aksi==='Masuk'){ if(d.jenis==='Bekas')r.mK+=d.qty; else r.mB+=d.qty; }
+                    let dm=d.tgl.slice(0,7);
+                    if(dm < cM){
+                        if(d.aksi==='Masuk'&&d.hasil!=='Reject'){ if(d.jenis==='Bekas')r.saK+=d.qty; else r.saR+=d.qty; }
+                        else if(d.aksi==='Rekondisi'){ r.saK-=d.qty; r.saR+=d.qty; }
+                        else if(d.aksi.startsWith('Jual')) r.saR-=d.qty;
+                    } else if(dm === cM){
+                        if(d.aksi==='Masuk'&&d.hasil!=='Reject'){ if(d.jenis==='Bekas')r.mK+=d.qty; else r.mR+=d.qty; }
                         else if(d.aksi==='Rekondisi')r.rek+=d.qty;
                         else if(d.aksi==='Jual Umum')r.jU+=d.qty;
                         else if(d.aksi==='Jual Mitra')r.jM+=d.qty;
                     }
                 });
-                let siK=r.saK+r.mK-r.rek, siB=r.saB+r.mB+r.rek-r.jU-r.jM;
-                h+=`<tr><td class="nama-fixed">${bn}</td><td>${r.saK}</td><td>${r.saB}</td><td>${r.mK}</td><td>${r.mB}</td><td>${r.rek}</td><td>${r.jU}</td><td>${r.jM}</td><td>${siK}</td><td>${siB}</td><td>${siK+siB}</td></tr>`;
+                let siK=r.saK+r.mK-r.rek, siR=r.saR+r.mR+r.rek-r.jU-r.jM;
+                h+=`<tr><td class="nama-fixed">${bn}</td><td>${r.saK}</td><td>${r.saR}</td><td>${r.mK}</td><td>${r.mR}</td><td>${r.rek}</td><td>${r.jU}</td><td>${r.jM}</td><td>${siK}</td><td>${siR}</td><td style="background:rgba(255,255,255,0.1)">${siK+siR}</td></tr>`;
             });
             document.getElementById('tbS').innerHTML=h;
+            Object.keys(sl).reverse().slice(0,10).forEach(k=>{
+                let d=sl[k]; logH+=`<tr><td>${d.tgl.slice(5)}</td><td>${d.barang}</td><td>${d.aksi}</td><td>${d.qty}</td><td>${d.hasil||''}</td><td><button onclick="db.ref('stok_log/${k}').remove()" style="background:var(--d);height:25px">X</button></td></tr>`;
+            });
+            document.getElementById('logS').innerHTML=logH;
         }
 
-        function renA(){
-            const f=document.getElementById('fM').value, [y,m]=f.split('-'), last=new Date(y,m,0).getDate(), kL=Object.values(mK).sort();
-            let sIn={}, sOut={}; Object.values(sL).forEach(s=>{ if(s.tgl.startsWith(f)){ if(s.aksi==='Masuk') sIn[s.tgl]=true; if(s.aksi.startsWith('Jual')) sOut[s.tgl]=true; } });
-            
-            let h=`<tr><th class="nama-fixed">KARYAWAN</th>`;
-            for(let i=1;i<=last;i++){
-                let tgl=`${y}-${m}-${String(i).padStart(2,'0')}`, icon=(sIn[tgl]?'📂':'')+(sOut[tgl]?'📁':'');
-                h+=`<th style="min-width:40px">${i}<span class="kardus-head">${icon}</span></th>`;
-            }
-            h+=`<th>H</th></tr>`; document.getElementById('thA').innerHTML=h;
-            
+        function rA(){
+            const f=document.getElementById('fM').value, [y,m]=f.split('-'), last=new Date(y,m,0).getDate(), kL=Object.values(mk).sort(), now=new Date(), tS=now.toISOString().split('T')[0];
+            let sD={}; Object.values(sl).forEach(s=>{ if(s.tgl.startsWith(f)) sD[s.tgl]=true; });
+            let h=`<tr><th class="nama-fixed">NAMA</th>`;
+            for(let i=1;i<=last;i++) h+=`<th style="width:45px">${i}<div class="kardus-head">${sD[`${y}-${m}-${String(i).padStart(2,'0')}`]?'📦':''}</div></th>`;
+            h+=`<th style="width:40px">H</th><th style="width:40px">I</th><th style="width:40px">A</th></tr>`;
+            document.getElementById('thA').innerHTML=h;
             let b=""; kL.forEach(n=>{
-                let cH=0, row=`<td class="nama-fixed">${n}</td>`;
+                let c={H:0,I:0,A:0}, row=`<td class="nama-fixed">${n}</td>`;
                 for(let i=1;i<=last;i++){
-                    let tgl=`${y}-${m}-${String(i).padStart(2,'0')}`, da=aD[tgl]?aD[tgl][n]:null;
-                    let sW="-", cl="", jam="";
-                    if(da){ sW=da.status==='Telat'?'T':'H'; cl=da.status==='Telat'?'s-t':'s-h'; cH++; jam=`<div class="box-jam">${da.masuk||''}</div>`; }
-                    row+=`<td><div class="s-box ${cl}">${sW}${jam}</div></td>`;
+                    let tgl=`${y}-${m}-${String(i).padStart(2,'0')}`, dO=new Date(tgl), isM=dO.getDay()===0, isL=hl[tgl], da=ad[tgl]?ad[tgl][n]:null;
+                    let sW="-", cl="", info="";
+                    if(isM) { sW="M"; cl="s-m"; } else if(isL) { sW="OFF"; cl="s-off"; }
+                    if(da){
+                        if(da.status==='Ijin'){ sW="I"; cl="s-i"; c.I++; info=`<div style="font-size:7px">${da.note||''}</div>`; }
+                        else { sW=da.status==='Telat'?'T':'H'; cl=da.status==='Telat'?'s-t':'s-h'; c.H++; }
+                        info+=`<div class="box-jam">${da.masuk||''}</div>`;
+                    } else if(tgl===tS && !isM && !isL && now.getHours()>=16) { sW="A"; cl="s-a"; c.A++; }
+                    row+=`<td><div class="s-box ${cl}">${sW}${info}</div></td>`;
                 }
-                b+=`<tr>${row}<td>${cH}</td></tr>`;
+                b+=`<tr>${row}<td>${c.H}</td><td>${c.I}</td><td>${c.A}</td></tr>`;
             });
             document.getElementById('tbA').innerHTML=b;
-        }
-
-        // FUNGSI EXPORT (FIX PDF)
-        function exX(id){ XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById(id)), `AGN_${id}.xlsx`); }
-        function exP(id, title){
-            const { jsPDF } = window.jspdf; const doc = new jsPDF('l', 'mm', 'a4');
-            doc.text(`LAPORAN ${title} - PT AGN`, 14, 15);
-            doc.autoTable({ 
-                html: '#' + id, 
-                startY: 20, 
-                theme: 'grid', 
-                styles: { fontSize: 7 },
-                headStyles: { fillColor: [30, 41, 59] }
-            });
-            doc.save(`PT_AGN_${title}.pdf`);
         }
     </script>
 </body>
