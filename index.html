@@ -116,7 +116,71 @@
 
         </div>
 
-        <div id="tab-stok" class="tab-content hidden"><div class="card"><h3>Modul Stok (Tahap 2)</h3></div></div>
+        <div id="tab-stok" class="tab-content hidden">
+    <div class="card">
+        <h3>📦 Input Barang Masuk (QC)</h3>
+        <select id="stBrg"></select>
+        <div class="grid-2">
+            <select id="stQC">
+                <option value="Bekas">Kondisi: Bekas (Kotor)</option>
+                <option value="Baru">Kondisi: Baru (Bersih)</option>
+            </select>
+            <select id="stRes">
+                <option value="Accepted">Accepted</option>
+                <option value="Minor">Accepted + Minor</option>
+                <option value="Reject">Reject (BS)</option>
+            </select>
+        </div>
+        <input type="number" id="stQty" placeholder="Jumlah Pcs (Qty)">
+        <button class="btn" style="background:var(--s)" onclick="saveStok('masuk')">SIMPAN BARANG MASUK</button>
+    </div>
+
+    <div class="card">
+        <h3>🛠️ Input Proses Rekondisi</h3>
+        <select id="reBrg"></select>
+        <input type="number" id="reQty" placeholder="Jumlah yang Selesai Direkondisi">
+        <button class="btn" style="background:var(--p)" onclick="saveStok('reko')">UPDATE REKONDISI</button>
+    </div>
+
+    <div class="card">
+        <h3>💰 Input Penjualan</h3>
+        <select id="slBrg"></select>
+        <div class="grid-2">
+            <select id="slType">
+                <option value="Umum">Jual Umum</option>
+                <option value="Mitra">Jual Mitra/Agen</option>
+            </select>
+            <input type="number" id="slQty" placeholder="Qty Keluar">
+        </div>
+        <button class="btn" style="background:var(--t)" onclick="saveStok('jual')">SIMPAN PENJUALAN</button>
+    </div>
+
+    <div class="card">
+        <h3>📊 Rekap Alur Stok Bulanan</h3>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="sticky-col">JENIS BARANG</th>
+                        <th>AWAL (KTR/BRS)</th>
+                        <th>MASUK (KTR/BRS)</th>
+                        <th>REKO</th>
+                        <th>JUAL (UMM/MTR)</th>
+                        <th style="background:#fef3c7">SISA KOTOR</th>
+                        <th style="background:#dcfce7">SISA READY</th>
+                    </tr>
+                </thead>
+                <tbody id="tbStokRekap"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>📜 Log Harian (Hapus Jika Salah)</h3>
+        <div id="logStok" style="max-height: 200px; overflow-y: auto; font-size: 11px;"></div>
+    </div>
+</div>
+
         <div id="tab-aktivitas" class="tab-content hidden"><div class="card"><h3>Modul Aktivitas (Tahap 3)</h3></div></div>
         <div id="tab-gaji" class="tab-content hidden"><div class="card"><h3>Modul Gaji (Tahap 4)</h3></div></div>
 
@@ -310,6 +374,125 @@
                 doc.save(`Absen_${fm}.pdf`);
             }
         }
+<script>:// --- LOGIKA STOK TAHAP 2 ---
+
+function saveStok(mode) {
+    const tgl = new Date().toISOString().split('T')[0];
+    let payload = { tgl, mode };
+
+    if (mode === 'masuk') {
+        payload.brg = document.getElementById('stBrg').value;
+        payload.qc = document.getElementById('stQC').value; // Baru/Bekas
+        payload.res = document.getElementById('stRes').value; // Accepted/Reject
+        payload.q = parseInt(document.getElementById('stQty').value);
+        if(!payload.q) return alert("Isi Qty!");
+        db.ref('stok_logs').push(payload);
+        document.getElementById('stQty').value = "";
+
+    } else if (mode === 'reko') {
+        payload.brg = document.getElementById('reBrg').value;
+        payload.q = parseInt(document.getElementById('reQty').value);
+        if(!payload.q) return alert("Isi Qty!");
+        db.ref('stok_logs').push(payload);
+        document.getElementById('reQty').value = "";
+
+    } else if (mode === 'jual') {
+        payload.brg = document.getElementById('slBrg').value;
+        payload.type = document.getElementById('slType').value;
+        payload.q = parseInt(document.getElementById('slQty').value);
+        if(!payload.q) return alert("Isi Qty!");
+        db.ref('stok_logs').push(payload);
+        document.getElementById('slQty').value = "";
+    }
+
+    notify("Data Stok Diperbarui!");
+}
+
+function renderStok() {
+    const bArr = Object.values(DATA.master_barang || {});
+    const fM = document.getElementById('fM').value; // Bulan terpilih (YYYY-MM)
+    
+    // Hitung Saldo Awal (Dari bulan sebelumnya)
+    const prevMonth = new Date(new Date(fM + "-01").setMonth(new Date(fM + "-01").getMonth() - 1)).toISOString().slice(0, 7);
+    
+    // Dropdowns
+    const bOpt = bArr.map(b => `<option value="${b}">${b}</option>`).join('');
+    document.getElementById('stBrg').innerHTML = bOpt;
+    document.getElementById('reBrg').innerHTML = bOpt;
+    document.getElementById('slBrg').innerHTML = bOpt;
+
+    let html = "";
+    bArr.forEach(brg => {
+        let ktr_awal = 0, brs_awal = 0;
+        let ktr_masuk = 0, brs_masuk = 0, reko = 0, jual_umm = 0, jual_mtr = 0;
+
+        // Loop SEMUA data stok untuk hitung saldo awal & bulan berjalan
+        Object.values(DATA.stok_logs || {}).forEach(log => {
+            if (log.brg === brg) {
+                const logMonth = log.tgl.slice(0, 7);
+                
+                if (logMonth < fM) {
+                    // Hitung Saldo Awal (Akumulasi bulan-bulan sebelumnya)
+                    if(log.mode === 'masuk' && log.res !== 'Reject') {
+                        if(log.qc === 'Bekas') ktr_awal += log.q; else brs_awal += log.q;
+                    }
+                    if(log.mode === 'reko') { ktr_awal -= log.q; brs_awal += log.q; }
+                    if(log.mode === 'jual') { brs_awal -= log.q; }
+                } 
+                else if (logMonth === fM) {
+                    // Hitung Transaksi Bulan Berjalan
+                    if(log.mode === 'masuk') {
+                        if(log.res === 'Reject') return; // Reject tidak masuk hitungan stok
+                        if(log.qc === 'Bekas') ktr_masuk += log.q; else brs_masuk += log.q;
+                    }
+                    if(log.mode === 'reko') reko += log.q;
+                    if(log.mode === 'jual') {
+                        if(log.type === 'Umum') jual_umm += log.q; else jual_mtr += log.q;
+                    }
+                }
+            }
+        });
+
+        const sisa_ktr = ktr_awal + ktr_masuk - reko;
+        const sisa_ready = brs_awal + brs_masuk + reko - (jual_umm + jual_mtr);
+
+        html += `
+            <tr>
+                <td class="sticky-col">${brg}</td>
+                <td>${ktr_awal}/${brs_awal}</td>
+                <td>${ktr_masuk}/${brs_masuk}</td>
+                <td>${reko}</td>
+                <td>${jual_umm}/${jual_mtr}</td>
+                <td style="background:#fef3c7; font-weight:bold">${sisa_ktr}</td>
+                <td style="background:#dcfce7; font-weight:bold">${sisa_ready}</td>
+            </tr>
+        `;
+    });
+    document.getElementById('tbStokRekap').innerHTML = html;
+
+    // Log Harian
+    document.getElementById('logStok').innerHTML = Object.entries(DATA.stok_logs || {}).reverse().map(([id, l]) => `
+        <div style="border-bottom:1px solid #eee; padding:5px; display:flex; justify-content:space-between">
+            <span>${l.tgl} | ${l.brg} | ${l.mode.toUpperCase()} (${l.q} Pcs)</span>
+            <b style="color:red; cursor:pointer" onclick="db.ref('stok_logs/${id}').remove()">HAPUS</b>
+        </div>
+    `).join('');
+}
+
+// Tambahkan pemanggilan renderStok() di dalam window.onload atau di renderAbsen
+// Ubah fungsi renderAbsen() bagian icon aktivitas untuk membaca log stok:
+
+/* DI DALAM renderAbsen() (Cari bagian icon aktivitas):
+Ganti bagian pengecekan icon dengan ini:
+*/
+let icons = "";
+Object.values(DATA.stok_logs || {}).forEach(log => {
+    if(log.tgl === tgl) {
+        if(log.mode === 'masuk') icons += "📦"; // Barang Masuk
+        if(log.mode === 'jual') icons += "📪"; // Barang Keluar
+    }
+});
+
     </script>
 </body>
 </html>
