@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PT-AGN OMNI V98.0</title>
+    <title>Kempu Balap OMNI - PT-AGN</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -15,40 +15,35 @@
             --iz: #8b5cf6; --te: #ec4899; --al: #64748b;
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; background: var(--bg); color: var(--t); font-size: 13px; line-height: 1.5; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; background: var(--bg); color: var(--t); font-size: 13px; }
         
-        /* Navigasi Sticky & Compact */
-        .nav-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; position: sticky; top: 0; z-index: 1000; background: var(--bg); padding: 10px; border-bottom: 1px solid var(--b); }
-        .nav-btn { padding: 12px 2px; background: var(--c); border: 1px solid var(--b); color: var(--t); border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 10px; text-transform: uppercase; transition: 0.2s; }
-        .nav-btn.active { background: var(--p); border-color: var(--p); box-shadow: 0 0 15px rgba(59,130,246,0.5); }
+        .nav-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; position: sticky; top: 0; z-index: 1000; background: var(--bg); padding: 10px; border-bottom: 1px solid var(--b); }
+        .nav-btn { padding: 12px 2px; background: var(--c); border: 1px solid var(--b); color: var(--t); border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 10px; text-transform: uppercase; }
+        .nav-btn.active { background: var(--p); border-color: var(--p); box-shadow: 0 0 15px rgba(59,130,246,0.3); }
 
-        /* Container & Layout */
         .container { padding: 10px; max-width: 600px; margin: 0 auto; }
-        .card { background: var(--c); padding: 15px; border-radius: 20px; margin-bottom: 15px; border: 1px solid var(--b); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .card { background: var(--c); padding: 15px; border-radius: 20px; margin-bottom: 15px; border: 1px solid var(--b); }
         h3 { margin: 0 0 15px; font-size: 11px; color: var(--p); text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }
 
-        /* Form Elements - No Horizontal Scroll */
         .form-group { margin-bottom: 12px; }
         label { display: block; font-size: 11px; margin-bottom: 5px; color: var(--al); font-weight: 600; }
-        input, select, textarea { width: 100%; height: 48px; background: var(--bg); border: 1px solid var(--b); border-radius: 12px; color: #fff; padding: 0 12px; font-size: 14px; outline: none; transition: 0.3s; }
-        input:focus { border-color: var(--p); box-shadow: 0 0 0 2px rgba(59,130,246,0.2); }
-        .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .btn { border: none; border-radius: 12px; padding: 14px; font-weight: 700; cursor: pointer; font-size: 13px; transition: 0.2s; text-align: center; }
-        .btn:active { transform: scale(0.96); }
+        input, select { width: 100%; height: 48px; background: var(--bg); border: 1px solid var(--b); border-radius: 12px; color: #fff; padding: 0 12px; font-size: 14px; outline: none; }
         
-        /* Table / List View for Mobile */
+        .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .btn { border: none; border-radius: 12px; padding: 14px; font-weight: 700; cursor: pointer; font-size: 13px; text-align: center; }
+        
         .scroll-x { overflow-x: auto; border-radius: 12px; border: 1px solid var(--b); margin-top: 10px; }
-        table { width: 100%; border-collapse: collapse; min-width: 400px; }
-        th { background: var(--b); color: var(--al); font-size: 10px; padding: 10px; text-align: center; }
+        table { width: 100%; border-collapse: collapse; min-width: 500px; }
+        th { background: var(--b); color: var(--al); font-size: 10px; padding: 10px; }
         td { padding: 10px; border-bottom: 1px solid var(--b); text-align: center; font-weight: 600; }
         
-        /* Status Badges */
-        .badge { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; font-size: 11px; font-weight: 800; }
+        .sticky-col { position: sticky; left: 0; background: var(--c); z-index: 5; border-right: 2px solid var(--b); min-width: 100px; }
+        .badge { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 8px; font-size: 11px; font-weight: 800; color: white; }
+        
         .bg-h { background: var(--s); } .bg-i { background: var(--iz); } .bg-a { background: var(--d); } 
-        .bg-t { background: var(--te); } .bg-m { background: var(--sun); } .bg-off { background: var(--al); }
+        .bg-m { background: #ff4757; } .bg-off { background: var(--al); }
 
-        /* Notification */
-        #toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: var(--p); color: white; padding: 10px 20px; border-radius: 25px; font-weight: 700; z-index: 2000; display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
+        #toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: var(--s); color: white; padding: 10px 20px; border-radius: 25px; font-weight: 700; z-index: 2000; display: none; }
         .hidden { display: none !important; }
     </style>
 </head>
@@ -64,41 +59,28 @@
     </div>
 
     <div class="container">
-        
         <div id="tab-absen" class="tab-content">
             <div class="card">
                 <h3>👥 MASTER KARYAWAN</h3>
-                <div class="form-group">
-                    <input type="text" id="inK" placeholder="Nama Karyawan Baru...">
-                </div>
-                <button class="btn" style="background:var(--s); width:100%" onclick="addMaster('karyawan', 'inK')">TAMBAH KARYAWAN</button>
+                <div class="form-group"><input type="text" id="inK" placeholder="Nama Karyawan Baru..."></div>
+                <button class="btn" style="background:var(--s); width:100%; color:white;" onclick="addMaster('karyawan', 'inK')">TAMBAH KARYAWAN</button>
                 <div id="listK" style="display:flex; flex-wrap:wrap; gap:5px; margin-top:10px"></div>
             </div>
-
             <div class="card">
                 <h3>⚡ INPUT ABSENSI</h3>
-                <div class="form-group">
-                    <select id="selK"></select>
-                </div>
-                <div class="form-group">
-                    <input type="date" id="absTgl">
-                </div>
-                <div class="form-group">
-                    <input type="text" id="absKet" placeholder="Keterangan (Jika Ijin)">
-                </div>
+                <div class="form-group"><select id="selK"></select></div>
+                <div class="form-group"><input type="date" id="absTgl"></div>
+                <div class="form-group"><input type="text" id="absKet" placeholder="Keterangan (Ijin/Libur)"></div>
                 <div class="btn-row">
-                    <button class="btn" style="background:var(--s)" onclick="saveAbsen('Hadir')">HADIR</button>
-                    <button class="btn" style="background:var(--iz)" onclick="saveAbsen('Izin')">IZIN</button>
-                    <button class="btn" style="background:var(--al)" onclick="resetAbsen()">RESET</button>
-                    <button class="btn" style="background:var(--d)" onclick="saveAbsen('Alpa')">ALPA</button>
+                    <button class="btn" style="background:var(--s); color:white;" onclick="saveAbsen('Hadir')">HADIR</button>
+                    <button class="btn" style="background:var(--iz); color:white;" onclick="saveAbsen('Izin')">IZIN</button>
+                    <button class="btn" style="background:var(--al); color:white;" onclick="resetAbsen()">RESET</button>
+                    <button class="btn" style="background:var(--d); color:white;" onclick="saveAbsen('Alpa')">ALPA</button>
                 </div>
             </div>
-
             <div class="card">
                 <h3>📅 REKAP KALENDER</h3>
-                <div class="form-group">
-                    <input type="month" id="fM" onchange="renderAll()">
-                </div>
+                <div class="form-group"><input type="month" id="fM" onchange="renderAll()"></div>
                 <div class="scroll-x">
                     <table id="tblAbsen">
                         <thead id="thA"></thead>
@@ -111,46 +93,28 @@
         <div id="tab-stok" class="tab-content hidden">
             <div class="card">
                 <h3>📦 MASTER BARANG</h3>
-                <div class="form-group">
-                    <input type="text" id="inB" placeholder="Nama Barang Baru...">
-                </div>
-                <button class="btn" style="background:var(--s); width:100%" onclick="addMaster('barang', 'inB')">TAMBAH BARANG</button>
+                <div class="form-group"><input type="text" id="inB" placeholder="Nama Barang Baru..."></div>
+                <button class="btn" style="background:var(--s); width:100%; color:white;" onclick="addMaster('barang', 'inB')">TAMBAH BARANG</button>
                 <div id="listB" style="display:flex; flex-wrap:wrap; gap:5px; margin-top:10px"></div>
             </div>
-
             <div class="card">
-                <h3>🔄 TRANSAKSI STOK & QC</h3>
+                <h3>🔄 TRANSAKSI STOK</h3>
                 <div class="form-group"><select id="stBrg"></select></div>
                 <div class="btn-row">
-                    <div class="form-group"><select id="stAksi">
-                        <option value="Masuk">Barang Masuk</option>
-                        <option value="Rekondisi">Rekondisi (K->B)</option>
-                        <option value="Jual Umum">Jual Umum</option>
-                        <option value="Jual Mitra">Jual Mitra</option>
-                    </select></div>
-                    <div class="form-group"><select id="stKon">
-                        <option value="Bekas">Bekas / Kotor</option>
-                        <option value="Baru">Baru / Bersih</option>
-                    </select></div>
+                    <select id="stAksi"><option value="Masuk">Masuk</option><option value="Rekondisi">Rekondisi (K->B)</option><option value="Jual Umum">Jual Umum</option><option value="Jual Mitra">Jual Mitra</option></select>
+                    <select id="stKon"><option value="Bekas">Bekas/Kotor</option><option value="Baru">Baru/Bersih</option></select>
                 </div>
-                <div class="btn-row">
-                    <div class="form-group"><select id="stQC">
-                        <option value="Accepted">Accepted</option>
-                        <option value="Minor">Minor Damage</option>
-                        <option value="Reject">Reject</option>
-                    </select></div>
-                    <div class="form-group"><input type="number" id="stQty" placeholder="Jumlah Qty"></div>
+                <div class="btn-row" style="margin-top:10px">
+                    <select id="stQC"><option value="Accepted">Accepted</option><option value="Minor">Minor</option><option value="Reject">Reject</option></select>
+                    <input type="number" id="stQty" placeholder="Jumlah Qty">
                 </div>
-                <button class="btn" style="background:var(--p); width:100%" onclick="saveStok()">SIMPAN TRANSAKSI STOK</button>
+                <button class="btn" style="background:var(--p); width:100%; color:white; margin-top:10px" onclick="saveStok()">SIMPAN TRANSAKSI</button>
             </div>
-
             <div class="card">
-                <h3>📊 REKAP FLOW STOK</h3>
+                <h3>📊 REKAP STOK BULAN INI</h3>
                 <div class="scroll-x">
                     <table>
-                        <thead>
-                            <tr><th>BARANG</th><th>AWAL K</th><th>AWAL B</th><th>REKO</th><th>READY</th><th>TOTAL</th></tr>
-                        </thead>
+                        <thead><tr><th>BARANG</th><th>AWAL K</th><th>AWAL B</th><th>REKO</th><th>READY</th><th>TOTAL</th></tr></thead>
                         <tbody id="tbS"></tbody>
                     </table>
                 </div>
@@ -159,29 +123,24 @@
 
         <div id="tab-aktivitas" class="tab-content hidden">
             <div class="card">
-                <h3>🛠️ INPUT AKTIVITAS TIM</h3>
+                <h3>🛠️ INPUT AKTIVITAS</h3>
                 <div class="form-group"><select id="akKaryawan"></select></div>
                 <div class="form-group"><select id="akTipe">
-                    <option value="Rekondisi Kempu">Rekondisi Kempu</option>
-                    <option value="Rekondisi Jerigen 18L">Rekondisi Jerigen 18L</option>
-                    <option value="Rekondisi Jerigen 5L">Rekondisi Jerigen 5L</option>
-                    <option value="Muat Barang">Muat Barang (50 Pcs)</option>
-                    <option value="Bongkar Barang">Bongkar Barang (50 Pcs)</option>
-                    <option value="Pasang Pangkalan">Pasang Pangkalan</option>
-                    <option value="Kirim Minyak Jauh">Kirim Minyak Jauh</option>
-                    <option value="Kirim Minyak Dekat">Kirim Minyak Dekat</option>
+                    <option value="Rekondisi Kempu">Rekondisi Kempu (Rp 100rb)</option>
+                    <option value="Rekondisi Jerigen 18L">Rekondisi Jerigen 18L (Rp 2rb)</option>
+                    <option value="Rekondisi Jerigen 5L">Rekondisi Jerigen 5L (Rp 2rb)</option>
+                    <option value="Muat Barang">Muat (50 Kempu/Rp 600rb)</option>
+                    <option value="Bongkar Barang">Bongkar (50 Kempu/Rp 600rb)</option>
+                    <option value="Pasang Pangkalan">Pasang Pangkalan (Rp 500rb)</option>
                 </select></div>
-                <div class="form-group">
-                    <input type="number" id="akQty" placeholder="Jumlah (Pcs/Set)">
-                </div>
-                <button class="btn" style="background:var(--s); width:100%" onclick="saveAktivitas()">SIMPAN AKTIVITAS</button>
+                <div class="form-group"><input type="number" id="akQty" placeholder="Jumlah (Pcs/Set)"></div>
+                <button class="btn" style="background:var(--s); width:100%; color:white;" onclick="saveAktivitas()">SIMPAN AKTIVITAS</button>
             </div>
-
             <div class="card">
-                <h3>🛒 BELANJA HARIAN</h3>
-                <div class="form-group"><input type="text" id="belNama" placeholder="Nama Barang"></div>
+                <h3>🛒 BELANJA</h3>
+                <div class="form-group"><input type="text" id="belNama" placeholder="Barang Belanja"></div>
                 <div class="form-group"><input type="number" id="belHarga" placeholder="Harga (Rp)"></div>
-                <button class="btn" style="background:var(--w); width:100%" onclick="saveBelanja()">CATAT BELANJA</button>
+                <button class="btn" style="background:var(--w); width:100%; color:white;" onclick="saveBelanja()">SIMPAN BELANJA</button>
             </div>
         </div>
 
@@ -191,37 +150,31 @@
                 <div id="listGaji"></div>
             </div>
         </div>
-
     </div>
 
     <script>
-        // Konfigurasi Database (Gunakan punya Mas)
-        const cfg = { apiKey: "AIzaSyAu67MAhWBxdmciPi3xOKWhdy-uP4u9tXI", databaseURL: "https://pt-agn-default-rtdb.asia-southeast1.firebasedatabase.app" };
-        firebase.initializeApp(cfg); const db = firebase.database();
+        // CONFIG FIREBASE ASLI MAS (DARI GAMBAR)
+        const firebaseConfig = {
+            apiKey: "AIzaSyAu67MAhWBxdmciPi3xOKWhdy-uP4u9tXI",
+            authDomain: "pt-agn.firebaseapp.com",
+            databaseURL: "https://pt-agn-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "pt-agn",
+            storageBucket: "pt-agn.appspot.com",
+            messagingSenderId: "810494462386",
+            appId: "1:810494462386:web:432a3050c054bdd8437cab",
+            measurementId: "G-N6S12LYQLD"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
         let DATA = { karyawan: {}, barang: {}, absensi: {}, stok: {}, aktivitas: {}, belanja: {} };
-
-        // HARGA BORONGAN (Bisa diedit di sini)
-        const PRICING = {
-            "Rekondisi Kempu": 100000,
-            "Rekondisi Jerigen 18L": 2000,
-            "Rekondisi Jerigen 5L": 2000,
-            "Pasang Pangkalan": 500000,
-            "Muat Barang": 600000,
-            "Bongkar Barang": 600000,
-            "Kirim Minyak Jauh": 250000,
-            "Kirim Minyak Dekat": 100000
-        };
+        const PRICING = { "Rekondisi Kempu": 100000, "Rekondisi Jerigen 18L": 2000, "Rekondisi Jerigen 5L": 2000, "Pasang Pangkalan": 500000, "Muat Barang": 600000, "Bongkar Barang": 600000 };
 
         window.onload = () => {
             const now = new Date();
             document.getElementById('absTgl').value = now.toISOString().split('T')[0];
             document.getElementById('fM').value = now.toISOString().slice(0, 7);
-            
-            db.ref('/').on('value', s => {
-                DATA = s.val() || DATA;
-                renderAll();
-            });
+            db.ref('/').on('value', s => { DATA = s.val() || DATA; renderAll(); });
         };
 
         function notify(msg) {
@@ -237,59 +190,32 @@
             b.classList.add('active');
         }
 
-        function addMaster(path, inputId) {
-            const val = document.getElementById(inputId).value;
-            if (!val) return;
-            db.ref(path).push(val).then(() => {
-                document.getElementById(inputId).value = "";
-                notify("Data Master Ditambahkan!");
-            });
+        function addMaster(path, id) {
+            const v = document.getElementById(id).value;
+            if(!v) return;
+            db.ref(path).push(v).then(() => { document.getElementById(id).value = ""; notify("Tersimpan!"); });
         }
 
-        function saveAbsen(status) {
-            const nama = document.getElementById('selK').value;
-            const tgl = document.getElementById('absTgl').value;
-            const ket = document.getElementById('absKet').value;
-            const jam = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-
-            if (!nama) return alert("Pilih Karyawan!");
-
-            db.ref(`absensi/${tgl}/${nama}`).set({
-                s: status, 
-                t: jam,
-                k: ket
-            }).then(() => {
-                document.getElementById('absKet').value = "";
-                notify("Absen Berhasil!");
-            });
+        function saveAbsen(s) {
+            const n = document.getElementById('selK').value;
+            const t = document.getElementById('absTgl').value;
+            const k = document.getElementById('absKet').value;
+            if(!n) return alert("Pilih Karyawan!");
+            db.ref(`absensi/${t}/${n}`).set({ s, k, jam: new Date().toLocaleTimeString('id-ID') }).then(() => { notify("Absen Berhasil!"); });
         }
 
         function saveStok() {
-            const b = document.getElementById('stBrg').value;
-            const q = parseInt(document.getElementById('stQty').value);
-            const a = document.getElementById('stAksi').value;
-            const k = document.getElementById('stKon').value;
-            const qc = document.getElementById('stQC').value;
-            const tgl = document.getElementById('absTgl').value;
-
-            if (!b || !q) return alert("Lengkapi data stok!");
-
-            db.ref('stok').push({ b, q, a, k, qc, tgl }).then(() => {
-                document.getElementById('stQty').value = "";
-                notify("Transaksi Stok Disimpan!");
-            });
+            const b = document.getElementById('stBrg').value, q = parseInt(document.getElementById('stQty').value);
+            const a = document.getElementById('stAksi').value, k = document.getElementById('stKon').value;
+            const qc = document.getElementById('stQC').value, tgl = document.getElementById('absTgl').value;
+            if(!b || !q) return;
+            db.ref('stok').push({ b, q, a, k, qc, tgl }).then(() => { document.getElementById('stQty').value = ""; notify("Stok Terupdate!"); });
         }
 
         function saveAktivitas() {
-            const n = document.getElementById('akKaryawan').value;
-            const t = document.getElementById('akTipe').value;
-            const q = parseInt(document.getElementById('akQty').value) || 1;
-            const tgl = document.getElementById('absTgl').value;
-
-            db.ref('aktivitas').push({ n, t, q, tgl }).then(() => {
-                document.getElementById('akQty').value = "";
-                notify("Aktivitas Tim Dicatat!");
-            });
+            const n = document.getElementById('akKaryawan').value, t = document.getElementById('akTipe').value;
+            const q = parseInt(document.getElementById('akQty').value) || 1, tgl = document.getElementById('absTgl').value;
+            db.ref('aktivitas').push({ n, t, q, tgl }).then(() => { document.getElementById('akQty').value = ""; notify("Aktivitas Tersimpan!"); });
         }
 
         function renderAll() {
@@ -297,40 +223,34 @@
             const kArr = Object.entries(DATA.karyawan || {});
             const bArr = Object.entries(DATA.barang || {});
 
-            // Render Master Lists
             document.getElementById('listK').innerHTML = kArr.map(([id, n]) => `<div style="background:var(--b); padding:5px 10px; border-radius:8px">${n} <span onclick="db.ref('karyawan/${id}').remove()" style="color:var(--d)">×</span></div>`).join('');
             document.getElementById('listB').innerHTML = bArr.map(([id, n]) => `<div style="background:var(--b); padding:5px 10px; border-radius:8px">${n} <span onclick="db.ref('barang/${id}').remove()" style="color:var(--d)">×</span></div>`).join('');
 
-            // Dropdowns
             const optsK = kArr.map(([id, n]) => `<option value="${n}">${n}</option>`).join('');
             document.getElementById('selK').innerHTML = optsK;
             document.getElementById('akKaryawan').innerHTML = optsK;
             document.getElementById('stBrg').innerHTML = bArr.map(([id, n]) => `<option value="${n}">${n}</option>`).join('');
 
-            renderAbsenTable(fM, kArr);
-            renderStokTable(fM, bArr);
+            renderAbsen(fM, kArr);
+            renderStok(fM, bArr);
             renderGaji(fM, kArr);
         }
 
-        function renderAbsenTable(fM, kArr) {
+        function renderAbsen(fM, kArr) {
             const [y, m] = fM.split('-'), last = new Date(y, m, 0).getDate();
-            let th = `<tr><th style="position:sticky; left:0; background:var(--c); z-index:10">NAMA</th>`, tb = "";
+            let th = `<tr><th class="sticky-col">NAMA</th>`, tb = "";
             for (let i = 1; i <= last; i++) th += `<th>${i}</th>`;
             document.getElementById('thA').innerHTML = th + `</tr>`;
 
             kArr.forEach(([id, name]) => {
-                let row = `<td style="position:sticky; left:0; background:var(--c); color:var(--p)">${name}</td>`;
+                let row = `<td class="sticky-col" style="color:var(--p)">${name}</td>`;
                 for (let i = 1; i <= last; i++) {
                     const tgl = `${y}-${m}-${String(i).padStart(2, '0')}`;
                     const d = (DATA.absensi && DATA.absensi[tgl]) ? DATA.absensi[tgl][name] : null;
                     const isSun = new Date(tgl).getDay() === 0;
-                    
                     let txt = "-", cls = "";
                     if (isSun) { txt = "M"; cls = "bg-m"; }
-                    if (d) {
-                        txt = d.s[0];
-                        cls = d.s === 'Hadir' ? 'bg-h' : (d.s === 'Izin' ? 'bg-i' : 'bg-a');
-                    }
+                    if (d) { txt = d.s[0]; cls = d.s==='Hadir'?'bg-h':(d.s==='Izin'?'bg-i':'bg-a'); }
                     row += `<td><div class="badge ${cls}">${txt}</div></td>`;
                 }
                 tb += `<tr>${row}</tr>`;
@@ -338,46 +258,39 @@
             document.getElementById('tbA').innerHTML = tb;
         }
 
-        function renderStokTable(fM, bArr) {
-            let html = "";
+        function renderStok(fM, bArr) {
+            let h = "";
             bArr.forEach(([id, bn]) => {
-                let ak = 0, ab = 0, re = 0, ready = 0;
+                let ak=0, ab=0, re=0, ready=0;
                 Object.values(DATA.stok || {}).forEach(s => {
                     if (s.b !== bn) return;
-                    // Logika saldo awal otomatis
                     if (s.tgl < fM + "-01") {
-                        if (s.a === 'Masuk') (s.k === 'Bekas' ? ak += s.q : ab += s.q);
-                        if (s.a === 'Rekondisi') { ak -= s.q; ab += s.q; }
-                        if (s.a.includes('Jual')) ab -= s.q;
+                        if (s.a==='Masuk') (s.k==='Bekas'?ak+=s.q:ab+=s.q);
+                        if (s.a==='Rekondisi'){ak-=s.q; ab+=s.q;}
+                        if (s.a.includes('Jual')) ab-=s.q;
                     } else if (s.tgl.startsWith(fM)) {
-                        if (s.a === 'Rekondisi') re += s.q;
-                        if (s.a === 'Masuk' && s.k === 'Baru') ready += s.q;
+                        if (s.a==='Rekondisi') re+=s.q;
+                        if (s.a==='Masuk' && s.k==='Baru') ready+=s.q;
                     }
                 });
-                html += `<tr><td>${bn}</td><td>${ak}</td><td>${ab}</td><td>${re}</td><td>${ready}</td><td>${ak + ab + ready}</td></tr>`;
+                h += `<tr><td>${bn}</td><td>${ak}</td><td>${ab}</td><td>${re}</td><td>${ready}</td><td>${ak+ab+ready}</td></tr>`;
             });
-            document.getElementById('tbS').innerHTML = html;
+            document.getElementById('tbS').innerHTML = h;
         }
 
         function renderGaji(fM, kArr) {
-            let html = "";
+            let h = "";
             kArr.forEach(([id, name]) => {
                 let total = 0;
                 Object.values(DATA.aktivitas || {}).forEach(ak => {
-                    if (ak.n === name && ak.tgl.startsWith(fM)) {
-                        total += (PRICING[ak.t] || 0) * ak.q;
-                    }
+                    if (ak.n === name && ak.tgl.startsWith(fM)) total += (PRICING[ak.t] || 0) * ak.q;
                 });
-                html += `
-                <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid var(--b)">
-                    <div><b style="color:var(--p)">${name}</b><br><small>${fM}</small></div>
-                    <div style="text-align:right">
-                        <b style="color:var(--s)">Rp ${total.toLocaleString()}</b><br>
-                        <button onclick="alert('Fitur Slip PDF Sedang Disiapkan')" style="font-size:9px; background:var(--b); color:#fff; border:none; padding:4px 8px; border-radius:5px">SLIP</button>
-                    </div>
+                h += `<div style="display:flex; justify-content:space-between; padding:12px; border-bottom:1px solid var(--b)">
+                    <div><b>${name}</b><br><small>${fM}</small></div>
+                    <div style="text-align:right"><b style="color:var(--s)">Rp ${total.toLocaleString()}</b></div>
                 </div>`;
             });
-            document.getElementById('listGaji').innerHTML = html;
+            document.getElementById('listGaji').innerHTML = h;
         }
     </script>
 </body>
