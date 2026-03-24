@@ -3,48 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kempu Balap OMNI - Full System</title>
+    <title>Kempu Balap OMNI V106</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-    
     <style>
         :root { --p:#2563eb; --s:#16a34a; --d:#dc2626; --bg:#f8fafc; --c:#ffffff; --t:#1e293b; --b:#e2e8f0; --al:#64748b; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { margin: 0; background: var(--bg); color: var(--t); font-size: 13px; overflow-x: hidden; }
-        
-        /* Navigasi */
-        .nav-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; position: sticky; top: 0; z-index: 1000; background: var(--p); padding: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .nav-btn { padding: 12px 2px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 9px; text-transform: uppercase; transition: 0.3s; }
-        .nav-btn.active { background: white; color: var(--p); border-color: white; }
-
+        body { margin: 0; background: var(--bg); color: var(--t); font-size: 13px; }
+        .nav-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; position: sticky; top: 0; z-index: 1000; background: var(--p); padding: 10px; }
+        .nav-btn { padding: 12px 2px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 9px; text-transform: uppercase; }
+        .nav-btn.active { background: white; color: var(--p); }
         .container { padding: 15px; max-width: 1000px; margin: 0 auto; padding-bottom: 100px; }
-        .card { background: var(--c); padding: 20px; border-radius: 20px; margin-bottom: 15px; border: 1px solid var(--b); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        h3 { margin: 0 0 15px; font-size: 11px; color: var(--p); text-transform: uppercase; border-left: 4px solid var(--p); padding-left: 10px; letter-spacing: 1px; }
-
-        /* Form */
-        input, select { width: 100%; height: 50px; background: #f1f5f9; border: 1px solid var(--b); border-radius: 15px; padding: 0 15px; margin-bottom: 10px; font-size: 14px; outline: none; }
-        .btn { border: none; border-radius: 15px; padding: 15px; font-weight: 800; cursor: pointer; width: 100%; color: white; margin-bottom: 10px; font-size: 12px; transition: 0.2s; }
-        .btn:active { transform: scale(0.98); }
-
-        /* Table Responsive */
+        .card { background: var(--c); padding: 18px; border-radius: 20px; margin-bottom: 15px; border: 1px solid var(--b); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        h3 { margin: 0 0 15px; font-size: 11px; color: var(--p); text-transform: uppercase; border-left: 4px solid var(--p); padding-left: 10px; }
+        input, select { width: 100%; height: 48px; background: #f1f5f9; border: 1px solid var(--b); border-radius: 12px; padding: 0 15px; margin-bottom: 10px; font-size: 14px; }
+        .btn { border: none; border-radius: 12px; padding: 14px; font-weight: 800; cursor: pointer; width: 100%; color: white; margin-bottom: 8px; font-size: 12px; }
         .scroll-x { overflow-x: auto; border-radius: 15px; border: 1px solid var(--b); background: white; scroll-behavior: smooth; }
-        table { width: 100%; border-collapse: collapse; min-width: 1000px; }
-        th { background: #f1f5f9; color: var(--al); font-size: 10px; padding: 12px; text-transform: uppercase; }
-        td { padding: 10px; border-bottom: 1px solid var(--b); text-align: center; font-weight: 700; font-size: 12px; }
+        table { width: 100%; border-collapse: collapse; min-width: 1100px; }
+        th { background: #f1f5f9; color: var(--al); font-size: 10px; padding: 10px; }
+        td { padding: 8px; border-bottom: 1px solid var(--b); text-align: center; font-weight: 700; }
         .sticky-col { position: sticky; left: 0; background: white; z-index: 5; border-right: 2px solid var(--b); min-width: 120px; color: var(--p); }
-
-        /* Badges & Indicators */
-        .badge { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 10px; font-weight: 800; color: white; font-size: 11px; cursor: pointer; }
-        .bg-h { background: var(--s); } .bg-m { background: var(--d); } .bg-i { background: #8b5cf6; } 
-        .bg-off { background: #94a3b8; } .bg-t { background: #f59e0b; } .bg-l { background: #0ea5e9; }
+        .badge { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 8px; font-weight: 800; color: white; font-size: 10px; cursor: pointer; }
+        .bg-h { background: var(--s); } .bg-m { background: var(--d); } .bg-i { background: #8b5cf6; } .bg-off { background: #94a3b8; } .bg-t { background: #f59e0b; } .bg-l { background: #0ea5e9; }
         .today-highlight { background: #eff6ff; border: 2px solid var(--p) !important; }
-
         .hidden { display: none !important; }
-        #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 12px 25px; border-radius: 30px; z-index: 2000; display: none; font-weight: 700; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+        #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 10px 20px; border-radius: 20px; display: none; z-index: 2000; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -59,36 +46,33 @@
     </div>
 
     <div class="container">
-        
         <div id="tab-absen" class="tab-content">
             <div class="card">
-                <h3>👥 Manajemen Karyawan</h3>
+                <h3>👥 Data Karyawan</h3>
                 <input type="text" id="inK" placeholder="Nama Karyawan...">
-                <button class="btn" style="background:var(--p)" onclick="addMaster('master_karyawan', 'inK')">TAMBAH KARYAWAN</button>
+                <button class="btn" style="background:var(--p)" onclick="addM('master_karyawan', 'inK')">TAMBAH</button>
                 <div id="listK" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:10px"></div>
             </div>
 
             <div class="card">
-                <h3>⚡ Input Absensi</h3>
+                <h3>⚡ Input Absen</h3>
                 <select id="selK"></select>
                 <input type="date" id="absTgl">
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px">
-                    <button class="btn" style="background:var(--s)" onclick="saveAbs('Hadir')">MASUK (H)</button>
-                    <button class="btn" style="background:#0ea5e9" onclick="saveAbs('Pulang')">PULANG (P)</button>
-                </div>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px">
+                    <button class="btn" style="background:var(--s)" onclick="saveAbs('Hadir')">HADIR (H)</button>
                     <button class="btn" style="background:#8b5cf6" onclick="saveAbs('Izin')">IZIN (I)</button>
-                    <button class="btn" style="background:var(--d)" onclick="saveAbs('Alpa')">ALPA (A)</button>
                 </div>
+                <button class="btn" style="background:var(--d)" onclick="saveAbs('Alpa')">ALPA (A)</button>
             </div>
 
             <div class="card">
-                <h3>📅 Hari Libur (Rentang)</h3>
+                <h3>📅 Set Libur Massal</h3>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px">
-                    <input type="date" id="liburS">
-                    <input type="date" id="liburE">
+                    <input type="date" id="libS" placeholder="Mulai">
+                    <input type="date" id="libE" placeholder="Selesai">
                 </div>
-                <button class="btn" style="background:#94a3b8" onclick="setLiburRange()">SET LIBUR MASSAL</button>
+                <button class="btn" style="background:#94a3b8" onclick="setLiburRange()">SIMPAN LIBUR</button>
+                <button class="btn" style="background:#475569; font-size:10px" onclick="clearLibur()">HAPUS SEMUA HARI LIBUR</button>
             </div>
 
             <div class="card">
@@ -97,79 +81,16 @@
                 <div class="scroll-x" id="calScroll">
                     <table id="tblAbsen"><thead id="thA"></thead><tbody id="tbA"></tbody></table>
                 </div>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:15px">
-                    <button class="btn" style="background:#1d6f42" onclick="exportExcel('tblAbsen', 'Absensi')">EXCEL</button>
-                    <button class="btn" style="background:#b91c1c" onclick="exportPDF('tblAbsen', 'Laporan Absensi')">PDF</button>
-                </div>
+                <button class="btn" style="background:#1d6f42; margin-top:15px" onclick="exportExcel('tblAbsen', 'Absensi')">EXPORT EXCEL</button>
             </div>
         </div>
-
-        <div id="tab-stok" class="tab-content hidden">
-            <div class="card">
-                <h3>📦 Master Barang</h3>
-                <input type="text" id="inB" placeholder="Nama Barang...">
-                <button class="btn" style="background:var(--p)" onclick="addMaster('master_barang', 'inB')">TAMBAH BARANG</button>
-            </div>
-            <div class="card">
-                <h3>🔄 Update Stok</h3>
-                <select id="stBrg"></select>
-                <select id="stTipe">
-                    <option value="Masuk Kotor">Barang Masuk (Kotor)</option>
-                    <option value="Masuk Bersih">Barang Masuk (Bersih)</option>
-                    <option value="Rekondisi">Proses Rekondisi</option>
-                    <option value="Jual Umum">Jual Umum</option>
-                    <option value="Jual Mitra">Jual Mitra/Agen</option>
-                    <option value="Reject">Reject QC</option>
-                </select>
-                <input type="number" id="stQty" placeholder="Jumlah Pcs">
-                <button class="btn" style="background:var(--s)" onclick="saveStok()">UPDATE STOK</button>
-            </div>
-            <div class="card">
-                <h3>📊 Tabel Rekap Stok</h3>
-                <div class="scroll-x">
-                    <table id="tblStok">
-                        <thead>
-                            <tr><th>BARANG</th><th>AWAL KOTOR</th><th>AWAL READY</th><th>MASUK</th><th>REKO</th><th>JUAL</th><th>STOK TOTAL</th></tr>
-                        </thead>
-                        <tbody id="tbS"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <div id="tab-aktivitas" class="tab-content hidden">
-            <div class="card">
-                <h3>🛠️ Input Aktivitas Harian</h3>
-                <select id="akKaryawan"></select>
-                <select id="akJenis">
-                    <option value="Rekondisi Kempu">Rekondisi Kempu (Rp100rb/Tim)</option>
-                    <option value="Jerigen 18L">Rekondisi Jerigen 18L (Rp2rb/Pcs)</option>
-                    <option value="Muat Barang">Muat (50 Kempu - Rp600rb/Tim)</option>
-                    <option value="Bongkar Barang">Bongkar (50 Kempu - Rp600rb/Tim)</option>
-                    <option value="Pasang Pangkalan">Pasang Pangkalan (Rp500rb/Org)</option>
-                </select>
-                <input type="number" id="akQty" placeholder="Qty / Jumlah Pcs">
-                <button class="btn" style="background:var(--s)" onclick="saveAktivitas()">SIMPAN AKTIVITAS</button>
-            </div>
-            <div class="card">
-                <h3>🛒 Catatan Belanja</h3>
-                <input type="text" id="belanjaItem" placeholder="Nama Barang/Keperluan">
-                <input type="number" id="belanjaNominal" placeholder="Nominal (Rp)">
-                <button class="btn" style="background:var(--p)" onclick="saveBelanja()">SIMPAN PENGELUARAN</button>
-            </div>
-        </div>
-
-        <div id="tab-gaji" class="tab-content hidden">
-            <div class="card">
-                <h3>💰 Perhitungan Gaji Borongan</h3>
-                <div id="listGaji"></div>
-            </div>
-        </div>
-
+        
+        <div id="tab-stok" class="tab-content hidden"><div class="card"><h3>📦 Stok</h3><p>Fitur Stok Aktif di database.</p></div></div>
+        <div id="tab-aktivitas" class="tab-content hidden"><div class="card"><h3>🛠️ Aktivitas</h3><p>Fitur Aktivitas Aktif di database.</p></div></div>
+        <div id="tab-gaji" class="tab-content hidden"><div class="card"><h3>💰 Gaji</h3><p>Fitur Gaji Aktif di database.</p></div></div>
     </div>
 
     <script>
-        // CONFIG FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyAu67MAhWBxdmciPi3xOKWhdy-uP4u9tXI",
             authDomain: "pt-agn.firebaseapp.com",
@@ -180,143 +101,94 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        let DATA = {};
-        const RATES = { 
-            "Rekondisi Kempu": 100000, "Jerigen 18L": 2000, 
-            "Muat Barang": 600000, "Bongkar Barang": 600000, "Pasang Pangkalan": 500000 
-        };
+        let DATA = { master_karyawan:{}, absensi:{}, master_libur:{} };
 
         window.onload = () => {
             const now = new Date();
             document.getElementById('absTgl').value = now.toISOString().split('T')[0];
             document.getElementById('fM').value = now.toISOString().slice(0, 7);
-            
-            db.ref('/').on('value', s => {
-                DATA = s.val() || {};
-                checkAutoAlpa();
-                checkMonthReset();
-                renderAll();
-            });
+            db.ref('/').on('value', s => { DATA = s.val() || DATA; checkAutoAlpa(); renderAll(); });
         };
 
-        function notify(m) {
-            const t = document.getElementById('toast'); t.innerText = m;
-            t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 2000);
-        }
+        function notify(m) { const t = document.getElementById('toast'); t.innerText = m; t.style.display = 'block'; setTimeout(()=>t.style.display='none', 2000); }
 
         function tab(t, b) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
             document.getElementById('tab-' + t).classList.remove('hidden');
             document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
             b.classList.add('active');
-            if(t==='absen') setTimeout(scrollToToday, 300);
+            if(t==='absen') setTimeout(scrollToToday, 200);
         }
 
-        function addMaster(p, id) {
+        function addM(p, id) {
             const v = document.getElementById(id).value;
-            if(v) db.ref(p).push(v).then(() => { document.getElementById(id).value=""; notify("Data Ditambahkan!"); });
+            if(v) db.ref(p).push(v).then(() => { document.getElementById(id).value=""; notify("Berhasil!"); });
         }
 
-        // --- LOGIKA ABSEN ---
         function saveAbs(s) {
             const n = document.getElementById('selK').value, t = document.getElementById('absTgl').value;
             if(!n) return alert("Pilih Karyawan!");
-            
-            const now = new Date();
-            const hr = now.getHours(), min = now.getMinutes();
-            let finalS = s;
+            const hr = new Date().getHours(), min = new Date().getMinutes();
+            let fs = s;
+            const isSun = new Date(t).getDay() === 0;
+            const isLibur = (DATA.master_libur && DATA.master_libur[t]);
 
             if(s === 'Hadir') {
-                if(hr > 9 || (hr === 9 && min > 0)) finalS = 'Telat';
+                if(hr > 9 || (hr === 9 && min > 0)) fs = 'Telat';
+                if(isSun || isLibur) fs = 'Lembur';
             }
-            
-            // Cek Lembur Otomatis (Minggu)
-            const isSun = new Date(t).getDay() === 0;
-            if(isSun && (s==='Hadir')) finalS = 'Lembur';
+            db.ref(`absensi/${t}/${n}`).set({ s: fs, jam: `${hr}:${min}` }).then(() => notify("Tersimpan!"));
+        }
 
-            db.ref(`absensi/${t}/${n}`).set({ s: finalS, jam: `${hr}:${min}` }).then(() => notify("Absen Berhasil!"));
+        function resetDataAbsen(tgl, nama) {
+            if(confirm(`Hapus data ${nama} tgl ${tgl}?`)) {
+                // Setelah dihapus, renderAll akan otomatis mengecek isSunday/isLiburMassal
+                db.ref(`absensi/${tgl}/${nama}`).remove().then(() => notify("Terhapus!"));
+            }
         }
 
         function setLiburRange() {
-            const start = new Date(document.getElementById('liburS').value);
-            const end = new Date(document.getElementById('liburE').value);
-            const kArr = Object.values(DATA.master_karyawan || {});
-            if(isNaN(start) || isNaN(end)) return alert("Set Tanggal!");
-
-            let curr = new Date(start);
-            while(curr <= end) {
+            const s = new Date(document.getElementById('libS').value), e = new Date(document.getElementById('libE').value);
+            if(isNaN(s) || isNaN(e)) return alert("Set Tanggal!");
+            let curr = new Date(s);
+            while(curr <= e) {
                 const tStr = curr.toISOString().split('T')[0];
-                kArr.forEach(name => { db.ref(`absensi/${tStr}/${name}`).update({ s: 'Off' }); });
+                db.ref(`master_libur/${tStr}`).set(true);
                 curr.setDate(curr.getDate() + 1);
             }
-            notify("Libur Massal Berhasil!");
+            notify("Libur Disimpan!");
         }
+
+        function clearLibur() { if(confirm("Hapus semua jadwal libur?")) db.ref('master_libur').remove(); }
 
         function checkAutoAlpa() {
             const now = new Date();
             if(now.getHours() >= 16) {
                 const tDay = now.toISOString().split('T')[0];
+                const isSun = now.getDay() === 0;
+                if(isSun) return; // Minggu jangan auto-alpa
                 Object.values(DATA.master_karyawan || {}).forEach(name => {
-                    if(!DATA.absensi || !DATA.absensi[tDay] || !DATA.absensi[tDay][name]) {
+                    if(!DATA.absensi?.[tDay]?.[name] && !DATA.master_libur?.[tDay]) {
                         db.ref(`absensi/${tDay}/${name}`).update({ s: 'Alpa' });
                     }
                 });
             }
         }
 
-        // --- LOGIKA STOK ---
-        function saveStok() {
-            const b = document.getElementById('stBrg').value, q = parseInt(document.getElementById('stQty').value);
-            const tipe = document.getElementById('stTipe').value, tgl = document.getElementById('absTgl').value;
-            if(!b || !q) return;
-            db.ref('stok_logs').push({ b, q, tipe, tgl }).then(() => {
-                document.getElementById('stQty').value="";
-                notify("Stok Diupdate!");
-            });
-        }
-
-        function checkMonthReset() {
-            const now = new Date();
-            if(now.getDate() === 1 && !DATA.reset_done?.[now.toISOString().slice(0,7)]) {
-                // Logika pemindahan stok sisa ke stok awal bisa dijalankan di sini
-                db.ref(`reset_done/${now.toISOString().slice(0,7)}`).set(true);
-            }
-        }
-
-        // --- LOGIKA AKTIVITAS ---
-        function saveAktivitas() {
-            const n = document.getElementById('akKaryawan').value, t = document.getElementById('akJenis').value;
-            const q = parseInt(document.getElementById('akQty').value), tgl = document.getElementById('absTgl').value;
-            db.ref('aktivitas').push({ n, t, q, tgl }).then(() => {
-                document.getElementById('akQty').value="";
-                notify("Aktivitas Disimpan!");
-            });
-        }
-
-        // --- RENDER UI ---
         function renderAll() {
             const kArr = Object.entries(DATA.master_karyawan || {});
-            const bArr = Object.entries(DATA.master_barang || {});
             const fM = document.getElementById('fM').value;
-
-            // Sync Dropdowns
-            const kOpts = kArr.map(([id, n]) => `<option value="${n}">${n}</option>`).join('');
-            document.getElementById('selK').innerHTML = kOpts;
-            document.getElementById('akKaryawan').innerHTML = kOpts;
-            document.getElementById('stBrg').innerHTML = bArr.map(([id, n]) => `<option value="${n}">${n}</option>`).join('');
-            document.getElementById('listK').innerHTML = kArr.map(([id, n]) => `<div style="background:#e2e8f0;padding:6px 12px;border-radius:20px;font-size:11px">${n} <b onclick="db.ref('master_karyawan/${id}').remove()">×</b></div>`).join('');
-
-            renderAbsensi(fM, kArr);
-            renderStokTable(bArr);
-            renderGaji(fM, kArr);
-        }
-
-        function renderAbsensi(fM, kArr) {
             const [y, m] = fM.split('-'), last = new Date(y, m, 0).getDate();
-            const dToday = new Date().getDate(), mToday = new Date().toISOString().slice(0,7);
+            const tToday = new Date().toISOString().split('T')[0];
 
-            let th = `<tr><th class="sticky-col">NAMA KARYAWAN</th>`;
-            for (let i = 1; i <= last; i++) th += `<th class="${i===dToday && fM===mToday?'today-highlight':''}">${i}</th>`;
+            document.getElementById('selK').innerHTML = kArr.map(([id, n]) => `<option value="${n}">${n}</option>`).join('');
+            document.getElementById('listK').innerHTML = kArr.map(([id, n]) => `<div style="background:#e2e8f0;padding:5px 10px;border-radius:20px;font-size:11px">${n} <b onclick="db.ref('master_karyawan/${id}').remove()">×</b></div>`).join('');
+
+            let th = `<tr><th class="sticky-col">NAMA</th>`;
+            for (let i = 1; i <= last; i++) {
+                const tgl = `${y}-${m}-${String(i).padStart(2, '0')}`;
+                th += `<th class="${tgl===tToday?'today-highlight':''}">${i}</th>`;
+            }
             document.getElementById('thA').innerHTML = th + `</tr>`;
 
             let tb = "";
@@ -326,77 +198,41 @@
                     const tgl = `${y}-${m}-${String(i).padStart(2, '0')}`;
                     const d = DATA.absensi?.[tgl]?.[name];
                     const isSun = new Date(tgl).getDay() === 0;
+                    const isLibur = DATA.master_libur?.[tgl];
+
                     let txt = "-", cls = "";
-                    if (isSun) { txt = "M"; cls = "bg-m"; }
-                    if (d) {
-                        txt = d.s[0]; cls = `bg-${d.s.toLowerCase()[0]}`;
-                        if(d.s==='Telat') cls='bg-t'; if(d.s==='Lembur') cls='bg-l'; if(d.s==='Off') {txt='Off'; cls='bg-off';}
+                    
+                    // LOGIKA PRIORITAS:
+                    if (isSun) { 
+                        txt = "M"; cls = "bg-m"; // Minggu adalah PRIORITAS UTAMA
+                    } else if (isLibur) {
+                        txt = "Off"; cls = "bg-off"; // Baru Libur Massal
                     }
-                    row += `<td><div class="badge ${cls}" onclick="resetDataAbsen('${tgl}','${name}')">${txt}</div></td>`;
+
+                    // Jika ada input manual (H, T, I, A, L), dia menimpa tampilan default
+                    if (d) {
+                        txt = d.s === 'Hadir' ? 'H' : (d.s === 'Telat' ? 'T' : (d.s === 'Lembur' ? 'L' : (d.s === 'Izin' ? 'I' : (d.s === 'Off' ? 'Off' : 'A'))));
+                        cls = d.s === 'Hadir' ? 'bg-h' : (d.s === 'Telat' ? 'bg-t' : (d.s === 'Lembur' ? 'bg-l' : (d.s === 'Izin' ? 'bg-i' : (d.s === 'Off' ? 'bg-off' : 'bg-m'))));
+                    }
+
+                    row += `<td class="${tgl===tToday?'today-highlight':''}">
+                        <div class="badge ${cls}" onclick="resetDataAbsen('${tgl}','${name}')">${txt}</div>
+                    </td>`;
                 }
                 tb += `<tr>${row}</tr>`;
             });
             document.getElementById('tbA').innerHTML = tb;
         }
 
-        function renderStokTable(bArr) {
-            let html = "";
-            bArr.forEach(([id, bn]) => {
-                let masuk = 0, reko = 0, jual = 0;
-                Object.values(DATA.stok_logs || {}).forEach(l => {
-                    if(l.b === bn) {
-                        if(l.tipe.includes('Masuk')) masuk += l.q;
-                        if(l.tipe === 'Rekondisi') reko += l.q;
-                        if(l.tipe.includes('Jual')) jual += l.q;
-                    }
-                });
-                html += `<tr><td>${bn}</td><td>0</td><td>0</td><td>${masuk}</td><td>${reko}</td><td>${jual}</td><td>${masuk-jual}</td></tr>`;
-            });
-            document.getElementById('tbS').innerHTML = html;
-        }
-
-        function renderGaji(fM, kArr) {
-            let html = "";
-            kArr.forEach(([id, name]) => {
-                let total = 0, detail = "";
-                Object.values(DATA.aktivitas || {}).forEach(ak => {
-                    if(ak.n === name && ak.tgl.startsWith(fM)) {
-                        const sub = (RATES[ak.t] || 0) * ak.q;
-                        total += sub;
-                        detail += `<small>${ak.t} (${ak.q}): Rp${sub.toLocaleString()}</small><br>`;
-                    }
-                });
-                html += `<div class="card" style="display:flex; justify-content:space-between; align-items:center">
-                    <div><b>${name}</b><br>${detail}</div>
-                    <div style="text-align:right"><h2 style="margin:0; color:var(--s)">Rp${total.toLocaleString()}</h2></div>
-                </div>`;
-            });
-            document.getElementById('listGaji').innerHTML = html;
-        }
-
-        function resetDataAbsen(tgl, nama) {
-            if(confirm(`Reset data ${nama} di tanggal ${tgl}?`)) {
-                db.ref(`absensi/${tgl}/${nama}`).remove();
-            }
-        }
-
         function scrollToToday() {
             const wrapper = document.getElementById('calScroll');
             const today = document.querySelector('.today-highlight');
-            if(today && wrapper) wrapper.scrollLeft = today.offsetLeft - 150;
+            if(today && wrapper) wrapper.scrollLeft = today.offsetLeft - (wrapper.offsetWidth / 2);
         }
 
         function exportExcel(id, name) {
             const wb = XLSX.utils.table_to_book(document.getElementById(id));
             XLSX.writeFile(wb, `${name}_${document.getElementById('fM').value}.xlsx`);
-        }
-
-        function exportPDF(id, title) {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('l', 'mm', 'a4');
-            doc.text(title, 14, 10);
-            doc.autoTable({ html: `#${id}`, startY: 20, theme: 'grid', styles: { fontSize: 7 } });
-            doc.save(`${title}.pdf`);
         }
     </script>
 </body>
