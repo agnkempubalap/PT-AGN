@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KEMPU BALAP ERP - V185 FINAL</title>
+    <title>KEMPU BALAP ERP - V186 FINAL</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -15,29 +15,20 @@
         * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; background: var(--bg); color: var(--t); font-size: 11px; padding: 5px; }
         .nav { display: flex; gap: 4px; position: sticky; top: 0; z-index: 1000; background: var(--bg); padding: 5px 0; }
-        .nav button { flex: 1; padding: 12px 2px; background: var(--c); border: 1px solid var(--b); color: var(--t); border-radius: 8px; font-weight: 800; font-size: 9px; }
+        .nav button { flex: 1; padding: 12px 2px; background: var(--c); border: 1px solid var(--b); color: var(--t); border-radius: 8px; font-weight: 800; font-size: 9px; cursor: pointer; }
         .nav button.active { background: var(--p); border-color: var(--p); }
         .card { background: var(--c); padding: 12px; border-radius: 12px; margin-bottom: 8px; border: 1px solid var(--b); }
         .form-row { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
         input, select, button { height: 40px; border-radius: 8px; border: 1px solid var(--b); background: var(--bg); color: var(--t); padding: 0 10px; font-size: 11px; flex: 1; }
-        .btn-s { background: var(--s); border: none; font-weight: 800; cursor: pointer; }
-        .btn-d { background: var(--d); border: none; font-weight: 800; cursor: pointer; }
-        
+        .btn-s { background: var(--s); border: none; font-weight: 800; }
+        .btn-d { background: var(--d); border: none; font-weight: 800; }
         .table-wrap { overflow: auto; border-radius: 8px; border: 1px solid var(--b); background: var(--bg); max-height: 500px; }
         .table-web { width: 100%; border-collapse: separate; border-spacing: 0; }
         .table-web th { background: var(--b); position: sticky; top: 0; z-index: 25; padding: 8px 4px; font-size: 9px; white-space: nowrap; }
         .table-web td { border: 0.1px solid var(--b); text-align: center; padding: 4px; height: 45px; }
-        
-        .sticky-col { 
-            position: sticky; left: 0; background: #1e293b !important; z-index: 15; 
-            min-width: 100px; max-width: 100px; text-align: left !important; padding-left: 10px !important; 
-            border-right: 2px solid var(--p) !important; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-        }
-
+        .sticky-col { position: sticky; left: 0; background: #1e293b !important; z-index: 15; min-width: 100px; max-width: 100px; text-align: left !important; padding-left: 10px !important; border-right: 2.5px solid var(--p) !important; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .box { width: 30px; height: 35px; display: flex; align-items: center; justify-content: center; border-radius: 4px; margin: auto; font-weight: 900; }
-        .bg-h { background: var(--s); } .bg-a { background: var(--d); } .bg-i { background: #8b5cf6; }
-        .bg-m { background: #f43f5e; } .bg-off { background: #64748b; } .bg-none { color: #475569; border: 1px dashed #334155; }
-        
+        .bg-h { background: var(--s); } .bg-a { background: var(--d); } .bg-i { background: #8b5cf6; } .bg-m { background: #f43f5e; } .bg-none { color: #475569; border: 1px dashed #334155; }
         #toast { visibility: hidden; min-width: 200px; background: var(--p); color: #fff; text-align: center; border-radius: 10px; padding: 15px; position: fixed; z-index: 2000; left: 50%; bottom: 30px; transform: translateX(-50%); font-weight: 800; }
         #toast.show { visibility: visible; animation: fadein 0.5s; }
         .hidden { display: none !important; }
@@ -57,108 +48,54 @@
     <div id="tab-abs" class="tab-content">
         <div class="card">
             <h3>MASTER KARYAWAN</h3>
-            <div class="form-row">
-                <input type="text" id="mKar" placeholder="Nama Karyawan">
-                <button class="btn-s" style="flex:0.3" onclick="addM('karyawan', 'mKar')">+</button>
-            </div>
+            <div class="form-row"><input type="text" id="mKar" placeholder="Nama..."><button class="btn-s" onclick="addM('karyawan', 'mKar')" style="flex:0.3">+</button></div>
             <div id="listKaryawan"></div>
         </div>
         <div class="card">
-            <div class="form-row">
-                <select id="selK"></select>
-                <input type="date" id="absTgl">
-            </div>
-            <div class="form-row">
-                <button class="btn-s" onclick="saveA('Hadir')">HADIR</button>
-                <button style="background:#8b5cf6" onclick="saveA('Ijin')">IJIN</button>
-                <button class="btn-d" onclick="resetA()">HAPUS</button>
-            </div>
+            <div class="form-row"><select id="selK"></select><input type="date" id="absTgl"></div>
+            <div class="form-row"><button class="btn-s" onclick="saveA('Hadir')">HADIR</button><button style="background:#8b5cf6" onclick="saveA('Ijin')">IJIN</button><button class="btn-d" onclick="resetA()">HAPUS</button></div>
         </div>
         <div class="card" style="padding:5px">
             <input type="month" id="fM" onchange="renderAll()" style="margin-bottom:10px">
-            <div class="table-wrap">
-                <table class="table-web" id="absTable">
-                    <thead id="thA"></thead>
-                    <tbody id="tbA"></tbody>
-                </table>
-            </div>
+            <div class="table-wrap"><table class="table-web" id="absTable"><thead id="thA"></thead><tbody id="tbA"></tbody></table></div>
         </div>
     </div>
 
     <div id="tab-stk" class="tab-content hidden">
         <div class="card">
             <h3>MASTER BARANG</h3>
-            <div class="form-row">
-                <input type="text" id="mBrg" placeholder="Jenis Barang">
-                <button class="btn-s" style="flex:0.3" onclick="addM('barang', 'mBrg')">+</button>
-            </div>
+            <div class="form-row"><input type="text" id="mBrg" placeholder="Barang..."><button class="btn-s" onclick="addM('barang', 'mBrg')" style="flex:0.3">+</button></div>
             <div id="listBarang"></div>
         </div>
         <div class="card">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
                 <h3>REKAP STOK</h3>
-                <div style="display:flex; gap:5px">
-                    <button onclick="exportXLS('stkTable')" style="width:auto; height:30px; font-size:10px">EXCEL</button>
-                    <button onclick="exportPDF('stkTable','Stok')" style="width:auto; height:30px; font-size:10px">PDF</button>
-                </div>
+                <div style="display:flex; gap:5px"><button onclick="exportXLS('stkTable')" style="font-size:10px; width:auto">EXCEL</button><button onclick="exportPDF('stkTable','Stok')" style="font-size:10px; width:auto">PDF</button></div>
             </div>
-            <div class="table-wrap">
-                <table class="table-web" id="stkTable" style="min-width:1000px">
-                    <thead><tr><th class="sticky-col">BARANG</th><th>AW KTR</th><th>AW BRU</th><th>IN KTR</th><th>IN BRU</th><th>REKO</th><th>SISA KTR</th><th>JUAL</th><th>READY</th><th>TOTAL</th></tr></thead>
-                    <tbody id="tbS"></tbody>
-                </table>
-            </div>
+            <div class="table-wrap"><table class="table-web" id="stkTable" style="min-width:1000px"><thead><tr><th class="sticky-col">BARANG</th><th>AW KTR</th><th>AW BRU</th><th>IN KTR</th><th>IN BRU</th><th>REKO</th><th>SISA KTR</th><th>JUAL</th><th>READY</th><th>TOTAL</th></tr></thead><tbody id="tbS"></tbody></table></div>
         </div>
     </div>
 
     <div id="tab-act" class="tab-content hidden">
         <div class="card">
             <h3>INPUT AKTIVITAS / BONGKAR MUAT</h3>
+            <div class="form-row"><input type="date" id="actTgl"><select id="actK"></select></div>
             <div class="form-row">
-                <input type="date" id="actTgl">
-                <select id="actK"></select>
-            </div>
-            <div class="form-row">
-                <select id="actT">
-                    <option value="Bongkar">Bongkar (Masuk)</option>
-                    <option value="Muat">Muat (Kirim)</option>
-                    <option value="Rekondisi">Rekondisi</option>
-                    <option value="Pasang Pangkalan">Pasang Pangkalan</option>
-                    <option value="Kirim Minyak">Kirim Minyak</option>
-                </select>
+                <select id="actT"><option value="Bongkar">Bongkar (Masuk)</option><option value="Muat">Muat (Kirim)</option><option value="Rekondisi">Rekondisi</option><option value="Pasang Pangkalan">Pasang Pangkalan</option><option value="Kirim Minyak">Kirim Minyak</option></select>
                 <select id="actBrg"></select>
             </div>
-            <div class="form-row">
-                <input type="number" id="actQty" placeholder="Jumlah (Qty)">
-                <input list="listK" id="actTim" placeholder="Tim (Opsional)">
-            </div>
+            <div class="form-row"><input type="number" id="actQty" placeholder="Jumlah (Qty)"><input list="listK" id="actTim" placeholder="Tim (Opsional: Andi, Budi)"></div>
             <button class="btn-s" style="width:100%" onclick="saveComplexAct()">SIMPAN</button>
         </div>
         <div class="card">
             <h3>BELANJA</h3>
-            <div class="form-row">
-                <input type="text" id="blItem" placeholder="Barang">
-                <input type="number" id="blHarga" placeholder="Harga">
-                <button class="btn-d" onclick="saveBelanja()">SIMPAN</button>
-            </div>
+            <div class="form-row"><input type="text" id="blItem" placeholder="Barang Belanja"><input type="number" id="blHarga" placeholder="Harga"><button class="btn-d" onclick="saveBelanja()">SIMPAN</button></div>
         </div>
     </div>
 
     <div id="tab-pay" class="tab-content hidden">
-        <div class="card">
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
-                <div style="text-align:center">Total Gaji: <br><b id="dG" style="color:var(--s)">0</b></div>
-                <div style="text-align:center">Total Belanja: <br><b id="dN" style="color:var(--d)">0</b></div>
-            </div>
-        </div>
-        <div class="card">
-            <div class="table-wrap">
-                <table class="table-web">
-                    <thead><tr><th class="sticky-col">NAMA</th><th>TOTAL GAJI</th><th>SLIP</th></tr></thead>
-                    <tbody id="tbG"></tbody>
-                </table>
-            </div>
-        </div>
+        <div class="card"><div style="display:grid; grid-template-columns:1fr 1fr; gap:10px"><div style="text-align:center">Gaji: <br><b id="dG" style="color:var(--s)">0</b></div><div style="text-align:center">Belanja: <br><b id="dN" style="color:var(--d)">0</b></div></div></div>
+        <div class="card"><div class="table-wrap"><table class="table-web"><thead><tr><th class="sticky-col">NAMA</th><th>TOTAL GAJI</th><th>AKSI</th></tr></thead><tbody id="tbG"></tbody></table></div></div>
     </div>
 
     <datalist id="listK"></datalist>
@@ -174,27 +111,26 @@
             const now = new Date().toISOString().split('T')[0];
             ['absTgl','actTgl'].forEach(id => { if(document.getElementById(id)) document.getElementById(id).value = now; });
             document.getElementById('fM').value = now.slice(0, 7);
-
             db.ref('master_karyawan').on('value', s => { mk=s.val()||{}; updateK(); renderAll(); });
             db.ref('master_barang').on('value', s => { mb=s.val()||{}; updateB(); renderAll(); });
             db.ref('absensi').on('value', s => { ad=s.val()||{}; renderAll(); });
             db.ref('stok_log').on('value', s => { sl=s.val()||{}; renderAll(); });
             db.ref('log_aktivitas').on('value', s => { la=s.val()||{}; renderAll(); });
-            db.ref('belanja').on('value', s => { bel=s.val()||{}; renderBelanja(); });
+            db.ref('belanja').on('value', s => { bel=s.val()||{}; renderAll(); });
             db.ref('prices').on('value', s => { pr=s.val()||{}; if(!Object.keys(pr).length) db.ref('prices').set(defPr); });
         };
 
         function notify(m) { const x=document.getElementById("toast"); x.innerText=m; x.className="show"; setTimeout(()=>x.className="", 2500); }
         function tab(t, b) { document.querySelectorAll('.tab-content').forEach(c=>c.classList.add('hidden')); document.getElementById('tab-'+t).classList.remove('hidden'); document.querySelectorAll('.nav button').forEach(n=>n.classList.remove('active')); b.classList.add('active'); }
-
-        function addM(p, id) { const v=document.getElementById(id).value; if(v){ db.ref('master_'+p).push(v); document.getElementById(id).value=""; notify("Berhasil!"); }}
-        function delM(p, k) { if(confirm("Hapus data?")) db.ref('master_'+p+'/'+k).remove(); }
+        function addM(p, id) { const v=document.getElementById(id).value; if(v){ db.ref('master_'+p).push(v); document.getElementById(id).value=""; notify("Selesai!"); }}
+        function delM(p, k) { if(confirm("Hapus?")) db.ref('master_'+p+'/'+k).remove(); }
 
         function updateK() {
             const u = Object.entries(mk).sort((a,b)=>a[1].localeCompare(b[1]));
             document.getElementById('selK').innerHTML = u.map(v=>`<option value="${v[1]}">${v[1]}</option>`).join('');
             document.getElementById('actK').innerHTML = u.map(v=>`<option value="${v[1]}">${v[1]}</option>`).join('');
             document.getElementById('listKaryawan').innerHTML = u.map(v=>`<div class="chip">${v[1]} <span onclick="delM('karyawan','${v[0]}')">×</span></div>`).join('');
+            document.getElementById('listK').innerHTML = u.map(v=>`<option value="${v[1]}">`).join('');
         }
 
         function updateB() {
@@ -253,17 +189,19 @@
         }
 
         function saveBelanja() { const i=document.getElementById('blItem').value, h=parseInt(document.getElementById('blHarga').value); if(i&&h){ db.ref('belanja').push({tgl:document.getElementById('actTgl').value, item:i, hrg:h}); notify("Selesai!"); document.getElementById('blItem').value=""; document.getElementById('blHarga').value=""; }}
-        function renderBelanja() { let tot=0, fM=document.getElementById('fM').value; Object.values(bel).forEach(d=>{ if(d.tgl && d.tgl.startsWith(fM)) tot+=d.hrg; }); document.getElementById('dN').innerText="Rp "+tot.toLocaleString(); }
 
-        function renderGaji() {
+        function renderAll() { 
+            renderAbsen(); renderStok(); 
+            // Render Gaji & Belanja
             const fM=document.getElementById('fM').value, names=[...new Set(Object.values(mk))].sort();
-            let b="", totG=0; names.forEach(n=>{
+            let b="", totG=0, totB=0;
+            names.forEach(n=>{
                 let tot=0; Object.values(la).forEach(l=>{ if(l.nama===n && l.tgl && l.tgl.startsWith(fM)) { let g=parseFloat(l.gaji); if(!isNaN(g)) tot+=g; }});
                 totG+=tot; b+=`<tr><td class="sticky-col">${n}</td><td>Rp ${Math.round(tot).toLocaleString()}</td><td><button onclick="notify('Cetak...')">SLIP</button></td></tr>`;
-            }); document.getElementById('tbG').innerHTML=b; document.getElementById('dG').innerText="Rp "+Math.round(totG).toLocaleString();
+            });
+            Object.values(bel).forEach(d=>{ if(d.tgl && d.tgl.startsWith(fM)) totB+=d.hrg; });
+            document.getElementById('tbG').innerHTML=b; document.getElementById('dG').innerText="Rp "+Math.round(totG).toLocaleString(); document.getElementById('dN').innerText="Rp "+totB.toLocaleString();
         }
-
-        function renderAll() { renderAbsen(); renderStok(); renderGaji(); renderBelanja(); }
 
         function exportXLS(id){ XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById(id)), "Laporan.xlsx"); }
         function exportPDF(id, title){ const { jsPDF } = window.jspdf; const doc = new jsPDF('l','mm','a4'); doc.text("Laporan "+title, 14, 15); doc.autoTable({ html:'#'+id, startY:20, theme:'grid', styles:{fontSize:7}}); doc.save("Laporan.pdf"); }
