@@ -319,8 +319,4 @@
         }
 
         function tKaryawan(){ let n=document.getElementById('iNama'); if(n.value) db.ref('master_karyawan').push(n.value).then(()=>n.value=""); }
-        function hKaryawan(){ let n=document.getElementById('iNama'); let id=Object.keys(mk).find(k=>mk[k]===n.value); if(id && confirm('Hapus?')) db.ref(`master_karyawan/${id}`).remove(); }
-        function cLogo(e){ const r=new FileReader(); r.onload=()=>{ document.getElementById('mainLogo').src=r.result; }; r.readAsDataURL(e.target.files[0]); }
-    </script>
-</body>
-</html>
+        function hKaryawan(){ let n=document.getElementById('iNama'); let id=Object.keys(mk).find(k=>mk[k]===n.value); if(id
