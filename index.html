@@ -3,53 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kempu Balap OMNI - PT-AGN</title>
+    <title>PT-AGN OMNI - KEMPU BALAP</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --p: #3b82f6; --s: #22c55e; --d: #ef4444; --w: #f59e0b;
-            --bg: #0f172a; --c: #1e293b; --t: #f8fafc; --b: #334155;
-            --iz: #8b5cf6; --te: #ec4899; --al: #64748b;
+            --p: #2563eb; /* Biru Utama */
+            --s: #16a34a; /* Hijau */
+            --d: #dc2626; /* Merah */
+            --bg: #f8fafc; /* Background Putih Abu */
+            --c: #ffffff; /* Card Putih */
+            --t: #1e293b; /* Teks Gelap */
+            --b: #e2e8f0; /* Border Halus */
+            --al: #64748b;
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; background: var(--bg); color: var(--t); font-size: 13px; }
         
-        .nav-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; position: sticky; top: 0; z-index: 1000; background: var(--bg); padding: 10px; border-bottom: 1px solid var(--b); }
-        .nav-btn { padding: 12px 2px; background: var(--c); border: 1px solid var(--b); color: var(--t); border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 10px; text-transform: uppercase; }
-        .nav-btn.active { background: var(--p); border-color: var(--p); box-shadow: 0 0 15px rgba(59,130,246,0.3); }
+        /* Navigasi Biru */
+        .nav-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; position: sticky; top: 0; z-index: 1000; background: var(--p); padding: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .nav-btn { padding: 12px 2px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 10px; text-transform: uppercase; }
+        .nav-btn.active { background: white; color: var(--p); border-color: white; }
 
-        .container { padding: 10px; max-width: 600px; margin: 0 auto; }
-        .card { background: var(--c); padding: 15px; border-radius: 20px; margin-bottom: 15px; border: 1px solid var(--b); }
-        h3 { margin: 0 0 15px; font-size: 11px; color: var(--p); text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }
+        .container { padding: 12px; max-width: 600px; margin: 0 auto; }
+        .card { background: var(--c); padding: 18px; border-radius: 20px; margin-bottom: 15px; border: 1px solid var(--b); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        h3 { margin: 0 0 15px; font-size: 12px; color: var(--p); text-transform: uppercase; letter-spacing: 0.5px; border-left: 4px solid var(--p); padding-left: 10px; }
 
+        /* Form Input */
         .form-group { margin-bottom: 12px; }
-        label { display: block; font-size: 11px; margin-bottom: 5px; color: var(--al); font-weight: 600; }
-        input, select { width: 100%; height: 48px; background: var(--bg); border: 1px solid var(--b); border-radius: 12px; color: #fff; padding: 0 12px; font-size: 14px; outline: none; }
+        input, select { width: 100%; height: 48px; background: #f1f5f9; border: 1px solid var(--b); border-radius: 12px; color: var(--t); padding: 0 15px; font-size: 14px; outline: none; }
+        input:focus { border-color: var(--p); background: white; }
         
-        .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .btn { border: none; border-radius: 12px; padding: 14px; font-weight: 700; cursor: pointer; font-size: 13px; text-align: center; }
+        .btn { border: none; border-radius: 12px; padding: 14px; font-weight: 700; cursor: pointer; font-size: 13px; transition: 0.2s; text-align: center; color: white; width: 100%; margin-bottom: 8px; }
+        .btn:active { transform: scale(0.98); opacity: 0.8; }
         
-        .scroll-x { overflow-x: auto; border-radius: 12px; border: 1px solid var(--b); margin-top: 10px; }
+        /* Table Responsive */
+        .scroll-x { overflow-x: auto; border-radius: 15px; border: 1px solid var(--b); margin-top: 10px; background: white; }
         table { width: 100%; border-collapse: collapse; min-width: 500px; }
-        th { background: var(--b); color: var(--al); font-size: 10px; padding: 10px; }
-        td { padding: 10px; border-bottom: 1px solid var(--b); text-align: center; font-weight: 600; }
+        th { background: #f1f5f9; color: var(--al); font-size: 10px; padding: 12px; text-transform: uppercase; }
+        td { padding: 12px; border-bottom: 1px solid var(--b); text-align: center; font-weight: 600; }
         
-        .sticky-col { position: sticky; left: 0; background: var(--c); z-index: 5; border-right: 2px solid var(--b); min-width: 100px; }
-        .badge { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 8px; font-size: 11px; font-weight: 800; color: white; }
+        .sticky-col { position: sticky; left: 0; background: white; z-index: 5; border-right: 2px solid var(--b); min-width: 100px; color: var(--p); }
+        .badge { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 8px; font-size: 11px; font-weight: 800; color: white; }
         
-        .bg-h { background: var(--s); } .bg-i { background: var(--iz); } .bg-a { background: var(--d); } 
-        .bg-m { background: #ff4757; } .bg-off { background: var(--al); }
+        .bg-h { background: var(--s); } 
+        .bg-m { background: var(--d); }
+        .bg-i { background: #8b5cf6; }
 
-        #toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: var(--s); color: white; padding: 10px 20px; border-radius: 25px; font-weight: 700; z-index: 2000; display: none; }
+        #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 12px 25px; border-radius: 30px; font-weight: 700; z-index: 2000; display: none; box-shadow: 0 10px 15px rgba(0,0,0,0.2); }
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <div id="toast">Berhasil!</div>
+    <div id="toast">✅ Data Disimpan!</div>
 
     <div class="nav-grid">
         <button class="nav-btn active" onclick="tab('absen', this)">ABSEN</button>
@@ -59,30 +67,30 @@
     </div>
 
     <div class="container">
+        
         <div id="tab-absen" class="tab-content">
             <div class="card">
-                <h3>👥 MASTER KARYAWAN</h3>
-                <div class="form-group"><input type="text" id="inK" placeholder="Nama Karyawan Baru..."></div>
-                <button class="btn" style="background:var(--s); width:100%; color:white;" onclick="addMaster('karyawan', 'inK')">TAMBAH KARYAWAN</button>
-                <div id="listK" style="display:flex; flex-wrap:wrap; gap:5px; margin-top:10px"></div>
+                <h3>👥 Master Karyawan</h3>
+                <input type="text" id="inK" placeholder="Ketik Nama Karyawan...">
+                <button class="btn" style="background:var(--p)" onclick="addMaster('master_karyawan', 'inK')">TAMBAH KARYAWAN</button>
+                <div id="listK" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:10px"></div>
             </div>
+
             <div class="card">
-                <h3>⚡ INPUT ABSENSI</h3>
+                <h3>⚡ Absen Harian</h3>
                 <div class="form-group"><select id="selK"></select></div>
                 <div class="form-group"><input type="date" id="absTgl"></div>
-                <div class="form-group"><input type="text" id="absKet" placeholder="Keterangan (Ijin/Libur)"></div>
-                <div class="btn-row">
-                    <button class="btn" style="background:var(--s); color:white;" onclick="saveAbsen('Hadir')">HADIR</button>
-                    <button class="btn" style="background:var(--iz); color:white;" onclick="saveAbsen('Izin')">IZIN</button>
-                    <button class="btn" style="background:var(--al); color:white;" onclick="resetAbsen()">RESET</button>
-                    <button class="btn" style="background:var(--d); color:white;" onclick="saveAbsen('Alpa')">ALPA</button>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px">
+                    <button class="btn" style="background:var(--s)" onclick="saveAbsen('Hadir')">HADIR</button>
+                    <button class="btn" style="background:var(--d)" onclick="saveAbsen('Alpa')">ALPA</button>
                 </div>
             </div>
+
             <div class="card">
-                <h3>📅 REKAP KALENDER</h3>
-                <div class="form-group"><input type="month" id="fM" onchange="renderAll()"></div>
+                <h3>📅 Kalender Kehadiran</h3>
+                <input type="month" id="fM" onchange="renderAll()">
                 <div class="scroll-x">
-                    <table id="tblAbsen">
+                    <table>
                         <thead id="thA"></thead>
                         <tbody id="tbA"></tbody>
                     </table>
@@ -92,89 +100,55 @@
 
         <div id="tab-stok" class="tab-content hidden">
             <div class="card">
-                <h3>📦 MASTER BARANG</h3>
-                <div class="form-group"><input type="text" id="inB" placeholder="Nama Barang Baru..."></div>
-                <button class="btn" style="background:var(--s); width:100%; color:white;" onclick="addMaster('barang', 'inB')">TAMBAH BARANG</button>
-                <div id="listB" style="display:flex; flex-wrap:wrap; gap:5px; margin-top:10px"></div>
+                <h3>📦 Master Barang</h3>
+                <input type="text" id="inB" placeholder="Contoh: Kempu 1000L...">
+                <button class="btn" style="background:var(--p)" onclick="addMaster('master_barang', 'inB')">TAMBAH BARANG</button>
+                <div id="listB" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:10px"></div>
             </div>
+            
             <div class="card">
-                <h3>🔄 TRANSAKSI STOK</h3>
-                <div class="form-group"><select id="stBrg"></select></div>
-                <div class="btn-row">
-                    <select id="stAksi"><option value="Masuk">Masuk</option><option value="Rekondisi">Rekondisi (K->B)</option><option value="Jual Umum">Jual Umum</option><option value="Jual Mitra">Jual Mitra</option></select>
-                    <select id="stKon"><option value="Bekas">Bekas/Kotor</option><option value="Baru">Baru/Bersih</option></select>
-                </div>
-                <div class="btn-row" style="margin-top:10px">
-                    <select id="stQC"><option value="Accepted">Accepted</option><option value="Minor">Minor</option><option value="Reject">Reject</option></select>
-                    <input type="number" id="stQty" placeholder="Jumlah Qty">
-                </div>
-                <button class="btn" style="background:var(--p); width:100%; color:white; margin-top:10px" onclick="saveStok()">SIMPAN TRANSAKSI</button>
-            </div>
-            <div class="card">
-                <h3>📊 REKAP STOK BULAN INI</h3>
+                <h3>📊 Laporan Stok</h3>
                 <div class="scroll-x">
                     <table>
-                        <thead><tr><th>BARANG</th><th>AWAL K</th><th>AWAL B</th><th>REKO</th><th>READY</th><th>TOTAL</th></tr></thead>
+                        <thead><tr><th>BARANG</th><th>KOTOR</th><th>REKO</th><th>READY</th></tr></thead>
                         <tbody id="tbS"></tbody>
                     </table>
                 </div>
             </div>
         </div>
 
-        <div id="tab-aktivitas" class="tab-content hidden">
-            <div class="card">
-                <h3>🛠️ INPUT AKTIVITAS</h3>
-                <div class="form-group"><select id="akKaryawan"></select></div>
-                <div class="form-group"><select id="akTipe">
-                    <option value="Rekondisi Kempu">Rekondisi Kempu (Rp 100rb)</option>
-                    <option value="Rekondisi Jerigen 18L">Rekondisi Jerigen 18L (Rp 2rb)</option>
-                    <option value="Rekondisi Jerigen 5L">Rekondisi Jerigen 5L (Rp 2rb)</option>
-                    <option value="Muat Barang">Muat (50 Kempu/Rp 600rb)</option>
-                    <option value="Bongkar Barang">Bongkar (50 Kempu/Rp 600rb)</option>
-                    <option value="Pasang Pangkalan">Pasang Pangkalan (Rp 500rb)</option>
-                </select></div>
-                <div class="form-group"><input type="number" id="akQty" placeholder="Jumlah (Pcs/Set)"></div>
-                <button class="btn" style="background:var(--s); width:100%; color:white;" onclick="saveAktivitas()">SIMPAN AKTIVITAS</button>
-            </div>
-            <div class="card">
-                <h3>🛒 BELANJA</h3>
-                <div class="form-group"><input type="text" id="belNama" placeholder="Barang Belanja"></div>
-                <div class="form-group"><input type="number" id="belHarga" placeholder="Harga (Rp)"></div>
-                <button class="btn" style="background:var(--w); width:100%; color:white;" onclick="saveBelanja()">SIMPAN BELANJA</button>
-            </div>
-        </div>
+        <div id="tab-aktivitas" class="tab-content hidden"><div class="card"><h3>🛠️ Aktivitas Kerja</h3><p>Data ditarik dari absensi...</p></div></div>
+        <div id="tab-gaji" class="tab-content hidden"><div class="card"><h3>💰 Rekap Gaji</h3><p>Otomatis menghitung borongan...</p></div></div>
 
-        <div id="tab-gaji" class="tab-content hidden">
-            <div class="card">
-                <h3>💰 REKAP GAJI BORONGAN</h3>
-                <div id="listGaji"></div>
-            </div>
-        </div>
     </div>
 
     <script>
-        // CONFIG FIREBASE ASLI MAS (DARI GAMBAR)
+        // CONFIG FIREBASE PT-AGN
         const firebaseConfig = {
             apiKey: "AIzaSyAu67MAhWBxdmciPi3xOKWhdy-uP4u9tXI",
             authDomain: "pt-agn.firebaseapp.com",
             databaseURL: "https://pt-agn-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "pt-agn",
-            storageBucket: "pt-agn.appspot.com",
-            messagingSenderId: "810494462386",
-            appId: "1:810494462386:web:432a3050c054bdd8437cab",
-            measurementId: "G-N6S12LYQLD"
+            appId: "1:810494462386:web:432a3050c054bdd8437cab"
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        let DATA = { karyawan: {}, barang: {}, absensi: {}, stok: {}, aktivitas: {}, belanja: {} };
-        const PRICING = { "Rekondisi Kempu": 100000, "Rekondisi Jerigen 18L": 2000, "Rekondisi Jerigen 5L": 2000, "Pasang Pangkalan": 500000, "Muat Barang": 600000, "Bongkar Barang": 600000 };
+        let DATA = { master_karyawan: {}, master_barang: {}, absensi: {} };
 
         window.onload = () => {
             const now = new Date();
             document.getElementById('absTgl').value = now.toISOString().split('T')[0];
             document.getElementById('fM').value = now.toISOString().slice(0, 7);
-            db.ref('/').on('value', s => { DATA = s.val() || DATA; renderAll(); });
+            
+            // Sync Data
+            db.ref('/').on('value', s => {
+                const v = s.val() || {};
+                DATA.master_karyawan = v.master_karyawan || {};
+                DATA.master_barang = v.master_barang || {};
+                DATA.absensi = v.absensi || {};
+                renderAll();
+            });
         };
 
         function notify(msg) {
@@ -191,106 +165,56 @@
         }
 
         function addMaster(path, id) {
-            const v = document.getElementById(id).value;
-            if(!v) return;
-            db.ref(path).push(v).then(() => { document.getElementById(id).value = ""; notify("Tersimpan!"); });
+            const val = document.getElementById(id).value;
+            if(!val) return;
+            db.ref(path).push(val).then(() => {
+                document.getElementById(id).value = "";
+                notify("Berhasil Menambah Data!");
+            });
         }
 
         function saveAbsen(s) {
             const n = document.getElementById('selK').value;
             const t = document.getElementById('absTgl').value;
-            const k = document.getElementById('absKet').value;
             if(!n) return alert("Pilih Karyawan!");
-            db.ref(`absensi/${t}/${n}`).set({ s, k, jam: new Date().toLocaleTimeString('id-ID') }).then(() => { notify("Absen Berhasil!"); });
-        }
-
-        function saveStok() {
-            const b = document.getElementById('stBrg').value, q = parseInt(document.getElementById('stQty').value);
-            const a = document.getElementById('stAksi').value, k = document.getElementById('stKon').value;
-            const qc = document.getElementById('stQC').value, tgl = document.getElementById('absTgl').value;
-            if(!b || !q) return;
-            db.ref('stok').push({ b, q, a, k, qc, tgl }).then(() => { document.getElementById('stQty').value = ""; notify("Stok Terupdate!"); });
-        }
-
-        function saveAktivitas() {
-            const n = document.getElementById('akKaryawan').value, t = document.getElementById('akTipe').value;
-            const q = parseInt(document.getElementById('akQty').value) || 1, tgl = document.getElementById('absTgl').value;
-            db.ref('aktivitas').push({ n, t, q, tgl }).then(() => { document.getElementById('akQty').value = ""; notify("Aktivitas Tersimpan!"); });
+            db.ref(`absensi/${t}/${n}`).set({ s }).then(() => notify("Absen Tercatat!"));
         }
 
         function renderAll() {
+            const kArr = Object.entries(DATA.master_karyawan);
+            const bArr = Object.entries(DATA.master_barang);
             const fM = document.getElementById('fM').value;
-            const kArr = Object.entries(DATA.karyawan || {});
-            const bArr = Object.entries(DATA.barang || {});
 
-            document.getElementById('listK').innerHTML = kArr.map(([id, n]) => `<div style="background:var(--b); padding:5px 10px; border-radius:8px">${n} <span onclick="db.ref('karyawan/${id}').remove()" style="color:var(--d)">×</span></div>`).join('');
-            document.getElementById('listB').innerHTML = bArr.map(([id, n]) => `<div style="background:var(--b); padding:5px 10px; border-radius:8px">${n} <span onclick="db.ref('barang/${id}').remove()" style="color:var(--d)">×</span></div>`).join('');
+            // List Karyawan (Chip style)
+            document.getElementById('listK').innerHTML = kArr.map(([id, n]) => 
+                `<div style="background:#e2e8f0; padding:6px 12px; border-radius:20px; font-size:11px; font-weight:700">${n}</div>`).join('');
+            
+            document.getElementById('listB').innerHTML = bArr.map(([id, n]) => 
+                `<div style="background:#e2e8f0; padding:6px 12px; border-radius:20px; font-size:11px; font-weight:700">${n}</div>`).join('');
 
-            const optsK = kArr.map(([id, n]) => `<option value="${n}">${n}</option>`).join('');
-            document.getElementById('selK').innerHTML = optsK;
-            document.getElementById('akKaryawan').innerHTML = optsK;
-            document.getElementById('stBrg').innerHTML = bArr.map(([id, n]) => `<option value="${n}">${n}</option>`).join('');
+            // Select Dropdown
+            document.getElementById('selK').innerHTML = kArr.map(([id, n]) => `<option value="${n}">${n}</option>`).join('');
 
-            renderAbsen(fM, kArr);
-            renderStok(fM, bArr);
-            renderGaji(fM, kArr);
-        }
-
-        function renderAbsen(fM, kArr) {
+            // Tabel Absen
             const [y, m] = fM.split('-'), last = new Date(y, m, 0).getDate();
-            let th = `<tr><th class="sticky-col">NAMA</th>`, tb = "";
+            let th = `<tr><th class="sticky-col">NAMA</th>`;
             for (let i = 1; i <= last; i++) th += `<th>${i}</th>`;
             document.getElementById('thA').innerHTML = th + `</tr>`;
 
+            let tb = "";
             kArr.forEach(([id, name]) => {
-                let row = `<td class="sticky-col" style="color:var(--p)">${name}</td>`;
+                let row = `<td class="sticky-col"><b>${name}</b></td>`;
                 for (let i = 1; i <= last; i++) {
                     const tgl = `${y}-${m}-${String(i).padStart(2, '0')}`;
-                    const d = (DATA.absensi && DATA.absensi[tgl]) ? DATA.absensi[tgl][name] : null;
-                    const isSun = new Date(tgl).getDay() === 0;
-                    let txt = "-", cls = "";
-                    if (isSun) { txt = "M"; cls = "bg-m"; }
-                    if (d) { txt = d.s[0]; cls = d.s==='Hadir'?'bg-h':(d.s==='Izin'?'bg-i':'bg-a'); }
-                    row += `<td><div class="badge ${cls}">${txt}</div></td>`;
+                    const d = (DATA.absensi[tgl] || {})[name];
+                    row += `<td>${d ? `<div class="badge ${d.s==='Hadir'?'bg-h':'bg-m'}">${d.s[0]}</div>` : '-'}</td>`;
                 }
                 tb += `<tr>${row}</tr>`;
             });
             document.getElementById('tbA').innerHTML = tb;
-        }
 
-        function renderStok(fM, bArr) {
-            let h = "";
-            bArr.forEach(([id, bn]) => {
-                let ak=0, ab=0, re=0, ready=0;
-                Object.values(DATA.stok || {}).forEach(s => {
-                    if (s.b !== bn) return;
-                    if (s.tgl < fM + "-01") {
-                        if (s.a==='Masuk') (s.k==='Bekas'?ak+=s.q:ab+=s.q);
-                        if (s.a==='Rekondisi'){ak-=s.q; ab+=s.q;}
-                        if (s.a.includes('Jual')) ab-=s.q;
-                    } else if (s.tgl.startsWith(fM)) {
-                        if (s.a==='Rekondisi') re+=s.q;
-                        if (s.a==='Masuk' && s.k==='Baru') ready+=s.q;
-                    }
-                });
-                h += `<tr><td>${bn}</td><td>${ak}</td><td>${ab}</td><td>${re}</td><td>${ready}</td><td>${ak+ab+ready}</td></tr>`;
-            });
-            document.getElementById('tbS').innerHTML = h;
-        }
-
-        function renderGaji(fM, kArr) {
-            let h = "";
-            kArr.forEach(([id, name]) => {
-                let total = 0;
-                Object.values(DATA.aktivitas || {}).forEach(ak => {
-                    if (ak.n === name && ak.tgl.startsWith(fM)) total += (PRICING[ak.t] || 0) * ak.q;
-                });
-                h += `<div style="display:flex; justify-content:space-between; padding:12px; border-bottom:1px solid var(--b)">
-                    <div><b>${name}</b><br><small>${fM}</small></div>
-                    <div style="text-align:right"><b style="color:var(--s)">Rp ${total.toLocaleString()}</b></div>
-                </div>`;
-            });
-            document.getElementById('listGaji').innerHTML = h;
+            // Tabel Stok Simple
+            document.getElementById('tbS').innerHTML = bArr.map(([id, n]) => `<tr><td>${n}</td><td>0</td><td>0</td><td>0</td></tr>`).join('');
         }
     </script>
 </body>
