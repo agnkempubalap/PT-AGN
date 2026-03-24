@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kempu Balap OMNI V310</title>
+    <title>Kempu Balap OMNI V320</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -32,6 +32,7 @@
         .txt-jam { font-size: 7px; font-weight: 400; opacity: 0.9; margin-top: 2px; }
         .list-item { display: inline-flex; align-items: center; background: #f1f5f9; padding: 5px 10px; border-radius: 20px; margin: 2px; font-size: 11px; font-weight: 600; }
         .del-btn { color: red; margin-left: 8px; cursor: pointer; font-weight: 900; }
+        .label-in { display: block; font-size: 10px; font-weight: 700; margin-bottom: 4px; color: #64748b; }
     </style>
 </head>
 <body>
@@ -44,22 +45,20 @@
     <div class="container">
         <div class="card">
             <h3>👥 Master Karyawan</h3>
-            <div class="grid-2"><input type="text" id="inK" placeholder="Nama Karyawan..."><button class="btn" style="background:var(--p)" onclick="addM('master_karyawan', 'inK')">TAMBAH</button></div>
+            <div class="grid-2"><input type="text" id="inK" placeholder="Nama Baru..."><button class="btn" style="background:var(--p)" onclick="addM('master_karyawan', 'inK')">TAMBAH</button></div>
             <div id="listK" style="margin-top: 10px;"></div>
         </div>
 
-        <div class="card" style="border: 2px solid var(--d);">
-            <button class="btn" style="background:var(--d); height: 35px;" onclick="forceCleanData()">BERSIHKAN DATA KALENDER SALAH</button>
-        </div>
-
         <div class="card">
-            <h3>📅 Set Hari Libur</h3>
-            <div class="grid-2"><input type="date" id="libS"><input type="date" id="libE"></div>
-            <button class="btn" style="background:var(--t)" onclick="saveLibur()">SIMPAN LIBUR</button>
-        </div>
-
-        <div class="card">
-            <h3>📅 Absensi <select id="selK"></select></h3>
+            <h3>📅 Input Absensi</h3>
+            <div style="margin-bottom: 10px;">
+                <span class="label-in">PILIH TANGGAL:</span>
+                <input type="date" id="absTgl">
+            </div>
+            <div style="margin-bottom: 10px;">
+                <span class="label-in">PILIH NAMA:</span>
+                <select id="selK"></select>
+            </div>
             <div class="grid-2">
                 <button class="btn" style="background:var(--s)" onclick="saveAbs('Hadir')">MASUK</button>
                 <button class="btn" style="background:#8b5cf6" onclick="saveAbs('Izin')">IZIN</button>
@@ -68,7 +67,13 @@
         </div>
 
         <div class="card">
-            <h3>📅 Kalender <input type="month" id="fM" onchange="renderAll()" style="width:130px"></h3>
+            <h3>📅 Set Hari Libur (Masa Berlaku)</h3>
+            <div class="grid-2"><input type="date" id="libS"><input type="date" id="libE"></div>
+            <button class="btn" style="background:var(--t)" onclick="saveLibur()">SIMPAN LIBUR</button>
+        </div>
+
+        <div class="card">
+            <h3>📅 Tampilan Kalender <input type="month" id="fM" onchange="renderAll()" style="width:130px"></h3>
             <div class="table-wrap"><table><thead id="thA"></thead><tbody id="tbA"></tbody></table></div>
         </div>
     </div>
@@ -81,6 +86,8 @@
 
         window.onload = () => { 
             document.getElementById('fM').value = new Date().toISOString().slice(0, 7); 
+            // Set default tanggal input ke hari ini
+            document.getElementById('absTgl').value = new Date().toISOString().split('T')[0];
             db.ref('/').on('value', s => { DATA = s.val() || {}; renderAll(); }); 
         };
 
@@ -89,41 +96,50 @@
             if(v) db.ref(path).push(v).then(() => document.getElementById(id).value = "");
         }
 
-        function forceCleanData() {
-            if(confirm("Bersihkan label Libur/O yang salah?")) {
-                db.ref('master_libur').remove();
-                alert("Data dibersihkan!");
-            }
-        }
-
         function saveLibur() {
             const s = document.getElementById('libS').value, e = document.getElementById('libE').value;
-            if(!s || !e) return;
+            if(!s || !e) return alert("Pilih tanggal mulai & akhir!");
             let curr = new Date(s);
             while(curr <= new Date(e)) {
                 db.ref(`master_libur/${curr.toISOString().split('T')[0]}`).set(true);
                 curr.setDate(curr.getDate()+1);
             }
+            alert("Hari libur berhasil disimpan!");
         }
 
         function saveAbs(st) {
-            const n = document.getElementById('selK').value, tgl = new Date().toISOString().split('T')[0], now = new Date();
-            if(!n) return;
-            const isLib = DATA.master_libur?.[tgl] || now.getDay() === 0;
+            const n = document.getElementById('selK').value;
+            const tgl = document.getElementById('absTgl').value; // Ambil dari input tanggal manual
+            const now = new Date();
+            
+            if(!n || !tgl) return alert("Pilih Nama dan Tanggal!");
+
+            // Cek apakah tanggal yang dipilih itu Minggu atau Libur Set
+            const selectedDate = new Date(tgl);
+            const isLib = DATA.master_libur?.[tgl] || selectedDate.getDay() === 0;
+            
             let up = { s: (st === 'Hadir' && isLib) ? 'Lembur' : st };
-            if(st==='Hadir') up.in = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+            
+            if(st==='Hadir') {
+                // Jika input buat hari ini, ambil jam sekarang. Jika buat tanggal lain, default 08:00
+                const todayStr = new Date().toISOString().split('T')[0];
+                if(tgl === todayStr) {
+                    up.in = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+                } else {
+                    up.in = "08:00";
+                }
+            }
             if(st==='Pulang') up.out = '16:00';
-            db.ref(`absensi/${tgl}/${n}`).update(up);
+            
+            db.ref(`absensi/${tgl}/${n}`).update(up).then(() => alert("Data Terupdate!"));
         }
 
         function renderAll() {
             const kArr = Object.entries(DATA.master_karyawan || {}), fM = document.getElementById('fM').value, [y, m] = fM.split('-'), last = new Date(y, m, 0).getDate();
             
-            // Render List Karyawan & Dropdown
             document.getElementById('listK').innerHTML = kArr.map(k => `<span class="list-item">${k[1]} <b class="del-btn" onclick="db.ref('master_karyawan/${k[0]}').remove()">×</b></span>`).join('');
             document.getElementById('selK').innerHTML = kArr.map(k => `<option value="${k[1]}">${k[1]}</option>`).join('');
 
-            // Header Kalender
             let th = `<tr><th class="sticky-col">NAMA</th>`;
             for(let i=1; i<=last; i++) {
                 const isSun = new Date(y, m-1, i).getDay() === 0;
@@ -131,7 +147,6 @@
             }
             document.getElementById('thA').innerHTML = th + `</tr>`;
 
-            // Isi Kalender
             let tbA = ""; kArr.forEach(k => {
                 let row = `<td class="sticky-col">${k[1]}</td>`;
                 for(let i=1; i<=last; i++){
@@ -142,12 +157,4 @@
                         label = d.s[0]; jam = `${d.in||''}-${d.out||''}`;
                     } else if(isSun) { cls = "bg-sun"; label = "M"; }
                     else if(isLib) { cls = "bg-lib"; label = "Lib"; }
-                    row += `<td><div class="badge ${cls}">${label}<span class="txt-jam">${jam}</span></div></td>`;
-                }
-                tbA += `<tr>${row}</tr>`;
-            });
-            document.getElementById('tbA').innerHTML = tbA;
-        }
-    </script>
-</body>
-</html>
+                    row += `<td><div class="badge ${cls}">${label}<span class="txt-
