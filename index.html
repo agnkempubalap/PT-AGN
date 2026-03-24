@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN OMNI V98.0</title>
+    <title>PT-AGN OMNI V99.0</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -12,34 +12,36 @@
     <style>
         :root{--p:#3b82f6;--s:#22c55e;--d:#ef4444;--w:#f59e0b;--bg:#0f172a;--c:#1e293b;--t:#f8fafc;--b:#334155;--iz:#8b5cf6;--al:#64748b;--lb:#d946ef;--sun:#f43f5e;--te:#ec4899}
         *{box-sizing:border-box} body{font-family:'Plus Jakarta Sans',sans-serif;margin:0;background:var(--bg);color:var(--t);padding:10px;font-size:12px}
-        
-        /* Navigasi Fixed */
         .nav-grid { display: flex; gap: 5px; margin-bottom: 15px; position: sticky; top: 0; z-index: 1000; background: var(--bg); padding: 5px 0;}
         .nav-btn { flex: 1; padding: 12px 5px; background: var(--c); border: 1px solid var(--b); color: var(--t); border-radius: 10px; cursor: pointer; font-weight: 800; font-size: 10px; text-transform: uppercase;}
         .nav-btn.active { background: var(--p); border-color: var(--p); box-shadow: 0 4px 10px rgba(59,130,246,0.4); }
-
         .card{background:var(--c);padding:15px;border-radius:18px;margin-bottom:12px;border:1px solid var(--b)}
         h3{margin:0 0 12px;font-size:10px;color:var(--p);text-transform:uppercase;letter-spacing:1px;font-weight:800}
-        
         .form-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
         input, button, select { height: 42px; border-radius: 10px; border: 1px solid var(--b); background: var(--bg); color: var(--t); padding: 0 10px; width: 100%; font-size: 13px; outline: none;}
         button { cursor: pointer; font-weight: 700; border: none; color: #fff;}
 
-        /* CSS KHUSUS TABLE RESPONSIVE (Fix Foto Mas) */
-        .table-wrap{ overflow-x: auto; border-radius: 12px; border: 1px solid var(--b); background: var(--c); position: relative; margin-bottom: 10px; -webkit-overflow-scrolling: touch; }
-        .table-web{ width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1000px; }
-        .table-web th{ background: var(--b); padding: 12px 5px; font-size: 9px; border-bottom: 1px solid var(--c); position: sticky; top: 0; z-index: 10; }
-        .table-web td{ padding: 10px 5px; border-bottom: 1px solid var(--b); border-right: 1px solid var(--b); text-align: center; font-weight: 700; font-size: 12px; }
+        /* FIX REKAP BERANTAKAN */
+        .table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--b); background: var(--c); position: relative; -webkit-overflow-scrolling: touch; }
+        .table-web { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1100px; table-layout: fixed; }
+        .table-web th { background: var(--b); padding: 12px 4px; font-size: 8px; border-bottom: 2px solid var(--bg); position: sticky; top: 0; z-index: 10; color: #94a3b8; }
+        .table-web td { padding: 12px 4px; border-bottom: 1px solid var(--b); text-align: center; font-weight: 700; font-size: 13px; white-space: nowrap; }
         
-        /* Nama Karyawan/Barang Diam di Kiri */
-        .nama-fixed{ position: sticky; left: 0; background: var(--c)!important; z-index: 20; min-width: 130px; border-right: 3px solid var(--p)!important; text-align: left !important; padding-left: 10px !important; }
+        /* Kolom Nama Barang / Karyawan Tetap Diam */
+        .nama-fixed { position: sticky; left: 0; background: var(--c)!important; z-index: 20; width: 130px !important; border-right: 3px solid var(--p)!important; text-align: left !important; padding-left: 10px !important; color: var(--t); }
         
-        .s-box{ width: 40px; height: 40px; border-radius: 8px; display: inline-flex; flex-direction: column; justify-content: center; align-items: center; font-size: 10px; font-weight: 800; }
+        /* Grup Warna Header */
+        .h-awal { background: #1e3a8a !important; color: #fff !important; }
+        .h-masuk { background: #064e3b !important; color: #fff !important; }
+        .h-jual { background: #854d0e !important; color: #fff !important; }
+        .h-sisa { background: #4c1d95 !important; color: #fff !important; }
+
+        .s-box { width: 40px; height: 40px; border-radius: 8px; display: inline-flex; flex-direction: column; justify-content: center; align-items: center; font-size: 10px; font-weight: 800; margin: 0 auto; }
         .s-h{background:var(--s)} .s-i{background:var(--iz)} .s-a{background:var(--d)} .s-l{background:var(--lb)} .s-m{background:var(--sun)} .s-off{background:var(--al)} .s-t{background:var(--te)}
-        .box-jam{ font-size: 8px; font-weight: 400; line-height: 1; margin-top: 2px; }
-        .kardus-head { color: var(--w); font-size: 11px; display: block; margin-top: 2px; }
+        .box-jam { font-size: 8px; font-weight: 400; line-height: 1; margin-top: 2px; }
+        .kardus-head { color: var(--w); font-size: 10px; display: block; margin-top: 2px; }
         .hidden { display: none !important; }
-        .btn-group { display: flex; gap: 5px; margin-top: 10px; }
+        .btn-group { display: flex; gap: 6px; margin-top: 12px; }
     </style>
 </head>
 <body>
@@ -53,58 +55,64 @@
 
         <div id="t-absen" class="tab-content">
             <div class="card">
-                <h3>👥 Master & Libur</h3>
+                <h3>👥 Team & Libur</h3>
                 <div class="form-row"><input type="text" id="inNK" style="flex:2" placeholder="Nama..."><button style="background:var(--s);flex:1" onclick="svK()">TAMBAH</button><button style="background:var(--d);flex:1" onclick="dlK()">HAPUS</button></div>
-                <div class="form-row"><input type="date" id="lS" style="flex:1"><input type="date" id="lE" style="flex:1"><button style="background:var(--p);flex:1" onclick="svL()">SET LIBUR</button></div>
+                <div class="form-row"><input type="date" id="lS" style="flex:1"><input type="date" id="lE" style="flex:1"><button style="background:var(--p);flex:1" onclick="svL()">SIMPAN LIBUR</button></div>
             </div>
             <div class="card">
-                <h3>⚡ Absensi Harian</h3>
-                <div class="form-row"><input list="lk" id="selK" style="flex:2" placeholder="Pilih..."><input type="date" id="tglR" style="flex:1"></div>
+                <h3>⚡ Fingerprint</h3>
+                <div class="form-row"><input list="lk" id="selK" style="flex:2" placeholder="Cari Nama..."><input type="date" id="tglR" style="flex:1"></div>
                 <div class="form-row"><button style="background:var(--s);flex:1" onclick="ab('Masuk')">MASUK</button><button style="background:var(--iz);flex:1" onclick="ab('Ijin')">IJIN</button><button style="background:var(--al);flex:1" onclick="ab('Pulang')">PULANG</button><button style="background:var(--d);flex:1" onclick="re()">RESET</button></div>
             </div>
             <div class="card">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
-                    <h3>📊 Kalender & Logistik 📦</h3>
+                    <h3>📊 Kalender Operasional 📦</h3>
                     <input type="month" id="fM" onchange="renA()" style="width:130px; height:35px">
                 </div>
-                <div class="table-wrap" id="wrapA"><table class="table-web" id="tableAbsen"><thead id="thA"></thead><tbody id="tbA"></tbody></table></div>
+                <div class="table-wrap"><table class="table-web" id="tableAbsen"><thead id="thA"></thead><tbody id="tbA"></tbody></table></div>
                 <div class="btn-group">
-                    <button style="background:var(--s)" onclick="exX('tableAbsen')">EXCEL</button>
-                    <button style="background:var(--te)" onclick="exP('tableAbsen', 'ABSENSI')">PDF</button>
+                    <button style="background:var(--s); flex:1" onclick="exX('tableAbsen')">EXCEL</button>
+                    <button style="background:var(--te); flex:1" onclick="exP('tableAbsen', 'ABSEN')">PDF</button>
                 </div>
             </div>
         </div>
 
         <div id="t-stok" class="tab-content hidden">
             <div class="card">
-                <h3>📦 QC & Management Barang</h3>
+                <h3>📦 Barang & QC</h3>
                 <div class="form-row"><input type="text" id="inNB" style="flex:2" placeholder="Barang..."><button style="background:var(--s);flex:1" onclick="svB()">TAMBAH</button><button style="background:var(--d);flex:1" onclick="dlB()">HAPUS</button></div>
                 <div class="form-row"><input type="date" id="stT" style="flex:1.2"><select id="slB" style="flex:1.5"></select><input type="number" id="stQ" style="flex:0.8" placeholder="Qty"></div>
                 <div class="form-row">
                     <select id="stA" onchange="tQC(this.value)" style="flex:1"><option value="Masuk">Masuk (QC)</option><option value="Rekondisi">Rekondisi</option><option value="Jual Umum">Jual Umum</option><option value="Jual Mitra">Jual Mitra</option></select>
                     <div id="qBx" style="flex:1.2; display:flex; gap:4px"><select id="qJ"><option value="Bekas">Bekas</option><option value="Baru">Baru</option></select><select id="qH"><option value="Accepted">Accepted</option><option value="Reject">Reject</option></select></div>
                 </div>
-                <button style="background:var(--p); width:100%; height:45px" onclick="svS()">SIMPAN TRANSAKSI</button>
+                <button style="background:var(--p); width:100%; height:45px" onclick="svS()">SIMPAN TRANSAKSI STOK</button>
             </div>
             <div class="card">
-                <h3>📈 Flow Rekapitulasi Stok</h3>
+                <h3>📈 Rekap Flow Bulanan</h3>
                 <div class="table-wrap"><table class="table-web" id="tableStok">
                     <thead>
-                        <tr><th rowspan="2" class="nama-fixed">BARANG</th><th colspan="2">AWAL</th><th colspan="2">MASUK</th><th rowspan="2">REKO</th><th colspan="2">JUAL</th><th colspan="3">SISA</th></tr>
-                        <tr><th>K</th><th>B</th><th>K</th><th>B</th><th>U</th><th>M</th><th>K</th><th>R</th><th>TOT</th></tr>
+                        <tr>
+                            <th class="nama-fixed">NAMA BARANG</th>
+                            <th class="h-awal">AWAL-K</th><th class="h-awal">AWAL-B</th>
+                            <th class="h-masuk">MASUK-K</th><th class="h-masuk">MASUK-B</th>
+                            <th style="background:var(--lb); color:#fff">REKOD</th>
+                            <th class="h-jual">JUAL-U</th><th class="h-jual">JUAL-M</th>
+                            <th class="h-sisa">SISA-K</th><th class="h-sisa">READY</th><th class="h-sisa">TOTAL</th>
+                        </tr>
                     </thead>
                     <tbody id="tbS"></tbody>
                 </table></div>
                 <div class="btn-group">
-                    <button style="background:var(--s)" onclick="exX('tableStok')">EXCEL</button>
-                    <button style="background:var(--te)" onclick="exP('tableStok', 'STOK')">PDF</button>
+                    <button style="background:var(--s); flex:1" onclick="exX('tableStok')">EXCEL</button>
+                    <button style="background:var(--te); flex:1" onclick="exP('tableStok', 'STOK')">PDF</button>
                 </div>
             </div>
             <div class="card"><h3>📜 Log Harian</h3><div class="table-wrap"><table class="table-web" style="min-width:600px"><thead><tr><th>Tgl</th><th>Barang</th><th>Aksi</th><th>Qty</th><th>QC</th><th>X</th></tr></thead><tbody id="logS"></tbody></table></div></div>
         </div>
 
-        <div id="t-aktivitas" class="tab-content hidden"><div class="card"><h3>📝 Aktivitas</h3><p style="text-align:center">Modul Maintenance...</p></div></div>
-        <div id="t-gaji" class="tab-content hidden"><div class="card"><h3>💰 Payroll</h3><p style="text-align:center">Modul Gaji...</p></div></div>
+        <div id="t-aktivitas" class="tab-content hidden"><div class="card"><h3>📝 Aktivitas</h3><p style="text-align:center">Sedang Maintenance...</p></div></div>
+        <div id="t-gaji" class="tab-content hidden"><div class="card"><h3>💰 Payroll</h3><p style="text-align:center">Sedang Maintenance...</p></div></div>
     </div>
     <datalist id="lk"></datalist>
 
@@ -135,27 +143,28 @@
         function uLK(){ document.getElementById('lk').innerHTML=Object.values(mK).sort().map(n=>`<option value="${n}">`).join(''); }
         function svK(){ let v=document.getElementById('inNK').value; if(v)db.ref('master_karyawan').push(v).then(()=>document.getElementById('inNK').value=""); }
         function dlK(){ let v=document.getElementById('selK').value; let id=Object.keys(mK).find(k=>mK[k]===v); if(id&&confirm('Hapus?'))db.ref(`master_karyawan/${id}`).remove(); }
-        function svL(){ let s=new Date(document.getElementById('lS').value), e=new Date(document.getElementById('lE').value); while(s<=e){ db.ref(`hari_libur/${s.toISOString().split('T')[0]}`).set(true); s.setDate(s.getDate()+1); } alert("Ok!"); }
+        function svL(){ let s=new Date(document.getElementById('lS').value), e=new Date(document.getElementById('lE').value); while(s<=e){ db.ref(`hari_libur/${s.toISOString().split('T')[0]}`).set(true); s.setDate(s.getDate()+1); } alert("Libur Disimpan!"); }
         
         function ab(ty){
-            let n=document.getElementById('selK').value, t=new Date().toISOString().split('T')[0]; if(!n) return alert("Nama!");
+            let n=document.getElementById('selK').value, t=new Date().toISOString().split('T')[0]; if(!n) return alert("Pilih Nama!");
             let now=new Date(), jam=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-            if(ty==='Ijin'){ let k=prompt("Ket:"); if(k) db.ref(`absensi/${t}/${n}`).update({status:'Ijin', note:k}); }
+            if(ty==='Ijin'){ let k=prompt("Alasan Ijin:"); if(k) db.ref(`absensi/${t}/${n}`).update({status:'Ijin', note:k}); }
             else if(ty==='Masuk'){ let isT=(now.getHours()>9||(now.getHours()===9&&now.getMinutes()>0)); db.ref(`absensi/${t}/${n}`).update({masuk:jam, status:isT?'Telat':'Hadir'}); }
             else if(ty==='Pulang'){ db.ref(`absensi/${t}/${n}`).update({pulang:jam}); }
         }
-        function re(){ let n=document.getElementById('selK').value, t=document.getElementById('tglR').value; if(n&&t&&confirm('Hapus?')) db.ref(`absensi/${t}/${n}`).remove(); }
+        function re(){ let n=document.getElementById('selK').value, t=document.getElementById('tglR').value; if(n&&t&&confirm('Hapus Data?')) db.ref(`absensi/${t}/${n}`).remove(); }
 
         function uLB(){ document.getElementById('slB').innerHTML=Object.values(mB).sort().map(v=>`<option value="${v}">${v}</option>`).join(''); }
         function svB(){ let v=document.getElementById('inNB').value; if(v)db.ref('master_barang').push(v).then(()=>document.getElementById('inNB').value=""); }
         function dlB(){ let v=document.getElementById('slB').value; let id=Object.keys(mB).find(k=>mB[k]===v); if(id&&confirm('Hapus?'))db.ref(`master_barang/${id}`).remove(); }
         function tQC(v){ document.getElementById('qBx').style.display=(v==='Masuk'?'flex':'none'); }
+        
         function svS(){
             let b=document.getElementById('slB').value, t=document.getElementById('stT').value, q=parseInt(document.getElementById('stQ').value), a=document.getElementById('stA').value;
             if(!b||!t||!q) return alert("Lengkapi!");
             let d={tgl:t, barang:b, aksi:a, qty:q};
             if(a==='Masuk'){ d.jenis=document.getElementById('qJ').value; d.hasil=document.getElementById('qH').value; }
-            db.ref('stok_log').push(d).then(()=>alert("Saved!"));
+            db.ref('stok_log').push(d).then(()=>alert("Transaksi Stok Berhasil!"));
         }
 
         function renS(){
@@ -178,7 +187,7 @@
                     }
                 });
                 let siK=r.saK+r.mK-r.rek, siB=r.saB+r.mB+r.rek-r.jU-r.jM;
-                h+=`<tr><td class="nama-fixed">${bn}</td><td>${r.saK}</td><td>${r.saB}</td><td>${r.mK}</td><td>${r.mB}</td><td>${r.rek}</td><td>${r.jU}</td><td>${r.jM}</td><td style="color:var(--te)">${siK}</td><td style="color:var(--s)">${siB}</td><td>${siK+siB}</td></tr>`;
+                h+=`<tr><td class="nama-fixed">${bn}</td><td>${r.saK}</td><td>${r.saB}</td><td>${r.mK}</td><td>${r.mB}</td><td>${r.rek}</td><td>${r.jU}</td><td>${r.jM}</td><td style="color:var(--te)">${siK}</td><td style="color:var(--s)">${siB}</td><td style="background:rgba(255,255,255,0.05)">${siK+siB}</td></tr>`;
             });
             document.getElementById('tbS').innerHTML=h;
             Object.keys(sL).reverse().slice(0,10).forEach(k=>{
@@ -195,7 +204,7 @@
             let h=`<tr><th class="nama-fixed">KARYAWAN</th>`;
             for(let i=1;i<=last;i++){
                 let tgl=`${y}-${m}-${String(i).padStart(2,'0')}`, icon=(sIn[tgl]?'📂':'')+(sOut[tgl]?'📁':'');
-                h+=`<th id="day-${i}" style="min-width:50px">${i}<span class="kardus-head">${icon}</span></th>`;
+                h+=`<th id="day-${i}" style="min-width:45px">${i}<span class="kardus-head">${icon}</span></th>`;
             }
             h+=`<th>H</th><th>I</th><th>A</th><th>L</th></tr>`;
             document.getElementById('thA').innerHTML=h;
@@ -226,12 +235,12 @@
             if(el) el.scrollIntoView({behavior: "smooth", inline: "center", block: "nearest"});
         }
 
-        function exX(id){ let wb=XLSX.utils.table_to_book(document.getElementById(id)); XLSX.writeFile(wb, `REKAP_${id}.xlsx`); }
+        function exX(id){ let wb=XLSX.utils.table_to_book(document.getElementById(id)); XLSX.writeFile(wb, `AGN_REKAP_${id}.xlsx`); }
         function exP(id, title){
             const { jsPDF } = window.jspdf; const doc = new jsPDF('l', 'mm', 'a4');
             doc.text(`LAPORAN ${title} - PT AGN`, 14, 10);
             doc.autoTable({ html: '#'+id, startY: 15, theme: 'grid', styles: { fontSize: 6 }, headStyles: { fillColor: [30, 41, 59] } });
-            doc.save(`AGN_${title}.pdf`);
+            doc.save(`AGN_REKAP_${title}.pdf`);
         }
     </script>
 </body>
