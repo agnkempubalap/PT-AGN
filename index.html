@@ -1,9 +1,8 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT-AGN OMNI ERP V107</title>
+    <title>PT-AGN ERP SYSTEM V108</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -19,16 +18,17 @@
         .card{background:var(--c);padding:15px;border-radius:18px;margin-bottom:12px;border:1px solid var(--b);}
         h3{margin:0 0 12px;font-size:11px;color:var(--p);text-transform:uppercase;font-weight:800;}
         .form-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
-        input, button, select { height: 42px; border-radius: 10px; border: 1px solid var(--b); background: var(--bg); color: var(--t); padding: 0 10px; font-size: 13px; outline: none;}
+        input, button, select { height: 42px; border-radius: 10px; border: 1px solid var(--b); background: var(--bg); color: var(--t); padding: 0 10px; outline: none;}
         .table-wrap{ overflow-x: auto; border-radius: 12px; border: 1px solid var(--b); background: var(--bg); position: relative; scroll-behavior: smooth;}
-        .table-web{ width: 100%; border-collapse: collapse; min-width: 1000px; }
+        .table-web{ width: 100%; border-collapse: collapse; min-width: 1200px; }
         .table-web th{ background: var(--b); padding: 12px 5px; font-size: 9px; border: 1px solid var(--bg); position: sticky; top: 0; z-index: 10;}
         .table-web td{ padding: 8px 5px; border: 1px solid var(--b); text-align: center; font-weight: 700;}
         .nama-fixed{ position: sticky; left: 0; background: #1e293b !important; z-index: 20; min-width: 140px; border-right: 2px solid var(--p)!important; text-align: left !important; padding-left: 10px !important; }
-        .s-box{ width: 45px; height: 45px; border-radius: 8px; display: inline-flex; flex-direction: column; justify-content: center; align-items: center; font-size: 11px; font-weight: 800; margin: 0 auto; color:#fff; }
+        .s-box{ width: 45px; height: 48px; border-radius: 8px; display: inline-flex; flex-direction: column; justify-content: center; align-items: center; font-size: 11px; font-weight: 800; margin: 0 auto; color:#fff; position: relative;}
         .s-h{background:var(--s)} .s-i{background:var(--iz)} .s-a{background:var(--d)} .s-l{background:var(--lb)} .s-m{background:var(--sun)} .s-off{background:var(--al)} .s-t{background:var(--te)}
-        .box-jam{ font-size: 7px; font-weight: 400; margin-top:2px;}
+        .box-jam{ font-size: 7px; font-weight: 400; margin-top:2px; line-height: 1;}
         .hidden { display: none !important; }
+        .btn-act { padding: 5px 10px; border-radius: 6px; font-size: 10px; cursor: pointer; border: none; color: #fff;}
     </style>
 </head>
 <body>
@@ -42,13 +42,39 @@
 
         <div id="tab-absen" class="tab-content">
             <div class="card">
-                <h3>👥 Pengelolaan Tim & Libur</h3>
-                <div class="form-row"><input type="text" id="inK" style="flex:2" placeholder="Nama Karyawan..."><button style="background:var(--s); flex:1" onclick="addK()">TAMBAH</button></div>
-                <div class="form-row"><input type="date" id="lS" style="flex:1"><input type="date" id="lE" style="flex:1"><button style="background:var(--p); flex:1" onclick="setL()">SET LIBUR</button></div>
+                <h3>👥 Master Karyawan & Libur</h3>
+                <div class="form-row">
+                    <input type="text" id="inK" style="flex:2" placeholder="Nama Baru...">
+                    <button style="background:var(--s); flex:0.5" onclick="addK()">TAMBAH</button>
+                    <button style="background:var(--d); flex:0.5" onclick="delK()">HAPUS</button>
+                </div>
+                <div class="form-row">
+                    <input type="date" id="lS" style="flex:1"><input type="date" id="lE" style="flex:1">
+                    <button style="background:var(--p); flex:1" onclick="setL(true)">SET LIBUR</button>
+                    <button style="background:var(--al); flex:1" onclick="setL(false)">HAPUS LIBUR</button>
+                </div>
+            </div>
+            <div class="card">
+                <h3>⚡ Presensi & Reset</h3>
+                <div class="form-row">
+                    <input list="lk" id="selK" style="flex:1.5" placeholder="Pilih Karyawan...">
+                    <input type="date" id="tglAbs" style="flex:1">
+                    <input type="text" id="noteAbs" style="flex:1.5" placeholder="Keterangan Ijin...">
+                </div>
+                <div class="form-row">
+                    <button style="background:var(--s);flex:1" onclick="abs('Masuk')">MASUK</button>
+                    <button style="background:var(--iz);flex:1" onclick="abs('Ijin')">IJIN</button>
+                    <button style="background:var(--al);flex:1" onclick="abs('Pulang')">PULANG</button>
+                    <button style="background:var(--d);flex:1" onclick="resAbs()">RESET DATA</button>
+                </div>
             </div>
             <div class="card">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
-                    <h3>📊 Kalender Terintegrasi</h3><input type="month" id="fM" onchange="renderAll()" style="width:130px">
+                    <h3>📊 Kalender Rekap</h3>
+                    <div>
+                        <input type="month" id="fM" onchange="renderAll()" style="width:130px; height:35px">
+                        <button onclick="exX('tableAbsen', 'ABSEN')" style="background:var(--s); padding:5px 10px; font-size:10px">EXCEL</button>
+                    </div>
                 </div>
                 <div class="table-wrap" id="scrollAbsen"><table class="table-web" id="tableAbsen"><thead id="thA"></thead><tbody id="tbA"></tbody></table></div>
             </div>
@@ -56,40 +82,64 @@
 
         <div id="tab-stok" class="tab-content hidden">
             <div class="card">
-                <h3>📦 Transaksi & QC (Auto-Aktivitas)</h3>
-                <div class="form-row"><input type="date" id="stT" style="flex:1"><select id="slB" style="flex:1.5"></select><input type="number" id="stQ" style="flex:1" placeholder="Qty"></div>
+                <h3>📦 Kelola Barang & Transaksi</h3>
                 <div class="form-row">
-                    <select id="stA" onchange="tQC(this.value)" style="flex:1">
-                        <option value="Masuk">Masuk (Bongkar)</option><option value="Rekondisi">Proses Rekondisi</option><option value="Jual Umum">Jual Umum</option><option value="Jual Mitra">Jual Agen (Muat)</option>
+                    <input type="text" id="newB" style="flex:2" placeholder="Nama Barang...">
+                    <button style="background:var(--s); flex:1" onclick="addB()">TAMBAH BARANG</button>
+                </div>
+                <div class="form-row">
+                    <input type="date" id="stT" style="flex:1"><select id="slB" style="flex:1.5"></select><input type="number" id="stQ" style="flex:0.8" placeholder="Qty">
+                </div>
+                <div class="form-row">
+                    <select id="stA" onchange="tQC(this.value)" style="flex:1.2">
+                        <option value="Masuk">Stok Masuk (QC)</option>
+                        <option value="Rekondisi">Rekondisi</option>
+                        <option value="Jual Umum">Jual Umum</option>
+                        <option value="Jual Mitra">Jual Agen</option>
                     </select>
                     <div id="qcBox" style="flex:1.5; display:flex; gap:4px">
-                        <select id="qcJ"><option value="Bekas">Bekas/Kotor</option><option value="Baru">Baru/Bersih</option></select>
-                        <select id="qcH"><option value="Accepted">Accepted</option><option value="Reject">Reject</option></select>
+                        <select id="qcJ"><option value="Bekas">Bekas</option><option value="Baru">Baru</option></select>
+                        <select id="qcH"><option value="Accepted">Accepted</option><option value="Minor">Accepted w/ Minor</option><option value="Reject">Reject</option></select>
                     </div>
                 </div>
-                <div class="form-row" id="workerSelect">
-                    <input list="lk" id="workers" style="flex:1" placeholder="Pilih Orang (Pisah Koma untuk Tim)">
-                </div>
-                <button style="background:var(--p); width:100%; font-weight:800" onclick="saveStokFull()">SIMPAN TRANSAKSI</button>
+                <button style="background:var(--p); width:100%; font-weight:800" onclick="saveS()">SIMPAN TRANSAKSI STOK</button>
             </div>
-            <div class="card"><h3>📈 Rekap Flow Bulanan</h3><div class="table-wrap"><table class="table-web" id="tableStok"><thead><tr><th class="nama-fixed">BARANG</th><th>AW KOTOR</th><th>AW BARU</th><th>IN KOTOR</th><th>IN BARU</th><th>REKO</th><th>UMUM</th><th>AGEN</th><th>SISA KOTOR</th><th>SISA READY</th></tr></thead><tbody id="tbS"></tbody></table></div></div>
+            <div class="card">
+                <h3>📈 Flow Stok Bulanan</h3>
+                <div class="table-wrap"><table class="table-web" id="tableStok"><thead><tr><th class="nama-fixed">BARANG</th><th>AW KOTOR</th><th>AW BARU</th><th>IN KOTOR</th><th>IN BARU</th><th>REKO</th><th>SISA KOTOR</th><th>UMUM</th><th>AGEN</th><th>SISA READY</th><th>TOTAL</th></tr></thead><tbody id="tbS"></tbody></table></div>
+            </div>
+            <div class="card">
+                <h3>📜 Log Harian (Hapus Salah Input)</h3>
+                <div class="table-wrap"><table class="table-web"><thead><tr><th>Tanggal</th><th>Barang</th><th>Aksi</th><th>Qty</th><th>Hapus</th></tr></thead><tbody id="logS"></tbody></table></div>
+            </div>
         </div>
 
         <div id="tab-aktivitas" class="tab-content hidden">
             <div class="card">
-                <h3>🛠️ Log Pekerjaan Harian</h3>
-                <div class="table-wrap"><table class="table-web"><thead><tr><th>Tanggal</th><th>Karyawan</th><th>Aktivitas</th><th>Qty</th><th>Tim</th><th>Hapus</th></tr></thead><tbody id="logAct"></tbody></table></div>
+                <h3>🛠️ Kelola Jenis Aktivitas</h3>
+                <div class="form-row"><input type="text" id="newAct" style="flex:2"><button style="background:var(--s); flex:1" onclick="addMA()">TAMBAH JENIS</button></div>
+                <h3>📝 Input Pekerjaan</h3>
+                <div class="form-row">
+                    <input type="date" id="tAct" style="flex:1">
+                    <input list="lk" id="wkAct" style="flex:1" placeholder="Pilih Karyawan...">
+                    <select id="selAct" style="flex:1"></select>
+                </div>
+                <button style="background:var(--p); width:100%" onclick="saveAct()">SIMPAN AKTIVITAS</button>
+            </div>
+            <div class="card">
+                <h3>📜 Log Aktivitas</h3>
+                <div class="table-wrap"><table class="table-web"><thead><tr><th>Tgl</th><th>Nama</th><th>Aktivitas</th><th>Hapus</th></tr></thead><tbody id="logA"></tbody></table></div>
             </div>
         </div>
 
         <div id="tab-gaji" class="tab-content hidden">
             <div class="card">
-                <h3>⚙️ Harga Borongan (Edit Disini)</h3>
-                <div class="table-wrap"><table class="table-web" style="min-width:400px"><thead><tr><th>Aktivitas</th><th>Rp</th><th>Action</th></tr></thead><tbody id="priceList"></tbody></table></div>
+                <h3>⚙️ Edit Harga Borongan</h3>
+                <div class="table-wrap"><table class="table-web" style="min-width:500px"><thead><tr><th>Aktivitas</th><th>Rp</th><th>Simpan</th></tr></thead><tbody id="tbPr"></tbody></table></div>
             </div>
             <div class="card">
-                <h3>💰 Rekap Gaji (Tgl 1)</h3>
-                <div class="table-wrap"><table class="table-web" id="tableGaji"><thead><tr><th class="nama-fixed">KARYAWAN</th><th>GAJI AKTIVITAS</th><th>TOTAL</th></tr></thead><tbody id="tbG"></tbody></table></div>
+                <h3>💰 Rekap Gaji Bulanan</h3>
+                <div class="table-wrap"><table class="table-web" id="tableGaji"><thead><tr><th class="nama-fixed">NAMA</th><th>BORONGAN</th><th>TOTAL</th></tr></thead><tbody id="tbG"></tbody></table></div>
             </div>
         </div>
     </div>
@@ -98,24 +148,24 @@
     <script>
         const cfg={apiKey:"AIzaSyAu67MAhWBxdmciPi3xOKWhdy-uP4u9tXI",databaseURL:"https://pt-agn-default-rtdb.asia-southeast1.firebasedatabase.app"};
         firebase.initializeApp(cfg); const db=firebase.database();
-        let mk={}, ad={}, hl={}, brg={}, sl={}, lAct={}, pr={};
+        let mk={}, ad={}, hl={}, brg={}, sl={}, ma={}, la={}, pr={};
 
-        const defPr = {
-            "Rekondisi Kempu": 100000, "Rekondisi Jerigen 18L": 2000, "Rekondisi Jerigen 5L": 2000,
-            "Pasang Pangkalan": 500000, "Muat Barang": 500000, "Bongkar Barang": 500000
-        };
+        // --- HARGA AWAL ---
+        const defPr = { "Rekondisi Kempu": 100000, "Rekondisi Jerigen 18L": 2000, "Rekondisi Jerigen 5L": 2000, "Pasang Pangkalan": 500000, "Muat Barang": 500000, "Bongkar Barang": 500000, "Kirim Minyak": 0 };
 
         window.onload=()=>{
             const t=new Date().toISOString().split('T')[0];
             document.getElementById('fM').value=t.slice(0,7);
-            document.getElementById('stT').value=t;
-            db.ref('master_karyawan').on('value',s=>{mk=s.val()||{}; uL(); rA(); rG();});
-            db.ref('absensi').on('value',s=>{ad=s.val()||{}; rA();});
-            db.ref('hari_libur').on('value',s=>{hl=s.val()||{}; rA();});
-            db.ref('master_barang').on('value',s=>{brg=s.val()||{}; uB(); rS();});
-            db.ref('stok_log').on('value',s=>{sl=s.val()||{}; rS(); rA();});
-            db.ref('log_aktivitas').on('value',s=>{lAct=s.val()||{}; rActLog(); rA(); rG();});
-            db.ref('prices').on('value',s=>{pr=s.val()||{}; if(!Object.keys(pr).length)db.ref('prices').set(defPr); rPr();});
+            document.getElementById('tglAbs').value=t; document.getElementById('stT').value=t; document.getElementById('tAct').value=t;
+
+            db.ref('master_karyawan').on('value',s=>{mk=s.val()||{}; uL(); renderAll();});
+            db.ref('absensi').on('value',s=>{ad=s.val()||{}; renderAll();});
+            db.ref('hari_libur').on('value',s=>{hl=s.val()||{}; renderAll();});
+            db.ref('master_barang').on('value',s=>{brg=s.val()||{}; uB(); renderAll();});
+            db.ref('stok_log').on('value',s=>{sl=s.val()||{}; renderAll();});
+            db.ref('master_aktivitas').on('value',s=>{ma=s.val()||{}; uMA();});
+            db.ref('log_aktivitas').on('value',s=>{la=s.val()||{}; renderAll();});
+            db.ref('prices').on('value',s=>{pr=s.val()||{}; if(!Object.keys(pr).length) db.ref('prices').set(defPr); rPr();});
         };
 
         function tab(t, b){
@@ -123,59 +173,22 @@
             document.querySelectorAll('.nav-btn').forEach(n=>n.classList.remove('active')); b.classList.add('active');
         }
 
-        // --- INTEGRASI STOK KE AKTIVITAS ---
-        function saveStokFull(){
-            const t=document.getElementById('stT').value, b=document.getElementById('slB').value, q=parseInt(document.getElementById('stQ').value), a=document.getElementById('stA').value, w=document.getElementById('workers').value;
-            if(!t||!b||!q||!w) return alert("Lengkapi Data & Nama Karyawan!");
+        function renderAll(){ rA(); rS(); rG(); rLogS(); rLogA(); }
 
-            const tim = w.split(',').map(x=>x.trim());
-            const nTim = tim.length;
-            
-            // 1. Simpan Data Stok
-            let dS = {tgl:t, barang:b, aksi:a, qty:q};
-            if(a==='Masuk'){ dS.jenis=document.getElementById('qcJ').value; dS.hasil=document.getElementById('qcH').value; }
-            db.ref('stok_log').push(dS);
-
-            // 2. Simpan Data Aktivitas (Otomatis hitung gaji)
-            let actName = ""; let upah = 0;
-            if(a==='Rekondisi') actName = "Rekondisi " + (b.includes('Kempu')?'Kempu':b);
-            else if(a==='Masuk' && dS.jenis==='Bekas') actName = "Bongkar Barang";
-            else if(a==='Jual Mitra') actName = "Muat Barang";
-            
-            if(actName){
-                let base = pr[actName] || 0;
-                if(actName.includes('Kempu') || actName.includes('Jerigen')) upah = (base * q) / nTim;
-                else if(actName.includes('Muat') || actName.includes('Bongkar')) upah = (base * (q/25)) / nTim;
-
-                tim.forEach(p=>{
-                    db.ref('log_aktivitas').push({tgl:t, karyawan:p, aktivitas:actName, qty:q, tim:nTim, gaji:upah});
-                });
-            }
-            alert("Data Stok & Gaji Borongan Berhasil Disimpan!");
-        }
-
-        // --- RENDER GAJI ---
-        function rG(){
-            const f=document.getElementById('fM').value; let h="";
-            Object.values(mk).sort().forEach(n=>{
-                let total = 0;
-                Object.values(lAct).forEach(l=>{ if(l.karyawan===n && l.tgl.startsWith(f)) total += l.gaji; });
-                h+=`<tr><td class="nama-fixed">${n}</td><td>Rp ${Math.round(total).toLocaleString()}</td><td>Rp ${Math.round(total).toLocaleString()}</td></tr>`;
-            }); document.getElementById('tbG').innerHTML=h;
-        }
-
-        // --- KALENDER ABSENSI (DENGAN INDIKATOR BOX) ---
+        // --- TAB ABSENSI CORE ---
         function rA(){
             const f=document.getElementById('fM').value, [y,m]=f.split('-'), last=new Date(y,m,0).getDate(), kL=Object.values(mk).sort();
             const now=new Date(), curTgl=now.toISOString().split('T')[0], curH=now.getHours();
-
-            let stI={}; Object.values(sl).forEach(s=>{ if(s.tgl.startsWith(f)){ if(!stI[s.tgl])stI[s.tgl]={i:false,o:false}; if(s.aksi==='Masuk') stI[s.tgl].i=true; if(s.aksi.startsWith('Jual')) stI[s.tgl].o=true; } });
-            let uAct={}; Object.values(lAct).forEach(a=>{ if(a.tgl.startsWith(f)){ if(!uAct[a.tgl])uAct[a.tgl]={}; if(!uAct[a.tgl][a.karyawan])uAct[a.tgl][a.karyawan]=[]; uAct[a.tgl][a.karyawan].push('🛠️'); } });
+            
+            // Indikator Box Stok (Hanya di Header Tanggal)
+            let sIn={}; Object.values(sl).forEach(s=>{ if(s.tgl.startsWith(f)){ if(!sIn[s.tgl])sIn[s.tgl]={i:false,o:false}; if(s.aksi==='Masuk')sIn[s.tgl].i=true; if(s.aksi.startsWith('Jual'))sIn[s.tgl].o=true; } });
+            // Indikator Aktivitas (Per Orang)
+            let uAct={}; Object.values(la).forEach(l=>{ if(l.tgl.startsWith(f)){ if(!uAct[l.tgl])uAct[l.tgl]={}; if(!uAct[l.tgl][l.nama])uAct[l.tgl][l.nama]=[]; uAct[l.tgl][l.nama].push('🛠️'); } });
 
             let h=`<tr><th class="nama-fixed">KARYAWAN</th>`;
             for(let i=1;i<=last;i++){
-                let tg=`${y}-${m}-${String(i).padStart(2,'0')}`, box=(stI[tg]?(stI[tg].i?'📦':'')+(stI[tg].o?'🚚':''):'');
-                h+=`<th class="${tg===curTgl?'s-t':''}" id="th-${tg}"><div style="font-size:10px">${box}</div>${i}</th>`;
+                let tg=`${y}-${m}-${String(i).padStart(2,'0')}`, icon=(sIn[tg]?(sIn[tg].i?'📦':'')+(sIn[tg].o?'🚚':''):'');
+                h+=`<th class="${tg===curTgl?'th-today':''}" id="th-${tg}"><div style="font-size:10px">${icon}</div>${i}</th>`;
             }
             h+=`<th>H</th><th>I</th><th>A</th><th>L</th></tr>`; document.getElementById('thA').innerHTML=h;
 
@@ -184,27 +197,94 @@
                 for(let i=1;i<=last;i++){
                     let tg=`${y}-${m}-${String(i).padStart(2,'0')}`, dt=new Date(tg), isM=dt.getDay()===0, isL=hl[tg], da=ad[tg]?ad[tg][n]:null;
                     let sW="-", cl="", info="", acts=uAct[tg]&&uAct[tg][n]?'🛠️':'';
-                    if(isM){ sW="M"; cl="s-m"; } else if(isL){ sW="OFF"; cl="s-off"; }
+                    
+                    if(isM) { sW="M"; cl="s-m"; } else if(isL) { sW="OFF"; cl="s-off"; }
+                    
                     if(da){
-                        if(isM||isL){ sW="L"; cl="s-l"; c.L++; } else if(da.status==='Ijin'){ sW="I"; cl="s-i"; c.I++; info=`<div class="box-jam">${da.note||''}</div>`; } else{ sW=da.status==='Telat'?'T':'H'; cl=da.status==='Telat'?'s-t':'s-h'; c.H++; }
-                        info+=`<div class="box-jam">${da.masuk||''}</div>`;
+                        if(isM||isL){ sW="L"; cl="s-l"; c.L++; }
+                        else if(da.status==='Ijin'){ sW="I"; cl="s-i"; c.I++; info=`<div class="box-jam">${da.note||''}</div>`; }
+                        else{ sW=(da.masuk > "09:00" && da.status==='Masuk')?"T":"H"; cl=sW==="T"?"s-t":"s-h"; c.H++; }
+                        if(da.masuk) info+=`<div class="box-jam">${da.masuk}-${da.pulang||''}</div>`;
                     } else if(tg===curTgl && !isM && !isL && curH>=16){ sW="A"; cl="s-a"; c.A++; }
-                    row+=`<td><div class="s-box ${cl}">${sW}${info}<div style="font-size:9px">${acts}</div></div></td>`;
+                    
+                    row+=`<td><div class="s-box ${cl}">${sW}${info}<div style="font-size:8px">${acts}</div></div></td>`;
                 }
                 b+=`<tr>${row}<td>${c.H}</td><td>${c.I}</td><td>${c.A}</td><td>${c.L}</td></tr>`;
             }); document.getElementById('tbA').innerHTML=b;
+            setTimeout(()=>{ let el=document.getElementById('th-'+curTgl); if(el) document.getElementById('scrollAbsen').scrollLeft=el.offsetLeft-200; },500);
         }
 
-        // --- HARGA & MASTER ---
-        function rPr(){ let h=""; Object.keys(pr).forEach(k=>{ h+=`<tr><td>${k}</td><td><input id="pr-${k.replace(/ /g,'_')}" type="number" value="${pr[k]}" style="width:80px"></td><td><button onclick="saveP('${k}')" style="background:var(--s)">OK</button></td></tr>`; }); document.getElementById('priceList').innerHTML=h; }
-        function saveP(k){ let v=document.getElementById(`pr-${k.replace(/ /g,'_')}`).value; db.ref(`prices/${k}`).set(parseInt(v)).then(()=>alert("Updated")); }
+        function abs(st){
+            let n=document.getElementById('selK').value, t=document.getElementById('tglAbs').value, note=document.getElementById('noteAbs').value;
+            if(!n||!t) return;
+            let time=new Date().toLocaleTimeString('id-ID',{hour12:false,hour:'2-digit',minute:'2-digit'});
+            let d={status:st, note:note};
+            if(st==='Masuk') d.masuk=time; else if(st==='Pulang') d.pulang=time;
+            db.ref(`absensi/${t}/${n}`).update(d);
+        }
+
+        function resAbs(){
+            let n=document.getElementById('selK').value, t=document.getElementById('tglAbs').value;
+            if(n && t) db.ref(`absensi/${t}/${n}`).remove();
+        }
+
+        // --- TAB STOK CORE ---
+        function rS(){
+            const cM=document.getElementById('fM').value, bL=Object.values(brg).sort(); let h="";
+            bL.forEach(bn=>{
+                let r={ak:0, ab:0, ik:0, ib:0, re:0, ju:0, jm:0};
+                Object.values(sl).forEach(d=>{
+                    let m=d.tgl.slice(0,7);
+                    if(d.barang!==bn) return;
+                    if(m < cM){ // Logika Pindah Stok Otomatis (B.11)
+                        if(d.aksi==='Masuk' && d.hasil!=='Reject'){ if(d.jenis==='Bekas') r.ak+=d.qty; else r.ab+=d.qty; }
+                        else if(d.aksi==='Rekondisi'){ r.ak-=d.qty; r.ab+=d.qty; }
+                        else if(d.aksi.startsWith('Jual')) r.ab-=d.qty;
+                    } else if(m === cM){
+                        if(d.aksi==='Masuk' && d.hasil!=='Reject'){ if(d.jenis==='Bekas') r.ik+=d.qty; else r.ib+=d.qty; }
+                        else if(d.aksi==='Rekondisi') r.re+=d.qty;
+                        else if(d.aksi==='Jual Umum') r.ju+=d.qty;
+                        else if(d.aksi==='Jual Mitra') r.jm+=d.qty;
+                    }
+                });
+                let sk = r.ak+r.ik-r.re; let sr = r.ab+r.ib+r.re-r.ju-r.jm;
+                h+=`<tr><td class="nama-fixed">${bn}</td><td>${r.ak}</td><td>${r.ab}</td><td>${r.ik}</td><td>${r.ib}</td><td>${r.re}</td><td>${sk}</td><td>${r.ju}</td><td>${r.jm}</td><td>${sr}</td><td>${sk+sr}</td></tr>`;
+            }); document.getElementById('tbS').innerHTML=h;
+        }
+
+        function saveS(){
+            let t=document.getElementById('stT').value, b=document.getElementById('slB').value, q=parseInt(document.getElementById('stQ').value), a=document.getElementById('stA').value;
+            if(!t||!b||!q) return;
+            let d={tgl:t, barang:b, aksi:a, qty:q};
+            if(a==='Masuk'){ d.jenis=document.getElementById('qcJ').value; d.hasil=document.getElementById('qcH').value; }
+            db.ref('stok_log').push(d);
+        }
+
+        // --- GAJI & AKTIVITAS ---
+        function rG(){
+            const f=document.getElementById('fM').value; let h="";
+            Object.values(mk).sort().forEach(n=>{
+                let tot=0; Object.values(la).forEach(l=>{ if(l.nama===n && l.tgl.startsWith(f)) tot+= (pr[l.act]||0); });
+                h+=`<tr><td class="nama-fixed">${n}</td><td>Rp ${tot.toLocaleString()}</td><td>Rp ${tot.toLocaleString()}</td></tr>`;
+            }); document.getElementById('tbG').innerHTML=h;
+        }
+
+        // --- UTILITY ---
         function uL(){ document.getElementById('lk').innerHTML=Object.values(mk).map(n=>`<option value="${n}">`).join(''); }
-        function addK(){ let v=document.getElementById('inK').value; if(v)db.ref('master_karyawan').push(v).then(()=>document.getElementById('inK').value=""); }
-        function uB(){ document.getElementById('slB').innerHTML=Object.values(brg).sort().map(v=>`<option value="${v}">${v}</option>`).join(''); if(!Object.keys(brg).length) ['Kempu','Jerigen 18L','Jerigen 5L','Minyak'].forEach(x=>db.ref('master_barang').push(x)); }
-        function rActLog(){ let h=""; Object.keys(lAct).reverse().slice(0,15).forEach(k=>{ let d=lAct[k]; h+=`<tr><td>${d.tgl}</td><td>${d.karyawan}</td><td>${d.aktivitas}</td><td>${d.qty}</td><td>${d.tim}</td><td><button onclick="db.ref('log_aktivitas/${k}').remove()" style="background:var(--d)">X</button></td></tr>`; }); document.getElementById('logAct').innerHTML=h; }
+        function addK(){ let v=document.getElementById('inK').value; if(v) db.ref('master_karyawan').push(v); }
+        function delK(){ let v=document.getElementById('selK').value; let id=Object.keys(mk).find(k=>mk[k]===v); if(id) db.ref(`master_karyawan/${id}`).remove(); }
+        function setL(st){ let s=new Date(document.getElementById('lS').value), e=new Date(document.getElementById('lE').value); if(isNaN(s))return; while(s<=e){ let tg=s.toISOString().split('T')[0]; if(st) db.ref(`hari_libur/${tg}`).set(true); else db.ref(`hari_libur/${tg}`).remove(); s.setDate(s.getDate()+1); } }
+        function uB(){ document.getElementById('slB').innerHTML=Object.values(brg).sort().map(v=>`<option value="${v}">${v}</option>`).join(''); }
+        function addB(){ let v=document.getElementById('newB').value; if(v) db.ref('master_barang').push(v); }
         function tQC(v){ document.getElementById('qcBox').style.display=(v==='Masuk'?'flex':'none'); }
-        function setL(){ let s=new Date(document.getElementById('lS').value), e=new Date(document.getElementById('lE').value); if(isNaN(s)) return; while(s<=e){ db.ref(`hari_libur/${s.toISOString().split('T')[0]}`).set(true); s.setDate(s.getDate()+1); } alert("Libur Set"); }
-        function rS(){ /* Fungsi Stok Tetap Sama */ }
+        function uMA(){ document.getElementById('selAct').innerHTML=Object.values(ma).map(v=>`<option value="${v}">${v}</option>`).join(''); }
+        function addMA(){ let v=document.getElementById('newAct').value; if(v) db.ref('master_aktivitas').push(v); }
+        function saveAct(){ let t=document.getElementById('tAct').value, n=document.getElementById('wkAct').value, a=document.getElementById('selAct').value; if(t&&n&&a) db.ref('log_aktivitas').push({tgl:t, nama:n, act:a}); }
+        function rPr(){ let h=""; Object.keys(pr).forEach(k=>{ h+=`<tr><td>${k}</td><td><input type="number" id="p-${k.replace(/ /g,'_')}" value="${pr[k]}"></td><td><button onclick="savePr('${k}')" style="background:var(--s)">OK</button></td></tr>`; }); document.getElementById('tbPr').innerHTML=h; }
+        function savePr(k){ let v=document.getElementById(`p-${k.replace(/ /g,'_')}`).value; db.ref(`prices/${k}`).set(parseInt(v)); }
+        function rLogS(){ let h=""; Object.keys(sl).reverse().slice(0,10).forEach(k=>{ let d=sl[k]; h+=`<tr><td>${d.tgl}</td><td>${d.barang}</td><td>${d.aksi}</td><td>${d.qty}</td><td><button onclick="db.ref('stok_log/${k}').remove()">X</button></td></tr>`; }); document.getElementById('logS').innerHTML=h; }
+        function rLogA(){ let h=""; Object.keys(la).reverse().slice(0,10).forEach(k=>{ let d=la[k]; h+=`<tr><td>${d.tgl}</td><td>${d.nama}</td><td>${d.act}</td><td><button onclick="db.ref('log_aktivitas/${k}').remove()">X</button></td></tr>`; }); document.getElementById('logA').innerHTML=h; }
+        function exX(id, t){ XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById(id)), `AGN_${t}.xlsx`); }
     </script>
 </body>
 </html>
