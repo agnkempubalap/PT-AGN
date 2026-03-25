@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KEMPU BALAP V960-FIX-PRO</title>
+    <title>KEMPU BALAP V961-FIX-KASBON</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -245,7 +245,6 @@
             openMod("Preview Rincian Kerja", html + `<button class="btn" style="background:var(--d); margin-top:15px" onclick="expPdf('p-rekap','Rincian_Borongan_${fM}')">DOWNLOAD PDF</button>`);
         }
 
-        // --- FUNGSI STANDAR LAINNYA ---
         function renderStok() {
             const B_arr = Object.values(D.master_barang || {}), fM = document.getElementById('fM').value; let h = "";
             B_arr.forEach(b => {
@@ -266,34 +265,59 @@
         function saveSt() { const t=document.getElementById('stTgl').value, b=document.getElementById('stBrg').value, q=parseInt(document.getElementById('stQty').value); if(q) db.ref('stok_logs').push({ t, b, q, kon:document.getElementById('stKon').value, qc:document.getElementById('stQC').value, ak:document.getElementById('stAksi').value }).then(()=>{ alert("Stok Terupdate!"); document.getElementById('stQty').value=""; }); }
         function saveAk() { const q = parseInt(document.getElementById('akQty').value) || 0, p = Array.from(document.querySelectorAll('.chk-k:checked')).map(c=>c.value); if(p.length) { db.ref('aktivitas').push({ t:document.getElementById('akTgl').value, j:document.getElementById('akJenis').value, q, p }).then(()=>{ alert("Tersimpan!"); document.getElementById('akQty').value=""; document.querySelectorAll('.chk-k').forEach(c=>c.checked=false); }); } else { alert("Pilih minimal 1 karyawan!"); } }
         async function saveBl() { const t=document.getElementById('blTgl').value, n=document.getElementById('blNama').value, rp=parseInt(document.getElementById('blRp').value), file=document.getElementById('blImg').files[0]; let imgBase = ""; if(file) { const img = await createImageBitmap(file); const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d'); canvas.width = 400; canvas.height = (img.height / img.width) * 400; ctx.drawImage(img, 0, 0, canvas.width, canvas.height); imgBase = canvas.toDataURL('image/jpeg', 0.6); } if(n && rp) db.ref('belanja').push({ t, n, rp, img: imgBase }).then(()=>{ alert("Nota Disimpan!"); document.getElementById('blNama').value=""; document.getElementById('blRp').value=""; }); }
+        
         function renderGaji() {
             const fM = document.getElementById('fUang').value, T = D.tarif||DEF_TARIF, K = Object.values(D.master_karyawan||{});
             let totG=0, totN=0; Object.values(D.belanja||{}).forEach(b => { if(b.t?.slice(0,7)===fM) totN+=b.rp; });
-            let h = `<table><tr><th class="sticky-col">NAMA</th><th>BORONG</th><th>BONUS</th><th>BON</th><th>TOTAL</th><th>SLIP</th></tr>`;
+            let h = `<table><tr><th class="sticky-col">NAMA</th><th>BORONG</th><th>BONUS</th><th>KASBON</th><th>TOTAL</th><th>SLIP</th></tr>`;
             K.forEach(k => {
                 let brg=0, bon=0, kas=0;
                 Object.values(D.aktivitas||{}).forEach(a => { if(a.t?.slice(0,7)===fM && (a.p||[]).includes(k)) { let val = (T[a.j]||0); brg += (a.j.includes("pasang") ? (val * a.q) : (val * a.q / (a.p||[]).length)); }});
-                Object.values(D.kasbon_bonus||{}).forEach(kb => { if(kb.n===k && kb.t===fM) { if(kb.tipe==="Bonus") bon+=kb.rp; else kas+=kb.rp; } });
-                let nett = (brg+bon)-kas; totG+=nett; h += `<tr><td class="sticky-col">${k}</td><td>${Math.round(brg).toLocaleString()}</td><td>${bon}</td><td>${kas}</td><td style="color:green;font-weight:800">Rp ${Math.round(nett).toLocaleString()}</td><td><button class="btn" style="background:var(--p); padding:5px" onclick="genSlip('${k}')">SLIP</button></td></tr>`;
+                Object.values(D.kasbon_bonus||{}).forEach(kb => { if(kb.n===k && kb.t===fM) { if(kb.tipe==="Bonus") bon += parseInt(kb.rp || 0); else kas += parseInt(kb.rp || 0); } });
+                let nett = (brg+bon)-kas; totG+=nett; 
+                h += `<tr><td class="sticky-col">${k}</td><td>${Math.round(brg).toLocaleString()}</td><td>${bon.toLocaleString()}</td><td>${kas.toLocaleString()}</td><td style="color:green;font-weight:800">Rp ${Math.round(nett).toLocaleString()}</td><td><button class="btn" style="background:var(--p); padding:5px" onclick="genSlip('${k}')">SLIP</button></td></tr>`;
             });
             document.getElementById('gTotal').innerText = "Rp "+Math.round(totG).toLocaleString(); document.getElementById('nTotal').innerText = "Rp "+totN.toLocaleString(); document.getElementById('areaGaji').innerHTML = h+"</table>";
         }
+
+        function openModKB() {
+            const fM = document.getElementById('fUang').value;
+            const K = Object.values(D.master_karyawan||{});
+            let listLogs = Object.entries(D.kasbon_bonus || {}).filter(x => x[1].t === fM).reverse();
+            let htmlLog = listLogs.map(x => `<div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #eee; font-size:10px"><span><b>${x[1].n}</b>: ${x[1].tipe} Rp ${parseInt(x[1].rp).toLocaleString()}</span><b style="color:red; cursor:pointer" onclick="removeItem('kasbon_bonus','${x[0]}')">Hapus</b></div>`).join('');
+            
+            let h = `
+                <select id="kbN">${K.map(k=>`<option>${k}</option>`).join('')}</select>
+                <select id="kbT"><option value="Bonus">Bonus</option><option value="Kasbon">Kasbon</option></select>
+                <input type="number" id="kbR" placeholder="Rp">
+                <button class="btn" style="background:var(--s)" onclick="saveKB()">SIMPAN</button>
+                <hr style="margin:15px 0">
+                <p style="font-size:10px; font-weight:800; color:gray">LOG INPUTAN BULAN INI:</p>
+                <div style="max-height:200px; overflow-y:auto">${htmlLog || "Belum ada inputan"}</div>
+            `;
+            openMod("Kasbon / Bonus", h);
+        }
+
+        function saveKB() {
+            const n = document.getElementById('kbN').value, t = document.getElementById('fUang').value, tipe = document.getElementById('kbT').value, rp = parseInt(document.getElementById('kbR').value);
+            if(rp) { db.ref('kasbon_bonus').push({ n, t, tipe, rp }).then(() => { alert("Tersimpan!"); openModKB(); }); }
+        }
+
         function genSlip(nama) {
             const fM = document.getElementById('fUang').value, T = D.tarif||DEF_TARIF; let borong=0, bonus=0, kasbon=0, htmlWork="";
             Object.values(D.aktivitas||{}).forEach(a => { if(a.t?.slice(0,7)===fM && (a.p||[]).includes(nama)) { let val = (T[a.j]||0); let upah = (a.j.includes("pasang") ? (val * a.q) : (val * a.q / (a.p||[]).length)); borong += upah; htmlWork += `<tr><td>${a.t}</td><td>${a.j}</td><td>${a.q}</td><td>${Math.round(upah).toLocaleString()}</td></tr>`; }});
-            Object.values(D.kasbon_bonus||{}).forEach(kb => { if(kb.n===nama && kb.t===fM) { if(kb.tipe==="Bonus") bonus+=kb.rp; else kasbon+=kb.rp; } });
-            openMod("Slip Gaji", `<div id="p-slip" style="padding:15px; color:black; background:white"><h3>KEMPU BALAP</h3><p>${nama} - ${fM}</p><hr><table style="width:100%;font-size:10px">${htmlWork}</table><hr><b>Total: Rp ${Math.round((borong+bonus)-kasbon).toLocaleString()}</b></div><button class="btn" style="background:var(--d)" onclick="expPdf('p-slip','Slip_${nama}')">PRINT PDF</button>`);
+            Object.values(D.kasbon_bonus||{}).forEach(kb => { if(kb.n===nama && kb.t===fM) { if(kb.tipe==="Bonus") bonus += parseInt(kb.rp || 0); else kasbon += parseInt(kb.rp || 0); } });
+            openMod("Slip Gaji", `<div id="p-slip" style="padding:15px; color:black; background:white"><h3>KEMPU BALAP</h3><p>${nama} - ${fM}</p><hr><table style="width:100%;font-size:10px">${htmlWork}</table><hr><b>Total Borong: Rp ${Math.round(borong).toLocaleString()}</b><br>Bonus: Rp ${bonus.toLocaleString()}<br>Kasbon: Rp ${kasbon.toLocaleString()}<hr><b>GAJI NETT: Rp ${Math.round((borong+bonus)-kasbon).toLocaleString()}</b></div><button class="btn" style="background:var(--d)" onclick="expPdf('p-slip','Slip_${nama}')">PRINT PDF</button>`);
         }
+
         function showLogs(t) { let list = Object.entries(D[t]||{}).reverse().slice(0,30); openMod("Log", list.map(x => `<div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #eee; font-size:10px"><span>[${x[1].t}] ${x[1].b||x[1].j} (${x[1].q})</span><b style="color:red; cursor:pointer" onclick="removeItem('${t}','${x[0]}')">HAPUS</b></div>`).join('') || "Kosong"); }
         function showNotaLogs() { const fM = document.getElementById('fUang').value; let list = Object.entries(D.belanja||{}).filter(x => x[1].t.slice(0,7) === fM).reverse(); let h = `<div id="n-print" style="padding:10px; background:white; color:black"><h3>NOTA ${fM}</h3>` + list.map(x => `<div style="border-bottom:1px dashed #ccc; padding:10px 0"><p><b>${x[1].t}</b> - ${x[1].n} (Rp ${x[1].rp.toLocaleString()})</p>${x[1].img?`<img src="${x[1].img}" style="width:150px">`:''}<br><b style="color:red; cursor:pointer" onclick="removeItem('belanja','${x[0]}')">HAPUS</b></div>`).join('') + `</div><button class="btn" style="background:var(--d)" onclick="expPdf('n-print','Nota_${fM}')">PDF</button>`; openMod("Nota", h); }
         function openLiburMod() { let list = Object.entries(D.libur || {}).sort((a,b) => b[0].localeCompare(a[0])); openMod("Libur", `Dari: <input type="date" id="lS"> s/d <input type="date" id="lE"><button class="btn" style="background:var(--p)" onclick="saveL()">SET</button><hr><div style="max-height:150px; overflow-y:auto">${list.map(x=>`<div style="display:flex;justify-content:space-between;padding:5px"><span>${x[0]}</span><b onclick="removeItem('libur','${x[0]}')" style="color:red; cursor:pointer">Hapus</b></div>`).join('')}</div>`); }
         function saveL() { let s=new Date(document.getElementById('lS').value), e=new Date(document.getElementById('lE').value), u={}; while(s<=e){ u[s.toISOString().split('T')[0]]="OFF"; s.setDate(s.getDate()+1); } db.ref('libur').update(u).then(()=>alert("Tersimpan!")); }
         function editTarif() { let h = `<div style="display:grid; grid-template-columns:1fr 1fr; gap:5px">` + Object.entries(D.tarif||DEF_TARIF).map(t=>`<div><label style="font-size:9px">${t[0]}</label><input type="number" id="trf_${t[0].replace(/ /g,'_')}" value="${t[1]}"></div>`).join('') + `</div><button class="btn" style="background:var(--s); margin-top:10px" onclick="saveTarif()">SIMPAN</button>`; openMod("Tarif", h); }
         function saveTarif() { let nT={}; Object.keys(D.tarif||DEF_TARIF).forEach(k=>{ nT[k]=parseInt(document.getElementById(`trf_${k.replace(/ /g,'_')}`).value)||0; }); db.ref('tarif').set(nT).then(()=>alert("Tersimpan!")); }
-        function openModKB() { const K=Object.values(D.master_karyawan||{}); openMod("Kasbon/Bonus", `<select id="kbN">${K.map(k=>`<option>${k}</option>`).join('')}</select><select id="kbT"><option value="Bonus">Bonus</option><option value="Kasbon">Kasbon</option></select><input type="number" id="kbR" placeholder="Rp"><button class="btn" style="background:var(--s)" onclick="saveKB()">SAVE</button>`); }
-        function saveKB() { db.ref('kasbon_bonus').push({ n:document.getElementById('kbN').value, t:document.getElementById('fUang').value, tipe:document.getElementById('kbT').value, rp:parseInt(document.getElementById('kbR').value) }).then(()=>alert("Tersimpan!")); }
         function addItem(p, id) { const v=document.getElementById(id).value; if(v) db.ref(p).push(v).then(()=>document.getElementById(id).value=""); }
-        function removeItem(p, k) { if(confirm("Hapus?")) db.ref(`${p}/${k}`).remove(); }
+        function removeItem(p, k) { if(confirm("Hapus data ini?")) db.ref(`${p}/${k}`).remove(); }
         function toggleIzin() { document.getElementById('boxIzin').style.display = (document.getElementById('absJenis').value === 'Izin' || document.getElementById('absJenis').value === 'Alpa' ? 'block' : 'none'); }
         function expEx(id, n) { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById(id)), `${n}.xlsx`); }
         function expPdf(id, n) { html2pdf().set({margin:5, filename:n+'.pdf', jsPDF:{orientation:'landscape'}}).from(document.getElementById(id)).save(); }
