@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KEMPU BALAP V760 - FINAL REVISI</title>
+    <title>KEMPU BALAP V760 - ULTIMATE REVISED</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -43,9 +43,8 @@
         .bg-m { background: #64748b; } .bg-off { background: #0f172a; } .bg-t { background: #f97316; } .bg-none { background: #f1f5f9; color: #ccc; }
 
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center; padding: 16px; backdrop-filter: blur(4px); }
-        .modal-box { background: white; width: 100%; max-width: 550px; border-radius: 20px; padding: 20px; max-height: 90vh; overflow-y: auto; }
+        .modal-box { background: white; width: 100%; max-width: 650px; border-radius: 20px; padding: 20px; max-height: 90vh; overflow-y: auto; }
         .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 10px 20px; border-radius: 50px; z-index: 3000; display: none; }
-        .check-item { display: flex; align-items: center; gap: 8px; background: #fff; padding: 10px; border-radius: 8px; border: 1px solid var(--b); font-size: 11px; font-weight: 700; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -192,14 +191,14 @@
         function expPdf(tid, n) { html2pdf().set({margin:5, filename:`${n}.pdf`, jsPDF:{orientation:'landscape'}}).from(document.getElementById(tid)).save(); }
 
         function addItem(p, id) { const v=document.getElementById(id).value; if(v){ db.ref(p).push(v); document.getElementById(id).value=""; } }
-        function removeItem(p, k, log) { if(confirm("Hapus?")) { db.ref(`${p}/${k}`).remove().then(() => { if(log) showLogs(log); else closeMod(); }); } }
+        function removeItem(p, k, log) { if(confirm("Hapus data ini?")) { db.ref(`${p}/${k}`).remove().then(() => { if(log === 'libur_refresh') openLiburMod(); else if(log) showLogs(log); else closeMod(); }); } }
 
         function initUI() {
             const K = Object.entries(D.master_karyawan || {}), B = Object.entries(D.master_barang || {});
             document.getElementById('listK').innerHTML = K.map(k=>`<span style="background:#fff; border:1px solid #ddd; padding:4px 8px; border-radius:8px; font-size:10px">${k[1]} <b onclick="removeItem('master_karyawan','${k[0]}')" style="color:red">×</b></span>`).join('');
             document.getElementById('listB').innerHTML = B.map(b=>`<span style="background:#fff; border:1px solid #ddd; padding:4px 8px; border-radius:8px; font-size:10px">${b[1]} <b onclick="removeItem('master_barang','${b[0]}')" style="color:red">×</b></span>`).join('');
             document.getElementById('selK').innerHTML = K.map(k=>`<option value="${k[1]}">${k[1]}</option>`).join('');
-            document.getElementById('akKaryawan').innerHTML = K.map(k=>`<label class="check-item"><input type="checkbox" class="chk-k" value="${k[1]}"> <span>${k[1]}</span></label>`).join('');
+            document.getElementById('akKaryawan').innerHTML = K.map(k=>`<label style="display:flex; align-items:center; gap:8px; background:#fff; padding:10px; border-radius:8px; border:1px solid var(--b); font-size:11px; font-weight:700; cursor:pointer;"><input type="checkbox" class="chk-k" value="${k[1]}"> <span>${k[1]}</span></label>`).join('');
             document.getElementById('stBrg').innerHTML = B.map(b=>`<option value="${b[1]}">${b[1]}</option>`).join('');
         }
 
@@ -222,20 +221,14 @@
                 for(let i=1; i<=lastD; i++) {
                     let d = `${Y}-${M}-${String(i).padStart(2,'0')}`, isSun = new Date(d).getDay()===0, isLib = D.libur?.[d], a = D.absensi?.[d]?.[k], txt="-", cls="bg-none";
                     if(isLib) { txt="OFF"; cls="bg-off"; } else if(isSun) { txt="M"; cls="bg-m"; }
-                    
                     if(a) {
                         if(a.j==="Hadir") { txt="H"; cls="bg-h"; tH++; }
                         else if(a.j==="Terlambat") { txt="T"; cls="bg-t"; tT++; tH++; }
                         else if(a.j==="Izin") { txt="I"; cls="bg-i"; }
                     } else {
-                        // LOGIKA BARU: Cek apakah di hari ini ada orang lain yang sudah absen
                         let dayHasData = D.absensi?.[d] ? Object.keys(D.absensi[d]).length > 0 : false;
                         let isPast = new Date(d) < new Date().setHours(0,0,0,0);
-                        
-                        // Hanya ALPA jika: Hari sudah lewat DAN sudah ada data absen di hari itu (kantor buka)
-                        if(isPast && !isSun && !isLib && dayHasData) {
-                            txt="A"; cls="bg-a"; tA++;
-                        }
+                        if(isPast && !isSun && !isLib && dayHasData) { txt="A"; cls="bg-a"; tA++; }
                     }
                     r += `<td><div class="badge ${cls}" onclick="cellMod('${d}','${k}')">${txt}</div></td>`;
                 }
@@ -289,18 +282,12 @@
             let totGaji = 0, totNota = 0;
             Object.values(D.belanja||{}).forEach(b => { if(b.t?.slice(0,7)===fM) totNota+=b.rp; });
             let html = `<table><tr><th class="sticky-col">KARYAWAN</th><th>BORONGAN</th><th>BONUS</th><th>KASBON</th><th>TOTAL</th><th>SLIP</th></tr>`;
-            
             K.forEach(k => {
                 let borong = 0, bonus = 0, kasbon = 0;
                 Object.values(D.aktivitas||{}).forEach(a => {
                     if(a.t?.slice(0,7) === fM && a.p.includes(k)) {
                         let trf = T[a.j] || 0;
-                        let upah = 0;
-                        if (a.j.toLowerCase().includes("pasang")) {
-                            upah = (trf * a.q); 
-                        } else {
-                            upah = (trf * a.q) / a.p.length; 
-                        }
+                        let upah = a.j.toLowerCase().includes("pasang") ? (trf * a.q) : ((trf * a.q) / a.p.length);
                         borong += upah;
                     }
                 });
@@ -333,10 +320,64 @@
             openMod("Log Harian", h || "Belum ada data");
         }
 
+        // --- FITUR LIBUR 2 KOLOM ---
         function openLiburMod() {
-            let h = `<div class="flex-row"><input type="date" id="lDate"><button class="btn" style="background:var(--p)" onclick="db.ref('libur/'+document.getElementById('lDate').value).set('OFF')">SET LIBUR</button></div><hr>`;
-            Object.entries(D.libur || {}).forEach(x => h += `<div style="display:flex; justify-content:space-between; padding:5px; border-bottom:1px solid #eee"><span>${x[0]}</span> <b style="color:red" onclick="removeItem('libur','${x[0]}')">BATAL</b></div>`);
-            openMod("Kelola Libur", h);
+            let list = Object.entries(D.libur || {}).sort((a,b) => b[0].localeCompare(a[0]));
+            let h = `
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 200px; background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid var(--b);">
+                        <h4 style="font-size: 11px; margin-bottom: 12px; color: var(--p);">➕ TAMBAH RENTANG</h4>
+                        <label style="font-weight:800; font-size:10px">DARI TANGGAL:</label>
+                        <input type="date" id="lStart" style="margin-bottom:12px; height: 35px;">
+                        <label style="font-weight:800; font-size:10px">SAMPAI TANGGAL:</label>
+                        <input type="date" id="lEnd" style="margin-bottom:12px; height: 35px;">
+                        <button class="btn" style="background:var(--p); width:100%; font-size: 10px;" onclick="saveMultiLibur()">TAMBAH LIBUR</button>
+                    </div>
+
+                    <div style="flex: 1; min-width: 200px; background: #fff; padding: 15px; border-radius: 12px; border: 1px solid var(--b);">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                            <h4 style="font-size: 11px; color: var(--d);">🗑️ DAFTAR LIBUR (${list.length})</h4>
+                            <button onclick="clearAllLibur()" style="background:none; border:none; color:var(--d); font-size:10px; font-weight:800; cursor:pointer;">HAPUS SEMUA</button>
+                        </div>
+                        <div style="max-height: 200px; overflow-y: auto; border: 1px solid #f1f5f9; border-radius: 8px;">
+                            ${list.map(x => `
+                                <div style="display:flex; justify-content:space-between; padding:8px 10px; border-bottom:1px solid #f1f5f9; font-size:11px;">
+                                    <span>📅 ${x[0]}</span>
+                                    <b style="color:var(--d); cursor:pointer;" onclick="removeItem('libur','${x[0]}','libur_refresh')">Hapus</b>
+                                </div>
+                            `).join('') || '<p style="padding:10px; text-align:center; color:#ccc; font-size:10px;">Belum ada libur</p>'}
+                        </div>
+                    </div>
+                </div>
+            `;
+            openMod("Pengaturan Hari Libur", h);
+        }
+
+        function saveMultiLibur() {
+            const start = document.getElementById('lStart').value;
+            const end = document.getElementById('lEnd').value;
+            if(!start || !end) return alert("Pilih kedua tanggal!");
+            let curr = new Date(start); let last = new Date(end);
+            if(curr > last) return alert("Tanggal mulai tidak boleh lewat dari tanggal selesai!");
+            let updates = {};
+            while(curr <= last) {
+                let dStr = curr.toISOString().split('T')[0];
+                updates[dStr] = "OFF";
+                curr.setDate(curr.getDate() + 1);
+            }
+            db.ref('libur').update(updates).then(() => {
+                toast("Berhasil menambah libur!");
+                openLiburMod();
+            });
+        }
+
+        function clearAllLibur() {
+            if(confirm("Hapus seluruh daftar libur?")) {
+                db.ref('libur').remove().then(() => {
+                    toast("Semua libur dihapus");
+                    openLiburMod();
+                });
+            }
         }
 
         function editTarif() {
