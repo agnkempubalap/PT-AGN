@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KEMPU BALAP V760 - ULTIMA</title>
+    <title>KEMPU BALAP V760 - FINAL REVISI</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -222,11 +222,21 @@
                 for(let i=1; i<=lastD; i++) {
                     let d = `${Y}-${M}-${String(i).padStart(2,'0')}`, isSun = new Date(d).getDay()===0, isLib = D.libur?.[d], a = D.absensi?.[d]?.[k], txt="-", cls="bg-none";
                     if(isLib) { txt="OFF"; cls="bg-off"; } else if(isSun) { txt="M"; cls="bg-m"; }
+                    
                     if(a) {
                         if(a.j==="Hadir") { txt="H"; cls="bg-h"; tH++; }
                         else if(a.j==="Terlambat") { txt="T"; cls="bg-t"; tT++; tH++; }
                         else if(a.j==="Izin") { txt="I"; cls="bg-i"; }
-                    } else if(!isSun && !isLib && new Date(d) < new Date().setHours(0,0,0,0)) { txt="A"; cls="bg-a"; tA++; }
+                    } else {
+                        // LOGIKA BARU: Cek apakah di hari ini ada orang lain yang sudah absen
+                        let dayHasData = D.absensi?.[d] ? Object.keys(D.absensi[d]).length > 0 : false;
+                        let isPast = new Date(d) < new Date().setHours(0,0,0,0);
+                        
+                        // Hanya ALPA jika: Hari sudah lewat DAN sudah ada data absen di hari itu (kantor buka)
+                        if(isPast && !isSun && !isLib && dayHasData) {
+                            txt="A"; cls="bg-a"; tA++;
+                        }
+                    }
                     r += `<td><div class="badge ${cls}" onclick="cellMod('${d}','${k}')">${txt}</div></td>`;
                 }
                 tb += `<tr>${r}<td>${tH}</td><td>${tT}</td><td>${tA}</td></tr>`;
@@ -286,9 +296,6 @@
                     if(a.t?.slice(0,7) === fM && a.p.includes(k)) {
                         let trf = T[a.j] || 0;
                         let upah = 0;
-                        
-                        // LOGIKA GAJI: Hanya "Pasang" (Pangkalan/Agen) yang UTUH.
-                        // "Kirim Minyak" dan lainnya DIBAGI RATA.
                         if (a.j.toLowerCase().includes("pasang")) {
                             upah = (trf * a.q); 
                         } else {
@@ -297,7 +304,6 @@
                         borong += upah;
                     }
                 });
-                
                 Object.values(D.kasbon_bonus||{}).forEach(kb => { if(kb.n===k && kb.t===fM) { if(kb.tipe==="Bonus") bonus+=kb.rp; else kasbon+=kb.rp; } });
                 let total = (borong + bonus) - kasbon; totGaji += total;
                 html += `<tr><td class="sticky-col">${k}</td><td>${Math.round(borong).toLocaleString()}</td><td>${bonus.toLocaleString()}</td><td>${kasbon.toLocaleString()}</td><td style="color:green; font-weight:800">Rp ${Math.round(total).toLocaleString()}</td><td><button class="btn btn-sm" style="background:var(--p)" onclick="genSlip('${k}')">📄 SLIP</button></td></tr>`;
