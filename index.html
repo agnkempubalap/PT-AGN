@@ -9,43 +9,40 @@
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { margin: 0; background: var(--bg); color: var(--t); font-size: 14px; }
         
-        /* Layout */
-        .header { background: #fff; padding: 15px; border-bottom: 1px solid #e2e8f0; sticky; top: 0; z-index: 100; }
+        .header { background: #fff; padding: 15px; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; z-index: 100; }
         .card { background: #fff; margin: 10px; border-radius: 8px; border: 1px solid #e2e8f0; overflow: hidden; }
         
-        /* Tabel Absen */
         .table-container { overflow-x: auto; max-width: 100%; }
         table { border-collapse: collapse; width: 100%; font-size: 12px; }
-        th, td { border: 1px solid #e2e8f0; padding: 8px 4px; text-align: center; min-width: 35px; }
+        /* vertical-align bottom supaya tulisan di header rata dan rapi */
+        th, td { border: 1px solid #e2e8f0; padding: 8px 4px; text-align: center; min-width: 35px; vertical-align: bottom; }
         .sticky-col { position: sticky; left: 0; background: #fff; z-index: 10; min-width: 100px; text-align: left; font-weight: bold; padding-left: 10px; }
         
-        /* Indikator & Badge */
         .badge { 
             width: 25px; height: 25px; line-height: 25px; border-radius: 4px; 
             margin: 0 auto; cursor: pointer; position: relative; font-weight: bold;
         }
-        .bg-h { background: #dcfce7; color: #166534; } /* Hadir */
-        .bg-t { background: #fef9c3; color: #854d0e; } /* Telat */
-        .bg-l { background: #dbeafe; color: #1e40af; } /* Lembur */
-        .bg-i { background: #ffedd5; color: #9a3412; } /* Izin */
-        .bg-a { background: #fee2e2; color: #991b1b; } /* Alpa */
-        .bg-off { background: #f1f5f9; color: #64748b; } /* Libur */
-        .bg-m { background: #fee2e2; color: #dc2626; } /* Minggu */
+        .bg-h { background: #dcfce7; color: #166534; }
+        .bg-t { background: #fef9c3; color: #854d0e; }
+        .bg-l { background: #dbeafe; color: #1e40af; }
+        .bg-i { background: #ffedd5; color: #9a3412; }
+        .bg-a { background: #fee2e2; color: #991b1b; }
+        .bg-off { background: #f1f5f9; color: #64748b; }
+        .bg-m { background: #fee2e2; color: #dc2626; }
         .bg-none { background: transparent; color: #cbd5e1; }
 
         .dot { position: absolute; top: 2px; right: 2px; width: 4px; height: 4px; background: #2563eb; border-radius: 50%; }
         .kerja-count { 
             position: absolute; bottom: -5px; right: -5px; background: #1e293b; 
-            color: white; font-size: 8px; padding: 1px 3px; border-radius: 3px; 
+            color: white; font-size: 9px; padding: 1px 4px; border-radius: 3px; 
             border: 1px solid white; z-index: 5;
         }
 
-        /* Modal */
         #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; padding: 20px; }
         .modal-content { background: #fff; border-radius: 12px; max-width: 400px; margin: 40vh auto 0; padding: 20px; position: relative; }
         .btn { width: 100%; padding: 10px; border: none; border-radius: 6px; color: #fff; font-weight: bold; margin-top: 10px; cursor: pointer; }
         
-        input, select { width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #e2e8f0; border-radius: 4px; }
+        input { width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #e2e8f0; border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -73,111 +70,124 @@
 </div>
 
 <script>
-    // DATA DUMMY (Sesuaikan dengan Firebase/Database Mas)
+    // DATA DUMMY TEST
     let D = {
         master_karyawan: { k1: "Ahmad", k2: "Budi", k3: "Catur" },
-        absensi: {}, 
-        aktivitas: {}, // Data kerjaan borongan
+        absensi: {
+            "2026-03-30": { "Ahmad": { j: "Hadir", jam: "08:00", jamOut: "16:00" } },
+            "2026-03-31": { "Budi": { j: "Hadir", jam: "08:00", jamOut: "17:00" } }
+        }, 
+        aktivitas: {
+            act1: { t: "2026-03-30", j: "Rekondisi Kempu", q: 5, p: ["Ahmad"] },
+            act2: { t: "2026-03-31", j: "Kirim Minyak", q: 2, p: ["Budi"] },
+            act3: { t: "2026-03-28", j: "Pasang Pangkalan", q: 1, p: ["Catur"] }
+        },
         libur: {}
     };
 
-    // Set Bulan Sekarang saat load
     window.onload = () => {
         const n = new Date();
-        document.getElementById('fM').value = `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`;
+        // Set otomatis ke bulan Maret 2026 sesuai data dummy
+        document.getElementById('fM').value = "2026-03";
         renderAll();
     };
 
     function renderAll() {
-        const K_arr = Object.values(D.master_karyawan || {}), 
-              fM = document.getElementById('fM').value || "", 
-              fmArr = fM.split('-');
-        if(fmArr.length < 2) return; 
-
-        const Y = fmArr[0], M = fmArr[1], lastD = new Date(Y, M, 0).getDate();
-        const now = new Date(); const curT = now.toISOString().split('T')[0]; const curH = now.getHours();
-        
-        // --- 1. RENDER HEADER TANGGAL ---
-        let th = `<tr><th class="sticky-col">NAMA</th>`; 
-        for(let i=1; i<=lastD; i++) {
-            let d = `${Y}-${M}-${String(i).padStart(2,'0')}`;
-            let aks = Object.values(D.aktivitas || {}).filter(ak => ak.t === d);
+        try {
+            const K_arr = Object.values(D.master_karyawan || {});
+            const fM = document.getElementById('fM').value || "";
+            const fmArr = fM.split('-');
             
-            // Penentuan Ikon Header
-            let ikon = "";
-            if(aks.length > 0) {
-                if(aks.some(a => a.j.toLowerCase().includes("rekon"))) ikon = "🛠️";
-                else if(aks.some(a => ["muat","bongkar","kirim"].some(key => a.j.toLowerCase().includes(key)))) ikon = "🚚";
-                else if(aks.some(a => a.j.toLowerCase().includes("pasang") || a.j.toLowerCase().includes("agen"))) ikon = "🏠";
-                else ikon = "📝";
-            }
+            if(fmArr.length < 2) return; 
 
-            th += `<th style="position:relative; padding-top:18px; min-width:32px">
-                    <span style="position:absolute; top:2px; left:50%; transform:translateX(-50%); font-size:10px">${ikon}</span>
-                    ${i}
-                    ${aks.length > 0 ? '<div style="width:100%; height:2px; background:var(--p); margin-top:2px"></div>' : ''}
-                  </th>`; 
-        }
-        th += `<th style="color:var(--s)">H</th><th style="color:var(--p)">L</th><th style="color:var(--d)">A</th></tr>`; 
-        document.getElementById('thA').innerHTML = th;
-        
-        // --- 2. RENDER BARIS KARYAWAN ---
-        let tb = "";
-        K_arr.forEach(k => {
-            let r = `<td class="sticky-col">${k}</td>`, tH=0, tL=0, tA=0;
+            const Y = fmArr[0], M = fmArr[1], lastD = new Date(Y, M, 0).getDate();
+            const now = new Date(); const curT = now.toISOString().split('T')[0]; const curH = now.getHours();
+            
+            // --- 1. RENDER HEADER TANGGAL ---
+            let th = `<tr><th class="sticky-col">NAMA</th>`; 
             for(let i=1; i<=lastD; i++) {
-                let d = `${Y}-${M}-${String(i).padStart(2,'0')}`, 
-                    a = D.absensi?.[d]?.[k], 
-                    isLib = D.libur?.[d], 
-                    isSun = new Date(d).getDay()===0;
+                let d = `${Y}-${M}-${String(i).padStart(2,'0')}`;
+                let aks = Object.values(D.aktivitas || {}).filter(ak => ak.t === d);
                 
-                // Hitung jumlah borongan yang diikuti karyawan k di tanggal d
-                let jmlKerja = Object.values(D.aktivitas || {}).filter(ak => ak.t === d && ak.p.includes(k)).length;
-                
-                let txt="-", cls="bg-none";
-                if(isSun) { txt="M"; cls="bg-m"; } else if(isLib) { txt="OFF"; cls="bg-off"; }
-                
-                if(a) {
-                    if(a.j==="Hadir") { txt="H"; cls="bg-h"; tH++; } 
-                    else if(a.j==="Telat") { txt="T"; cls="bg-t"; tH++; }
-                    else if(a.j==="Lembur") { txt="L"; cls="bg-l"; tL++; } 
-                    else if(a.j==="Alpa") { txt="A"; cls="bg-a"; tA++; }
-                    else { txt=a.j.charAt(0); cls="bg-i"; }
+                let ikon = "";
+                if(aks.length > 0) {
+                    // Pengaman: (a.j || "") supaya tidak error kalau data nama aktivitas kosong
+                    if(aks.some(a => (a.j || "").toLowerCase().includes("rekon"))) ikon = "🛠️";
+                    else if(aks.some(a => ["muat","bongkar","kirim"].some(key => (a.j || "").toLowerCase().includes(key)))) ikon = "🚚";
+                    else if(aks.some(a => (a.j || "").toLowerCase().includes("pasang") || (a.j || "").toLowerCase().includes("agen"))) ikon = "🏠";
+                    else ikon = "📝";
                 }
 
-                r += `<td>
-                        <div class="badge ${cls}" onclick="cellMod('${d}','${k}')">
-                            ${txt}
-                            ${a?.jamOut ? '<div class="dot"></div>' : ''}
-                            ${jmlKerja > 0 ? `<div class="kerja-count">${jmlKerja}</div>` : ''}
-                        </div>
-                      </td>`;
+                th += `<th style="position:relative; padding-top:20px; min-width:32px">
+                        <span style="position:absolute; top:2px; left:50%; transform:translateX(-50%); font-size:12px">${ikon}</span>
+                        ${i}
+                        ${aks.length > 0 ? '<div style="width:100%; height:2px; background:var(--p); margin-top:2px"></div>' : ''}
+                      </th>`; 
             }
-            tb += `<tr>${r}<td>${tH}</td><td>${tL}</td><td>${tA}</td></tr>`;
-        });
-        document.getElementById('tbA').innerHTML = tb; 
+            th += `<th style="color:var(--s); padding-bottom:8px">H</th><th style="color:var(--p); padding-bottom:8px">L</th><th style="color:var(--d); padding-bottom:8px">A</th></tr>`; 
+            document.getElementById('thA').innerHTML = th;
+            
+            // --- 2. RENDER BARIS KARYAWAN ---
+            let tb = "";
+            K_arr.forEach(k => {
+                let r = `<td class="sticky-col">${k}</td>`, tH=0, tL=0, tA=0;
+                for(let i=1; i<=lastD; i++) {
+                    let d = `${Y}-${M}-${String(i).padStart(2,'0')}`;
+                    let a = D.absensi?.[d]?.[k];
+                    let isLib = D.libur?.[d];
+                    let isSun = new Date(d).getDay()===0;
+                    
+                    // Pengaman: (ak.p || []) supaya tidak error
+                    let jmlKerja = Object.values(D.aktivitas || {}).filter(ak => ak.t === d && (ak.p || []).includes(k)).length;
+                    
+                    let txt="-", cls="bg-none";
+                    if(isSun) { txt="M"; cls="bg-m"; } else if(isLib) { txt="OFF"; cls="bg-off"; }
+                    
+                    if(a) {
+                        let stat = a.j || "";
+                        if(stat === "Hadir") { txt="H"; cls="bg-h"; tH++; } 
+                        else if(stat === "Telat") { txt="T"; cls="bg-t"; tH++; }
+                        else if(stat === "Lembur") { txt="L"; cls="bg-l"; tL++; } 
+                        else if(stat === "Alpa") { txt="A"; cls="bg-a"; tA++; }
+                        else if(stat !== "") { txt=stat.charAt(0); cls="bg-i"; } // Izin, Sakit, dll
+                    }
+
+                    r += `<td>
+                            <div class="badge ${cls}" onclick="cellMod('${d}','${k}')">
+                                ${txt}
+                                ${a?.jamOut ? '<div class="dot"></div>' : ''}
+                                ${jmlKerja > 0 ? `<div class="kerja-count">${jmlKerja}</div>` : ''}
+                            </div>
+                          </td>`;
+                }
+                tb += `<tr>${r}<td>${tH}</td><td>${tL}</td><td>${tA}</td></tr>`;
+            });
+            document.getElementById('tbA').innerHTML = tb; 
+
+        } catch(err) {
+            console.error("Error Render:", err);
+            document.getElementById('tbA').innerHTML = `<tr><td colspan="100%" style="color:red; padding:20px;">Terjadi kesalahan sistem: ${err.message}</td></tr>`;
+        }
     }
 
     // --- 3. FUNGSI POP-UP DETAIL ---
     function cellMod(d, k) { 
         let a = D.absensi?.[d]?.[k];
-        let aks = Object.values(D.aktivitas || {}).filter(ak => ak.t === d && ak.p.includes(k));
+        let aks = Object.values(D.aktivitas || {}).filter(ak => ak.t === d && (ak.p || []).includes(k));
         
-        // List Aktivitas
         let listAks = aks.length > 0 
-            ? aks.map(x => `<li style="margin-bottom:5px"><b>${x.j}</b><br><small>Qty: ${x.q || '0'}</small></li>`).join('') 
+            ? aks.map(x => `<li style="margin-bottom:5px; border-bottom:1px solid #e2e8f0; padding-bottom:5px"><b>${x.j || 'Tanpa Nama'}</b><br><small>Qty: ${x.q || '0'} item</small></li>`).join('') 
             : "<li style='color:#94a3b8'>Tidak ada aktivitas borongan</li>";
 
         let html = `
             <div style="text-align:left; font-size:13px">
                 <div style="background:#f1f5f9; padding:10px; border-radius:8px; margin-bottom:15px">
                     <b>Info Absen:</b><br>
-                    Status: ${a ? a.j : '-'}<br>
+                    Status: ${a ? (a.j || '-') : '-'}<br>
                     Jam: ${a?.jam || '-'} s/d ${a?.jamOut || '-'}
                 </div>
                 <b>🛠️ Daftar Borongan:</b>
-                <ul style="padding-left:20px; margin-top:10px">${listAks}</ul>
-                <button class='btn' style='background:var(--d)' onclick="alert('Fungsi hapus dipanggil')">HAPUS DATA</button>
+                <ul style="padding-left:20px; margin-top:10px; list-style-type:square;">${listAks}</ul>
             </div>
         `;
         openMod(`${k} - ${d}`, html); 
