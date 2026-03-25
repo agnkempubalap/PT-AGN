@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -305,4 +304,46 @@
                 logs.forEach(l => {
                     if(l.b === b[1]) {
                         if(l.tgl.slice(0,7) < fM) { // Saldo Awal Otomatis
-    
+                            if(l.ak === 'masuk' && l.qc !== 'Reject') { if(l.j==='Bekas') s.aktr += l.q; else s.abrs += l.q; }
+                            if(l.ak === 'rekondisi') { s.aktr -= l.q; s.abrs += l.q; }
+                            if(l.ak.includes('jual')) s.abrs -= l.q;
+                        } else if(l.tgl.slice(0,7) === fM) { // Transaksi Bulan Ini
+                            if(l.qc === 'Reject') s.rej += l.q;
+                            else if(l.ak === 'masuk') { if(l.j==='Bekas') s.mktr += l.q; else s.mbrs += l.q; }
+                            else if(l.ak === 'rekondisi') s.reko += l.q;
+                            else if(l.ak === 'jual_umum') s.jumm += l.q;
+                            else if(l.ak === 'jual_mitra') s.jmtr += l.q;
+                        }
+                    }
+                });
+                let sktr = (s.aktr + s.mktr) - s.reko, srs = (s.abrs + s.mbrs + s.reko) - (s.jumm + s.jmtr);
+                h += `<tr><td class="sticky-col">${b[1]}</td><td>${s.aktr}</td><td>${s.abrs}</td><td>${s.mktr}</td><td>${s.mbrs}</td><td>${s.rej}</td><td>${s.reko}</td><td>${s.jumm}</td><td>${s.jmtr}</td><td style="background:#fee2e2">${sktr}</td><td style="background:#dcfce7">${srs}</td><td>${sktr+srs}</td></tr>`;
+            });
+            document.getElementById('tbStok').innerHTML = h;
+        }
+
+        function renderRates() {
+            const r = DATA.rates || DEF_RATES;
+            document.getElementById('rateArea').innerHTML = Object.entries(r).map(([k,v]) => `<div class="grid-2"><span>${k}</span><input type="number" class="r-val" data-k="${k}" value="${v}"></div>`).join('');
+        }
+        function saveRates() { let up = {}; document.querySelectorAll('.r-val').forEach(i => up[i.dataset.k] = parseInt(i.value)); db.ref('rates').set(up).then(()=>showT("Tarif Diupdate")); }
+
+        function renderGaji() {
+            const fM = document.getElementById('fGaji').value, name = document.getElementById('selKGaji').value, rates = DATA.rates || DEF_RATES;
+            let total = 0, detail = "";
+            Object.values(DATA.aktivitas || {}).forEach(a => {
+                if(a.tgl.slice(0,7) === fM && a.names.includes(name)) {
+                    let k = a.j; if(k === 'Kirim Minyak') k += " " + a.sub;
+                    let upah = rates[k] || 0;
+                    if(["Rekondisi Kempu","Jerigen 18L","Jerigen 5L","Muat Barang","Bongkar Barang","Kirim Minyak Jauh"].includes(k)) upah = (upah * (a.q || 1)) / a.names.length;
+                    total += upah; detail += `<div style="display:flex;justify-content:space-between;padding:5px;border-bottom:1px solid #eee"><span>${a.tgl} | ${a.j} (${a.q})</span><b>Rp${Math.round(upah).toLocaleString()}</b></div>`;
+                }
+            });
+            document.getElementById('slipArea').innerHTML = `<div style="border:2px dashed #ccc;padding:15px;border-radius:10px;margin-top:10px"><h4>SLIP: ${name}</h4><p>Periode: ${fM}</p><hr>${detail}<hr><h3>TOTAL: Rp${Math.round(total).toLocaleString()}</h3></div>`;
+        }
+
+        function exportExcel(id, n) { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById(id)), n + ".xlsx"); }
+        function exportPDF(id) { const { jsPDF } = window.jspdf; const doc = new jsPDF('l','mm','a4'); doc.autoTable({html:'#'+id}); doc.save("Laporan.pdf"); }
+    </script>
+</body>
+</html>
