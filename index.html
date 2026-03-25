@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KEMPU BALAP V760 - ULTIMATE REVISED</title>
+    <title>KEMPU BALAP V760 - PRO REVISED</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -38,7 +38,8 @@
         th { background: #f8fafc; font-weight: 800; color: #64748b; }
         .sticky-col { position: sticky; left: 0; background: white !important; font-weight: 800; border-right: 2px solid var(--b); z-index: 5; }
 
-        .badge { width: 22px; height: 22px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 800; color: white; margin: auto; font-size: 9px; cursor: pointer; }
+        .badge { width: 22px; height: 22px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 800; color: white; margin: auto; font-size: 9px; cursor: pointer; position: relative; }
+        .badge.has-out::after { content: ''; position: absolute; bottom: -2px; right: -2px; width: 6px; height: 6px; background: #fff; border-radius: 50%; border: 1px solid var(--s); }
         .bg-h { background: var(--s); } .bg-i { background: var(--w); } .bg-a { background: var(--d); } 
         .bg-m { background: #64748b; } .bg-off { background: #0f172a; } .bg-t { background: #f97316; } .bg-none { background: #f1f5f9; color: #ccc; }
 
@@ -74,9 +75,19 @@
                 <div id="listK" style="display:flex; flex-wrap:wrap; gap:6px;"></div>
             </div>
             <div class="card">
-                <h3>📅 Absen <input type="date" id="absTgl" style="width:120px; height:30px"></h3>
-                <div class="flex-row"><select id="selK"></select><select id="absJenis"><option value="Hadir">Masuk</option><option value="Izin">Izin</option></select></div>
-                <button class="btn" style="background:var(--s); width:100%" onclick="saveAbs()">SIMPAN (JAM OTOMATIS)</button>
+                <h3>📅 Input Absensi <input type="date" id="absTgl" style="width:120px; height:30px"></h3>
+                <div class="flex-row">
+                    <select id="selK"></select>
+                    <select id="absJenis" onchange="toggleIzinKet()">
+                        <option value="Hadir">Hadir (Masuk)</option>
+                        <option value="Izin">Izin/Sakit</option>
+                        <option value="Pulang">Pulang Kerja</option>
+                    </select>
+                </div>
+                <div id="rowIzin" style="display:none; margin-bottom:10px;">
+                    <input type="text" id="absKet" placeholder="Keterangan Izin (Misal: Sakit, dll)">
+                </div>
+                <button class="btn" style="background:var(--s); width:100%" onclick="saveAbs()">SIMPAN ABSENSI</button>
             </div>
             <div class="card">
                 <h3>📊 Laporan Absen <input type="month" id="fM" onchange="renderAll()" style="width:120px; height:30px"></h3>
@@ -140,7 +151,7 @@
                     </select>
                 </div>
                 <div id="akKaryawan" style="display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:10px; background:#f8fafc; border-radius:12px; margin-bottom:10px"></div>
-                <div class="flex-row"><input type="number" id="akQty" placeholder="Jumlah (Pcs/Rit)"><input type="file" id="akFoto" accept="image/*" style="font-size:10px"></div>
+                <div class="flex-row"><input type="number" id="akQty" placeholder="Jumlah (Pcs/Rit)"></div>
                 <button class="btn" style="background:var(--p); width:100%" onclick="saveAk()">SIMPAN KERJA</button>
             </div>
             <div class="card">
@@ -202,11 +213,24 @@
             document.getElementById('stBrg').innerHTML = B.map(b=>`<option value="${b[1]}">${b[1]}</option>`).join('');
         }
 
+        // --- ABSENSI HANDLER ---
+        function toggleIzinKet() {
+            const j = document.getElementById('absJenis').value;
+            document.getElementById('rowIzin').style.display = (j === 'Izin') ? 'block' : 'none';
+        }
+
         function saveAbs() {
-            const n=document.getElementById('selK').value, t=document.getElementById('absTgl').value, j=document.getElementById('absJenis').value;
+            const n=document.getElementById('selK').value, t=document.getElementById('absTgl').value, j=document.getElementById('absJenis').value, ket=document.getElementById('absKet').value;
             const jam = new Date().toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}).replace('.',':');
-            db.ref(`absensi/${t}/${n}`).set({ j: (j==="Hadir" && parseInt(jam.replace(':',''))>930) ? "Terlambat" : j, jam });
-            toast("Absen Tersimpan!");
+            
+            if(j === "Pulang") {
+                db.ref(`absensi/${t}/${n}`).update({ jamOut: jam });
+                toast("Jam Pulang Tersimpan!");
+            } else {
+                let status = (j === "Hadir" && parseInt(jam.replace(':','')) > 930) ? "Terlambat" : j;
+                db.ref(`absensi/${t}/${n}`).set({ j: status, jam, ket: ket||"" });
+                toast("Absen Masuk Tersimpan!");
+            }
         }
 
         function renderAll() {
@@ -222,15 +246,17 @@
                     let d = `${Y}-${M}-${String(i).padStart(2,'0')}`, isSun = new Date(d).getDay()===0, isLib = D.libur?.[d], a = D.absensi?.[d]?.[k], txt="-", cls="bg-none";
                     if(isLib) { txt="OFF"; cls="bg-off"; } else if(isSun) { txt="M"; cls="bg-m"; }
                     if(a) {
+                        let hasOut = a.jamOut ? "has-out" : "";
                         if(a.j==="Hadir") { txt="H"; cls="bg-h"; tH++; }
                         else if(a.j==="Terlambat") { txt="T"; cls="bg-t"; tT++; tH++; }
                         else if(a.j==="Izin") { txt="I"; cls="bg-i"; }
+                        r += `<td><div class="badge ${cls} ${hasOut}" onclick="cellMod('${d}','${k}')">${txt}</div></td>`;
                     } else {
                         let dayHasData = D.absensi?.[d] ? Object.keys(D.absensi[d]).length > 0 : false;
                         let isPast = new Date(d) < new Date().setHours(0,0,0,0);
                         if(isPast && !isSun && !isLib && dayHasData) { txt="A"; cls="bg-a"; tA++; }
+                        r += `<td><div class="badge ${cls}" onclick="cellMod('${d}','${k}')">${txt}</div></td>`;
                     }
-                    r += `<td><div class="badge ${cls}" onclick="cellMod('${d}','${k}')">${txt}</div></td>`;
                 }
                 tb += `<tr>${r}<td>${tH}</td><td>${tT}</td><td>${tA}</td></tr>`;
             });
@@ -238,8 +264,20 @@
             renderStok();
         }
 
-        function cellMod(d, k) { let a = D.absensi?.[d]?.[k]; openMod(`Absen ${k} (${d})`, a ? `Status: ${a.j}<br>Jam: ${a.jam}<br><br><button class='btn' style='background:red' onclick='removeItem("absensi/${d}", "${k}")'>HAPUS ABSEN</button>` : "Data Kosong"); }
+        function cellMod(d, k) {
+            let a = D.absensi?.[d]?.[k];
+            if(!a) return openMod(`Absensi ${k}`, "Data Kosong");
+            let html = `<div style="text-align:left; line-height:1.8">
+                Status: <b>${a.j}</b><br>
+                Jam Masuk: <b>${a.jam || '-'}</b><br>
+                Jam Pulang: <b>${a.jamOut || '-'}</b><br>
+                ${a.j === 'Izin' ? `Ket Izin: <b style="color:var(--w)">${a.ket || 'Tanpa Keterangan'}</b><br>` : ''}
+                <br><button class='btn' style='background:red; width:100%' onclick='removeItem("absensi/${d}", "${k}")'>HAPUS DATA</button>
+            </div>`;
+            openMod(`Detail Absen: ${k} (${d})`, html);
+        }
 
+        // --- STOK & AKTIVITAS (SAMA) ---
         function renderStok() {
             const B_arr = Object.values(D.master_barang || {}), fM = document.getElementById('fM').value;
             let h = "";
@@ -320,7 +358,7 @@
             openMod("Log Harian", h || "Belum ada data");
         }
 
-        // --- FITUR LIBUR 2 KOLOM ---
+        // --- LIBUR (SAMA) ---
         function openLiburMod() {
             let list = Object.entries(D.libur || {}).sort((a,b) => b[0].localeCompare(a[0]));
             let h = `
@@ -333,53 +371,30 @@
                         <input type="date" id="lEnd" style="margin-bottom:12px; height: 35px;">
                         <button class="btn" style="background:var(--p); width:100%; font-size: 10px;" onclick="saveMultiLibur()">TAMBAH LIBUR</button>
                     </div>
-
                     <div style="flex: 1; min-width: 200px; background: #fff; padding: 15px; border-radius: 12px; border: 1px solid var(--b);">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                             <h4 style="font-size: 11px; color: var(--d);">🗑️ DAFTAR LIBUR (${list.length})</h4>
                             <button onclick="clearAllLibur()" style="background:none; border:none; color:var(--d); font-size:10px; font-weight:800; cursor:pointer;">HAPUS SEMUA</button>
                         </div>
                         <div style="max-height: 200px; overflow-y: auto; border: 1px solid #f1f5f9; border-radius: 8px;">
-                            ${list.map(x => `
-                                <div style="display:flex; justify-content:space-between; padding:8px 10px; border-bottom:1px solid #f1f5f9; font-size:11px;">
-                                    <span>📅 ${x[0]}</span>
-                                    <b style="color:var(--d); cursor:pointer;" onclick="removeItem('libur','${x[0]}','libur_refresh')">Hapus</b>
-                                </div>
-                            `).join('') || '<p style="padding:10px; text-align:center; color:#ccc; font-size:10px;">Belum ada libur</p>'}
+                            ${list.map(x => `<div style="display:flex; justify-content:space-between; padding:8px 10px; border-bottom:1px solid #f1f5f9; font-size:11px;"><span>📅 ${x[0]}</span><b style="color:var(--d); cursor:pointer;" onclick="removeItem('libur','${x[0]}','libur_refresh')">Hapus</b></div>`).join('') || '<p style="padding:10px; text-align:center; color:#ccc; font-size:10px;">Kosong</p>'}
                         </div>
                     </div>
-                </div>
-            `;
+                </div>`;
             openMod("Pengaturan Hari Libur", h);
         }
 
         function saveMultiLibur() {
-            const start = document.getElementById('lStart').value;
-            const end = document.getElementById('lEnd').value;
+            const start = document.getElementById('lStart').value, end = document.getElementById('lEnd').value;
             if(!start || !end) return alert("Pilih kedua tanggal!");
-            let curr = new Date(start); let last = new Date(end);
-            if(curr > last) return alert("Tanggal mulai tidak boleh lewat dari tanggal selesai!");
+            let curr = new Date(start), last = new Date(end);
+            if(curr > last) return alert("Cek kembali rentang tanggal!");
             let updates = {};
-            while(curr <= last) {
-                let dStr = curr.toISOString().split('T')[0];
-                updates[dStr] = "OFF";
-                curr.setDate(curr.getDate() + 1);
-            }
-            db.ref('libur').update(updates).then(() => {
-                toast("Berhasil menambah libur!");
-                openLiburMod();
-            });
+            while(curr <= last) { updates[curr.toISOString().split('T')[0]] = "OFF"; curr.setDate(curr.getDate() + 1); }
+            db.ref('libur').update(updates).then(() => { toast("Libur Ditambahkan!"); openLiburMod(); });
         }
 
-        function clearAllLibur() {
-            if(confirm("Hapus seluruh daftar libur?")) {
-                db.ref('libur').remove().then(() => {
-                    toast("Semua libur dihapus");
-                    openLiburMod();
-                });
-            }
-        }
-
+        function clearAllLibur() { if(confirm("Hapus semua libur?")) db.ref('libur').remove().then(() => { toast("Reset Libur Berhasil"); openLiburMod(); }); }
         function editTarif() {
             const T = D.tarif||DEF_TARIF;
             let h = `<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">` + Object.entries(T).map(t=>`<div><label style="font-size:10px">${t[0]}</label><input type="number" id="trf_${t[0].replace(/ /g,'_')}" value="${t[1]}"></div>`).join('') + `</div><button class="btn" style="background:var(--s); width:100%; margin-top:15px" onclick="saveTarif()">SIMPAN</button>`;
