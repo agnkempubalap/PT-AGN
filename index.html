@@ -3,159 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KEMPU BALAP OMEGA V900</title>
+    <title>KEMPU BALAP CORE</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
 
     <style>
         :root { --p:#2563eb; --s:#16a34a; --d:#ef4444; --bg:#f1f5f9; --c:#ffffff; --t:#0f172a; --b:#cbd5e1; }
         * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; background: var(--bg); color: var(--t); font-size: 13px; -webkit-user-select: none; }
+        body { margin: 0; background: var(--bg); color: var(--t); font-size: 13px; }
         
         /* Navigasi */
-        .nav-grid { display: grid; grid-template-columns: repeat(4, 1fr); position: fixed; top: 0; width: 100%; z-index: 10000; background: var(--p); padding: 8px; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
-        .nav-btn { padding: 14px 0; background: rgba(255,255,255,0.15); border: none; color: white; font-weight: 800; font-size: 10px; border-radius: 10px; cursor: pointer; }
-        .nav-btn.active { background: white; color: var(--p); box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+        .nav-grid { display: grid; grid-template-columns: repeat(3, 1fr); position: fixed; top: 0; width: 100%; z-index: 10000; background: var(--p); padding: 8px; gap: 8px; }
+        .nav-btn { padding: 15px 0; background: rgba(255,255,255,0.15); border: none; color: white; font-weight: 800; font-size: 11px; border-radius: 10px; cursor: pointer; }
+        .nav-btn.active { background: white; color: var(--p); }
 
-        .container { padding: 15px; margin-top: 75px; padding-bottom: 100px; }
+        .container { padding: 15px; margin-top: 75px; padding-bottom: 80px; }
         .tab-content { display: none; }
-        .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .tab-content.active { display: block; }
 
-        .card { background: var(--c); padding: 15px; border-radius: 20px; margin-bottom: 15px; border: 1px solid var(--b); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-        h3 { margin: 0 0 15px; font-size: 14px; color: var(--p); display: flex; justify-content: space-between; align-items: center; border-left: 5px solid var(--p); padding-left: 12px; }
+        .card { background: var(--c); padding: 15px; border-radius: 16px; margin-bottom: 15px; border: 1px solid var(--b); }
+        h3 { margin: 0 0 12px; font-size: 13px; color: var(--p); border-left: 4px solid var(--p); padding-left: 10px; }
 
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-        input, select { width: 100%; height: 50px; background: #f8fafc; border: 1.5px solid var(--b); border-radius: 12px; padding: 0 15px; font-size: 14px; outline: none; }
-        input:focus { border-color: var(--p); }
-        .btn { border: none; border-radius: 12px; padding: 15px; font-weight: 800; cursor: pointer; color: white; font-size: 12px; text-transform: uppercase; transition: 0.2s; }
-        .btn:active { transform: scale(0.95); }
+        input, select { width: 100%; height: 48px; background: #f8fafc; border: 1.5px solid var(--b); border-radius: 12px; padding: 0 12px; font-size: 14px; }
+        .btn { border: none; border-radius: 12px; padding: 15px; font-weight: 800; cursor: pointer; color: white; font-size: 12px; text-transform: uppercase; width: 100%; }
         
-        /* Table Optimization */
         .table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--b); background: white; }
-        table { width: 100%; border-collapse: collapse; min-width: 1000px; }
-        th, td { padding: 12px 10px; border: 1px solid #e2e8f0; text-align: center; font-size: 11px; }
-        th { background: #f8fafc; color: #475569; font-weight: 800; }
-        .sticky-col { position: sticky; left: 0; background: white !important; z-index: 5; border-right: 2px solid #e2e8f0; width: 120px; text-align: left; font-weight: 700; }
+        table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        th, td { padding: 12px 8px; border: 1px solid #e2e8f0; text-align: center; font-size: 11px; }
+        .sticky-col { position: sticky; left: 0; background: white !important; z-index: 5; border-right: 2px solid #e2e8f0; width: 110px; text-align: left; font-weight: 700; }
 
-        /* Modal / Popups */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10001; align-items: center; justify-content: center; padding: 20px; }
-        .modal-box { background: white; width: 100%; max-width: 500px; border-radius: 25px; padding: 25px; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); }
-
-        .badge { height: 48px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; color: white; cursor: pointer; font-size: 14px; }
-        .bg-h { background: var(--s); } .bg-m { background: var(--d); } .bg-i { background: #8b5cf6; } .bg-none { background: #f1f5f9; color: #cbd5e1; border: 1px dashed #cbd5e1; }
+        .badge { height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; color: white; }
+        .bg-h { background: var(--s); } .bg-m { background: var(--d); } .bg-none { background: #f1f5f9; color: #cbd5e1; border: 1px dashed #cbd5e1; }
         
-        #toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 12px 25px; border-radius: 50px; z-index: 10002; display: none; font-weight: 700; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); }
-        .del-btn { color: var(--d); font-size: 10px; cursor: pointer; border: 1px solid var(--d); padding: 4px 8px; border-radius: 6px; font-weight: 800; }
-        .img-preview { width: 100%; border-radius: 15px; margin-top: 10px; border: 1px solid var(--b); }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 10001; align-items: center; justify-content: center; padding: 20px; }
+        .modal-box { background: white; width: 100%; max-width: 400px; border-radius: 20px; padding: 20px; }
     </style>
 </head>
 <body>
 
-    <div id="toast">✅ Sukses</div>
-
     <div id="modalDetail" class="modal">
-        <div class="modal-box">
-            <h3 id="modTgl">Detail Transaksi</h3>
-            <div id="modContent"></div>
-            <button class="btn" style="background:#64748b; width:100%; margin-top:20px" onclick="closeMod()">TUTUP</button>
-        </div>
+        <div class="modal-box"><h3 id="modTgl">Detail</h3><div id="modContent"></div><button class="btn" style="background:#64748b; margin-top:15px" onclick="closeMod()">TUTUP</button></div>
     </div>
 
     <div class="nav-grid">
         <button id="nav-absen" class="nav-btn active" onclick="switchTab('absen')">ABSENSI</button>
         <button id="nav-stok" class="nav-btn" onclick="switchTab('stok')">STOK</button>
-        <button id="nav-aktivitas" class="nav-btn" onclick="switchTab('aktivitas')">KERJA</button>
-        <button id="nav-gaji" class="nav-btn" onclick="switchTab('gaji')">LAPORAN</button>
+        <button id="nav-borong" class="nav-btn" onclick="switchTab('borong')">BORONGAN</button>
     </div>
 
     <div class="container">
         <div id="tab-absen" class="tab-content active">
             <div class="card">
-                <h3>👥 Data Karyawan & Barang</h3>
-                <div class="grid-2">
-                    <input type="text" id="inK" placeholder="Nama Karyawan...">
-                    <button class="btn" style="background:var(--p)" onclick="addM('master_karyawan', 'inK')">TAMBAH</button>
-                </div>
-                <div class="grid-2">
-                    <input type="text" id="inB" placeholder="Nama Barang (Kempu/Jerigen)...">
-                    <button class="btn" style="background:#6366f1" onclick="addM('master_barang', 'inB')">TAMBAH</button>
-                </div>
-                <div id="listMaster" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:10px"></div>
+                <h3>👥 Master Karyawan</h3>
+                <div class="grid-2"><input type="text" id="inK" placeholder="Nama..."><button class="btn" style="background:var(--p); padding:10px" onclick="addM('master_karyawan', 'inK')">TAMBAH</button></div>
+                <div id="listK" style="display:flex; flex-wrap:wrap; gap:5px; margin-top:10px"></div>
             </div>
             <div class="card">
-                <h3>📅 Input Kehadiran</h3>
-                <div class="grid-2"><input type="date" id="absTgl"><select id="selK"></select></div>
-                <div class="grid-2">
-                    <button class="btn" style="background:var(--s)" onclick="saveAbs('Hadir')">HADIR</button>
-                    <button class="btn" style="background:#f59e0b" onclick="saveAbs('Izin')">IZIN</button>
-                </div>
+                <h3>📅 Input Absen <input type="date" id="absTgl" style="width:130px; height:30px; float:right"></h3>
+                <div class="grid-2"><select id="selK"></select><button class="btn" style="background:var(--s)" onclick="saveAbs('Hadir')">HADIR</button></div>
             </div>
             <div class="card" style="padding:5px">
-                <h3 style="padding:10px">📊 Kalender Absensi <input type="month" id="fM" onchange="renderAll()" style="width:130px; height:35px"></h3>
+                <h3 style="padding:10px">📊 Kalender <input type="month" id="fM" onchange="renderAll()" style="width:120px; height:30px"></h3>
                 <div class="table-wrap"><table id="tblAbsen"><thead id="thA"></thead><tbody id="tbA"></tbody></table></div>
             </div>
         </div>
 
         <div id="tab-stok" class="tab-content">
             <div class="card">
-                <h3>📥 Bongkar / Muat / Rekon</h3>
-                <div class="grid-2"><select id="stBrg"></select><input type="number" id="stQty" placeholder="Jumlah Pcs"></div>
-                <div class="grid-2">
-                    <select id="stJenis"><option value="Bekas">Bekas (Kotor)</option><option value="Baru">Baru (Ready)</option></select>
-                    <select id="stAksi">
-                        <option value="masuk">Bongkar (Masuk)</option>
-                        <option value="rekondisi">Rekondisi (Bekas -> Ready)</option>
-                        <option value="jual_umum">Muat (Jual Umum)</option>
-                        <option value="jual_mitra">Muat (Jual Mitra)</option>
-                    </select>
-                </div>
-                <button class="btn" style="background:var(--s); width:100%" onclick="saveStok()">SIMPAN DATA STOK</button>
+                <h3>📦 Master Barang</h3>
+                <div class="grid-2"><input type="text" id="inB" placeholder="Barang..."><button class="btn" style="background:var(--p); padding:10px" onclick="addM('master_barang', 'inB')">TAMBAH</button></div>
             </div>
             <div class="card">
-                <h3>📊 Recap Saldo Barang</h3>
-                <div class="table-wrap"><table id="tblStok"><thead><tr><th class="sticky-col">BARANG</th><th>AWAL KTR</th><th>AWAL RDY</th><th>MSK KTR</th><th>MSK RDY</th><th>REKON</th><th>JUAL</th><th style="background:#fee2e2">SISA KTR</th><th style="background:#dcfce7">READY</th></tr></thead><tbody id="tbStok"></tbody></table></div>
+                <h3>📥 Bongkar Muat</h3>
+                <div class="grid-2"><select id="stBrg"></select><input type="number" id="stQty" placeholder="Jumlah"></div>
+                <div class="grid-2">
+                    <select id="stJenis"><option value="Bekas">Bekas</option><option value="Ready">Ready</option></select>
+                    <select id="stAksi"><option value="masuk">Bongkar</option><option value="rekon">Rekon</option><option value="jual">Muat/Jual</option></select>
+                </div>
+                <button class="btn" style="background:var(--s)" onclick="saveStok()">SIMPAN STOK</button>
+            </div>
+            <div class="card">
+                <h3>📊 Saldo Barang</h3>
+                <div class="table-wrap"><table id="tblStok"><thead><tr><th class="sticky-col">BARANG</th><th>MSK BEKAS</th><th>REKON</th><th>KELUAR</th><th style="background:#fee2e2">SISA BEKAS</th><th style="background:#dcfce7">TOTAL READY</th></tr></thead><tbody id="tbStok"></tbody></table></div>
             </div>
         </div>
 
-        <div id="tab-aktivitas" class="tab-content">
+        <div id="tab-borong" class="tab-content">
             <div class="card">
-                <h3>🛠️ Kerja Borongan (Bagi Rata)</h3>
+                <h3>🛠️ Kerja Borongan</h3>
                 <div class="grid-2"><input type="date" id="akTgl"><select id="akJenis"></select></div>
-                <p style="font-size:11px; color:#64748b; margin-bottom:8px">Pilih Tim Yang Kerja:</p>
-                <div id="akKaryawanList" style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:15px; background:#f8fafc; padding:12px; border-radius:15px; border:1px solid var(--b)"></div>
+                <div id="akKaryawanList" style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px; background:#f8fafc; padding:10px; border-radius:12px"></div>
                 <div class="grid-2">
-                    <input type="number" id="akQty" placeholder="Qty (Pcs/Rit)">
+                    <input type="number" id="akQty" placeholder="Jumlah">
                     <select id="akSub"><option value="Normal">Normal</option><option value="Jauh">Jarak Jauh</option><option value="Dekat">Jarak Dekat</option></select>
                 </div>
-                <button class="btn" style="background:var(--p); width:100%" onclick="saveAk()">SIMPAN BORONGAN</button>
+                <button class="btn" style="background:var(--p)" onclick="saveAk()">SIMPAN BORONGAN</button>
             </div>
             <div class="card">
-                <h3>🛒 Nota Belanja & Operasional</h3>
-                <input type="text" id="blNama" placeholder="Nama Barang/Keperluan..." style="margin-bottom:10px">
-                <div class="grid-2"><input type="number" id="blHarga" placeholder="Total Harga Rp"><input type="file" id="blFoto" accept="image/*" style="padding-top:12px"></div>
-                <button class="btn" style="background:#6366f1; width:100%" onclick="saveBl()">UPLOAD NOTA</button>
-            </div>
-        </div>
-
-        <div id="tab-gaji" class="tab-content">
-            <div class="card">
-                <h3>💰 Pengaturan Tarif Borongan <button class="btn" style="width:auto; padding:5px 15px; background:var(--t)" onclick="toggleEl('rateWrap')">LIHAT/EDIT</button></h3>
-                <div id="rateWrap" style="display:none; margin-top:15px"><div id="rateArea"></div><button class="btn" style="background:var(--p); width:100%; margin-top:10px" onclick="saveRates()">UPDATE SEMUA TARIF</button></div>
-            </div>
-            <div class="card">
-                <h3>💵 Rincian Gaji & Laporan <input type="month" id="fGaji" onchange="renderGaji()" style="width:130px; height:35px"></h3>
-                <select id="selKGaji" onchange="renderGaji()" style="margin-bottom:15px"></select>
+                <h3>💰 Tarif & Slip Gaji <input type="month" id="fG" onchange="renderGaji()" style="width:120px; height:30px"></h3>
+                <select id="selKG" onchange="renderGaji()" style="margin-bottom:10px"></select>
                 <div id="slipArea"></div>
-            </div>
-            <div class="card">
-                <h3>📉 Total Pengeluaran Nota (Bulan Ini)</h3>
-                <h2 id="totalBelanja" style="color:var(--d); margin:0">Rp 0</h2>
-                <button class="btn" style="background:#1d6f42; margin-top:15px" onclick="exportExcel('tblStok','Stok_Kempu')">DOWNLOAD LAPORAN STOK (EXCEL)</button>
             </div>
         </div>
     </div>
@@ -165,86 +115,44 @@
         firebase.initializeApp(config);
         const db = firebase.database();
         let DATA = {};
-
-        const DEF_ACT = ["Rekondisi Kempu", "Rekondisi Jerigen 18L", "Muat Barang", "Bongkar Barang", "Kirim Minyak", "Pasang Pangkalan"];
-        const DEF_RATES = { "Rekondisi Kempu":100000, "Rekondisi Jerigen 18L":2000, "Muat Barang":600000, "Bongkar Barang":600000, "Kirim Minyak Jauh":250000, "Kirim Minyak Dekat":100000, "Kirim Minyak Normal":150000, "Pasang Pangkalan":500000 };
+        const DEF_ACT = ["Rekondisi Kempu", "Muat Barang", "Bongkar Barang", "Kirim Minyak"];
+        const RATES = { "Rekondisi Kempu":100000, "Muat Barang":600000, "Bongkar Barang":600000, "Kirim Minyak Jauh":250000, "Kirim Minyak Dekat":100000, "Kirim Minyak Normal":150000 };
 
         window.onload = () => {
             const now = new Date().toISOString().split('T')[0];
             document.getElementById('absTgl').value = now; document.getElementById('akTgl').value = now;
-            document.getElementById('fM').value = now.slice(0, 7); document.getElementById('fGaji').value = now.slice(0, 7);
+            document.getElementById('fM').value = now.slice(0, 7); document.getElementById('fG').value = now.slice(0, 7);
             db.ref('/').on('value', s => { DATA = s.val() || {}; renderAll(); });
         };
 
-        function showT(m) { const t = document.getElementById('toast'); t.innerText = m; t.style.display='block'; setTimeout(()=>t.style.display='none', 2500); }
         function switchTab(id) { 
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); 
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active')); 
             document.getElementById('tab-' + id).classList.add('active'); 
             document.getElementById('nav-' + id).classList.add('active'); 
-            if(id === 'gaji') renderGaji();
-            window.scrollTo(0,0);
-        }
-        function toggleEl(id) { const e = document.getElementById(id); e.style.display = (e.style.display === 'none') ? 'block' : 'none'; }
-        function closeMod() { document.getElementById('modalDetail').style.display = 'none'; }
-
-        function addM(path, id) { 
-            const v = document.getElementById(id).value; 
-            if(v) db.ref(path).push(v).then(() => { document.getElementById(id).value=""; showT("Data Berhasil Ditambah"); }); 
         }
 
-        function delM(path, key) { if(confirm("Hapus data ini secara permanen?")) db.ref(`${path}/${key}`).remove().then(()=> { showT("Data Dihapus"); closeMod(); }); }
+        function closeMod() { document.getElementById('modalDetail').style.display='none'; }
 
-        function saveAbs(st) { 
-            const n = document.getElementById('selK').value, t = document.getElementById('absTgl').value; 
-            if(!n) return alert("Pilih Nama Karyawan!");
-            db.ref(`absensi/${t}/${n}`).set({ s: st }).then(() => showT("Absensi Dicatat")); 
-        }
+        function addM(path, id) { const v = document.getElementById(id).value; if(v) db.ref(path).push(v).then(()=>document.getElementById(id).value=""); }
+        function delM(path, key) { if(confirm("Hapus?")) db.ref(`${path}/${key}`).remove(); }
 
-        function saveStok() { 
-            const b = document.getElementById('stBrg').value, q = parseInt(document.getElementById('stQty').value), j = document.getElementById('stJenis').value, ak = document.getElementById('stAksi').value, t = document.getElementById('absTgl').value; 
-            if(!q) return alert("Masukkan Jumlah!");
-            db.ref('stok_logs').push({ b, q, j, ak, tgl: t }).then(() => { document.getElementById('stQty').value=""; showT("Stok Diperbarui"); }); 
-        }
-
-        function saveAk() { 
-            const names = Array.from(document.querySelectorAll('.ak-chk:checked')).map(c => c.value), j = document.getElementById('akJenis').value, q = parseInt(document.getElementById('akQty').value), t = document.getElementById('akTgl').value, sub = document.getElementById('akSub').value; 
-            if(!names.length || !q) return alert("Lengkapi data tim & jumlah!");
-            db.ref('aktivitas').push({ names, j, q, tgl: t, sub }).then(() => { document.querySelectorAll('.ak-chk').forEach(c => c.checked = false); document.getElementById('akQty').value=""; showT("Borongan Disimpan"); }); 
-        }
-
-        function saveBl() { 
-            const n = document.getElementById('blNama').value, h = parseInt(document.getElementById('blHarga').value), f = document.getElementById('blFoto').files[0], t = document.getElementById('akTgl').value; 
-            if(!n || !h) return alert("Isi Nama & Harga!");
-            if(f) { 
-                const r = new FileReader(); 
-                r.onload = (e) => {
-                    // Logic kompres sederhana: Jika file > 1MB, beri peringatan atau upload saja (Firebase gratisan punya limit storage)
-                    db.ref('belanja').push({ n, h, tgl: t, img: e.target.result }).then(() => { document.getElementById('blNama').value=""; document.getElementById('blHarga').value=""; showT("Nota & Foto Tersimpan"); });
-                };
-                r.readAsDataURL(f); 
-            } else { 
-                db.ref('belanja').push({ n, h, tgl: t }).then(() => { document.getElementById('blNama').value=""; document.getElementById('blHarga').value=""; showT("Nota Tersimpan"); }); 
-            } 
-        }
+        function saveAbs(st) { const n = document.getElementById('selK').value, t = document.getElementById('absTgl').value; if(n) db.ref(`absensi/${t}/${n}`).set({ s: st }); }
+        function saveStok() { const b = document.getElementById('stBrg').value, q = parseInt(document.getElementById('stQty').value), j = document.getElementById('stJenis').value, ak = document.getElementById('stAksi').value, t = document.getElementById('absTgl').value; if(q) db.ref('stok_logs').push({ b, q, j, ak, tgl: t }); }
+        function saveAk() { const names = Array.from(document.querySelectorAll('.ak-chk:checked')).map(c => c.value), j = document.getElementById('akJenis').value, q = parseInt(document.getElementById('akQty').value), t = document.getElementById('akTgl').value, sub = document.getElementById('akSub').value; if(names.length && q) db.ref('aktivitas').push({ names, j, q, tgl: t, sub }).then(() => { document.querySelectorAll('.ak-chk').forEach(c => c.checked = false); }); }
 
         function renderAll() {
             const kArr = Object.entries(DATA.master_karyawan || {}), bArr = Object.entries(DATA.master_barang || {}), fM = document.getElementById('fM').value, [y, m] = fM.split('-'), last = new Date(y, m, 0).getDate();
             
-            // Sync UI Dropdowns
-            const kListHtml = kArr.map(k => `<span style="background:#e2e8f0; padding:6px 12px; border-radius:10px; font-size:11px; font-weight:bold">${k[1]} <b onclick="delM('master_karyawan','${k[0]}')" style="color:red;margin-left:8px;cursor:pointer">×</b></span>`).join('');
-            const bListHtml = bArr.map(b => `<span style="background:#ddd6fe; padding:6px 12px; border-radius:10px; font-size:11px; font-weight:bold">${b[1]} <b onclick="delM('master_barang','${b[0]}')" style="color:red;margin-left:8px;cursor:pointer">×</b></span>`).join('');
-            document.getElementById('listMaster').innerHTML = kListHtml + bListHtml;
-            
+            document.getElementById('listK').innerHTML = kArr.map(k => `<span style="background:#eee; padding:4px 8px; border-radius:5px">${k[1]} <b onclick="delM('master_karyawan','${k[0]}')" style="color:red">×</b></span>`).join('');
             document.getElementById('selK').innerHTML = kArr.map(k => `<option value="${k[1]}">${k[1]}</option>`).join('');
-            document.getElementById('selKGaji').innerHTML = kArr.map(k => `<option value="${k[1]}">${k[1]}</option>`).join('');
+            document.getElementById('selKG').innerHTML = kArr.map(k => `<option value="${k[1]}">${k[1]}</option>`).join('');
             document.getElementById('stBrg').innerHTML = bArr.map(b => `<option value="${b[1]}">${b[1]}</option>`).join('');
             document.getElementById('akJenis').innerHTML = DEF_ACT.map(a => `<option value="${a}">${a}</option>`).join('');
-            document.getElementById('akKaryawanList').innerHTML = kArr.map(k => `<label style="display:flex;align-items:center;gap:5px;font-weight:600"><input type="checkbox" class="ak-chk" value="${k[1]}"> ${k[1]}</label>`).join('');
+            document.getElementById('akKaryawanList').innerHTML = kArr.map(k => `<label><input type="checkbox" class="ak-chk" value="${k[1]}"> ${k[1]}</label>`).join('');
 
-            // Render Kalender Absensi
-            let th = `<tr><th class="sticky-col">NAMA KARYAWAN</th>`;
-            for(let i=1; i<=last; i++) th += `<th style="min-width:45px">${i}</th>`;
+            let th = `<tr><th class="sticky-col">NAMA</th>`;
+            for(let i=1; i<=last; i++) th += `<th>${i}</th>`;
             document.getElementById('thA').innerHTML = th + `</tr>`;
 
             let tbA = "";
@@ -254,25 +162,21 @@
                     const tgl = `${y}-${m}-${String(i).padStart(2,'0')}`, d = DATA.absensi?.[tgl]?.[k[1]], isSun = new Date(tgl).getDay()===0;
                     let txt = "-", cls = "bg-none";
                     if(isSun) { txt = "M"; cls = "bg-m"; }
-                    if(d) { txt = d.s[0]; cls = `bg-${d.s.toLowerCase()[0]}`; }
-                    row += `<td onclick="showDayDetail('${tgl}')"><div class="badge ${cls}">${txt}</div></td>`;
+                    if(d) { txt = d.s[0]; cls = "bg-h"; }
+                    row += `<td onclick="showDetail('${tgl}')"><div class="badge ${cls}">${txt}</div></td>`;
                 }
                 tbA += `<tr>${row}</tr>`;
             });
             document.getElementById('tbA').innerHTML = tbA;
-            renderStok(); renderRates();
+            renderStok(); renderGaji();
         }
 
-        function showDayDetail(tgl) {
-            const abs = DATA.absensi?.[tgl] || {}, stok = Object.entries(DATA.stok_logs || {}).filter(s => s[1].tgl === tgl);
-            const act = Object.entries(DATA.aktivitas || {}).filter(a => a[1].tgl === tgl), bl = Object.entries(DATA.belanja || {}).filter(b => b[1].tgl === tgl);
-            
-            let h = `<div style="border-bottom:2px solid var(--p);padding-bottom:10px;margin-bottom:15px"><b>TANGGAL: ${tgl}</b></div>`;
-            h += `<b>✅ Absensi:</b><br>` + Object.entries(abs).map(([n,d])=>`• ${n}: ${d.s}`).join('<br>') + (Object.keys(abs).length ? '' : '-') + `<br><br>`;
-            h += `<b>📦 Stok (Bongkar/Muat):</b><br>` + stok.map(s=>`• ${s[1].ak.toUpperCase()} ${s[1].b} (${s[1].q} Pcs) <span class="del-btn" onclick="delM('stok_logs','${s[0]}')">Hapus</span>`).join('<br>') + (stok.length ? '' : '-') + `<br><br>`;
-            h += `<b>🛠️ Borongan:</b><br>` + act.map(a=>`• ${a[1].j} (${a[1].q}) - Tim: ${a[1].names.join(',')} <span class="del-btn" onclick="delM('aktivitas','${a[0]}')">Hapus</span>`).join('<br>') + (act.length ? '' : '-') + `<br><br>`;
-            h += `<b>🛒 Belanja:</b><br>` + bl.map(b=>`• ${b[1].n} (Rp${b[1].h.toLocaleString()}) <span class="del-btn" onclick="delM('belanja','${b[0]}')">Hapus</span> ${b[1].img ? `<br><img src="${b[1].img}" class="img-preview">` : ''}`).join('<br>') + (bl.length ? '' : '-');
-            
+        function showDetail(tgl) {
+            const s = Object.entries(DATA.stok_logs || {}).filter(x => x[1].tgl === tgl);
+            const a = Object.entries(DATA.aktivitas || {}).filter(x => x[1].tgl === tgl);
+            let h = `<b>Log ${tgl}:</b><br><br>`;
+            h += `Stok: <br>` + s.map(x => `• ${x[1].ak} ${x[1].b} (${x[1].q}) <button onclick="delM('stok_logs','${x[0]}')">X</button>`).join('<br>') + `<br><br>`;
+            h += `Borong: <br>` + a.map(x => `• ${x[1].j} (${x[1].q}) <button onclick="delM('aktivitas','${x[0]}')">X</button>`).join('<br>');
             document.getElementById('modContent').innerHTML = h; document.getElementById('modalDetail').style.display='flex';
         }
 
@@ -280,53 +184,32 @@
             const bArr = Object.entries(DATA.master_barang || {}), logs = Object.values(DATA.stok_logs || {}), fM = document.getElementById('fM').value;
             let h = "";
             bArr.forEach(b => {
-                let s = { aktr:0, abrs:0, mktr:0, mbrs:0, reko:0, jual:0 };
+                let s = { mKtr:0, reko:0, jual:0 };
                 logs.forEach(l => {
-                    if(l.b === b[1]) {
-                        if(l.tgl.slice(0,7) < fM) {
-                            if(l.ak==='masuk') { if(l.j==='Bekas') s.aktr+=l.q; else s.abrs+=l.q; }
-                            if(l.ak==='rekondisi') { s.aktr-=l.q; s.abrs+=l.q; }
-                            if(l.ak.includes('jual')) s.abrs-=l.q;
-                        } else if(l.tgl.slice(0,7) === fM) {
-                            if(l.ak==='masuk') { if(l.j==='Bekas') s.mktr+=l.q; else s.mbrs+=l.q; }
-                            else if(l.ak==='rekondisi') s.reko+=l.q;
-                            else if(l.ak.includes('jual')) s.jual+=l.q;
-                        }
+                    if(l.b === b[1] && l.tgl.slice(0,7) === fM) {
+                        if(l.ak === 'masuk') s.mKtr += l.q;
+                        else if(l.ak === 'rekon') s.reko += l.q;
+                        else if(l.ak === 'jual') s.jual += l.q;
                     }
                 });
-                let sktr = (s.aktr+s.mktr)-s.reko, srdy = (s.abrs+s.mbrs+s.reko)-s.jual;
-                h += `<tr><td class="sticky-col">${b[1]}</td><td>${s.aktr}</td><td>${s.abrs}</td><td>${s.mktr}</td><td>${s.mbrs}</td><td>${s.reko}</td><td>${s.jual}</td><td style="color:var(--d);font-weight:bold">${sktr}</td><td style="color:var(--s);font-weight:bold">${srdy}</td></tr>`;
+                h += `<tr><td class="sticky-col">${b[1]}</td><td>${s.mKtr}</td><td>${s.reko}</td><td>${s.jual}</td><td style="color:red">${s.mKtr-s.reko}</td><td style="color:green">${s.reko-s.jual}</td></tr>`;
             });
             document.getElementById('tbStok').innerHTML = h;
         }
 
-        function renderRates() { const r = DATA.rates || DEF_RATES; document.getElementById('rateArea').innerHTML = Object.entries(r).map(([k,v]) => `<div class="grid-2" style="align-items:center;margin-bottom:5px"><span>${k}</span><input type="number" class="r-val" data-k="${k}" value="${v}" style="height:35px"></div>`).join(''); }
-        function saveRates() { let up = {}; document.querySelectorAll('.r-val').forEach(i => up[i.dataset.k] = parseInt(i.value)); db.ref('rates').set(up).then(()=>showT("Tarif Diperbarui")); }
-
         function renderGaji() {
-            const fM = document.getElementById('fGaji').value, name = document.getElementById('selKGaji').value, rates = DATA.rates || DEF_RATES;
-            let totalGaji = 0, totalBelanja = 0, detail = "";
-            
-            // Hitung Borongan
+            const fM = document.getElementById('fG').value, name = document.getElementById('selKG').value;
+            let total = 0, detail = "";
             Object.values(DATA.aktivitas || {}).forEach(a => {
                 if(a.tgl.slice(0,7) === fM && a.names.includes(name)) {
                     let k = a.j; if(k === 'Kirim Minyak') k += " " + a.sub;
-                    let upah = (rates[k] || 0) * (a.q || 1) / a.names.length;
-                    totalGaji += upah; 
-                    detail += `<div style="display:flex;justify-content:space-between;padding:12px;border-bottom:1px solid #eee"><span><b>${a.tgl}</b><br>${a.j} (${a.q})</span><b style="color:var(--s)">Rp${Math.round(upah).toLocaleString()}</b></div>`;
+                    let upah = (RATES[k] || 0) * (a.q || 1) / a.names.length;
+                    total += upah; 
+                    detail += `• ${a.tgl}: ${a.j} = Rp${Math.round(upah).toLocaleString()}<br>`;
                 }
             });
-
-            // Hitung Pengeluaran Nota (Global)
-            Object.values(DATA.belanja || {}).forEach(b => {
-                if(b.tgl.slice(0,7) === fM) totalBelanja += b.h;
-            });
-
-            document.getElementById('totalBelanja').innerText = `Rp ${totalBelanja.toLocaleString()}`;
-            document.getElementById('slipArea').innerHTML = `<div style="background:#dcfce7;padding:15px;border-radius:12px;margin-bottom:10px"><small>Estimasi Gaji:</small><h2 style="margin:0;color:var(--s)">Rp${Math.round(totalGaji).toLocaleString()}</h2></div>${detail}`;
+            document.getElementById('slipArea').innerHTML = `<div style="background:#dcfce7; padding:10px; border-radius:10px"><b>Total Upah: Rp${Math.round(total).toLocaleString()}</b></div><br>${detail}`;
         }
-
-        function exportExcel(id, n) { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById(id)), n + ".xlsx"); }
     </script>
 </body>
 </html>
