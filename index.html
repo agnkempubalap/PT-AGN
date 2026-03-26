@@ -336,6 +336,19 @@
         function closeMod() { document.getElementById('modalUni').style.display='none'; }
         function showLogs(t) { let l=Object.entries(D[t]||{}).reverse().slice(0,30); openMod("Log", l.map(x=>`<div style="font-size:10px;padding:5px;border-bottom:1px solid #eee"><span>[${x[1].t}] ${x[1].b||x[1].j} (${x[1].q})</span> <b onclick="removeItem('${t}','${x[0]}')" style="color:red; cursor:pointer">×</b></div>`).join('')); }
         function genSlip(n) { const fM=document.getElementById('fUang').value, T=D.tarif||DEF_TARIF; let br=0, bo=0, ka=0, list=""; Object.values(D.aktivitas||{}).forEach(a=>{ if(a.t?.slice(0,7)===fM&&a.p?.includes(n)){ let u=(T[a.j]||0)*a.q/(a.j.includes("pasang")?1:a.p.length); if(a.isCair) { br+=u; list+=`<tr><td>${a.t}</td><td>${a.j}</td><td>${Math.round(u).toLocaleString()}</td></tr>`; } } }); Object.values(D.kasbon_bonus||{}).forEach(kb=>{if(kb.n===n&&kb.t===fM) kb.tipe==="Bonus"?bo+=kb.rp:ka+=kb.rp;}); openMod("Slip", `<div id="p-slip" style="padding:15px; background:white; color:black"><h3>KEMPU BALAP</h3><p>${n} | ${fM}</p><hr><table style="width:100%; font-size:10px">${list}</table><hr><b>Total: Rp ${Math.round((br+bo)-ka).toLocaleString()}</b></div><button class="btn" onclick="expPdf('p-slip','Slip_${n}')">PRINT</button>`); }
+function showWarning(pesan) {
+    const html = `
+        <div style="text-align: center; padding: 10px;">
+            <div style="font-size: 50px; margin-bottom: 15px;">⚠️</div>
+            <h2 style="color: #ef4444; margin-bottom: 10px; font-weight: 800;">STOK TIDAK CUKUP!</h2>
+            <p style="color: #64748b; font-size: 14px; line-height: 1.5;">${pesan}</p>
+            <div style="margin-top: 20px; background: #fef2f2; padding: 10px; border-radius: 10px; border: 1px dashed #f87171;">
+                <small style="color: #b91c1c;">Saran: Cek kembali log masuk atau lakukan rekondisi barang.</small>
+            </div>
+        </div>
+    `;
+    openMod("PERINGATAN SISTEM", html);
+}
     </script>
 </body>
 </html>
