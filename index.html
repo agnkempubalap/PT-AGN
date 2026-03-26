@@ -169,22 +169,47 @@
             document.getElementById('stBrg').innerHTML = B.map(b=>`<option value="${b[1]}">${b[1]}</option>`).join('');
         }
 
-        // --- LOGIKA STOK FIXED (REJECT TIDAK KURANGI GLOBAL) ---
+                // --- LOGIKA STOK ANTI-MINUS & REJECT SAFE ---
         function saveSt() {
-            const t=document.getElementById('stTgl').value, b=document.getElementById('stBrg').value, q=parseInt(document.getElementById('stQty').value), ak=document.getElementById('stAksi').value;
-            if(!q) return alert("Qty Kosong!");
-            
-            // Fix: Paksa Accepted jika aksinya bukan "Masuk"
-            const qcFinal = (ak === "Masuk") ? document.getElementById('stQC').value : "Accepted";
+            const t = document.getElementById('stTgl').value, 
+                  b = document.getElementById('stBrg').value, 
+                  q = parseInt(document.getElementById('stQty').value) || 0, 
+                  ak = document.getElementById('stAksi').value,
+                  kon = document.getElementById('stKon').value;
 
-            db.ref('stok_logs').push({ t, b, q, kon:document.getElementById('stKon').value, qc:qcFinal, ak:ak }).then(() => {
+            if (!q || q <= 0) return alert("Isi jumlah barang yang bener, Mas!");
+
+            // 1. HITUNG STOK REAL (Buat Cek Anti-Minus)
+            let curKtr = 0, curRdy = 0;
+            Object.values(D.stok_logs || {}).forEach(l => {
+                if (l.b !== b) return;
+                if (l.ak === "Masuk" && l.qc === "Accepted") {
+                    l.kon === "Bekas" ? curKtr += l.q : curRdy += l.q;
+                } else if (l.ak === "Rekondisi") {
+                    curKtr -= l.q; curRdy += l.q;
+                } else if (l.ak.includes("Jual")) {
+                    curRdy -= l.q;
+                }
+            });
+
+            // 2. VALIDASI CEGATAN
+            if (ak === "Rekondisi" && q > curKtr) {
+                return alert(`⚠️ STOK KOTOR HABIS!\nSisa ${b} (Kotor) cuma: ${curKtr}\nMas mau rekon: ${q}`);
+            }
+            if (ak.includes("Jual") && q > curRdy) {
+                return alert(`⚠️ STOK SIAP JUAL HABIS!\nSisa ${b} (Ready) cuma: ${curRdy}\nMas mau jual: ${q}`);
+            }
+
+            // 3. SIMPAN JIKA LOLOS
+            const qcFinal = (ak === "Masuk") ? document.getElementById('stQC').value : "Accepted";
+            db.ref('stok_logs').push({ t, b, q, kon, qc: qcFinal, ak: ak }).then(() => {
+                // Logika FIFO Jerigen Otomatis
                 if(ak.includes("Jual") && b.toLowerCase().includes("jerigen")) {
                     let sisaJual = q;
                     let logs = Object.entries(D.aktivitas || {}).filter(x => x[1].j.toLowerCase().includes(b.toLowerCase()) && !x[1].isCair).sort((a,b) => a[1].t.localeCompare(b[1].t));
                     logs.forEach(log => {
                         if(sisaJual <= 0) return;
-                        let qtyReady = log[1].q;
-                        if(qtyReady <= sisaJual) { db.ref(`aktivitas/${log[0]}`).update({ isCair: true, tglCair: t }); sisaJual -= qtyReady; }
+                        if(log[1].q <= sisaJual) { db.ref(`aktivitas/${log[0]}`).update({ isCair: true, tglCair: t }); sisaJual -= log[1].q; }
                     });
                 }
                 document.getElementById('stQty').value=""; alert("Stok Terupdate!");
@@ -192,29 +217,37 @@
         }
 
         function renderStok() {
-            const B_arr = Object.values(D.master_barang || {}), fM = document.getElementById('fM').value; let h = "";
+            const B_arr = Object.values(D.master_barang || {}), fM = document.getElementById('fM').value; 
+            let h = "";
             B_arr.forEach(b => {
                 let s = { ak:0, ab:0, ik:0, ib:0, rej:0, rk:0, jm:0, ju:0 };
                 Object.values(D.stok_logs || {}).forEach(l => {
                     if(l.b!==b) return; 
-                    if(l.t?.slice(0,7)<fM) { 
-                        if(l.ak==="Masuk") l.kon==="Bekas"?s.ak+=l.q:s.ab+=l.q; 
+                    // Hitung Saldo Bulan Lalu
+                    if(l.t?.slice(0,7) < fM) { 
+                        if(l.ak==="Masuk" && l.qc==="Accepted") l.kon==="Bekas"?s.ak+=l.q:s.ab+=l.q; 
                         else if(l.ak==="Rekondisi"){s.ak-=l.q;s.ab+=l.q;} 
                         else if(l.ak.includes("Jual")) s.ab-=l.q; 
                     }
-                    else if(l.t?.slice(0,7)===fM) { 
-                        if(l.ak==="Masuk") l.kon==="Bekas"?s.ik+=l.q:s.ib+=l.q; 
+                    // Hitung Transaksi Bulan Ini
+                    else if(l.t?.slice(0,7) === fM) { 
+                        if(l.ak==="Masuk") {
+                            if(l.qc==="Accepted") l.kon==="Bekas"?s.ik+=l.q:s.ib+=l.q; 
+                            else s.rej+=l.q; // Masuk kolom reject, tidak nambah stok ktr/rdy
+                        }
                         else if(l.ak==="Rekondisi") s.rk+=l.q; 
                         else if(l.ak==="Jual Mitra") s.jm+=l.q; 
                         else if(l.ak==="Jual Umum") s.ju+=l.q; 
-                        if(l.qc==="Reject") s.rej+=l.q; 
                     }
                 });
-                // Fix: Reject tidak mengurangi 'ktr'
-                let ktr = (s.ak+s.ik)-s.rk, rdy = (s.ab+s.ib+s.rk)-(s.jm+s.ju);
+                // Final Hitungan
+                let ktr = (s.ak+s.ik)-s.rk; 
+                let rdy = (s.ab+s.ib+s.rk)-(s.jm+s.ju);
                 h += `<tr><td class="sticky-col">${b}</td><td>${s.ak}</td><td>${s.ab}</td><td>${s.ik}</td><td>${s.ib}</td><td style="color:red; font-weight:bold">${s.rej}</td><td>${s.rk}</td><td>${s.jm}</td><td>${s.ju}</td><td style="background:#fef3c7">${ktr}</td><td style="background:#dcfce7">${rdy}</td><td style="background:var(--p); color:white">${ktr+rdy}</td></tr>`;
-            }); document.getElementById('tbStok').innerHTML = h;
+            }); 
+            document.getElementById('tbStok').innerHTML = h;
         }
+
 
         // --- CHAIN LOGIC KERJA ---
         function renderCheckKaryawan() {
