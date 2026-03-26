@@ -91,3 +91,140 @@
             <button class="btn" style="background:var(--d)" onclick="expPdf('areaGaji','Rekap_Gaji')">DOWNLOAD PDF</button>
         </div>
     </div>
+    <script>
+        const fbConfig = { apiKey: "AIzaSyAu67MAhWBxdmciPi3xOKWhdy-uP4u9tXI", authDomain: "pt-agn.firebaseapp.com", databaseURL: "https://pt-agn-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "pt-agn", appId: "1:810494462386:web:432a3050c054bdd8437cab" };
+        firebase.initializeApp(fbConfig); const db = firebase.database();
+        let D = {}; const DEF_TARIF = { "Rekondisi Kempu":100000, "Rekondisi jerigen 18L":2000, "Rekondisi jerigen 5L":1000, "muat barang":600000, "bongkar barang":600000 };
+
+        window.onload = () => {
+            const t = new Date().toISOString().split('T')[0];
+            ['absTgl','stTgl','akTgl','blTgl','fM','fUang'].forEach(i => { if(document.getElementById(i)) document.getElementById(i).value = (i.length<=7?t.slice(0,7):t); });
+            db.ref('/').on('value', s => { D = s.val() || {}; initUI(); renderAll(); if(document.getElementById('tab-gaji').classList.contains('active')) renderGaji(); });
+        };
+
+        function tab(id) {
+            document.querySelectorAll('.tab-content, .nav-btn').forEach(e => e.classList.remove('active'));
+            document.getElementById('tab-'+id).classList.add('active');
+            document.getElementById('nav-'+id).classList.add('active');
+            if(id==='gaji') renderGaji();
+        }
+
+        function initUI() {
+            const K = Object.entries(D.master_karyawan || {}), B = Object.entries(D.master_barang || {});
+            document.getElementById('listK').innerHTML = K.map(k=>`<span style="background:#fff; border:1px solid #ddd; padding:4px; border-radius:5px; font-size:9px">${k[1]} <b onclick="removeItem('master_karyawan','${k[0]}')" style="color:red">×</b></span>`).join('');
+            document.getElementById('selK').innerHTML = K.map(k=>`<option value="${k[1]}">${k[1]}</option>`).join('');
+            document.getElementById('akKaryawan').innerHTML = K.map(k=>`<label class="check-item"><input type="checkbox" class="chk-k" value="${k[1]}"> <span>${k[1]}</span></label>`).join('');
+            document.getElementById('stBrg').innerHTML = B.map(b=>`<option value="${b[1]}">${b[1]}</option>`).join('');
+        }
+
+        function saveAbs() {
+            const n=document.getElementById('selK').value, t=document.getElementById('absTgl').value, j=document.getElementById('absJenis').value;
+            const jam = new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+            if(j==="Pulang") db.ref(`absensi/${t}/${n}`).update({ jamOut: jam }).then(()=>alert("Jam Pulang Disimpan!"));
+            else db.ref(`absensi/${t}/${n}`).set({ j, jam, ket: document.getElementById('absKet').value||"" }).then(()=>alert("Absen Masuk!"));
+        }
+
+        function renderAll() {
+            const fM = document.getElementById('fM').value; if(!fM) return;
+            const fmArr = fM.split('-'), K = Object.values(D.master_karyawan || {});
+            const Y=fmArr[0], M=fmArr[1], lastD = new Date(Y, M, 0).getDate();
+            let th = `<tr><th class="sticky-col">NAMA</th>`;
+            for(let i=1; i<=lastD; i++) th += `<th>${i}</th>`;
+            document.getElementById('thA').innerHTML = th + `</tr>`;
+            let tb = "";
+            K.forEach(k => {
+                let r = `<td class="sticky-col">${k}</td>`;
+                for(let i=1; i<=lastD; i++) {
+                    let d = `${Y}-${M}-${String(i).padStart(2,'0')}`, a = D.absensi?.[d]?.[k], isSun = new Date(d).getDay()===0;
+                    let txt="-", cls="bg-none"; if(isSun) { txt="M"; cls="bg-m"; }
+                    if(a) { txt=a.j.charAt(0); cls=(a.j==="Hadir"?"bg-h": (a.j==="Izin"?"bg-i":"bg-a")); }
+                    r += `<td><div class="badge ${cls}" onclick="cellMod('${d}','${k}')">${txt}${a?.jamOut?'<div class="dot"></div>':''}</div></td>`;
+                }
+                tb += `<tr>${r}</tr>`;
+            });
+            document.getElementById('tbA').innerHTML = tb;
+        }
+
+        function saveAk() {
+            const j=document.getElementById('akJenis').value, q=parseInt(document.getElementById('akQty').value)||0, p=Array.from(document.querySelectorAll('.chk-k:checked')).map(c=>c.value);
+            if(!p.length || !q) return alert("Pilih orang & jumlah!");
+            const isP = j.includes("jerigen");
+            db.ref('aktivitas').push({ t:document.getElementById('akTgl').value, j, q, p, laku:!isP, tglLaku: isP?null:document.getElementById('akTgl').value }).then(()=>{
+                alert(isP?"Disimpan ke Pending!":"Berhasil!");
+                document.getElementById('akQty').value=""; document.querySelectorAll('.chk-k').forEach(c=>c.checked=false);
+            });
+        }
+
+        function openPending() {
+            let list = Object.entries(D.aktivitas || {}).filter(x => x[1].laku === false);
+            let h = list.map(x => `<div style="display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #eee"><span>[${x[1].t}] ${x[1].j} (${x[1].q})</span><button class="btn" style="background:var(--s);width:60px;margin:0" onclick="cairkan('${x[0]}')">LAKU</button></div>`).join('');
+            openMod("Jerigen Belum Laku", h || "Semua sudah laku!");
+        }
+
+        function cairkan(id) {
+            const t = new Date().toISOString().split('T')[0];
+            db.ref(`aktivitas/${id}`).update({ laku:true, tglLaku:t }).then(()=>alert("Selesai dibayar!"));
+        }
+
+        function renderGaji() {
+            const fM = document.getElementById('fUang').value, T = D.tarif||DEF_TARIF, K = Object.values(D.master_karyawan||{});
+            let totG = 0, h = `<table><tr><th class="sticky-col">NAMA</th><th>BORONG</th><th>BONUS</th><th>KASBON</th><th>TOTAL</th></tr>`;
+            K.forEach(k => {
+                let brg=0, bon=0, kas=0;
+                Object.values(D.aktivitas||{}).forEach(a => {
+                    if(a.laku && a.tglLaku?.slice(0,7)===fM && (a.p||[]).includes(k)) brg += ( (T[a.j]||0) * a.q / a.p.length );
+                });
+                Object.values(D.kasbon_bonus||{}).forEach(kb => {
+                    if(kb.n===k && kb.t===fM) { if(kb.tipe==="Bonus") bon+=kb.rp; else kas+=kb.rp; }
+                });
+                let net = (brg+bon)-kas; totG += net;
+                h += `<tr><td class="sticky-col">${k}</td><td>${Math.round(brg).toLocaleString()}</td><td>${bon.toLocaleString()}</td><td>${kas.toLocaleString()}</td><td style="font-weight:800;color:green">Rp ${Math.round(net).toLocaleString()}</td></tr>`;
+            });
+            document.getElementById('gTotal').innerText = "Rp " + Math.round(totG).toLocaleString();
+            document.getElementById('areaGaji').innerHTML = h + "</table>";
+        }
+
+        function openModKB() {
+            const fM = document.getElementById('fUang').value, K = Object.values(D.master_karyawan||{});
+            let logs = Object.entries(D.kasbon_bonus||{}).filter(x => x[1].t === fM).reverse();
+            let h = `<select id="kbN">${K.map(k=>`<option>${k}</option>`).join('')}</select><select id="kbT"><option>Bonus</option><option>Kasbon</option></select><input type="number" id="kbR" placeholder="Rp"><button class="btn" style="background:var(--s)" onclick="saveKB()">SIMPAN</button><hr>`;
+            h += logs.map(x => `<div style="display:flex;justify-content:space-between;padding:5px;border-bottom:1px solid #eee"><span>${x[1].n}: ${x[1].tipe} (${x[1].rp})</span><b style="color:red;cursor:pointer" onclick="removeItem('kasbon_bonus','${x[0]}')">HAPUS</b></div>`).join('');
+            openMod("Input Kasbon / Bonus", h);
+        }
+
+        function saveKB() {
+            const n=document.getElementById('kbN').value, t=document.getElementById('fUang').value, tipe=document.getElementById('kbT').value, rp=parseInt(document.getElementById('kbR').value);
+            if(rp) db.ref('kasbon_bonus').push({ n, t, tipe, rp }).then(()=>openModKB());
+        }
+
+        function saveBl() {
+            const t=document.getElementById('blTgl').value, n=document.getElementById('blNama').value, rp=parseInt(document.getElementById('blRp').value);
+            if(rp) db.ref('belanja').push({ t, n, rp }).then(()=>alert("Nota Disimpan!"));
+        }
+
+        function genRekapKerja() {
+            const fM = document.getElementById('fUang').value; const K = Object.values(D.master_karyawan || {});
+            let h = `<div id="p-rekap" style="padding:20px"><h2>REKAP KERJA KEMPU BALAP</h2><p>Bulan: ${fM}</p><hr>`;
+            K.forEach(k => {
+                let list = Object.values(D.aktivitas||{}).filter(a => a.tglLaku?.slice(0,7)===fM && (a.p||[]).includes(k));
+                if(list.length) { h += `<h3>${k}</h3><ul>` + list.map(x => `<li>[${x.t}] ${x.j} - ${x.q} unit</li>`).join('') + `</ul>`; }
+            });
+            openMod("Preview PDF", h + `</div><button class="btn" onclick="expPdf('p-rekap','Rekap_Kerja')">DOWNLOAD PDF</button>`);
+        }
+
+        function cellMod(d, k) { let a = D.absensi?.[d]?.[k]; openMod(`Detail ${k}`, `Tgl: ${d}<br>Status: ${a?a.j:'-'}<br>Jam: ${a?.jam||'-'} s/d ${a?.jamOut||'-'}<br><br><button class="btn" style="background:var(--d)" onclick="removeItem('absensi/${d}','${k}')">HAPUS</button>`); }
+        function addItem(p, id) { const v=document.getElementById(id).value; if(v) db.ref(p).push(v).then(()=>document.getElementById(id).value=""); }
+        function removeItem(p, k) { if(confirm("Hapus?")) db.ref(`${p}/${k}`).remove().then(()=>closeMod()); }
+        function openMod(t, h) { document.getElementById('modTitle').innerText=t; document.getElementById('modContent').innerHTML=h; document.getElementById('modalUni').style.display='flex'; }
+        function closeMod() { document.getElementById('modalUni').style.display='none'; }
+        function toggleIzin() { document.getElementById('boxIzin').style.display = (['Izin','Alpa'].includes(document.getElementById('absJenis').value)?'block':'none'); }
+        function showLogs(t) { let list = Object.entries(D[t]||{}).reverse().slice(0,20); openMod("Log Terakhir", list.map(x => `<div style="display:flex;justify-content:space-between;padding:8px;border-bottom:1px solid #eee"><span>[${x[1].t}] ${x[1].j}</span><b style="color:red" onclick="removeItem('${t}','${x[0]}')">HAPUS</b></div>`).join('') || "Kosong"); }
+        function editTarif() { let h = Object.entries(D.tarif||DEF_TARIF).map(t=>`<div><label>${t[0]}</label><input type="number" id="trf_${t[0].replace(/ /g,'_')}" value="${t[1]}"></div>`).join('') + `<button class="btn" style="background:var(--s)" onclick="saveTrf()">SIMPAN</button>`; openMod("Tarif Borongan", h); }
+        function saveTrf() { let nT={}; Object.keys(D.tarif||DEF_TARIF).forEach(k=>nT[k]=parseInt(document.getElementById(`trf_${k.replace(/ /g,'_')}`).value)||0); db.ref('tarif').set(nT).then(()=>alert("Tarif Diperbarui!")); }
+        function saveSt() { const t=document.getElementById('stTgl').value, b=document.getElementById('stBrg').value, q=parseInt(document.getElementById('stQty').value), a=document.getElementById('stAksi').value; if(q) db.ref('stok_logs').push({ t, b, q, ak:a }).then(()=>alert("Stok Berhasil!")); }
+        function expPdf(id, n) { html2pdf().set({margin:5, filename:n+'.pdf', jsPDF:{orientation:'landscape'}}).from(document.getElementById(id)).save(); }
+        function openLiburMod() { let h = `<input type="date" id="tglL"><button class="btn" onclick="db.ref('libur/'+document.getElementById('tglL').value).set(true)">SET LIBUR</button><hr>`; h += Object.keys(D.libur||{}).map(l => `<div>${l} <b style="color:red" onclick="db.ref('libur/${l}').remove()">×</b></div>`).join(''); openMod("Daftar Hari Libur", h); }
+    </script>
+</body>
+</html>
+
