@@ -169,67 +169,28 @@
             document.getElementById('stBrg').innerHTML = B.map(b=>`<option value="${b[1]}">${b[1]}</option>`).join('');
         }
 
-        // --- LOGIKA STOK FIXED (ANTI-MINUS & REJECT SAFE) ---
-function saveSt() {
-    const t = document.getElementById('stTgl').value, 
-          b = document.getElementById('stBrg').value, 
-          q = parseInt(document.getElementById('stQty').value) || 0, 
-          ak = document.getElementById('stAksi').value,
-          kon = document.getElementById('stKon').value;
-
-    if (!q || q <= 0) return alert("Isi jumlah barang yang bener, Mas!");
-
-    // --- MULAI LOGIKA CEK STOK (ANTI-MINUS) ---
-    let curKtr = 0, curRdy = 0;
-    // Hitung stok saat ini dari log yang sudah ada
-    Object.values(D.stok_logs || {}).forEach(l => {
-        if (l.b !== b) return;
-        // Hitung stok kotor & ready (hanya yang Accepted)
-        if (l.ak === "Masuk" && l.qc === "Accepted") {
-            l.kon === "Bekas" ? curKtr += l.q : curRdy += l.q;
-        } else if (l.ak === "Rekondisi") {
-            curKtr -= l.q; 
-            curRdy += l.q;
-        } else if (l.ak.includes("Jual")) {
-            curRdy -= l.q;
-        }
-    });
-
-    // Validasi 1: Jika mau Rekon, cek stok Kotor
-    if (ak === "Rekondisi" && q > curKtr) {
-        return alert(`⚠️ STOK KOTOR TIDAK CUKUP!\nBarang: ${b}\nStok di gudang: ${curKtr}\nMas mau rekon: ${q}\n\nSilakan input 'Masuk' dulu atau kurangi jumlahnya.`);
-    }
-
-    // Validasi 2: Jika mau Jual, cek stok Ready
-    if (ak.includes("Jual") && q > curRdy) {
-        return alert(`⚠️ STOK READY TIDAK CUKUP!\nBarang: ${b}\nStok siap jual: ${curRdy}\nMas mau jual: ${q}\n\nRekondisi barang dulu biar stok Ready bertambah.`);
-    }
-    // --- SELESAI LOGIKA CEK STOK ---
-
-    // Jika lolos cek, baru simpan ke Firebase
-    const qcFinal = (ak === "Masuk") ? document.getElementById('stQC').value : "Accepted";
-
-    db.ref('stok_logs').push({ t, b, q, kon, qc: qcFinal, ak: ak }).then(() => {
-        // Logika FIFO Jerigen tetap jalan
-        if (ak.includes("Jual") && b.toLowerCase().includes("jerigen")) {
-            let sisaJual = q;
-            let logs = Object.entries(D.aktivitas || {})
-                .filter(x => x[1].j.toLowerCase().includes(b.toLowerCase()) && !x[1].isCair)
-                .sort((a, b) => a[1].t.localeCompare(b[1].t));
+        // --- LOGIKA STOK FIXED (REJECT TIDAK KURANGI GLOBAL) ---
+        function saveSt() {
+            const t=document.getElementById('stTgl').value, b=document.getElementById('stBrg').value, q=parseInt(document.getElementById('stQty').value), ak=document.getElementById('stAksi').value;
+            if(!q) return alert("Qty Kosong!");
             
-            logs.forEach(log => {
-                if (sisaJual <= 0) return;
-                let qtyReady = log[1].q;
-                if (qtyReady <= sisaJual) { 
-                    db.ref(`aktivitas/${log[0]}`).update({ isCair: true, tglCair: t }); 
-                    sisaJual -= qtyReady; 
+            // Fix: Paksa Accepted jika aksinya bukan "Masuk"
+            const qcFinal = (ak === "Masuk") ? document.getElementById('stQC').value : "Accepted";
+
+            db.ref('stok_logs').push({ t, b, q, kon:document.getElementById('stKon').value, qc:qcFinal, ak:ak }).then(() => {
+                if(ak.includes("Jual") && b.toLowerCase().includes("jerigen")) {
+                    let sisaJual = q;
+                    let logs = Object.entries(D.aktivitas || {}).filter(x => x[1].j.toLowerCase().includes(b.toLowerCase()) && !x[1].isCair).sort((a,b) => a[1].t.localeCompare(b[1].t));
+                    logs.forEach(log => {
+                        if(sisaJual <= 0) return;
+                        let qtyReady = log[1].q;
+                        if(qtyReady <= sisaJual) { db.ref(`aktivitas/${log[0]}`).update({ isCair: true, tglCair: t }); sisaJual -= qtyReady; }
+                    });
                 }
+                document.getElementById('stQty').value=""; alert("Stok Terupdate!");
             });
         }
-        document.getElementById('stQty').value = ""; 
-        alert("Stok Berhasil Diproses!");
-    });
-}
+
         function renderStok() {
             const B_arr = Object.values(D.master_barang || {}), fM = document.getElementById('fM').value; let h = "";
             B_arr.forEach(b => {
