@@ -263,16 +263,28 @@
             }).join('');
         }
 
-        function saveAk() {
-            const tgl=document.getElementById('akTgl').value, q=parseInt(document.getElementById('akQty').value)||0, p=Array.from(document.querySelectorAll('.chk-k:checked')).map(c=>c.value), j=document.getElementById('akJenis').value;
-            if(!p.length || q<=0) return alert("Pilih Karyawan & Isi Qty!");
-            let ilegal = p.filter(k => !D.absensi?.[tgl]?.[k] || !['Hadir','Telat','Lembur'].includes(D.absensi[tgl][k].j));
-            if(ilegal.length) return alert("Ada Karyawan belum absen!");
+                function saveAk() {
+            const tgl = document.getElementById('akTgl').value, 
+                  q = parseInt(document.getElementById('akQty').value) || 0, 
+                  p = Array.from(document.querySelectorAll('.chk-k:checked')).map(c => c.value), 
+                  j = document.getElementById('akJenis').value;
+
+            if (!p.length || q <= 0) return showPop('error', 'Input Kurang', 'Pilih karyawan dan isi jumlah outputnya, Mas!');
+
+            // CEK SIAPA YANG BELUM ABSEN
+            let ilegal = p.filter(k => !D.absensi?.[tgl]?.[k] || !['Hadir', 'Telat', 'Lembur'].includes(D.absensi[tgl][k].j));
+            if (ilegal.length) {
+                return showPop('error', 'Gagal Simpan', `Si <b>${ilegal.join(', ')}</b> belum absen masuk hari ini. Suruh absen dulu!`);
+            }
+
             const cairAwal = !j.toLowerCase().includes("jerigen"); 
-            db.ref('aktivitas').push({ t:tgl, j, q, p, isCair: cairAwal }).then(()=>{
-                document.getElementById('akQty').value=""; document.querySelectorAll('.chk-k').forEach(c=>c.checked=false); alert("Kerja Tersimpan!");
+            db.ref('aktivitas').push({ t: tgl, j, q, p, isCair: cairAwal }).then(() => {
+                document.getElementById('akQty').value = ""; 
+                document.querySelectorAll('.chk-k').forEach(c => c.checked = false); 
+                showPop('success', 'Kerja Dicatat', `Hasil borongan <b>${j}</b> sebanyak <b>${q}</b> unit sukses disimpan.`);
             });
         }
+
 
         // --- LOGIKA GAJI ---
         function renderGaji() {
