@@ -252,37 +252,50 @@
 
 
         function renderStok() {
-            const B_arr = Object.values(D.master_barang || {}), fM = document.getElementById('fM').value; 
-            let h = "";
-            B_arr.forEach(b => {
-                let s = { ak:0, ab:0, ik:0, ib:0, rej:0, rk:0, jm:0, ju:0 };
-                Object.values(D.stok_logs || {}).forEach(l => {
-                    if(l.b!==b) return; 
-                    // Hitung Saldo Bulan Lalu
-                    if(l.t?.slice(0,7) < fM) { 
-                        if(l.ak==="Masuk" && l.qc==="Accepted") l.kon==="Bekas"?s.ak+=l.q:s.ab+=l.q; 
-                        else if(l.ak==="Rekondisi"){s.ak-=l.q;s.ab+=l.q;} 
-                        else if(l.ak.includes("Jual")) s.ab-=l.q; 
-                    }
-                    // Hitung Transaksi Bulan Ini
-                    else if(l.t?.slice(0,7) === fM) { 
-                        if(l.ak==="Masuk") {
-                            if(l.qc==="Accepted") l.kon==="Bekas"?s.ik+=l.q:s.ib+=l.q; 
-                            else s.rej+=l.q; // Masuk kolom reject, tidak nambah stok ktr/rdy
-                        }
-                        else if(l.ak==="Rekondisi") s.rk+=l.q; 
-                        else if(l.ak==="Jual Mitra") s.jm+=l.q; 
-                        else if(l.ak==="Jual Umum") s.ju+=l.q; 
-                    }
-                });
-                // Final Hitungan
-                let ktr = (s.ak+s.ik)-s.rk; 
-                let rdy = (s.ab+s.ib+s.rk)-(s.jm+s.ju);
-                h += `<tr><td class="sticky-col">${b}</td><td>${s.ak}</td><td>${s.ab}</td><td>${s.ik}</td><td>${s.ib}</td><td style="color:red; font-weight:bold">${s.rej}</td><td>${s.rk}</td><td>${s.jm}</td><td>${s.ju}</td><td style="background:#fef3c7">${ktr}</td><td style="background:#dcfce7">${rdy}</td><td style="background:var(--p); color:white">${ktr+rdy}</td></tr>`;
-            }); 
-            document.getElementById('tbStok').innerHTML = h;
-        }
+    const B_arr = Object.values(D.master_barang || {}), fM = document.getElementById('fM').value;
+    const RHO = 0.91; // Massa jenis minyak standar
+    let h = "";
+    
+    B_arr.forEach(b => {
+        let s = { masuk: 0, rej: 0, jm: 0, ju: 0, total: 0 };
+        const isMinyak = b.toLowerCase().includes("minyak");
 
+        Object.values(D.stok_logs || {}).forEach(l => {
+            if (l.b !== b) return;
+            if (l.ak === "Masuk") {
+                if (l.qc === "Accepted") s.masuk += l.q;
+                else s.rej += l.q;
+            } 
+            else if (l.ak === "Rekondisi") s.masuk += l.q;
+            else if (l.ak === "Jual Mitra") s.jm += l.q;
+            else if (l.ak === "Jual Umum") s.ju += l.q;
+        });
+
+        s.total = s.masuk - (s.jm + s.ju);
+
+        // Fungsi internal untuk format tampilan satuan
+        const fmt = (val) => {
+            if (!isMinyak) return `<b>${val}</b> <small>Unit</small>`;
+            const kg = (val * RHO).toFixed(2);
+            return `
+                <div style="line-height: 1.2;">
+                    <b>${val.toFixed(2)}</b> <small>Ltr</small><br>
+                    <span style="color: #64748b; font-size: 11px;">(${kg} Kg)</span>
+                </div>
+            `;
+        };
+
+        h += `<tr>
+            <td class="sticky-col"><b>${b}</b></td>
+            <td>${fmt(s.masuk)}</td>
+            <td style="color: #ef4444; font-weight: bold;">${fmt(s.rej)}</td>
+            <td>${fmt(s.jm)}</td>
+            <td>${fmt(s.ju)}</td>
+            <td style="background: #dcfce7; border-left: 2px solid #16a34a; font-weight: bold;">${fmt(s.total)}</td>
+        </tr>`;
+    }); 
+    document.getElementById('tbStok').innerHTML = h;
+}
 
         // --- CHAIN LOGIC KERJA ---
         function renderCheckKaryawan() {
