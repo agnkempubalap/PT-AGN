@@ -471,23 +471,47 @@ function updateStok(jenis, qty) {
     html2pdf().set(opt).from(element).save().catch(err => alert("Gagal buat PDF: " + err));
 }
         function openMod(t,h) { document.getElementById('modTitle').innerText=t; document.getElementById('modContent').innerHTML=h; document.getElementById('modalUni').style.display='flex'; }
-        function closeMod() { document.getElementById('modalUni').style.display='none'; }
-        function showLogs(t) {
-    // Cek apakah data D[t] ada, kalau tidak ada kasih peringatan
-    if (!D || !D[t]) return alert("Belum ada data di log " + t);
+        function cellMod(d, k) {
+    let a = D.absensi?.[d]?.[k];
+    let aks = Object.values(D.aktivitas || {}).filter(x => x.t === d && x.p?.includes(k));
     
-    // Ambil data, balik urutannya (terbaru di atas), ambil 30 saja
-    let l = Object.entries(D[t]).reverse().slice(0, 30);
-    
-    let html = l.map(x => `
-        <div style="font-size:11px; padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;">
-            <span><b>[${x[1].t}]</b> ${x[1].j || x[1].b} (${x[1].q})</span>
-            <b onclick="removeItem('${t}','${x[0]}')" style="color:red; cursor:pointer;">HAPUS</b>
+    let listHtml = aks.length > 0 ? aks.map(x => {
+        const isSelesai = x.isCair && x.q > 0;
+        return `<li style="margin-bottom:10px; border-bottom:1px solid #f1f5f9; padding-bottom:5px; list-style:none; display:flex; align-items:start; gap:10px;">
+            <div style="font-size:18px;">${isSelesai ? '✅' : '⏳'}</div>
+            <div>
+                <b style="color:${isSelesai ? '#16a34a' : '#f59e0b'}; font-size:9px;">${isSelesai ? 'HASIL UNIT' : 'PROGRES'}</b><br>
+                <span style="font-weight:700; font-size:12px;">${x.j}</span><br>
+                <small style="color:#64748b;">Output: ${x.q} unit</small>
+            </div>
+        </li>`;
+    }).join('') : '<li style="color:#94a3b8; font-style:italic; list-style:none;">Tidak ada aktivitas.</li>';
+
+    // HANYA ADA SATU TOMBOL HAPUS DAN SATU TOMBOL TUTUP DI SINI
+    let content = `
+        <div style="background:#f8fafc; padding:12px; border-radius:12px; margin-bottom:15px; border:1px solid #e2e8f0;">
+            <p style="margin:0; font-size:11px;">PRESENSI:</p>
+            <p style="margin:4px 0; font-weight:800; color:var(--p);">${a?.j || 'TANPA KETERANGAN'}</p>
+            <p style="margin:0; font-size:11px;">${a?.jam || '--:--'} s/d ${a?.jamOut || '--:--'}</p>
         </div>
-    `).join('');
+        <p style="font-weight:800; font-size:12px; margin-bottom:12px;">LOG AKTIVITAS</p>
+        <ul style="padding:0; margin:0;">${listHtml}</ul>
+        
+        <div style="margin-top:20px; display:flex; flex-direction:column; gap:8px;">
+            <button class="btn" style="background:var(--d); width:100%;" 
+                onclick="if(confirm('Hapus absen ${k}?')) { removeItem('absensi/${d}','${k}'); closeMod(); }">
+                HAPUS ABSENSI
+            </button>
+            <button class="btn" style="background:#64748b; width:100%;" 
+                onclick="closeMod()">
+                TUTUP
+            </button>
+        </div>
+    `;
     
-    openMod("Log " + t, html || "Kosong");
+    openMod(`Detail ${k} (${d})`, content);
 }
+
 function showNotaLogs() {
     if (!D || !D.belanja) return alert("Belum ada data nota belanja!");
     
