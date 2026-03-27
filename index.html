@@ -75,7 +75,7 @@
     <div class="card">
         <h3>📦 Master Barang</h3>
         <div class="flex-row">
-            <input type="text" id="inB" placeholder="Nama Barang...">
+            <input type="text" id="inB" placeholder="Tambah Barang...">
             <button class="btn" style="width:80px" onclick="addItem('master_barang', 'inB')">ADD</button>
         </div>
         <div id="listB" style="display:flex; flex-wrap:wrap; gap:5px; margin-top:10px;"></div>
@@ -87,55 +87,105 @@
             <input type="date" id="stTgl">
             <select id="stBrg"></select>
         </div>
-        
         <div class="flex-row">
-            <input type="number" id="stQty" step="any" placeholder="Jumlah">
-            <select id="stSatuan" style="width: 80px; font-weight: bold; background: #eee;">
+            <input type="number" id="stQty" placeholder="Jumlah">
+            <select id="stSatuan" style="width:80px">
+                <option value="Unit">Unit</option>
                 <option value="Ltr">Ltr</option>
                 <option value="Kg">Kg</option>
-                <option value="Unit">Unit</option>
             </select>
         </div>
-
         <div class="flex-row">
-            <select id="stKon" style="flex: 1;">
+            <select id="stKon" style="flex:1">
                 <option value="Bekas">Kotor</option>
                 <option value="Baru">Rdy</option>
             </select>
-            <select id="stQC" style="flex: 1;">
+            <select id="stQC" style="flex:1">
                 <option value="Accepted">Accepted</option>
                 <option value="Reject">Reject</option>
             </select>
         </div>
-
-        <select id="stAksi" style="width: 100%; margin-bottom: 10px; height: 40px;">
+        <select id="stAksi" style="width:100%; margin-bottom:10px">
             <option value="Masuk">Masuk</option>
             <option value="Rekondisi">Rekon</option>
             <option value="Jual Mitra">Jual Mitra</option>
             <option value="Jual Umum">Jual Umum</option>
         </select>
-
         <button class="btn" onclick="saveSt()">PROSES STOK</button>
     </div>
 
     <div class="card" style="padding:0; overflow-x:auto;">
-        <table style="width:100%; min-width:600px;">
+        <table style="width:100%; min-width:600px; border-collapse: collapse;">
             <thead>
-                <tr>
-                    <th class="sticky-col">Barang</th>
+                <tr style="background: #f8fafc;">
+                    <th class="sticky-col">BRG</th>
                     <th>REJ</th>
-                    <th>RKON</th>
+                    <th>REKON</th>
                     <th>MITRA</th>
                     <th>UMUM</th>
-                    <th style="background:#fff7ed">KTR</th>
-                    <th style="background:#dcfce7">RDY</th>
+                    <th style="background:#fff7ed">STOK KTR</th>
+                    <th style="background:#dcfce7">STOK RDY</th>
                 </tr>
             </thead>
             <tbody id="tbStok"></tbody>
         </table>
     </div>
-</div>
+</div> ```
 
+### 2. Perbaikan JavaScript (Agar Angka Muncul)
+Masalah angka yang tidak muncul meskipun sudah diinput kemungkinan besar karena variabel perhitungan di `renderStok` tidak cocok dengan cara data disimpan di `saveSt`. Gunakan ini:
+
+```javascript
+function saveSt() {
+    const t = document.getElementById('stTgl').value,
+          b = document.getElementById('stBrg').value,
+          q = parseFloat(document.getElementById('stQty').value) || 0,
+          ak = document.getElementById('stAksi').value,
+          kon = document.getElementById('stKon').value,
+          qc = document.getElementById('stQC').value;
+
+    if (q <= 0) return showPop('error', 'Gagal', 'Masukkan jumlah barang!');
+
+    // Simpan ke Firebase
+    db.ref('stok_logs').push({ t, b, q, ak, kon, qc }).then(() => {
+        document.getElementById('stQty').value = "";
+        showPop('success', 'Berhasil', 'Data stok diperbarui');
+    });
+}
+
+function renderStok() {
+    if (!D.master_barang) return;
+    const B_arr = Object.values(D.master_barang);
+    let h = "";
+    
+    B_arr.forEach(b => {
+        let s = { ktr: 0, rdy: 0, rej: 0, rk: 0, jm: 0, ju: 0 };
+
+        Object.values(D.stok_logs || {}).forEach(l => {
+            if (l.b !== b) return;
+            let qty = parseFloat(l.q) || 0;
+            
+            if (l.ak === "Masuk") {
+                if (l.qc === "Reject") s.rej += qty;
+                else (l.kon === "Bekas" ? s.ktr += qty : s.rdy += qty);
+            } 
+            else if (l.ak === "Rekondisi") { s.rk += qty; s.ktr -= qty; s.rdy += qty; }
+            else if (l.ak === "Jual Mitra") { s.jm += qty; s.rdy -= qty; }
+            else if (l.ak === "Jual Umum") { s.ju += qty; s.rdy -= qty; }
+        });
+
+        h += `<tr>
+            <td class="sticky-col"><b>${b}</b></td>
+            <td style="text-align:center; color:red">${s.rej}</td>
+            <td style="text-align:center">${s.rk}</td>
+            <td style="text-align:center">${s.jm}</td>
+            <td style="text-align:center">${s.ju}</td>
+            <td style="text-align:center; background:#fff7ed"><b>${s.ktr}</b></td>
+            <td style="text-align:center; background:#dcfce7"><b>${s.rdy}</b></td>
+        </tr>`;
+    }); 
+    document.getElementById('tbStok').innerHTML = h;
+}
             <div class="table-area" id="areaStok"><table><thead><tr><th class="sticky-col">BRG</th><th>AWAL KTR</th><th>AWAL RDY</th><th>IN KTR</th><th>IN RDY</th><th style="color:var(--d)">REJ</th><th>REKON</th><th>MITRA</th><th>UMUM</th><th style="background:#fef3c7">STOK KTR</th><th style="background:#dcfce7">STOK RDY</th><th style="background:var(--p); color:white">TOTAL</th></tr></thead><tbody id="tbStok"></tbody></table></div>
             <div class="flex-row">
                 <button class="btn" style="background:var(--s)" onclick="expEx('areaStok','Stok')">EXCEL</button>
