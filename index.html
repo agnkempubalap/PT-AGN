@@ -227,40 +227,48 @@
 
         // --- CHAIN LOGIC KERJA ---
         function renderCheckKaryawan() {
-            const tgl = document.getElementById('akTgl').value;
-            const K = Object.values(D.master_karyawan || {});
-            document.getElementById('akKaryawan').innerHTML = K.map(k => {
-                const a = D.absensi?.[tgl]?.[k];
-                const sudahAbsen = a && ['Hadir', 'Telat', 'Lembur'].includes(a.j);
-                return `<label class="check-item" style="${sudahAbsen?'':'opacity:0.3; background:#eee'}">
-                    <input type="checkbox" class="chk-k" value="${k}" ${sudahAbsen?'':'disabled'}> 
-                    <span style="font-weight:${sudahAbsen?'700':'400'}">${k} ${sudahAbsen?'':'(X)'}</span>
-                </label>`;
-            }).join('');
-        }
+    const tgl = document.getElementById('akTgl').value;
+    if (!tgl) return; // Pengaman jika tanggal kosong
+    
+    const K = Object.values(D.master_karyawan || {});
+    const absensiHariIni = (D.absensi && D.absensi[tgl]) ? D.absensi[tgl] : {};
+    
+    document.getElementById('akKaryawan').innerHTML = K.map(k => {
+        const a = absensiHariIni[k] || {};
+        const status = a.j || "";
+        const sudahAbsen = ['Hadir', 'Telat', 'Lembur'].includes(status);
+        
+        return `<label class="check-item" style="${sudahAbsen ? '' : 'opacity:0.3; background:#eee'}">
+            <input type="checkbox" class="chk-k" value="${k}" ${sudahAbsen ? '' : 'disabled'}> 
+            <span style="font-weight:${sudahAbsen ? '700' : '400'}">${k} ${sudahAbsen ? '' : '(X)'}</span>
+        </label>`;
+    }).join('');
+}
 
                         // FUNGSI SIMPAN KERJA
         function saveAk() {
-            const t = document.getElementById('akTgl').value;
-            const n = document.getElementById('akNama').value;
-            const b = document.getElementById('akBarang').value;
-            const j = document.getElementById('akJenis').value;
-            const qVal = document.getElementById('akQty').value;
+    const tgl = document.getElementById('akTgl').value;
+    const q = parseInt(document.getElementById('akQty').value) || 0;
+    const p = Array.from(document.querySelectorAll('.chk-k:checked')).map(c => c.value);
+    const j = document.getElementById('akJenis').value;
 
-            if (!n) return alert("Pilih Nama Karyawan!");
-            
-            // Mengizinkan angka 0 untuk progres
-            const q = (qVal === "" || isNaN(qVal)) ? 0 : parseInt(qVal);
+    if (!p.length || q <= 0) return alert("Pilih Karyawan & Isi Qty!");
 
-            db.ref('aktivitas').push({
-                t: t, p: n, b: b, j: j, q: q,
-                isCair: false
-            }).then(() => {
-                alert("Berhasil Simpan Kerja!");
-                document.getElementById('akQty').value = "";
-                if(typeof renderAk === "function") renderAk(); // Update tabel log
-            }).catch(e => alert("Error: " + e.message));
-        }
+    // Pengaman: Pastikan D.absensi dan tanggalnya ada sebelum dicek
+    const absensiTgl = (D.absensi && D.absensi[tgl]) ? D.absensi[tgl] : null;
+    if (!absensiTgl) return alert("Data absen hari ini tidak ditemukan!");
+
+    let ilegal = p.filter(k => !absensiTgl[k] || !['Hadir', 'Telat', 'Lembur'].includes(absensiTgl[k].j));
+    
+    if (ilegal.length) return alert("Ada Karyawan belum absen!");
+
+    const cairAwal = !j.toLowerCase().includes("jerigen"); 
+    db.ref('aktivitas').push({ t: tgl, j, q, p, isCair: cairAwal }).then(() => {
+        document.getElementById('akQty').value = ""; 
+        document.querySelectorAll('.chk-k').forEach(c => c.checked = false); 
+        alert("Kerja Tersimpan!");
+    }).catch(err => alert("Gagal Simpan: " + err.message));
+}
 
         // FUNGSI REKAP PDF
         function expPdf(id, name) {
