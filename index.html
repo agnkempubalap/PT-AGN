@@ -520,6 +520,7 @@ function showNotaLogs() {
 }
 
 <script>
+// 1. Fungsi Buka Modal
 window.openMod = function(t, h) {
     const modal = document.getElementById('modalUni');
     if (modal) {
@@ -529,62 +530,55 @@ window.openMod = function(t, h) {
     }
 };
 
+// 2. Fungsi Tutup Modal
 window.closeMod = function() {
     const modal = document.getElementById('modalUni');
     if (modal) modal.style.display = 'none';
 };
 
+// 3. Fungsi Detail Karyawan (Log & Jam)
 window.cellMod = function(d, k) {
     try {
-        // Ambil Data Utama
-        const database = window.D || {};
-        const absen = (database.absensi && database.absensi[d]) ? database.absensi[d][k] : null;
-        const semuaAktv = database.aktivitas ? Object.values(database.aktivitas) : [];
-        
-        // Filter Aktivitas (Pencocokan Tanggal & Nama)
+        const db = window.D || {};
+        const absen = (db.absensi && db.absensi[d]) ? db.absensi[d][k] : null;
+        const semuaAktv = db.aktivitas ? Object.values(db.aktivitas) : [];
         const filterAktv = semuaAktv.filter(x => String(x.t) === String(d) && (x.p && x.p.includes(k)));
 
         let logHtml = filterAktv.length > 0 ? filterAktv.map(x => {
             const cair = x.isCair && x.q > 0;
             return `
-            <div style="display:flex; gap:10px; margin-bottom:12px; border-bottom:1px solid #eee; padding-bottom:8px; text-align:left;">
+            <div style="display:flex; gap:10px; margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:5px; text-align:left;">
                 <div style="font-size:20px;">${cair ? '✅' : '⏳'}</div>
-                <div style="line-height:1.3;">
+                <div style="line-height:1.2;">
                     <b style="color:${cair ? '#16a34a' : '#f59e0b'}; font-size:10px;">${cair ? 'HASIL' : 'PROGRES'}</b><br>
-                    <span style="font-weight:700; font-size:12px; color:#1e293b;">${x.j}</span><br>
-                    <small style="color:#64748b;">Output: ${x.q || 0} unit</small>
+                    <span style="font-weight:700; font-size:12px;">${x.j}</span><br>
+                    <small>Output: ${x.q || 0} unit</small>
                 </div>
             </div>`;
-        }).join('') : '<p style="color:#94a3b8; font-style:italic; font-size:12px; text-align:left;">Tidak ada aktivitas.</p>';
+        }).join('') : '<p style="color:#999; font-style:italic; font-size:12px; text-align:left;">Tidak ada aktivitas.</p>';
 
         const content = `
-            <div style="text-align:left; font-family:sans-serif;">
-                <div style="background:#f8fafc; padding:12px; border-radius:10px; margin-bottom:15px; border:1px solid #e2e8f0;">
-                    <p style="margin:0; font-size:11px; color:#64748b;">STATUS PRESENSI:</p>
-                    <p style="margin:4px 0; font-weight:800; color:#0ea5e9; font-size:14px;">${absen?.j || 'TANPA KETERANGAN'}</p>
-                    <p style="margin:0; font-size:11px; color:#64748b;">Jam: ${absen?.jam || '--:--'} s/d ${absen?.jamOut || '--:--'}</p>
+            <div style="text-align:left;">
+                <div style="background:#f1f5f9; padding:12px; border-radius:10px; margin-bottom:15px; border:1px solid #e2e8f0;">
+                    <p style="margin:0; font-size:11px;">PRESENSI:</p>
+                    <p style="margin:4px 0; font-weight:800; color:#00a8e8;">${absen?.j || 'TANPA KETERANGAN'}</p>
+                    <p style="margin:0; font-size:11px;">Jam: ${absen?.jam || '--:--'} s/d ${absen?.jamOut || '--:--'}</p>
                 </div>
-                <p style="font-weight:800; font-size:12px; margin-bottom:10px; color:#1e293b;">LOG AKTIVITAS:</p>
-                <div style="max-height:220px; overflow-y:auto; padding-right:5px;">${logHtml}</div>
+                <p style="font-weight:bold; font-size:12px; margin-bottom:10px;">LOG AKTIVITAS:</p>
+                <div style="max-height:200px; overflow-y:auto;">${logHtml}</div>
                 <div style="margin-top:20px;">
-                    <button type="button" class="btn" style="background:#ef4444; color:white; width:100%; padding:15px; border-radius:10px; font-weight:bold; border:none; cursor:pointer; font-size:14px;" 
+                    <button type="button" class="btn" style="background:#ef4444; color:white; width:100%; padding:15px; border-radius:8px; font-weight:bold; border:none;" 
                         onclick="if(confirm('Hapus absen ${k}?')){ removeItem('absensi/${d}','${k}'); closeMod(); }">
                         HAPUS ABSENSI
                     </button>
                 </div>
             </div>`;
 
-        window.openMod("Detail " + k + " (" + d + ")", content);
-    } catch (err) {
-        console.error("Error Detail:", err);
-        alert("Terjadi kesalahan teknis saat membuka log.");
+        window.openMod("Detail " + k, content);
+    } catch (e) {
+        console.error(e);
     }
 };
 </script>
-
-
-
-
-    </script>
 </body>
 </html>
