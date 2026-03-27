@@ -409,39 +409,53 @@ function updateStok(jenis, qty) {
             }, 500);
         }
         function cellMod(d, k) {
-    // Bersihkan isi modal sebelum diisi agar tidak double
-    const isiModal = document.getElementById('modContent');
-    isiModal.innerHTML = ""; 
+    // 1. Ambil data absensi dan aktivitas
+    const absen = D.absensi?.[d]?.[k];
+    const semuaAktv = Object.values(D.aktivitas || {});
+    const filterAktv = semuaAktv.filter(x => x.t === d && x.p?.includes(k));
 
-    let a = D.absensi?.[d]?.[k];
-    let aks = Object.values(D.aktivitas || {}).filter(x => x.t === d && x.p?.includes(k));
-    
-    let listHtml = aks.length > 0 ? aks.map(x => {
-        const cair = x.isCair && x.q > 0;
-        return `<li style="margin-bottom:8px; list-style:none; display:flex; gap:10px;">
-            <span>${cair ? '✅' : '⏳'}</span>
-            <div>
-                <b style="color:${cair ? '#16a34a' : '#f59e0b'}; font-size:10px;">${cair ? 'CAIR' : 'PROGRES'}</b><br>
-                <span style="font-weight:bold;">${x.j}</span><br>
-                <small>Qty: ${x.q}</small>
+    // 2. Buat daftar aktivitas dengan ikon otomatis
+    let htmlLog = filterAktv.length > 0 ? filterAktv.map(x => {
+        const isCair = x.isCair && x.q > 0;
+        const icon = isCair ? '✅' : '⏳';
+        const color = isCair ? '#16a34a' : '#f59e0b';
+        const label = isCair ? 'HASIL UNIT' : 'PROGRES';
+
+        return `
+        <div style="display:flex; gap:12px; margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid #f1f5f9; align-items:center;">
+            <div style="font-size:20px;">${icon}</div>
+            <div style="line-height:1.2;">
+                <b style="color:${color}; font-size:10px; text-transform:uppercase;">${label}</b><br>
+                <span style="font-weight:700; font-size:13px; color:#334155;">${x.j}</span><br>
+                <small style="color:#64748b;">Output: ${x.q} unit</small>
             </div>
-        </li>`;
-    }).join('') : '<li>Tidak ada aktivitas</li>';
+        </div>`;
+    }).join('') : '<p style="color:#94a3b8; font-style:italic; font-size:12px;">Tidak ada log kerja.</p>';
 
-    // Buat variabel content tanpa tombol TUTUP (karena kita akan tes apakah double-nya hilang)
-    let content = `
-        <div style="background:#f0f4f8; padding:10px; border-radius:8px; margin-bottom:10px;">
-            <b>Status: ${a?.j || '-'}</b><br>
-            <small>${a?.jam || '--'} s/d ${a?.jamOut || '--'}</small>
+    // 3. Susun isi modal (Hanya satu tombol Hapus dan satu tombol Tutup)
+    const content = `
+        <div style="background:#f8fafc; padding:12px; border-radius:10px; margin-bottom:15px; border:1px solid #e2e8f0;">
+            <p style="margin:0; font-size:11px; color:#64748b;">PRESENSI:</p>
+            <p style="margin:4px 0; font-weight:800; color:#00a8e8;">${absen?.j || 'TANPA KETERANGAN'}</p>
+            <p style="margin:0; font-size:11px; color:#64748b;">Jam: ${absen?.jam || '--'} s/d ${absen?.jamOut || '--'}</p>
         </div>
-        <ul style="padding:0;">${listHtml}</ul>
-        <hr>
-        <button class="btn" style="background:red; width:100%; color:white;" 
-            onclick="if(confirm('Hapus?')){removeItem('absensi/${d}','${k}');closeMod();}">
-            HAPUS ABSEN
-        </button>
+
+        <p style="font-weight:800; font-size:12px; margin-bottom:12px; color:#1e293b; border-left:4px solid #cbd5e1; padding-left:8px;">LOG AKTIVITAS</p>
+        <div style="max-height:250px; overflow-y:auto; padding-right:5px;">${htmlLog}</div>
+
+        <div style="margin-top:20px; display:flex; flex-direction:column; gap:8px;">
+            <button class="btn" style="background:#ef4444; width:100%; border:none; padding:12px; color:white; border-radius:8px; font-weight:bold; font-size:12px;" 
+                onclick="if(confirm('Hapus absen ${k} tanggal ${d}?')){removeItem('absensi/${d}','${k}'); closeMod();}">
+                HAPUS ABSENSI
+            </button>
+            <button class="btn" style="background:#64748b; width:100%; border:none; padding:12px; color:white; border-radius:8px; font-weight:bold; font-size:12px;" 
+                onclick="closeMod()">
+                TUTUP
+            </button>
+        </div>
     `;
-    
+
+    // 4. Panggil fungsi modal utama
     openMod("Detail " + k, content);
 }
 
