@@ -409,56 +409,56 @@ function updateStok(jenis, qty) {
             }, 500);
         }
         function cellMod(d, k) {
-    // 1. Ambil data absensi (Sesuaikan dengan struktur database Anda)
-    // d adalah tanggal (key), k adalah nama karyawan (key)
-    const absen = (D.absensi && D.absensi[d]) ? D.absensi[d][k] : null;
-    
-    // 2. Ambil semua aktivitas dan filter berdasarkan tanggal (t) dan nama (p)
-    const semuaAktv = D.aktivitas ? Object.values(D.aktivitas) : [];
-    const filterAktv = semuaAktv.filter(x => {
-        // Pastikan format tanggal dan nama cocok
-        return String(x.t) === String(d) && (x.p && x.p.includes(k));
-    });
+    // 1. Ambil Data
+    const dataAbsen = (D.absensi && D.absensi[d]) ? D.absensi[d][k] : null;
+    const semuaKerja = D.aktivitas ? Object.values(D.aktivitas) : [];
+    const listKerja = semuaKerja.filter(x => String(x.t) === String(d) && (x.p && x.p.includes(k)));
 
-    // 3. Susun daftar log kerja
-    let logHtml = filterAktv.length > 0 ? filterAktv.map(x => {
-        const isCair = x.isCair && x.q > 0;
+    // 2. Tampilan Log
+    let htmlList = listKerja.length > 0 ? listKerja.map(x => {
+        const cair = x.isCair && x.q > 0;
         return `
-        <div style="display:flex; gap:10px; margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:5px; text-align:left;">
-            <div style="font-size:20px;">${isCair ? '✅' : '⏳'}</div>
-            <div>
-                <b style="color:${isCair ? '#16a34a' : '#f59e0b'}; font-size:10px;">${isCair ? 'HASIL' : 'PROGRES'}</b><br>
+        <div style="display:flex; gap:10px; margin-bottom:12px; border-bottom:1px solid #f1f5f9; padding-bottom:8px; align-items:center; text-align:left;">
+            <div style="font-size:20px;">${cair ? '✅' : '⏳'}</div>
+            <div style="line-height:1.2;">
+                <b style="color:${cair ? '#16a34a' : '#f59e0b'}; font-size:10px;">${cair ? 'HASIL UNIT' : 'PROGRES'}</b><br>
                 <span style="font-weight:700; font-size:12px;">${x.j}</span><br>
                 <small>Output: ${x.q || 0} unit</small>
             </div>
         </div>`;
-    }).join('') : '<p style="color:#999; font-style:italic; font-size:12px;">Tidak ada aktivitas.</p>';
+    }).join('') : '<p style="color:#999; font-style:italic; font-size:12px; text-align:left;">Tidak ada aktivitas.</p>';
 
-    // 4. Konten Modal
+    // 3. Konten Modal
     const content = `
         <div style="text-align:left;">
-            <div style="background:#f1f5f9; padding:10px; border-radius:8px; margin-bottom:15px;">
-                <p style="margin:0; font-size:11px;">Status: <b>${absen?.j || 'TANPA KETERANGAN'}</b></p>
-                <p style="margin:0; font-size:11px;">Jam: ${absen?.jam || '--:--'} s/d ${absen?.jamOut || '--:--'}</p>
+            <div style="background:#f1f5f9; padding:12px; border-radius:10px; margin-bottom:15px;">
+                <p style="margin:0; font-size:11px;">Status: <b>${dataAbsen?.j || '-'}</b></p>
+                <p style="margin:0; font-size:11px;">Jam: ${dataAbsen?.jam || '--:--'} s/d ${dataAbsen?.jamOut || '--:--'}</p>
             </div>
             <p style="font-weight:bold; font-size:12px; margin-bottom:10px;">LOG AKTIVITAS:</p>
-            <div style="max-height:200px; overflow-y:auto;">${logHtml}</div>
+            <div style="max-height:200px; overflow-y:auto;">${htmlList}</div>
             
             <div style="margin-top:20px; display:flex; flex-direction:column; gap:10px;">
                 <button type="button" class="btn" style="background:#ef4444; color:white; width:100%; padding:15px; border-radius:8px; font-weight:bold; border:none;" 
-                    onclick="if(confirm('Hapus absen ${k}?')){ removeItem('absensi/${d}','${k}'); closeMod(); }">
+                    onclick="if(confirm('Hapus absen ${k}?')){removeItem('absensi/${d}','${k}'); document.getElementById('modalUni').style.display='none';}">
                     HAPUS ABSENSI
                 </button>
+                
                 <button type="button" class="btn" style="background:#64748b; color:white; width:100%; padding:15px; border-radius:8px; font-weight:bold; border:none;" 
-                    onclick="closeMod()">
+                    onclick="document.getElementById('modalUni').style.display='none'">
                     TUTUP DETAIL
                 </button>
             </div>
         </div>
+        <style>
+            /* Sembunyikan tombol tutup bawaan yang macet */
+            #modalUni > div > .btn:last-child { display: none !important; }
+        </style>
     `;
 
-    openMod("Detail " + k + " (" + d + ")", content);
+    openMod("Detail " + k, content);
 }
+
         async function saveBl() { const t=document.getElementById('blTgl').value, n=document.getElementById('blNama').value, rp=parseInt(document.getElementById('blRp').value), file=document.getElementById('blImg').files[0]; let img=""; if(file){ const c=document.createElement('canvas'), ctx=c.getContext('2d'), i=await createImageBitmap(file); c.width=400; c.height=i.height/i.width*400; ctx.drawImage(i,0,0,400,c.height); img=c.toDataURL('image/jpeg',0.6); } if(n&&rp) db.ref('belanja').push({ t, n, rp, img }).then(()=>{ alert("Nota!"); }); }
         function openModKB() { const fM=document.getElementById('fUang').value, K=Object.values(D.master_karyawan||{}), L=Object.entries(D.kasbon_bonus||{}).filter(x=>x[1].t===fM).reverse(); let h=`<select id="kbN">${K.map(k=>`<option>${k}</option>`).join('')}</select><select id="kbT"><option value="Bonus">Bonus</option><option value="Kasbon">Kasbon</option></select><input type="number" id="kbR" placeholder="Rp"><button class="btn" onclick="saveKB()">SIMPAN</button><hr>${L.map(x=>`<div style="font-size:10px;padding:5px;border-bottom:1px solid #eee"><b>${x[1].n}</b>: ${x[1].tipe} Rp ${x[1].rp.toLocaleString()} <b onclick="removeItem('kasbon_bonus','${x[0]}')" style="color:red; cursor:pointer">×</b></div>`).join('')}`; openMod("Kasbon / Bonus", h); }
         function saveKB() { const n=document.getElementById('kbN').value, t=document.getElementById('fUang').value, tipe=document.getElementById('kbT').value, rp=parseInt(document.getElementById('kbR').value); if(rp) db.ref('kasbon_bonus').push({n,t,tipe,rp}).then(()=>openModKB()); }
