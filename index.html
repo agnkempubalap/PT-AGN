@@ -286,46 +286,52 @@
             }
         }
                 function renderAll() {
-            const K_arr = Object.values(D.master_karyawan || {}), fM = document.getElementById('fM').value; if(!fM) return;
-            const Y = fM.split('-')[0], M = fM.split('-')[1];
-            const lastD = new Date(Y, M, 0).getDate();
-            const today = new Date().toISOString().split('T')[0]; // Cek tanggal hari ini
+    let fM = document.getElementById('fM').value;
+    if(!fM) return;
 
-            // Header Tabel: Sekarang ada kolom T (Telat)
-            let th = `<tr><th class="sticky-col">NAMA</th>`; 
-            for(let i=1; i<=lastD; i++) {
-                let d = `${Y}-${M}-${String(i).padStart(2,'0')}`;
-                let cls = (d === today) ? 'class="today-col"' : ''; // Warna kuning di header hari ini
-                th += `<th ${cls}>${i}</th>`;
+    const K_arr = Object.values(D.master_karyawan || {});
+    const parts = fM.split('-');
+    const Y = parts[0];
+    const M = parts[1];
+    const lastD = new Date(Y, M, 0).getDate();
+    const today = new Date().toISOString().split('T')[0];
+
+    // Header Tabel: H, T, L, I, A
+    let th = `<tr><th class="sticky-col">NAMA</th>`; 
+    for(let i=1; i<=lastD; i++) {
+        let d = `${Y}-${M}-${String(i).padStart(2,'0')}`;
+        let cls = (d === today) ? 'class="today-col"' : '';
+        th += `<th ${cls}>${i}</th>`;
+    }
+    th += `<th style="background:#dcfce7">H</th><th style="background:#fef3c7">T</th><th style="background:#ffedd5">L</th><th style="background:#e0f2fe">I</th><th style="background:#f1f5f9">A</th></tr>`; 
+    document.getElementById('thA').innerHTML = th;
+
+    let tb = ""; 
+    K_arr.forEach(k => {
+        let r = `<td class="sticky-col">${k}</td>`, tH=0, tT=0, tL=0, tI=0, tA=0;
+        for(let i=1; i<=lastD; i++) {
+            let d = `${Y}-${M}-${String(i).padStart(2,'0')}`, 
+                a = D.absensi?.[d]?.[k], 
+                isL = D.libur?.[d]||new Date(d).getDay()===0;
+            let txt=isL?"M":"-", cls=isL?"bg-m":"bg-none";
+            let tdCls = (d === today) ? 'class="today-col"' : '';
+
+            if(a) { 
+                txt=a.j ? a.j[0] : "-"; 
+                cls="bg-"+(a.j ? a.j[0].toLowerCase() : "none"); 
+                if(a.j==="Hadir") tH++; 
+                else if(a.j==="Telat") tT++;
+                else if(a.j==="Lembur") tL++; 
+                else if(a.j==="Izin") tI++;
+                else if(a.j==="Alpa") tA++;
             }
-            // Tambahkan kolom rekap T (Telat) di sini
-            th += `<th style="background:#dcfce7; color:#16a34a">H</th><th style="background:#fef3c7; color:#f59e0b">T</th><th style="background:#ffedd5; color:#ea580c">L</th><th style="background:#e0f2fe; color:#0284c7">I</th><th style="background:#f1f5f9; color:#64748b">A</th></tr>`; 
-            document.getElementById('thA').innerHTML = th;
-
-            let tb = ""; 
-            K_arr.forEach(k => {
-                let r = `<td class="sticky-col">${k}</td>`, tH=0, tT=0, tL=0, tI=0, tA=0;
-                
-                for(let i=1; i<=lastD; i++) {
-                    let d = `${Y}-${M}-${String(i).padStart(2,'0')}`, a = D.absensi?.[d]?.[k], isL = D.libur?.[d]||new Date(d).getDay()===0;
-                    let txt=isL?"M":"-", cls=isL?"bg-m":"bg-none";
-                    let tdCls = (d === today) ? 'class="today-col"' : '';
-
-                    if(a) { 
-                        txt=a.j[0]; cls="bg-"+a.j[0].toLowerCase(); 
-                        if(a.j==="Hadir") tH++; 
-                        else if(a.j==="Telat") tT++; // Hitung Telat secara terpisah
-                        else if(a.j==="Lembur") tL++; 
-                        else if(a.j==="Izin") tI++;
-                        else if(a.j==="Alpa") tA++;
-                    }
-                    r += `<td ${tdCls}><div class="badge ${cls}" onclick="cellMod('${d}','${k}')">${txt}${a?.jamOut?'<div class="dot"></div>':''}</div></td>`;
-                }
-                // Tampilkan semua rekap di baris karyawan
-                tb += `<tr>${r}<td>${tH}</td><td>${tT}</td><td>${tL}</td><td>${tI}</td><td>${tA}</td></tr>`;
-            }); 
-            document.getElementById('tbA').innerHTML = tb;
-            
+            // Bagian ini yang memicu pop-up (cellMod)
+            r += `<td ${tdCls}><div class="badge ${cls}" onclick="cellMod('${d}','${k}')">${txt}${a?.jamOut?'<div class="dot"></div>':''}</div></td>`;
+        }
+        tb += `<tr>${r}<td>${tH}</td><td>${tT}</td><td>${tL}</td><td>${tI}</td><td>${tA}</td></tr>`;
+    }); 
+    document.getElementById('tbA').innerHTML = tb;
+}       
             // Auto-scroll ke kolom hari ini agar tidak perlu geser manual di Android
             setTimeout(() => {
                 const activeCol = document.querySelector('.today-col');
