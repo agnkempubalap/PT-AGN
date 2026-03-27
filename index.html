@@ -285,59 +285,60 @@
                 ref.set({ j: stat, jam: jamStr, ket: document.getElementById('absKet').value||"" }).then(()=>{ alert(stat + " Berhasil!"); });
             }
         }
-                function renderAll() {
-    let fM = document.getElementById('fM').value;
-    if(!fM) return;
+                        function renderAll() {
+            let fM = document.getElementById('fM').value;
+            if(!fM) return;
 
-    const K_arr = Object.values(D.master_karyawan || {});
-    const parts = fM.split('-');
-    const Y = parts[0];
-    const M = parts[1];
-    const lastD = new Date(Y, M, 0).getDate();
-    const today = new Date().toISOString().split('T')[0];
+            const K_arr = Object.values(D.master_karyawan || {});
+            const parts = fM.split('-');
+            const Y = parts[0], M = parts[1];
+            const lastD = new Date(Y, M, 0).getDate();
+            const today = new Date().toISOString().split('T')[0];
 
-    // Header Tabel: H, T, L, I, A
-    let th = `<tr><th class="sticky-col">NAMA</th>`; 
-    for(let i=1; i<=lastD; i++) {
-        let d = `${Y}-${M}-${String(i).padStart(2,'0')}`;
-        let cls = (d === today) ? 'class="today-col"' : '';
-        th += `<th ${cls}>${i}</th>`;
-    }
-    th += `<th style="background:#dcfce7">H</th><th style="background:#fef3c7">T</th><th style="background:#ffedd5">L</th><th style="background:#e0f2fe">I</th><th style="background:#f1f5f9">A</th></tr>`; 
-    document.getElementById('thA').innerHTML = th;
-
-    let tb = ""; 
-    K_arr.forEach(k => {
-        let r = `<td class="sticky-col">${k}</td>`, tH=0, tT=0, tL=0, tI=0, tA=0;
-        for(let i=1; i<=lastD; i++) {
-            let d = `${Y}-${M}-${String(i).padStart(2,'0')}`, 
-                a = D.absensi?.[d]?.[k], 
-                isL = D.libur?.[d]||new Date(d).getDay()===0;
-            let txt=isL?"M":"-", cls=isL?"bg-m":"bg-none";
-            let tdCls = (d === today) ? 'class="today-col"' : '';
-
-            if(a) { 
-                txt=a.j ? a.j[0] : "-"; 
-                cls="bg-"+(a.j ? a.j[0].toLowerCase() : "none"); 
-                if(a.j==="Hadir") tH++; 
-                else if(a.j==="Telat") tT++;
-                else if(a.j==="Lembur") tL++; 
-                else if(a.j==="Izin") tI++;
-                else if(a.j==="Alpa") tA++;
+            let th = `<tr><th class="sticky-col">NAMA</th>`; 
+            for(let i=1; i<=lastD; i++) {
+                let d = `${Y}-${M}-${String(i).padStart(2,'0')}`;
+                let cls = (d === today) ? 'class="today-col"' : '';
+                th += `<th ${cls}>${i}</th>`;
             }
-            // Bagian ini yang memicu pop-up (cellMod)
-            r += `<td ${tdCls}><div class="badge ${cls}" onclick="cellMod('${d}','${k}')">${txt}${a?.jamOut?'<div class="dot"></div>':''}</div></td>`;
-        }
-        tb += `<tr>${r}<td>${tH}</td><td>${tT}</td><td>${tL}</td><td>${tI}</td><td>${tA}</td></tr>`;
-    }); 
-                document.getElementById('tbA').innerHTML = tb;
+            th += `<th style="background:#dcfce7">H</th><th style="background:#fef3c7">T</th><th style="background:#ffedd5">L</th><th style="background:#e0f2fe">I</th><th style="background:#f1f5f9">A</th></tr>`; 
+            document.getElementById('thA').innerHTML = th;
 
-            // Auto-scroll ke kolom hari ini agar tidak perlu geser manual di Android
+            let tb = ""; 
+            K_arr.forEach(k => {
+                let r = `<td class="sticky-col">${k}</td>`, tH=0, tT=0, tL=0, tI=0, tA=0;
+                for(let i=1; i<=lastD; i++) {
+                    let d = `${Y}-${M}-${String(i).padStart(2,'0')}`, a = D.absensi?.[d]?.[k], isL = D.libur?.[d]||new Date(d).getDay()===0;
+                    let txt=isL?"M":"-", cls=isL?"bg-m":"bg-none";
+                    let tdCls = (d === today) ? 'class="today-col"' : '';
+
+                    if(a) { 
+                        txt=a.j ? a.j[0] : "-"; 
+                        cls="bg-"+(a.j ? a.j[0].toLowerCase() : "none"); 
+                        if(a.j==="Hadir") tH++; 
+                        else if(a.j==="Telat") tT++;
+                        else if(a.j==="Lembur") tL++; 
+                        else if(a.j==="Izin") tI++;
+                        else if(a.j==="Alpa") tA++;
+                    }
+                    r += `<td ${tdCls}><div class="badge ${cls}" onclick="cellMod('${d}','${k}')">${txt}${a?.jamOut?'<div class="dot"></div>':''}</div></td>`;
+                }
+                tb += `<tr>${r}<td>${tH}</td><td>${tT}</td><td>${tL}</td><td>${tI}</td><td>${tA}</td></tr>`;
+            }); 
+            document.getElementById('tbA').innerHTML = tb;
+
+            // Auto-scroll ke kolom hari ini
             setTimeout(() => {
                 const activeCol = document.querySelector('.today-col');
                 if(activeCol) activeCol.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
             }, 500);
-        } 
+        }
+        function cellMod(d, k) {
+            let a = D.absensi?.[d]?.[k];
+            let aks = Object.values(D.aktivitas || {}).filter(x => x.t === d && x.p?.includes(k));
+            let isi = `<p>Status: ${a?.j||'-'}</p><p>Jam: ${a?.jam||'-'} s/d ${a?.jamOut||'-'}</p><p>Ket: ${a?.ket||'-'}</p><hr><ul>${aks.map(x=>`<li>${x.j} (${x.q}) ${x.isCair?'✅':'⏳'}</li>`).join('')||'Kerja: -'}</ul><br><button class='btn' style="background:var(--d)" onclick="removeItem('absensi/${d}','${k}')">HAPUS ABSEN</button>`;
+            openMod(`Detail ${k} (${d})`, isi);
+        }
         async function saveBl() { const t=document.getElementById('blTgl').value, n=document.getElementById('blNama').value, rp=parseInt(document.getElementById('blRp').value), file=document.getElementById('blImg').files[0]; let img=""; if(file){ const c=document.createElement('canvas'), ctx=c.getContext('2d'), i=await createImageBitmap(file); c.width=400; c.height=i.height/i.width*400; ctx.drawImage(i,0,0,400,c.height); img=c.toDataURL('image/jpeg',0.6); } if(n&&rp) db.ref('belanja').push({ t, n, rp, img }).then(()=>{ alert("Nota!"); }); }
         function openModKB() { const fM=document.getElementById('fUang').value, K=Object.values(D.master_karyawan||{}), L=Object.entries(D.kasbon_bonus||{}).filter(x=>x[1].t===fM).reverse(); let h=`<select id="kbN">${K.map(k=>`<option>${k}</option>`).join('')}</select><select id="kbT"><option value="Bonus">Bonus</option><option value="Kasbon">Kasbon</option></select><input type="number" id="kbR" placeholder="Rp"><button class="btn" onclick="saveKB()">SIMPAN</button><hr>${L.map(x=>`<div style="font-size:10px;padding:5px;border-bottom:1px solid #eee"><b>${x[1].n}</b>: ${x[1].tipe} Rp ${x[1].rp.toLocaleString()} <b onclick="removeItem('kasbon_bonus','${x[0]}')" style="color:red; cursor:pointer">×</b></div>`).join('')}`; openMod("Kasbon / Bonus", h); }
         function saveKB() { const n=document.getElementById('kbN').value, t=document.getElementById('fUang').value, tipe=document.getElementById('kbT').value, rp=parseInt(document.getElementById('kbR').value); if(rp) db.ref('kasbon_bonus').push({n,t,tipe,rp}).then(()=>openModKB()); }
