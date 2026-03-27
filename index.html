@@ -170,16 +170,16 @@
         }
 
                 // --- LOGIKA STOK ANTI-MINUS & REJECT SAFE ---
-        function saveSt() {
+                function saveSt() {
             const t = document.getElementById('stTgl').value, 
                   b = document.getElementById('stBrg').value, 
                   q = parseInt(document.getElementById('stQty').value) || 0, 
                   ak = document.getElementById('stAksi').value,
                   kon = document.getElementById('stKon').value;
 
-            if (!q || q <= 0) return alert("Isi jumlah barang yang bener, Mas!");
+            if (!q || q <= 0) return showPop('error', 'Data Salah', 'Isi jumlah barang dulu, Mas!');
 
-            // 1. HITUNG STOK REAL (Buat Cek Anti-Minus)
+            // CEK STOK REAL
             let curKtr = 0, curRdy = 0;
             Object.values(D.stok_logs || {}).forEach(l => {
                 if (l.b !== b) return;
@@ -192,18 +192,16 @@
                 }
             });
 
-            // 2. VALIDASI CEGATAN
+            // VALIDASI CEGATAN
             if (ak === "Rekondisi" && q > curKtr) {
-                return alert(`⚠️ STOK KOTOR HABIS!\nSisa ${b} (Kotor) cuma: ${curKtr}\nMas mau rekon: ${q}`);
+                return showPop('error', 'Stok Kotor Habis', `Barang <b>${b}</b> kotor cuma sisa <b>${curKtr}</b>. Gak bisa rekon ${q} unit!`);
             }
             if (ak.includes("Jual") && q > curRdy) {
-                return alert(`⚠️ STOK SIAP JUAL HABIS!\nSisa ${b} (Ready) cuma: ${curRdy}\nMas mau jual: ${q}`);
+                return showPop('error', 'Stok Ready Habis', `Barang <b>${b}</b> ready cuma sisa <b>${curRdy}</b>. Gak bisa jual ${q} unit!`);
             }
 
-            // 3. SIMPAN JIKA LOLOS
             const qcFinal = (ak === "Masuk") ? document.getElementById('stQC').value : "Accepted";
             db.ref('stok_logs').push({ t, b, q, kon, qc: qcFinal, ak: ak }).then(() => {
-                // Logika FIFO Jerigen Otomatis
                 if(ak.includes("Jual") && b.toLowerCase().includes("jerigen")) {
                     let sisaJual = q;
                     let logs = Object.entries(D.aktivitas || {}).filter(x => x[1].j.toLowerCase().includes(b.toLowerCase()) && !x[1].isCair).sort((a,b) => a[1].t.localeCompare(b[1].t));
@@ -212,9 +210,11 @@
                         if(log[1].q <= sisaJual) { db.ref(`aktivitas/${log[0]}`).update({ isCair: true, tglCair: t }); sisaJual -= log[1].q; }
                     });
                 }
-                document.getElementById('stQty').value=""; alert("Stok Terupdate!");
+                document.getElementById('stQty').value=""; 
+                showPop('success', 'Update Stok', `Transaksi <b>${ak}</b> untuk <b>${b}</b> sebanyak ${q} unit berhasil dicatat.`);
             });
         }
+
 
         function renderStok() {
             const B_arr = Object.values(D.master_barang || {}), fM = document.getElementById('fM').value; 
