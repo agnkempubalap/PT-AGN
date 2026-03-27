@@ -262,14 +262,26 @@
         }
 
         // --- FUNGSI PENDUKUNG ---
-        function saveAbs() {
+                function saveAbs() {
             const n=document.getElementById('selK').value, t=document.getElementById('absTgl').value, j=document.getElementById('absJenis').value;
             const jamStr = new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}).replace('.',':');
             const ref = db.ref(`absensi/${t}/${n}`);
-            if(j==="Pulang") ref.update({ jamOut: jamStr }).then(()=>alert("Pulang!")); 
+            
+            if(j==="Pulang") {
+                // PROTEKSI: Cek apakah dia sudah absen masuk atau statusnya Alpa
+                ref.once('value').then(s => {
+                    const data = s.val();
+                    if(!data || data.j === "Alpa") {
+                        alert("Gagal: Karyawan ini belum absen masuk atau berstatus ALPA!");
+                    } else {
+                        ref.update({ jamOut: jamStr }).then(()=>alert("Jam Pulang Berhasil Dicatat!"));
+                    }
+                });
+            } 
             else {
+                // Logika Masuk, Izin, Alpa (Tetap seperti aslinya)
                 let stat = (j==="Izin"||j==="Alpa") ? j : (new Date(t).getDay()===0||D.libur?.[t]?"Lembur":(new Date()>new Date(t+"T09:30:00")?"Telat":"Hadir"));
-                ref.set({ j: stat, jam: jamStr, ket: document.getElementById('absKet').value||"" }).then(()=>{ alert(stat + "!"); });
+                ref.set({ j: stat, jam: jamStr, ket: document.getElementById('absKet').value||"" }).then(()=>{ alert(stat + " Berhasil!"); });
             }
         }
         function renderAll() {
