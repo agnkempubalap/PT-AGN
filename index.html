@@ -73,10 +73,41 @@
 
         <div id="tab-stok" class="tab-content">
             <div class="card">
-                <h3>📦 Master Barang</h3>
-                <div class="flex-row"><input type="text" id="inB" placeholder="Barang..."><button class="btn" style="background:var(--p); width:80px" onclick="addItem('master_barang', 'inB')">ADD</button></div>
-                <div id="listB" style="display:flex; flex-wrap:wrap; gap:5px"></div>
-            </div>
+    <h3>🚨 Logistik & Penjualan</h3>
+    <div class="flex-row">
+        <input type="date" id="stTgl">
+        <select id="stBrg"></select>
+    </div>
+    
+    <div class="flex-row">
+        <input type="number" id="stQty" step="any" placeholder="Jumlah (Angka)" style="flex: 1;">
+        <select id="stSatuan" style="width: 80px; font-weight: bold;">
+            <option value="Ltr">Ltr</option>
+            <option value="Kg">Kg</option>
+            <option value="Unit">Unit</option>
+        </select>
+    </div>
+
+    <div class="flex-row">
+        <select id="stKon" style="flex: 1;">
+            <option value="Bekas">Kotor</option>
+            <option value="Baru">Rdy</option>
+        </select>
+        <select id="stQC" style="flex: 1;">
+            <option value="Accepted">Accepted</option>
+            <option value="Reject">Reject</option>
+        </select>
+    </div>
+
+    <select id="stAksi" style="width: 100%; margin-bottom: 10px;">
+        <option value="Masuk">Masuk</option>
+        <option value="Rekondisi">Rekon</option>
+        <option value="Jual Mitra">Jual Mitra</option>
+        <option value="Jual Umum">Jual Umum</option>
+    </select>
+
+    <button class="btn" onclick="saveSt()">PROSES STOK</button>
+</div>
             <div class="flex-row">
     <input type="number" id="stQty" step="any" placeholder="Jumlah (Angka)" style="flex: 1;">
     
