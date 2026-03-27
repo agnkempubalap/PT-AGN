@@ -409,51 +409,40 @@ function updateStok(jenis, qty) {
             }, 500);
         }
         function cellMod(d, k) {
-    // 1. Ambil Data
     const dataAbsen = (D.absensi && D.absensi[d]) ? D.absensi[d][k] : null;
     const semuaKerja = D.aktivitas ? Object.values(D.aktivitas) : [];
     const listKerja = semuaKerja.filter(x => String(x.t) === String(d) && (x.p && x.p.includes(k)));
 
-    // 2. Tampilan Log
     let htmlList = listKerja.length > 0 ? listKerja.map(x => {
         const cair = x.isCair && x.q > 0;
         return `
-        <div style="display:flex; gap:10px; margin-bottom:12px; border-bottom:1px solid #f1f5f9; padding-bottom:8px; align-items:center; text-align:left;">
+        <div style="display:flex; gap:10px; margin-bottom:12px; border-bottom:1px solid #f1f5f9; padding-bottom:8px; align-items:center;">
             <div style="font-size:20px;">${cair ? '✅' : '⏳'}</div>
-            <div style="line-height:1.2;">
+            <div style="text-align:left; line-height:1.2;">
                 <b style="color:${cair ? '#16a34a' : '#f59e0b'}; font-size:10px;">${cair ? 'HASIL UNIT' : 'PROGRES'}</b><br>
-                <span style="font-weight:700; font-size:12px;">${x.j}</span><br>
+                <span style="font-weight:700; font-size:12px; color:#1e293b;">${x.j}</span><br>
                 <small>Output: ${x.q || 0} unit</small>
             </div>
         </div>`;
-    }).join('') : '<p style="color:#999; font-style:italic; font-size:12px; text-align:left;">Tidak ada aktivitas.</p>';
+    }).join('') : '<p style="color:#94a3b8; font-style:italic; font-size:12px; text-align:left;">Tidak ada aktivitas.</p>';
 
-    // 3. Konten Modal
     const content = `
         <div style="text-align:left;">
-            <div style="background:#f1f5f9; padding:12px; border-radius:10px; margin-bottom:15px;">
-                <p style="margin:0; font-size:11px;">Status: <b>${dataAbsen?.j || '-'}</b></p>
+            <div style="background:#f1f5f9; padding:12px; border-radius:10px; margin-bottom:15px; border:1px solid #e2e8f0;">
+                <p style="margin:0; font-size:11px;">PRESENSI:</p>
+                <p style="margin:4px 0; font-weight:800; color:#00a8e8;">${dataAbsen?.j || 'TANPA KETERANGAN'}</p>
                 <p style="margin:0; font-size:11px;">Jam: ${dataAbsen?.jam || '--:--'} s/d ${dataAbsen?.jamOut || '--:--'}</p>
             </div>
             <p style="font-weight:bold; font-size:12px; margin-bottom:10px;">LOG AKTIVITAS:</p>
             <div style="max-height:200px; overflow-y:auto;">${htmlList}</div>
             
-            <div style="margin-top:20px; display:flex; flex-direction:column; gap:10px;">
-                <button type="button" class="btn" style="background:#ef4444; color:white; width:100%; padding:15px; border-radius:8px; font-weight:bold; border:none;" 
-                    onclick="if(confirm('Hapus absen ${k}?')){removeItem('absensi/${d}','${k}'); document.getElementById('modalUni').style.display='none';}">
+            <div style="margin-top:20px;">
+                <button type="button" class="btn" style="background:#ef4444; color:white; width:100%; border:none; padding:15px; border-radius:8px; font-weight:bold;" 
+                    onclick="if(confirm('Hapus absen ${k}?')){removeItem('absensi/${d}','${k}'); closeMod();}">
                     HAPUS ABSENSI
-                </button>
-                
-                <button type="button" class="btn" style="background:#64748b; color:white; width:100%; padding:15px; border-radius:8px; font-weight:bold; border:none;" 
-                    onclick="document.getElementById('modalUni').style.display='none'">
-                    TUTUP DETAIL
                 </button>
             </div>
         </div>
-        <style>
-            /* Sembunyikan tombol tutup bawaan yang macet */
-            #modalUni > div > .btn:last-child { display: none !important; }
-        </style>
     `;
 
     openMod("Detail " + k, content);
