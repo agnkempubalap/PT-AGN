@@ -199,17 +199,20 @@
                 function saveSt() {
     const t = document.getElementById('stTgl').value,
           b = document.getElementById('stBrg').value,
+          q = parseFloat(document.getElementById('stQty').value) || 0,
           ak = document.getElementById('stAksi').value,
           kon = document.getElementById('stKon').value,
           sat = document.getElementById('stSatuan').value;
-    
-    // parseFloat agar bisa input angka desimal (contoh: 10.5)
-    let q = parseFloat(document.getElementById('stQty').value) || 0;
-    const RHO = 0.91; 
 
-    if (q <= 0) {
-        return showPop('error', 'Data Tidak Valid', 'Silakan masukkan jumlah barang dengan benar.');
-    }
+    if (!q || q <= 0) return showPop('error', 'Data Salah', 'Masukan Jumlah Barang!');
+
+    const qcFinal = (ak === "Masuk") ? document.getElementById('stQC').value : "Accepted";
+
+    db.ref('stok_logs').push({ t, b, q, kon, qc: qcFinal, ak, sat }).then(() => {
+        document.getElementById('stQty').value = "";
+        showPop('success', 'Update Stok', `Transaksi ${ak} untuk ${b} sebanyak ${q} ${sat} berhasil.`);
+    });
+}
 
     // Konversi Otomatis jika input Kg untuk Minyak
     if (b.toLowerCase().includes("minyak") && sat === "Kg") {
