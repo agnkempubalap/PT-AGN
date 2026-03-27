@@ -194,10 +194,10 @@
 
             // VALIDASI CEGATAN
             if (ak === "Rekondisi" && q > curKtr) {
-                return showPop('error', 'Stok Kotor Habis', `Barang <b>${b}</b> kotor cuma sisa <b>${curKtr}</b>. Gak bisa rekon ${q} unit!`);
+                return showPop('error', 'Stok Kotor Habis', `Barang <b>${b}</b> Kotor Sisa <b>${curKtr}</b>. Tidak Dapat Rekon ${q} Unit!`);
             }
             if (ak.includes("Jual") && q > curRdy) {
-                return showPop('error', 'Stok Ready Habis', `Barang <b>${b}</b> ready cuma sisa <b>${curRdy}</b>. Gak bisa jual ${q} unit!`);
+                return showPop('error', 'Stok Ready Habis', `Barang <b>${b}</b> Ready Sisa <b>${curRdy}</b>. Tidak Dapat Jual ${q} Unit!`);
             }
 
             const qcFinal = (ak === "Masuk") ? document.getElementById('stQC').value : "Accepted";
@@ -269,7 +269,7 @@
                   p = Array.from(document.querySelectorAll('.chk-k:checked')).map(c => c.value), 
                   j = document.getElementById('akJenis').value;
 
-            if (!p.length || q <= 0) return showPop('error', 'Input Kurang', 'Pilih karyawan dan isi jumlah outputnya, Mas!');
+            if (!p.length || q <= 0) return showPop('error', 'Input Kurang', 'Pilih karyawan dan isi jumlah outputnya!');
 
             // CEK SIAPA YANG BELUM ABSEN
             let ilegal = p.filter(k => !D.absensi?.[tgl]?.[k] || !['Hadir', 'Telat', 'Lembur'].includes(D.absensi[tgl][k].j));
