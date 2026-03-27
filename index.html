@@ -408,46 +408,7 @@ function updateStok(jenis, qty) {
                 if(activeCol) activeCol.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
             }, 500);
         }
-        function cellMod(d, k) {
-    const dataAbsen = (D.absensi && D.absensi[d]) ? D.absensi[d][k] : null;
-    const semuaKerja = D.aktivitas ? Object.values(D.aktivitas) : [];
-    const listKerja = semuaKerja.filter(x => String(x.t) === String(d) && (x.p && x.p.includes(k)));
-
-    let htmlList = listKerja.length > 0 ? listKerja.map(x => {
-        const cair = x.isCair && x.q > 0;
-        return `
-        <div style="display:flex; gap:10px; margin-bottom:12px; border-bottom:1px solid #f1f5f9; padding-bottom:8px; align-items:center;">
-            <div style="font-size:20px;">${cair ? '✅' : '⏳'}</div>
-            <div style="text-align:left; line-height:1.2;">
-                <b style="color:${cair ? '#16a34a' : '#f59e0b'}; font-size:10px;">${cair ? 'HASIL UNIT' : 'PROGRES'}</b><br>
-                <span style="font-weight:700; font-size:12px; color:#1e293b;">${x.j}</span><br>
-                <small>Output: ${x.q || 0} unit</small>
-            </div>
-        </div>`;
-    }).join('') : '<p style="color:#94a3b8; font-style:italic; font-size:12px; text-align:left;">Tidak ada aktivitas.</p>';
-
-    const content = `
-        <div style="text-align:left;">
-            <div style="background:#f1f5f9; padding:12px; border-radius:10px; margin-bottom:15px; border:1px solid #e2e8f0;">
-                <p style="margin:0; font-size:11px;">PRESENSI:</p>
-                <p style="margin:4px 0; font-weight:800; color:#00a8e8;">${dataAbsen?.j || 'TANPA KETERANGAN'}</p>
-                <p style="margin:0; font-size:11px;">Jam: ${dataAbsen?.jam || '--:--'} s/d ${dataAbsen?.jamOut || '--:--'}</p>
-            </div>
-            <p style="font-weight:bold; font-size:12px; margin-bottom:10px;">LOG AKTIVITAS:</p>
-            <div style="max-height:200px; overflow-y:auto;">${htmlList}</div>
-            
-            <div style="margin-top:20px;">
-                <button type="button" class="btn" style="background:#ef4444; color:white; width:100%; border:none; padding:15px; border-radius:8px; font-weight:bold;" 
-                    onclick="if(confirm('Hapus absen ${k}?')){removeItem('absensi/${d}','${k}'); closeMod();}">
-                    HAPUS ABSENSI
-                </button>
-            </div>
-        </div>
-    `;
-
-    openMod("Detail " + k, content);
-}
-
+        
         async function saveBl() { const t=document.getElementById('blTgl').value, n=document.getElementById('blNama').value, rp=parseInt(document.getElementById('blRp').value), file=document.getElementById('blImg').files[0]; let img=""; if(file){ const c=document.createElement('canvas'), ctx=c.getContext('2d'), i=await createImageBitmap(file); c.width=400; c.height=i.height/i.width*400; ctx.drawImage(i,0,0,400,c.height); img=c.toDataURL('image/jpeg',0.6); } if(n&&rp) db.ref('belanja').push({ t, n, rp, img }).then(()=>{ alert("Nota!"); }); }
         function openModKB() { const fM=document.getElementById('fUang').value, K=Object.values(D.master_karyawan||{}), L=Object.entries(D.kasbon_bonus||{}).filter(x=>x[1].t===fM).reverse(); let h=`<select id="kbN">${K.map(k=>`<option>${k}</option>`).join('')}</select><select id="kbT"><option value="Bonus">Bonus</option><option value="Kasbon">Kasbon</option></select><input type="number" id="kbR" placeholder="Rp"><button class="btn" onclick="saveKB()">SIMPAN</button><hr>${L.map(x=>`<div style="font-size:10px;padding:5px;border-bottom:1px solid #eee"><b>${x[1].n}</b>: ${x[1].tipe} Rp ${x[1].rp.toLocaleString()} <b onclick="removeItem('kasbon_bonus','${x[0]}')" style="color:red; cursor:pointer">×</b></div>`).join('')}`; openMod("Kasbon / Bonus", h); }
         function saveKB() { const n=document.getElementById('kbN').value, t=document.getElementById('fUang').value, tipe=document.getElementById('kbT').value, rp=parseInt(document.getElementById('kbR').value); if(rp) db.ref('kasbon_bonus').push({n,t,tipe,rp}).then(()=>openModKB()); }
@@ -474,16 +435,7 @@ function updateStok(jenis, qty) {
     alert("Sedang memproses PDF, mohon tunggu...");
     html2pdf().set(opt).from(element).save().catch(err => alert("Gagal buat PDF: " + err));
 }
-        function openMod(t, h) { 
-    document.getElementById('modTitle').innerText = t;
-    document.getElementById('modContent').innerHTML = h;
-    document.getElementById('modalUni').style.display = 'flex'; 
-}
-
-function closeMod() { 
-    document.getElementById('modalUni').style.display = 'none'; 
-}
-
+        
 function showNotaLogs() {
     if (!D || !D.belanja) return alert("Belum ada data nota belanja!");
     
@@ -566,6 +518,58 @@ function showNotaLogs() {
     
     openMod("Rekap Nota Belanja", h || "Tidak ada nota di bulan ini");
 }
+<script>
+// --- FUNGSI MODAL UTAMA (TETAP DI SINI AGAR AMAN) ---
+window.openMod = function(t, h) {
+    document.getElementById('modTitle').innerText = t;
+    document.getElementById('modContent').innerHTML = h;
+    document.getElementById('modalUni').style.display = 'flex';
+};
+
+window.closeMod = function() {
+    document.getElementById('modalUni').style.display = 'none';
+};
+
+window.cellMod = function(d, k) {
+    try {
+        const dataAbsen = (window.D && D.absensi && D.absensi[d]) ? D.absensi[d][k] : null;
+        const semuaKerja = (window.D && D.aktivitas) ? Object.values(D.aktivitas) : [];
+        const listKerja = semuaKerja.filter(x => String(x.t) === String(d) && (x.p && x.p.includes(k)));
+
+        let htmlList = listKerja.length > 0 ? listKerja.map(x => {
+            const cair = x.isCair && x.q > 0;
+            return `
+            <div style="display:flex; gap:10px; margin-bottom:12px; border-bottom:1px solid #eee; padding-bottom:8px; align-items:center; text-align:left;">
+                <div style="font-size:20px;">${cair ? '✅' : '⏳'}</div>
+                <div style="line-height:1.2;">
+                    <b style="color:${cair ? '#16a34a' : '#f59e0b'}; font-size:10px;">${cair ? 'HASIL' : 'PROGRES'}</b><br>
+                    <span style="font-weight:700; font-size:12px;">${x.j}</span><br>
+                    <small>Output: ${x.q || 0} unit</small>
+                </div>
+            </div>`;
+        }).join('') : '<p style="color:#999; font-style:italic; font-size:12px;">Tidak ada aktivitas.</p>';
+
+        const content = `
+            <div style="text-align:left;">
+                <div style="background:#f1f5f9; padding:12px; border-radius:10px; margin-bottom:15px; border:1px solid #e2e8f0;">
+                    <p style="margin:0; font-size:11px; color:#64748b;">PRESENSI:</p>
+                    <p style="margin:4px 0; font-weight:800; color:#00a8e8;">${dataAbsen?.j || 'TANPA KETERANGAN'}</p>
+                    <p style="margin:0; font-size:11px; color:#64748b;">Jam: ${dataAbsen?.jam || '--:--'} s/d ${dataAbsen?.jamOut || '--:--'}</p>
+                </div>
+                <p style="font-weight:bold; font-size:12px; margin-bottom:10px;">LOG AKTIVITAS:</p>
+                <div style="max-height:200px; overflow-y:auto;">${htmlList}</div>
+                <div style="margin-top:20px;">
+                    <button type="button" class="btn" style="background:#ef4444; color:white; width:100%; border:none; padding:15px; border-radius:8px; font-weight:bold;" 
+                        onclick="if(confirm('Hapus absen ${k}?')){ removeItem('absensi/${d}','${k}'); closeMod(); }">
+                        HAPUS ABSENSI
+                    </button>
+                </div>
+            </div>`;
+
+        openMod("Detail " + k, content);
+    } catch (e) { console.error(e); }
+};
+
 
     </script>
 </body>
