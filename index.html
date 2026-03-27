@@ -238,16 +238,30 @@
         }
 
         function saveAk() {
-            const tgl=document.getElementById('akTgl').value, q=parseInt(document.getElementById('akQty').value)||0, p=Array.from(document.querySelectorAll('.chk-k:checked')).map(c=>c.value), j=document.getElementById('akJenis').value;
-            if(!p.length || q<=0) return alert("Pilih Karyawan & Isi Qty!");
-            let ilegal = p.filter(k => !D.absensi?.[tgl]?.[k] || !['Hadir','Telat','Lembur'].includes(D.absensi[tgl][k].j));
-            if(ilegal.length) return alert("Ada Karyawan belum absen!");
-            const cairAwal = !j.toLowerCase().includes("jerigen"); 
-            db.ref('aktivitas').push({ t:tgl, j, q, p, isCair: cairAwal }).then(()=>{
-                document.getElementById('akQty').value=""; document.querySelectorAll('.chk-k').forEach(c=>c.checked=false); alert("Kerja Tersimpan!");
-            });
-        }
+    const t = document.getElementById('akTgl').value,
+          n = document.getElementById('akNama').value,
+          b = document.getElementById('akBarang').value,
+          j = document.getElementById('akJenis').value,
+          q = document.getElementById('akQty').value; // Ambil nilai mentah dulu
 
+    // Validasi Nama tetap wajib
+    if(!n) return alert("Pilih Nama Karyawan!");
+    
+    // UBAH DI SINI: Izinkan angka 0, tapi tolak kalau kosong/bukan angka
+    const qty = (q === "" || isNaN(q)) ? 0 : parseInt(q);
+
+    db.ref('aktivitas').push({
+        t: t, 
+        p: n, 
+        b: b, 
+        j: j, 
+        q: qty, // Tetap simpan 0
+        isCair: false
+    }).then(() => {
+        alert("Aktivitas Berhasil Dicatat!");
+        document.getElementById('akQty').value = ""; // Reset form
+    });
+}
         // --- LOGIKA GAJI ---
         function renderGaji() {
             const fM = document.getElementById('fUang').value, T = D.tarif||DEF_TARIF, K = Object.values(D.master_karyawan||{});
