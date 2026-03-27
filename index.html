@@ -331,7 +331,7 @@
                 ref.set({ j: stat, jam: jamStr, ket: document.getElementById('absKet').value||"" }).then(()=>{ alert(stat + " Berhasil!"); });
             }
         }
-                        function renderAll() {
+        function renderAll() {
             let fM = document.getElementById('fM').value;
             if(!fM) return;
 
@@ -432,34 +432,44 @@
         function openMod(t,h) { document.getElementById('modTitle').innerText=t; document.getElementById('modContent').innerHTML=h; document.getElementById('modalUni').style.display='flex'; }
         function closeMod() { document.getElementById('modalUni').style.display='none'; }
         function showLogs(t) {
-    if (!D[t]) return alert("Belum ada data log!");
-    let l = Object.entries(D[t]).sort((a,b) => b[1].t.localeCompare(a[1].t)).slice(0,30);
+    // Cek apakah data D[t] ada, kalau tidak ada kasih peringatan
+    if (!D || !D[t]) return alert("Belum ada data di log " + t);
     
-    let html = l.map(x => {
-        const item = x[1];
-        return `<div style="font-size:10px;padding:8px;border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center">
-            <span><b>[${item.t}]</b> ${item.j || item.b} (${item.q})</span>
-            <b onclick="removeItem('${t}','${x[0]}')" style="color:red; cursor:pointer; padding:5px">HAPUS</b>
-        </div>`;
-    }).join('');
-    
-    openMod("Log " + t.replace('_', ' '), html);
-}
-
-function showNotaLogs() {
-    if (!D.belanja) return alert("Belum ada nota!");
-    let l = Object.entries(D.belanja).sort((a,b) => b[1].t.localeCompare(a[1].t));
+    // Ambil data, balik urutannya (terbaru di atas), ambil 30 saja
+    let l = Object.entries(D[t]).reverse().slice(0, 30);
     
     let html = l.map(x => `
-        <div style="font-size:10px;padding:8px;border-bottom:1px solid #eee">
-            <b>${x[1].t}</b> - ${x[1].n}: Rp ${x[1].rp.toLocaleString()}
-            ${x[1].img ? `<br><img src="${x[1].img}" style="width:100px;margin-top:5px;border-radius:5px">` : ''}
-            <br><b onclick="removeItem('belanja','${x[0]}')" style="color:red;cursor:pointer">[HAPUS]</b>
+        <div style="font-size:11px; padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;">
+            <span><b>[${x[1].t}]</b> ${x[1].j || x[1].b} (${x[1].q})</span>
+            <b onclick="removeItem('${t}','${x[0]}')" style="color:red; cursor:pointer;">HAPUS</b>
         </div>
     `).join('');
     
-    openMod("Rekap Nota", html);
+    openMod("Log " + t, html || "Kosong");
 }
+function showNotaLogs() {
+    if (!D || !D.belanja) return alert("Belum ada data nota belanja!");
+    
+    // Ambil bulan yang sedang dipilih user
+    const fM = document.getElementById('fM').value;
+    
+    // Filter nota yang bulannya sama dengan yang dipilih
+    let list = Object.entries(D.belanja).filter(x => x[1].t && x[1].t.slice(0, 7) === fM).reverse();
+    
+    let h = list.map(x => `
+        <div style="font-size:11px; padding:10px; border-bottom:1px solid #eee;">
+            <b>${x[1].t}</b> - ${x[1].n} <br>
+            <span style="color:var(--d); font-weight:800;">Rp ${x[1].rp.toLocaleString()}</span>
+            ${x[1].img ? `<br><img src="${x[1].img}" style="width:100%; border-radius:8px; margin-top:5px;">` : ''}
+            <div style="margin-top:5px;">
+                <b onclick="removeItem('belanja','${x[0]}')" style="color:red; cursor:pointer;">[ HAPUS NOTA ]</b>
+            </div>
+        </div>
+    `).join('');
+    
+    openMod("Rekap Nota - " + fM, h || "Tidak ada nota untuk bulan ini.");
+}
+
         function genSlip(n) { const fM=document.getElementById('fUang').value, T=D.tarif||DEF_TARIF; let br=0, bo=0, ka=0, list=""; Object.values(D.aktivitas||{}).forEach(a=>{ if(a.t?.slice(0,7)===fM&&a.p?.includes(n)){ let u=(T[a.j]||0)*a.q/(a.j.includes("pasang")?1:a.p.length); if(a.isCair) { br+=u; list+=`<tr><td>${a.t}</td><td>${a.j}</td><td>${Math.round(u).toLocaleString()}</td></tr>`; } } }); Object.values(D.kasbon_bonus||{}).forEach(kb=>{if(kb.n===n&&kb.t===fM) kb.tipe==="Bonus"?bo+=kb.rp:ka+=kb.rp;}); openMod("Slip", `<div id="p-slip" style="padding:15px; background:white; color:black"><h3>KEMPU BALAP</h3><p>${n} | ${fM}</p><hr><table style="width:100%; font-size:10px">${list}</table><hr><b>Total: Rp ${Math.round((br+bo)-ka).toLocaleString()}</b></div><button class="btn" onclick="expPdf('p-slip','Slip_${n}')">PRINT</button>`); }
 
 function genRekapKerja() {
