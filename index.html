@@ -189,49 +189,66 @@
 
                 // --- LOGIKA STOK ANTI-MINUS & REJECT SAFE ---
                 function saveSt() {
-            const t = document.getElementById('stTgl').value, 
-                  b = document.getElementById('stBrg').value, 
-                  q = parseInt(document.getElementById('stQty').value) || 0, 
-                  ak = document.getElementById('stAksi').value,
-                  kon = document.getElementById('stKon').value;
+    const t = document.getElementById('stTgl').value,
+          b = document.getElementById('stBrg').value,
+          ak = document.getElementById('stAksi').value,
+          kon = document.getElementById('stKon').value,
+          sat = document.getElementById('stSatuan').value;
+    
+    // parseFloat agar bisa input angka desimal (contoh: 10.5)
+    let q = parseFloat(document.getElementById('stQty').value) || 0;
+    const RHO = 0.91; 
 
-            if (!q || q <= 0) return showPop('error', 'Data Salah', 'Masukan Jumlah Barang!');
+    if (q <= 0) {
+        return showPop('error', 'Data Tidak Valid', 'Silakan masukkan jumlah barang dengan benar.');
+    }
 
-            // CEK STOK REAL
-            let curKtr = 0, curRdy = 0;
-            Object.values(D.stok_logs || {}).forEach(l => {
-                if (l.b !== b) return;
-                if (l.ak === "Masuk" && l.qc === "Accepted") {
-                    l.kon === "Bekas" ? curKtr += l.q : curRdy += l.q;
-                } else if (l.ak === "Rekondisi") {
-                    curKtr -= l.q; curRdy += l.q;
-                } else if (l.ak.includes("Jual")) {
-                    curRdy -= l.q;
+    // Konversi Otomatis jika input Kg untuk Minyak
+    if (b.toLowerCase().includes("minyak") && sat === "Kg") {
+        q = q / RHO; 
+    }
+
+    // CEK STOK REAL
+    let curKtr = 0, curRdy = 0;
+    Object.values(D.stok_logs || {}).forEach(l => {
+        if (l.b !== b) return;
+        if (l.ak === "Masuk" && l.qc === "Accepted") {
+            l.kon === "Bekas" ? curKtr += l.q : curRdy += l.q;
+        } else if (l.ak === "Rekondisi") {
+            curKtr -= l.q; curRdy += l.q;
+        } else if (l.ak.includes("Jual")) {
+            curRdy -= l.q;
+        }
+    });
+
+    // VALIDASI CEGATAN (FORMAL)
+    if (ak === "Rekondisi" && q > curKtr) {
+        return showPop('error', 'Stok Kotor Habis', `Barang <b>${b}</b> kotor hanya sisa <b>${curKtr.toFixed(2)}</b>. Tidak dapat proses rekondisi ${q} unit.`);
+    }
+    if (ak.includes("Jual") && q > curRdy) {
+        return showPop('error', 'Stok Ready Habis', `Barang <b>${b}</b> ready hanya sisa <b>${curRdy.toFixed(2)}</b>. Tidak dapat menjual ${q} unit.`);
+    }
+
+    const qcFinal = (ak === "Masuk") ? document.getElementById('stQC').value : "Accepted";
+
+    db.ref('stok_logs').push({ t, b, q, kon, qc: qcFinal, ak: ak }).then(() => {
+        // Logika cairkan upah otomatis jika barang adalah jerigen
+        if (ak.includes("Jual") && b.toLowerCase().includes("jerigen")) {
+            let sisaJual = q;
+            let logs = Object.entries(D.aktivitas || {}).filter(x => x[1].j.toLowerCase().includes(b.toLowerCase()) && !x[1].isCair).sort((a, b) => a[1].t.localeCompare(b[1].t));
+            logs.forEach(log => {
+                if (sisaJual <= 0) return;
+                if (log[1].q <= sisaJual) {
+                    db.ref(`aktivitas/${log[0]}`).update({ isCair: true, tglCair: t });
+                    sisaJual -= log[1].q;
                 }
-            });
-
-            // VALIDASI CEGATAN
-            if (ak === "Rekondisi" && q > curKtr) {
-                return showPop('error', 'Stok Kotor Habis', `Barang <b>${b}</b> Kotor Sisa <b>${curKtr}</b>. Tidak Dapat Rekon ${q} Unit!`);
-            }
-            if (ak.includes("Jual") && q > curRdy) {
-                return showPop('error', 'Stok Ready Habis', `Barang <b>${b}</b> Ready Sisa <b>${curRdy}</b>. Tidak Dapat Jual ${q} Unit!`);
-            }
-
-            const qcFinal = (ak === "Masuk") ? document.getElementById('stQC').value : "Accepted";
-            db.ref('stok_logs').push({ t, b, q, kon, qc: qcFinal, ak: ak }).then(() => {
-                if(ak.includes("Jual") && b.toLowerCase().includes("jerigen")) {
-                    let sisaJual = q;
-                    let logs = Object.entries(D.aktivitas || {}).filter(x => x[1].j.toLowerCase().includes(b.toLowerCase()) && !x[1].isCair).sort((a,b) => a[1].t.localeCompare(b[1].t));
-                    logs.forEach(log => {
-                        if(sisaJual <= 0) return;
-                        if(log[1].q <= sisaJual) { db.ref(`aktivitas/${log[0]}`).update({ isCair: true, tglCair: t }); sisaJual -= log[1].q; }
-                    });
-                }
-                document.getElementById('stQty').value=""; 
-                showPop('success', 'Update Stok', `Transaksi <b>${ak}</b> untuk <b>${b}</b> sebanyak ${q} unit berhasil dicatat.`);
             });
         }
+        document.getElementById('stQty').value = "";
+        showPop('success', 'Transaksi Berhasil', `Data ${ak} untuk ${b} sebanyak ${q.toFixed(2)} telah tercatat.`);
+    });
+}
+
 
 
         function renderStok() {
