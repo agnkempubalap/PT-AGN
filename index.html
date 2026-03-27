@@ -204,40 +204,26 @@
           qVal = document.getElementById('stQty').value,
           ak = document.getElementById('stAksi').value,
           kon = document.getElementById('stKon').value,
+          qc = document.getElementById('stQC').value,
           sat = document.getElementById('stSatuan').value;
-
     let q = parseFloat(qVal) || 0;
-    const RHO = 0.91;
-
-    if (q <= 0) return showPop('error', 'Gagal', 'Isi jumlah dengan benar!');
-
-    // Konversi Kg ke Liter otomatis jika barang Minyak
-    if (b.toLowerCase().includes("minyak") && sat === "Kg") {
-        q = q / RHO;
-    }
-
-    const qcFinal = (ak === "Masuk") ? document.getElementById('stQC').value : "Accepted";
-
-    db.ref('stok_logs').push({ t, b, q, kon, qc: qcFinal, ak }).then(() => {
+    if (q <= 0) return showPop('error', 'Gagal', 'Isi jumlah barang!');
+    if (b.toLowerCase().includes("minyak") && sat === "Kg") q = q / 0.91;
+    db.ref('stok_logs').push({ t, b, q, ak, kon, qc }).then(() => {
         document.getElementById('stQty').value = "";
-        showPop('success', 'Berhasil', 'Data stok telah diperbarui.');
-    }).catch(e => showPop('error', 'Error', e.message));
+        showPop('success', 'Berhasil', 'Data stok diperbarui');
+    });
 }
 
 function renderStok() {
     if (!D.master_barang) return;
     const B_arr = Object.values(D.master_barang);
-    const RHO = 0.91;
     let h = "";
-    
     B_arr.forEach(b => {
         let s = { ktr: 0, rdy: 0, rej: 0, rk: 0, jm: 0, ju: 0 };
-        const isMinyak = b.toLowerCase().includes("minyak");
-
         Object.values(D.stok_logs || {}).forEach(l => {
             if (l.b !== b) return;
             let qty = parseFloat(l.q) || 0;
-            
             if (l.ak === "Masuk") {
                 if (l.qc === "Reject") s.rej += qty;
                 else (l.kon === "Bekas" ? s.ktr += qty : s.rdy += qty);
@@ -246,72 +232,15 @@ function renderStok() {
             else if (l.ak === "Jual Mitra") { s.jm += qty; s.rdy -= qty; }
             else if (l.ak === "Jual Umum") { s.ju += qty; s.rdy -= qty; }
         });
-
-        const fmt = (val) => {
-            let v = parseFloat(val) || 0;
-            if (!isMinyak) return `<b>${v}</b><br><small>Unit</small>`;
-            return `<b>${v.toFixed(1)}</b><br><small style="color:#64748b">${(v * RHO).toFixed(1)}kg</small>`;
-        };
-
+        const f = (n) => n % 1 === 0 ? n : n.toFixed(1);
         h += `<tr>
             <td class="sticky-col"><b>${b}</b></td>
-            <td style="text-align:center; color:red">${fmt(s.rej)}</td>
-            <td style="text-align:center">${fmt(s.rk)}</td>
-            <td style="text-align:center">${fmt(s.jm)}</td>
-            <td style="text-align:center">${fmt(s.ju)}</td>
-            <td style="text-align:center; background:#fff7ed">${fmt(s.ktr)}</td>
-            <td style="text-align:center; background:#dcfce7">${fmt(s.rdy)}</td>
-        </tr>`;
-    }); 
-    document.getElementById('tbStok').innerHTML = h;
-}
-
-        function renderStok() {
-    const B_arr = Object.values(D.master_barang || {});
-    const RHO = 0.91; 
-    let h = "";
-    
-    B_arr.forEach(b => {
-        let s = { ktr: 0, rdy: 0, rej: 0, rk: 0, jm: 0, ju: 0 };
-        const isMinyak = b.toLowerCase().includes("minyak");
-
-        Object.values(D.stok_logs || {}).forEach(l => {
-            if (l.b !== b) return;
-            let qty = parseFloat(l.q) || 0;
-            
-            if (l.ak === "Masuk") {
-                if (l.qc === "Reject") s.rej += qty;
-                else {
-                    l.kon === "Bekas" ? s.ktr += qty : s.rdy += qty;
-                }
-            } 
-            else if (l.ak === "Rekondisi") {
-                s.rk += qty; s.ktr -= qty; s.rdy += qty;
-            }
-            else if (l.ak === "Jual Mitra") {
-                s.jm += qty; s.rdy -= qty;
-            }
-            else if (l.ak === "Jual Umum") {
-                s.ju += qty; s.rdy -= qty;
-            }
-        });
-
-        const fmt = (val) => {
-            let v = parseFloat(val) || 0;
-            if (!isMinyak) return `<b>${v}</b><br><small>Unit</small>`;
-            const kg = (v * RHO).toFixed(1);
-            return `<b>${v.toFixed(1)}</b><br><small style="color:#64748b">${kg}kg</small>`;
-        };
-
-        // Menampilkan 6 kolom data (REJ, REKON, MITRA, UMUM, STOK KTR, STOK RDY)
-        h += `<tr>
-            <td class="sticky-col" style="font-size:12px"><b>${b}</b></td>
-            <td style="text-align:center; color:#ef4444">${fmt(s.rej)}</td>
-            <td style="text-align:center;">${fmt(s.rk)}</td>
-            <td style="text-align:center;">${fmt(s.jm)}</td>
-            <td style="text-align:center;">${fmt(s.ju)}</td>
-            <td style="text-align:center; background:#fff7ed"><b>${fmt(s.ktr)}</b></td>
-            <td style="text-align:center; background:#dcfce7"><b>${fmt(s.rdy)}</b></td>
+            <td style="text-align:center; color:red">${f(s.rej)}</td>
+            <td style="text-align:center">${f(s.rk)}</td>
+            <td style="text-align:center">${f(s.jm)}</td>
+            <td style="text-align:center">${f(s.ju)}</td>
+            <td style="text-align:center; background:#fff7ed"><b>${f(s.ktr)}</b></td>
+            <td style="text-align:center; background:#dcfce7"><b>${f(s.rdy)}</b></td>
         </tr>`;
     }); 
     document.getElementById('tbStok').innerHTML = h;
