@@ -251,27 +251,53 @@
                         // FUNGSI SIMPAN KERJA
         function saveAk() {
     const tgl = document.getElementById('akTgl').value;
-    const q = parseInt(document.getElementById('akQty').value) || 0;
-    const p = Array.from(document.querySelectorAll('.chk-k:checked')).map(c => c.value);
-    const j = document.getElementById('akJenis').value;
+    const jenis = document.getElementById('akJenis').value;
+    const qty = parseInt(document.getElementById('akQty').value) || 0; // Jika kosong, otomatis 0
+    const karyawan = Array.from(document.querySelectorAll('.chk-k:checked')).map(c => c.value);
 
-    if (!p.length || q <= 0) return alert("Pilih Karyawan & Isi Qty!");
+    if (karyawan.length === 0) return alert("Pilih minimal satu karyawan!");
+    if (!jenis) return alert("Pilih jenis kegiatan!");
 
-    // Pengaman: Pastikan D.absensi dan tanggalnya ada sebelum dicek
-    const absensiTgl = (D.absensi && D.absensi[tgl]) ? D.absensi[tgl] : null;
-    if (!absensiTgl) return alert("Data absen hari ini tidak ditemukan!");
-
-    let ilegal = p.filter(k => !absensiTgl[k] || !['Hadir', 'Telat', 'Lembur'].includes(absensiTgl[k].j));
+    const id = Date.now();
     
-    if (ilegal.length) return alert("Ada Karyawan belum absen!");
+    // Logika Otomatis
+    const data = {
+        t: tgl,
+        j: qty > 0 ? jenis : "(PROGRES) " + jenis, // Tandai jika cuma progres
+        q: qty,
+        p: karyawan,
+        isCair: qty > 0 ? true : false, // Gaji hanya cair jika ada qty
+        isProgres: qty > 0 ? false : true
+    };
 
-    const cairAwal = !j.toLowerCase().includes("jerigen"); 
-    db.ref('aktivitas').push({ t: tgl, j, q, p, isCair: cairAwal }).then(() => {
-        document.getElementById('akQty').value = ""; 
-        document.querySelectorAll('.chk-k').forEach(c => c.checked = false); 
-        alert("Kerja Tersimpan!");
-    }).catch(err => alert("Gagal Simpan: " + err.message));
+    // 1. Simpan ke Database Aktivitas (Pasti masuk Kalender)
+    db.ref('aktivitas/' + id).set(data, (err) => {
+        if (err) return alert("Gagal simpan: " + err);
+        
+        // 2. Jika Qty > 0, otomatis update Stok Barang Jadi
+        if (qty > 0) {
+            updateStok(jenis, qty); 
+            alert("Berhasil! Stok bertambah & Gaji tercatat.");
+        } else {
+            alert("Progres tercatat di kalender (Absen Masuk).");
+        }
+
+        // Reset Form agar siap input lagi
+        document.getElementById('akQty').value = '';
+        document.querySelectorAll('.chk-k').forEach(c => c.checked = false);
+        if(typeof renderAk === 'function') renderAk(); // Refresh tampilan jika ada
+    });
 }
+
+// Fungsi pembantu untuk update stok otomatis
+function updateStok(jenis, qty) {
+    // Sesuaikan dengan ID stok Anda (misal: kempu_1000l)
+    const stokRef = db.ref('stok/kempu_1000l'); 
+    stokRef.transaction((current) => {
+        return (current || 0) + qty;
+    });
+}
+
         // FUNGSI REKAP PDF
         function expPdf(id, name) {
             const el = document.getElementById(id);
