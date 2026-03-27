@@ -262,35 +262,34 @@
 
         function renderStok() {
     const B_arr = Object.values(D.master_barang || {});
-    const RHO = 0.91; // Massa jenis minyak
+    const RHO = 0.91; 
     let h = "";
     
     B_arr.forEach(b => {
-        // Inisialisasi semua kategori saldo
         let s = { ktr: 0, rdy: 0, rej: 0, rk: 0, jm: 0, ju: 0 };
         const isMinyak = b.toLowerCase().includes("minyak");
 
         Object.values(D.stok_logs || {}).forEach(l => {
             if (l.b !== b) return;
+            let qty = parseFloat(l.q) || 0;
             
             if (l.ak === "Masuk") {
-                if (l.qc === "Reject") s.rej += l.q;
+                if (l.qc === "Reject") s.rej += qty;
                 else {
-                    l.kon === "Bekas" ? s.ktr += l.q : s.rdy += l.q;
+                    l.kon === "Bekas" ? s.ktr += qty : s.rdy += qty;
                 }
             } 
             else if (l.ak === "Rekondisi") {
-                s.rk += l.q; s.ktr -= l.q; s.rdy += l.q;
+                s.rk += qty; s.ktr -= qty; s.rdy += qty;
             }
             else if (l.ak === "Jual Mitra") {
-                s.jm += l.q; s.rdy -= l.q;
+                s.jm += qty; s.rdy -= qty;
             }
             else if (l.ak === "Jual Umum") {
-                s.ju += l.q; s.rdy -= l.q;
+                s.ju += qty; s.rdy -= qty;
             }
         });
 
-        // Fungsi pemberi satuan otomatis (Unit / Ltr & Kg)
         const fmt = (val) => {
             let v = parseFloat(val) || 0;
             if (!isMinyak) return `<b>${v}</b><br><small>Unit</small>`;
@@ -298,15 +297,15 @@
             return `<b>${v.toFixed(1)}</b><br><small style="color:#64748b">${kg}kg</small>`;
         };
 
-        // SUSUNAN KOLOM (Semua variabel s.xx harus dimasukkan ke <td>)
+        // Menampilkan 6 kolom data (REJ, REKON, MITRA, UMUM, STOK KTR, STOK RDY)
         h += `<tr>
             <td class="sticky-col" style="font-size:12px"><b>${b}</b></td>
-            <td style="text-align:center; font-size:10px; color:#ef4444">${fmt(s.rej)}</td>
-            <td style="text-align:center; font-size:10px">${fmt(s.rk)}</td>
-            <td style="text-align:center; font-size:10px">${fmt(s.jm)}</td>
-            <td style="text-align:center; font-size:10px">${fmt(s.ju)}</td>
-            <td style="text-align:center; font-size:10px; background:#fff7ed"><b>${fmt(s.ktr)}</b></td>
-            <td style="text-align:center; font-size:10px; background:#dcfce7"><b>${fmt(s.rdy)}</b></td>
+            <td style="text-align:center; color:#ef4444">${fmt(s.rej)}</td>
+            <td style="text-align:center;">${fmt(s.rk)}</td>
+            <td style="text-align:center;">${fmt(s.jm)}</td>
+            <td style="text-align:center;">${fmt(s.ju)}</td>
+            <td style="text-align:center; background:#fff7ed"><b>${fmt(s.ktr)}</b></td>
+            <td style="text-align:center; background:#dcfce7"><b>${fmt(s.rdy)}</b></td>
         </tr>`;
     }); 
     document.getElementById('tbStok').innerHTML = h;
