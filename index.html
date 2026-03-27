@@ -408,18 +408,47 @@ function updateStok(jenis, qty) {
                 if(activeCol) activeCol.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
             }, 500);
         }
-        window.cellMod = function(d, k) {
-    // Tes apakah fungsi terpanggil
-    alert("Membuka detail untuk: " + k); 
+        function cellMod(d, k) {
+    // 1. Ambil data aktivitas
+    let aks = Object.values(D.aktivitas || {}).filter(x => x.t === d && x.p?.includes(k));
+    let a = D.absensi?.[d]?.[k];
     
-    let h = "<div style='padding:20px; text-align:center;'>";
-    h += "<h3>Detail " + k + "</h3>";
-    h += "<button style='padding:20px; background:red; color:white;' onclick='closeMod()'>TUTUP TES</button>";
-    h += "</div>";
+    // 2. Susun daftar log (Gunakan HTML sederhana agar tidak berat di HP)
+    let logHtml = aks.length > 0 ? aks.map(x => {
+        let cair = x.isCair && x.q > 0;
+        return `
+            <div style="border-bottom:1px solid #eee; padding:5px 0; display:flex; gap:10px; align-items:center;">
+                <span style="font-size:18px;">${cair ? '✅' : '⏳'}</span>
+                <div style="text-align:left;">
+                    <b style="color:${cair ? '#16a34a' : '#f59e0b'}; font-size:10px;">${cair ? 'HASIL' : 'PROGRES'}</b><br>
+                    <span style="font-size:12px; font-weight:bold;">${x.j}</span><br>
+                    <small style="color:#666;">Output: ${x.q} unit</small>
+                </div>
+            </div>`;
+    }).join('') : '<p style="color:#999; font-style:italic; font-size:12px;">Tidak ada aktivitas.</p>';
 
-    openMod("TES", h);
-};
+    // 3. Susun isi modal (HANYA ISI, jangan tambahkan tombol TUTUP lagi di sini)
+    let content = `
+        <div style="text-align:left;">
+            <div style="background:#f1f5f9; padding:10px; border-radius:8px; margin-bottom:15px;">
+                <p style="margin:0; font-size:11px;">Status: <b>${a?.j || '-'}</b></p>
+                <p style="margin:0; font-size:11px;">Jam: ${a?.jam || '--'} s/d ${a?.jamOut || '--'}</p>
+            </div>
+            <p style="font-weight:bold; font-size:12px; margin-bottom:10px;">LOG AKTIVITAS:</p>
+            <div style="max-height:180px; overflow-y:auto;">
+                ${logHtml}
+            </div>
+            <hr style="margin:15px 0; border:0; border-top:1px solid #ddd;">
+            <button class="btn" style="background:#ef4444; color:white; width:100%; border:none; padding:12px; border-radius:5px; font-weight:bold;" 
+                onclick="if(confirm('Hapus absen ${k}?')){removeItem('absensi/${d}','${k}'); closeMod();}">
+                HAPUS ABSENSI
+            </button>
+        </div>
+    `;
 
+    // 4. Masukkan ke modal
+    openMod("Detail " + k, content);
+}
 
         async function saveBl() { const t=document.getElementById('blTgl').value, n=document.getElementById('blNama').value, rp=parseInt(document.getElementById('blRp').value), file=document.getElementById('blImg').files[0]; let img=""; if(file){ const c=document.createElement('canvas'), ctx=c.getContext('2d'), i=await createImageBitmap(file); c.width=400; c.height=i.height/i.width*400; ctx.drawImage(i,0,0,400,c.height); img=c.toDataURL('image/jpeg',0.6); } if(n&&rp) db.ref('belanja').push({ t, n, rp, img }).then(()=>{ alert("Nota!"); }); }
         function openModKB() { const fM=document.getElementById('fUang').value, K=Object.values(D.master_karyawan||{}), L=Object.entries(D.kasbon_bonus||{}).filter(x=>x[1].t===fM).reverse(); let h=`<select id="kbN">${K.map(k=>`<option>${k}</option>`).join('')}</select><select id="kbT"><option value="Bonus">Bonus</option><option value="Kasbon">Kasbon</option></select><input type="number" id="kbR" placeholder="Rp"><button class="btn" onclick="saveKB()">SIMPAN</button><hr>${L.map(x=>`<div style="font-size:10px;padding:5px;border-bottom:1px solid #eee"><b>${x[1].n}</b>: ${x[1].tipe} Rp ${x[1].rp.toLocaleString()} <b onclick="removeItem('kasbon_bonus','${x[0]}')" style="color:red; cursor:pointer">×</b></div>`).join('')}`; openMod("Kasbon / Bonus", h); }
