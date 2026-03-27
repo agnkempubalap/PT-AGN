@@ -438,9 +438,20 @@ function updateStok(jenis, qty) {
             <p style="margin:4px 0; font-weight:800; color:var(--p); font-size:14px;">${a?.j || 'TANPA KETERANGAN'}</p>
             <p style="margin:0; font-size:11px; color:#64748b;">Jam: ${a?.jam || '--:--'} s/d ${a?.jamOut || '--:--'}</p>
         </div>
-        
         <p style="font-weight:800; font-size:12px; margin-bottom:12px; color:#1e293b; border-left:4px solid #cbd5e1; padding-left:8px;">LOG AKTIVITAS</p>
         <ul style="padding:0; margin:0;">${listHtml}</ul>
+        
+        <div style="margin-top:20px; display:flex; flex-direction:column; gap:8px;">
+            <button class="btn" style="background:var(--d); width:100%; font-size:12px;" 
+                onclick="if(confirm('Hapus absensi Hatta?')) removeItem('absensi/${d}','${k}')">
+                HAPUS ABSENSI HARI INI
+            </button>
+            
+            <button class="btn" style="background:#64748b; width:100%; font-size:12px;" 
+                onclick="closeMod()">
+                TUTUP
+            </button>
+        </div>
     `;
     
     openMod(`Detail ${k} (${d})`, content);
