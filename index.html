@@ -237,31 +237,29 @@
             }).join('');
         }
 
-        function saveAk() {
-    const t = document.getElementById('akTgl').value,
-          n = document.getElementById('akNama').value,
-          b = document.getElementById('akBarang').value,
-          j = document.getElementById('akJenis').value,
-          q = document.getElementById('akQty').value; // Ambil nilai mentah dulu
+                function saveAk() {
+            const t = document.getElementById('akTgl').value;
+            const n = document.getElementById('akNama').value;
+            const b = document.getElementById('akBarang').value;
+            const j = document.getElementById('akJenis').value;
+            const qVal = document.getElementById('akQty').value;
 
-    // Validasi Nama tetap wajib
-    if(!n) return alert("Pilih Nama Karyawan!");
-    
-    // UBAH DI SINI: Izinkan angka 0, tapi tolak kalau kosong/bukan angka
-    const qty = (q === "" || isNaN(q)) ? 0 : parseInt(q);
+            if (!n) return alert("Pilih Nama Karyawan!");
+            
+            // Logika: Jika kosong jadi 0, agar tetap bisa simpan progres
+            const q = (qVal === "" || isNaN(qVal)) ? 0 : parseInt(qVal);
 
-    db.ref('aktivitas').push({
-        t: t, 
-        p: n, 
-        b: b, 
-        j: j, 
-        q: qty, // Tetap simpan 0
-        isCair: false
-    }).then(() => {
-        alert("Aktivitas Berhasil Dicatat!");
-        document.getElementById('akQty').value = ""; // Reset form
-    });
-}
+            db.ref('aktivitas').push({
+                t: t, p: n, b: b, j: j, q: q,
+                isCair: false
+            }).then(() => {
+                alert("Aktivitas Berhasil Dicatat!");
+                document.getElementById('akQty').value = "";
+                // Panggil render agar tabel langsung update
+                autoRender();
+            }).catch(e => alert("Error: " + e.message));
+        }
+
         // --- LOGIKA GAJI ---
         function renderGaji() {
             const fM = document.getElementById('fUang').value, T = D.tarif||DEF_TARIF, K = Object.values(D.master_karyawan||{});
