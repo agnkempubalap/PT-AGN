@@ -285,7 +285,6 @@
             });
         }
 
-
         // --- LOGIKA GAJI ---
         function renderGaji() {
             const fM = document.getElementById('fUang').value, T = D.tarif||DEF_TARIF, K = Object.values(D.master_karyawan||{});
@@ -354,7 +353,29 @@
             }); document.getElementById('tbA').innerHTML = tb;
         }
         function cellMod(d,k) { let a=D.absensi?.[d]?.[k], aks=Object.values(D.aktivitas||{}).filter(x=>x.t===d&&x.p?.includes(k)); openMod(`Detail ${k} (${d})`, `<p>Status: ${a?.j||'-'}</p><p>Jam: ${a?.jam||'-'} s/d ${a?.jamOut||'-'}</p><hr><ul>${aks.map(x=>`<li>${x.j} (${x.q}) ${x.isCair?'✅':'⏳'}</li>`).join('')||'Kerja: -'}</ul><br><button class='btn' onclick="removeItem('absensi/${d}','${k}')">HAPUS ABSEN</button>`); }
-        async function saveBl() { const t=document.getElementById('blTgl').value, n=document.getElementById('blNama').value, rp=parseInt(document.getElementById('blRp').value), file=document.getElementById('blImg').files[0]; let img=""; if(file){ const c=document.createElement('canvas'), ctx=c.getContext('2d'), i=await createImageBitmap(file); c.width=400; c.height=i.height/i.width*400; ctx.drawImage(i,0,0,400,c.height); img=c.toDataURL('image/jpeg',0.6); } if(n&&rp) db.ref('belanja').push({ t, n, rp, img }).then(()=>{ alert("Nota!"); }); }
+                async function saveBl() {
+            const t = document.getElementById('blTgl').value, 
+                  n = document.getElementById('blNama').value, 
+                  rp = parseInt(document.getElementById('blRp').value), 
+                  file = document.getElementById('blImg').files[0];
+            
+            if (!n || !rp) return showPop('error', 'Data Belanja', 'Nama item dan harganya harus diisi!');
+            
+            let img = ""; 
+            if (file) { 
+                const c = document.createElement('canvas'), ctx = c.getContext('2d'), i = await createImageBitmap(file); 
+                c.width = 400; c.height = i.height / i.width * 400; 
+                ctx.drawImage(i, 0, 0, 400, c.height); 
+                img = c.toDataURL('image/jpeg', 0.6); 
+            } 
+            
+            db.ref('belanja').push({ t, n, rp, img }).then(() => { 
+                document.getElementById('blNama').value = "";
+                document.getElementById('blRp').value = "";
+                document.getElementById('blImg').value = "";
+                showPop('success', 'Nota Tersimpan', `Pengeluaran untuk <b>${n}</b> sebesar <b>Rp ${rp.toLocaleString()}</b> sudah masuk rekap.`); 
+            }); 
+        }
         function openModKB() { const fM=document.getElementById('fUang').value, K=Object.values(D.master_karyawan||{}), L=Object.entries(D.kasbon_bonus||{}).filter(x=>x[1].t===fM).reverse(); let h=`<select id="kbN">${K.map(k=>`<option>${k}</option>`).join('')}</select><select id="kbT"><option value="Bonus">Bonus</option><option value="Kasbon">Kasbon</option></select><input type="number" id="kbR" placeholder="Rp"><button class="btn" onclick="saveKB()">SIMPAN</button><hr>${L.map(x=>`<div style="font-size:10px;padding:5px;border-bottom:1px solid #eee"><b>${x[1].n}</b>: ${x[1].tipe} Rp ${x[1].rp.toLocaleString()} <b onclick="removeItem('kasbon_bonus','${x[0]}')" style="color:red; cursor:pointer">×</b></div>`).join('')}`; openMod("Kasbon / Bonus", h); }
         function saveKB() { const n=document.getElementById('kbN').value, t=document.getElementById('fUang').value, tipe=document.getElementById('kbT').value, rp=parseInt(document.getElementById('kbR').value); if(rp) db.ref('kasbon_bonus').push({n,t,tipe,rp}).then(()=>openModKB()); }
         function editTarif() { let h=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">${Object.entries(D.tarif||DEF_TARIF).map(t=>`<div><label style="font-size:9px">${t[0]}</label><input type="number" id="trf_${t[0].replace(/ /g,'_')}" value="${t[1]}"></div>`).join('')}</div><button class="btn" onclick="saveTarif()">UPDATE</button>`; openMod("Tarif", h); }
