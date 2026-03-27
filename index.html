@@ -130,11 +130,13 @@
                 <div class="flex-row"><input type="number" id="blRp" placeholder="Rp"><input type="file" id="blImg" accept="image/*"></div>
                 <button class="btn" style="background:var(--d)" onclick="saveBl()">SIMPAN NOTA</button>
             </div>
-            <div class="flex-row">
-                <button class="btn" style="background:#64748b" onclick="showLogs('aktivitas')">LOG KERJA</button>
-                <button class="btn" style="background:var(--w); color:black" onclick="showNotaLogs()">REKAP NOTA</button>
-                <button class="btn" style="background:#0ea5e9" onclick="genRekapKerja()">REKAP KERJA PDF</button>
-            </div>
+            <div style="display: flex; gap: 5px; margin-top: 15px;">
+    <button class="btn" style="background:#6c757d; flex: 1; font-size: 11px; padding: 10px 2px;" onclick="renderAk()">LOG KERJA</button>
+    
+    <button class="btn" style="background:#f39c12; flex: 1; font-size: 11px; padding: 10px 2px;" onclick="expEx('areaKerja','Rekap_Nota_Kempu')">REKAP NOTA</button>
+    
+    <button class="btn" style="background:#00a8e8; flex: 1; font-size: 11px; padding: 10px 2px;" onclick="expPdf('areaKerja','Rekap_Kerja_PDF')">REKAP KERJA PDF</button>
+</div>
         </div>
 
         <div id="tab-gaji" class="tab-content">
@@ -237,7 +239,8 @@
             }).join('');
         }
 
-                function saveAk() {
+                        // FUNGSI SIMPAN KERJA
+        function saveAk() {
             const t = document.getElementById('akTgl').value;
             const n = document.getElementById('akNama').value;
             const b = document.getElementById('akBarang').value;
@@ -246,19 +249,37 @@
 
             if (!n) return alert("Pilih Nama Karyawan!");
             
-            // Logika: Jika kosong jadi 0, agar tetap bisa simpan progres
+            // Mengizinkan angka 0 untuk progres
             const q = (qVal === "" || isNaN(qVal)) ? 0 : parseInt(qVal);
 
             db.ref('aktivitas').push({
                 t: t, p: n, b: b, j: j, q: q,
                 isCair: false
             }).then(() => {
-                alert("Aktivitas Berhasil Dicatat!");
+                alert("Berhasil Simpan Kerja!");
                 document.getElementById('akQty').value = "";
-                // Panggil render agar tabel langsung update
-                autoRender();
+                if(typeof renderAk === "function") renderAk(); // Update tabel log
             }).catch(e => alert("Error: " + e.message));
         }
+
+        // FUNGSI REKAP PDF
+        function expPdf(id, name) {
+            const el = document.getElementById(id);
+            if(!el) return alert("Data tabel belum muncul. Klik LOG KERJA dulu!");
+            html2pdf().from(el).set({ 
+                margin: 0.3, 
+                filename: name + '.pdf',
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            }).save();
+        }
+        // FUNGSI REKAP NOTA (EXCEL)
+        function expEx(id, name) {
+            const table = document.getElementById(id);
+            if(!table) return alert("Data tabel belum muncul. Klik LOG KERJA dulu!");
+            const wb = XLSX.utils.table_to_book(table);
+            XLSX.writeFile(wb, name + ".xlsx");
+        }
+
 
         // --- LOGIKA GAJI ---
         function renderGaji() {
