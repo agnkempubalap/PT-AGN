@@ -486,7 +486,12 @@ function updateStok(jenis, qty) {
     html2pdf().set(opt).from(element).save().catch(err => alert("Gagal buat PDF: " + err));
 }
         function openMod(t,h) { document.getElementById('modTitle').innerText=t; document.getElementById('modContent').innerHTML=h; document.getElementById('modalUni').style.display='flex'; }
-        
+function closeMod() {
+    const modal = document.getElementById('modalUni');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
 
 function showNotaLogs() {
     if (!D || !D.belanja) return alert("Belum ada data nota belanja!");
