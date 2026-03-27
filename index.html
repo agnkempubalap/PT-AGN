@@ -413,11 +413,113 @@
         function addItem(p,id) { const v=document.getElementById(id).value; if(v) db.ref(p).push(v).then(()=>document.getElementById(id).value=""); }
         function removeItem(p,k) { if(confirm("Hapus?")) db.ref(`${p}/${k}`).remove().then(()=>closeMod()); }
         function expEx(id,n) { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById(id)), n+'.xlsx'); }
-        function expPdf(id,n) { html2pdf().set({margin:5, filename:n+'.pdf', jsPDF:{orientation:'landscape'}}).from(document.getElementById(id)).save(); }
+        function expPdf(id, n) {
+    const element = document.getElementById(id);
+    if (!element || element.innerHTML.trim() === "") return alert("Data kosong, tidak bisa buat PDF!");
+    
+    const opt = {
+        margin: [10, 10],
+        filename: n + '.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } // Ubah ke portrait agar lebih aman di HP
+    };
+    
+    // Beri sedikit delay agar browser HP sempat memproses render
+    alert("Sedang memproses PDF, mohon tunggu...");
+    html2pdf().set(opt).from(element).save().catch(err => alert("Gagal buat PDF: " + err));
+}
         function openMod(t,h) { document.getElementById('modTitle').innerText=t; document.getElementById('modContent').innerHTML=h; document.getElementById('modalUni').style.display='flex'; }
         function closeMod() { document.getElementById('modalUni').style.display='none'; }
-        function showLogs(t) { let l=Object.entries(D[t]||{}).reverse().slice(0,30); openMod("Log", l.map(x=>`<div style="font-size:10px;padding:5px;border-bottom:1px solid #eee"><span>[${x[1].t}] ${x[1].b||x[1].j} (${x[1].q})</span> <b onclick="removeItem('${t}','${x[0]}')" style="color:red; cursor:pointer">×</b></div>`).join('')); }
+        function showLogs(t) {
+    if (!D[t]) return alert("Belum ada data log!");
+    let l = Object.entries(D[t]).sort((a,b) => b[1].t.localeCompare(a[1].t)).slice(0,30);
+    
+    let html = l.map(x => {
+        const item = x[1];
+        return `<div style="font-size:10px;padding:8px;border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center">
+            <span><b>[${item.t}]</b> ${item.j || item.b} (${item.q})</span>
+            <b onclick="removeItem('${t}','${x[0]}')" style="color:red; cursor:pointer; padding:5px">HAPUS</b>
+        </div>`;
+    }).join('');
+    
+    openMod("Log " + t.replace('_', ' '), html);
+}
+
+function showNotaLogs() {
+    if (!D.belanja) return alert("Belum ada nota!");
+    let l = Object.entries(D.belanja).sort((a,b) => b[1].t.localeCompare(a[1].t));
+    
+    let html = l.map(x => `
+        <div style="font-size:10px;padding:8px;border-bottom:1px solid #eee">
+            <b>${x[1].t}</b> - ${x[1].n}: Rp ${x[1].rp.toLocaleString()}
+            ${x[1].img ? `<br><img src="${x[1].img}" style="width:100px;margin-top:5px;border-radius:5px">` : ''}
+            <br><b onclick="removeItem('belanja','${x[0]}')" style="color:red;cursor:pointer">[HAPUS]</b>
+        </div>
+    `).join('');
+    
+    openMod("Rekap Nota", html);
+}
         function genSlip(n) { const fM=document.getElementById('fUang').value, T=D.tarif||DEF_TARIF; let br=0, bo=0, ka=0, list=""; Object.values(D.aktivitas||{}).forEach(a=>{ if(a.t?.slice(0,7)===fM&&a.p?.includes(n)){ let u=(T[a.j]||0)*a.q/(a.j.includes("pasang")?1:a.p.length); if(a.isCair) { br+=u; list+=`<tr><td>${a.t}</td><td>${a.j}</td><td>${Math.round(u).toLocaleString()}</td></tr>`; } } }); Object.values(D.kasbon_bonus||{}).forEach(kb=>{if(kb.n===n&&kb.t===fM) kb.tipe==="Bonus"?bo+=kb.rp:ka+=kb.rp;}); openMod("Slip", `<div id="p-slip" style="padding:15px; background:white; color:black"><h3>KEMPU BALAP</h3><p>${n} | ${fM}</p><hr><table style="width:100%; font-size:10px">${list}</table><hr><b>Total: Rp ${Math.round((br+bo)-ka).toLocaleString()}</b></div><button class="btn" onclick="expPdf('p-slip','Slip_${n}')">PRINT</button>`); }
+// Letakkan ini di bagian paling bawah sebelum </script>
+function genRekapKerja() {
+    const fM = document.getElementById('fM').value;
+    if (!D.aktivitas) return alert("Data aktivitas masih kosong!");
+    
+    let html = `<div id="print-area-rekap" style="padding:15px; background:white; color:black; font-family:Arial, sans-serif;">
+        <h2 style="text-align:center; font-size:16px; margin-bottom:5px;">LAPORAN REKAP KERJA</h2>
+        <p style="text-align:center; font-size:12px; margin-bottom:15px;">Periode: ${fM}</p>
+        <table border="1" style="width:100%; border-collapse:collapse; font-size:10px;">
+            <thead>
+                <tr style="background:#f2f2f2;">
+                    <th style="padding:5px;">Tgl</th>
+                    <th style="padding:5px;">Kegiatan</th>
+                    <th style="padding:5px;">Qty</th>
+                    <th style="padding:5px;">Karyawan</th>
+                </tr>
+            </thead>
+            <tbody>`;
+            
+    // Filter data berdasarkan bulan yang dipilih di input fM
+    const dataFiltered = Object.values(D.aktivitas).filter(a => a.t && a.t.slice(0, 7) === fM);
+    
+    if (dataFiltered.length === 0) return alert("Tidak ada data kerja di bulan ini!");
+
+    dataFiltered.sort((a, b) => a.t.localeCompare(b.t)).forEach(a => {
+        html += `<tr>
+            <td style="padding:5px; text-align:center;">${a.t}</td>
+            <td style="padding:5px;">${a.j}</td>
+            <td style="padding:5px; text-align:center;">${a.q}</td>
+            <td style="padding:5px;">${a.p ? a.p.join(', ') : '-'}</td>
+        </tr>`;
+    });
+    
+    html += `</tbody></table></div>`;
+    
+    // Tampilkan preview di modal dulu agar user bisa lihat sebelum download
+    openMod("Preview Rekap Kerja", html + `<button class="btn" style="background:var(--d); margin-top:15px;" onclick="expPdf('print-area-rekap','Rekap_Kerja_${fM}')">DOWNLOAD PDF</button>`);
+}
+
+// Tambahan fungsi Rekap Nota agar tombol "REKAP NOTA" juga jalan
+function showNotaLogs() {
+    if (!D.belanja) return alert("Belum ada data nota!");
+    const fM = document.getElementById('fM').value;
+    let list = Object.entries(D.belanja).filter(x => x[1].t.slice(0,7) === fM).reverse();
+    
+    let h = list.map(x => `
+        <div style="font-size:11px; padding:10px; border-bottom:1px solid #eee; margin-bottom:5px;">
+            <b>${x[1].t}</b> - ${x[1].n} <br>
+            <span style="color:var(--d); font-weight:800;">Rp ${x[1].rp.toLocaleString()}</span>
+            ${x[1].img ? `<br><img src="${x[1].img}" style="width:100%; max-width:200px; margin-top:5px; border-radius:8px;">` : ''}
+            <div style="margin-top:5px;">
+                <b onclick="removeItem('belanja','${x[0]}')" style="color:red; cursor:pointer;">[ HAPUS ]</b>
+            </div>
+        </div>
+    `).join('');
+    
+    openMod("Rekap Nota Belanja", h || "Tidak ada nota di bulan ini");
+}
+
     </script>
 </body>
 </html>
