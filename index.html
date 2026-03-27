@@ -52,9 +52,13 @@
     <div class="container">
         <div id="tab-absen" class="tab-content active">
             <div class="card">
-                <h3>👥 Master Karyawan <input type="text" id="inK" placeholder="Nama..." style="width:100px; height:30px"> <button class="btn" style="background:var(--p); width:50px; margin:0" onclick="addItem('master_karyawan', 'inK')">ADD</button></h3>
-                <div id="listK" style="display:flex; flex-wrap:wrap; gap:5px"></div>
-            </div>
+    <h3>👥 Master Karyawan</h3>
+    <div style="display: flex; gap: 8px;">
+        <input type="text" id="inK" placeholder="Nama Karyawan..." style="flex: 1; height: 45px;">
+        <button class="btn" style="background:var(--p); width: 100px; margin: 0; height: 45px;" onclick="addItem('master_karyawan', 'inK')">ADD</button>
+    </div>
+    <div id="listK" style="display:flex; flex-wrap:wrap; gap:5px; margin-top: 10px;"></div>
+</div>
             <div class="card">
                 <h3>📅 Input Absensi <input type="date" id="absTgl" style="width:115px; height:30px"></h3>
                 <div class="flex-row"><select id="selK"></select><select id="absJenis" onchange="toggleIzin()"><option value="Hadir">Masuk</option><option value="Pulang">Pulang</option><option value="Izin">Izin</option><option value="Alpa">Alpa</option></select></div>
@@ -65,10 +69,12 @@
                 <h3>📊 Laporan <input type="month" id="fM" style="width:110px; height:30px"></h3>
                 <div class="table-area" id="areaAbsen"><table><thead id="thA"></thead><tbody id="tbA"></tbody></table></div>
                 <div class="flex-row">
-                    <button class="btn" style="background:var(--w); color:black" onclick="openLiburMod()">⚙️ SET LIBUR</button>
-                    <button class="btn" style="background:var(--s)" onclick="expEx('areaAbsen','Absen')">EXCEL</button>
-                    <button class="btn" style="background:var(--d)" onclick="expPdf('areaAbsen','Absensi_Bulanan')">PDF</button>
-                </div>
+    <button class="btn" style="background:var(--w); color:black" onclick="openLiburMod()">⚙️ SET LIBUR</button>
+    
+    <button class="btn" style="background:var(--d)" onclick="expPdf('areaAbsen','Absensi_Bulanan')">PDF</button>
+    
+    <button class="btn" style="background:var(--s)" onclick="expEx('areaAbsen','Absen')">EXCEL</button>
+</div>
             </div>
         </div>
 
