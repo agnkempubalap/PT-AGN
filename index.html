@@ -354,11 +354,29 @@
             }, 500);
         }
         function cellMod(d, k) {
-            let a = D.absensi?.[d]?.[k];
-            let aks = Object.values(D.aktivitas || {}).filter(x => x.t === d && x.p?.includes(k));
-            let isi = `<p>Status: ${a?.j||'-'}</p><p>Jam: ${a?.jam||'-'} s/d ${a?.jamOut||'-'}</p><p>Ket: ${a?.ket||'-'}</p><hr><ul>${aks.map(x=>`<li>${x.j} (${x.q}) ${x.isCair?'✅':'⏳'}</li>`).join('')||'Kerja: -'}</ul><br><button class='btn' style="background:var(--d)" onclick="removeItem('absensi/${d}','${k}')">HAPUS ABSEN</button>`;
-            openMod(`Detail ${k} (${d})`, isi);
-        }
+    let a = D.absensi?.[d]?.[k];
+    // Ambil SEMUA aktivitas (termasuk yang q = 0)
+    let aks = Object.values(D.aktivitas || {}).filter(x => x.t === d && x.p === k);
+    
+    let listKerja = aks.map(x => {
+        // Jika qty 0, beri keterangan (Progres) agar jelas di pop-up
+        let displayQty = x.q === 0 ? "Progres" : x.q;
+        return `<li>${x.j} - ${x.b} (${displayQty}) ${x.isCair ? '✅' : '⏳'}</li>`;
+    }).join('') || '<li>Tidak ada aktivitas</li>';
+
+    let isi = `
+        <p><b>Status:</b> ${a?.j || '-'}</p>
+        <p><b>Jam:</b> ${a?.jam || '-'} s/d ${a?.jamOut || '-'}</p>
+        <hr>
+        <p><b>Daftar Aktivitas:</b></p>
+        <ul style="padding-left: 20px;">${listKerja}</ul>
+        <br>
+        <button class='btn' style="background:var(--d)" onclick="removeItem('absensi/${d}','${k}')">HAPUS ABSEN</button>
+    `;
+    
+    openMod(`Detail ${k} (${d})`, isi);
+}
+
         async function saveBl() { const t=document.getElementById('blTgl').value, n=document.getElementById('blNama').value, rp=parseInt(document.getElementById('blRp').value), file=document.getElementById('blImg').files[0]; let img=""; if(file){ const c=document.createElement('canvas'), ctx=c.getContext('2d'), i=await createImageBitmap(file); c.width=400; c.height=i.height/i.width*400; ctx.drawImage(i,0,0,400,c.height); img=c.toDataURL('image/jpeg',0.6); } if(n&&rp) db.ref('belanja').push({ t, n, rp, img }).then(()=>{ alert("Nota!"); }); }
         function openModKB() { const fM=document.getElementById('fUang').value, K=Object.values(D.master_karyawan||{}), L=Object.entries(D.kasbon_bonus||{}).filter(x=>x[1].t===fM).reverse(); let h=`<select id="kbN">${K.map(k=>`<option>${k}</option>`).join('')}</select><select id="kbT"><option value="Bonus">Bonus</option><option value="Kasbon">Kasbon</option></select><input type="number" id="kbR" placeholder="Rp"><button class="btn" onclick="saveKB()">SIMPAN</button><hr>${L.map(x=>`<div style="font-size:10px;padding:5px;border-bottom:1px solid #eee"><b>${x[1].n}</b>: ${x[1].tipe} Rp ${x[1].rp.toLocaleString()} <b onclick="removeItem('kasbon_bonus','${x[0]}')" style="color:red; cursor:pointer">×</b></div>`).join('')}`; openMod("Kasbon / Bonus", h); }
         function saveKB() { const n=document.getElementById('kbN').value, t=document.getElementById('fUang').value, tipe=document.getElementById('kbT').value, rp=parseInt(document.getElementById('kbR').value); if(rp) db.ref('kasbon_bonus').push({n,t,tipe,rp}).then(()=>openModKB()); }
