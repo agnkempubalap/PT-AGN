@@ -72,14 +72,12 @@
         </div>
 
 <div id="tabStok" class="tab-content">
-    
     <div class="card">
         <h3>🚨 Logistik & Penjualan</h3>
         <div class="flex-row">
             <input type="date" id="stTgl">
             <select id="stBrg"></select>
         </div>
-        
         <div class="flex-row">
             <input type="number" id="stQty" step="any" placeholder="Jumlah">
             <select id="stSatuan" style="width: 80px; font-weight: bold;">
@@ -88,7 +86,6 @@
                 <option value="Kg">Kg</option>
             </select>
         </div>
-
         <div class="flex-row">
             <select id="stKon" style="flex: 1;">
                 <option value="Bekas">Kotor</option>
@@ -99,24 +96,21 @@
                 <option value="Reject">Reject</option>
             </select>
         </div>
-
         <select id="stAksi" style="width: 100%; margin-bottom: 10px; height: 40px;">
             <option value="Masuk">Masuk</option>
             <option value="Rekondisi">Rekon</option>
             <option value="Jual Mitra">Jual Mitra</option>
             <option value="Jual Umum">Jual Umum</option>
         </select>
-
         <button class="btn" onclick="saveSt()">PROSES STOK</button>
     </div>
-
     <div class="card" style="padding:0; overflow-x:auto;">
         <table style="width:100%; min-width:600px; border-collapse: collapse;">
             <thead>
                 <tr style="background: #f1f5f9;">
                     <th class="sticky-col">Barang</th>
-                    <th>REJ</th>
-                    <th>RKON</th>
+                    <th style="color:red">REJ</th>
+                    <th>REKON</th>
                     <th>MITRA</th>
                     <th>UMUM</th>
                     <th style="background:#fff7ed">KTR</th>
@@ -126,71 +120,7 @@
             <tbody id="tbStok"></tbody>
         </table>
     </div>
-
 </div>
-
-// FUNGSI SIMPAN DATA
-function saveSt() {
-    const t = document.getElementById('stTgl').value,
-          b = document.getElementById('stBrg').value,
-          qVal = document.getElementById('stQty').value,
-          ak = document.getElementById('stAksi').value,
-          kon = document.getElementById('stKon').value,
-          qc = document.getElementById('stQC').value,
-          sat = document.getElementById('stSatuan').value;
-
-    let q = parseFloat(qVal) || 0;
-    if (q <= 0) return showPop('error', 'Gagal', 'Isi jumlah barang!');
-
-    // Konversi otomatis Kg ke Liter untuk Minyak (Massa Jenis 0.91)
-    if (b.toLowerCase().includes("minyak") && sat === "Kg") {
-        q = q / 0.91;
-    }
-
-    db.ref('stok_logs').push({ t, b, q, ak, kon, qc }).then(() => {
-        document.getElementById('stQty').value = "";
-        showPop('success', 'Berhasil', 'Data stok telah diperbarui.');
-    });
-}
-
-// FUNGSI TAMPILKAN TABEL
-function renderStok() {
-    if (!D.master_barang) return;
-    const B_arr = Object.values(D.master_barang);
-    let h = "";
-    
-    B_arr.forEach(b => {
-        let s = { ktr: 0, rdy: 0, rej: 0, rk: 0, jm: 0, ju: 0 };
-        const isMinyak = b.toLowerCase().includes("minyak");
-
-        Object.values(D.stok_logs || {}).forEach(l => {
-            if (l.b !== b) return;
-            let qty = parseFloat(l.q) || 0;
-            
-            if (l.ak === "Masuk") {
-                if (l.qc === "Reject") s.rej += qty;
-                else (l.kon === "Bekas" ? s.ktr += qty : s.rdy += qty);
-            } 
-            else if (l.ak === "Rekondisi") { s.rk += qty; s.ktr -= qty; s.rdy += qty; }
-            else if (l.ak === "Jual Mitra") { s.jm += qty; s.rdy -= qty; }
-            else if (l.ak === "Jual Umum") { s.ju += qty; s.rdy -= qty; }
-        });
-
-        // Format angka desimal agar rapi
-        const f = (n) => n % 1 === 0 ? n : n.toFixed(1);
-
-        h += `<tr>
-            <td class="sticky-col"><b>${b}</b></td>
-            <td style="text-align:center; color:red">${f(s.rej)}</td>
-            <td style="text-align:center">${f(s.rk)}</td>
-            <td style="text-align:center">${f(s.jm)}</td>
-            <td style="text-align:center">${f(s.ju)}</td>
-            <td style="text-align:center; background:#fff7ed"><b>${f(s.ktr)}</b></td>
-            <td style="text-align:center; background:#dcfce7"><b>${f(s.rdy)}</b></td>
-        </tr>`;
-    }); 
-    document.getElementById('tbStok').innerHTML = h;
-}
 
             <div class="table-area" id="areaStok"><table><thead><tr><th class="sticky-col">BRG</th><th>AWAL KTR</th><th>AWAL RDY</th><th>IN KTR</th><th>IN RDY</th><th style="color:var(--d)">REJ</th><th>REKON</th><th>MITRA</th><th>UMUM</th><th style="background:#fef3c7">STOK KTR</th><th style="background:#dcfce7">STOK RDY</th><th style="background:var(--p); color:white">TOTAL</th></tr></thead><tbody id="tbStok"></tbody></table></div>
             <div class="flex-row">
