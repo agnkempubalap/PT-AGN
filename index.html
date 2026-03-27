@@ -257,49 +257,53 @@
     });
 }
 
-
-
         function renderStok() {
-    const B_arr = Object.values(D.master_barang || {}), fM = document.getElementById('fM').value;
-    const RHO = 0.91; // Massa jenis minyak standar
+    const B_arr = Object.values(D.master_barang || {});
+    const RHO = 0.91; // Massa jenis minyak
     let h = "";
     
     B_arr.forEach(b => {
-        let s = { masuk: 0, rej: 0, jm: 0, ju: 0, total: 0 };
+        // Inisialisasi hitungan untuk setiap barang
+        let s = { masuk: 0, rej: 0, rekon: 0, jm: 0, ju: 0, total: 0 };
         const isMinyak = b.toLowerCase().includes("minyak");
 
         Object.values(D.stok_logs || {}).forEach(l => {
             if (l.b !== b) return;
+            
             if (l.ak === "Masuk") {
                 if (l.qc === "Accepted") s.masuk += l.q;
                 else s.rej += l.q;
             } 
-            else if (l.ak === "Rekondisi") s.masuk += l.q;
-            else if (l.ak === "Jual Mitra") s.jm += l.q;
-            else if (l.ak === "Jual Umum") s.ju += l.q;
+            else if (l.ak === "Rekondisi") {
+                s.rekon += l.q;
+            }
+            else if (l.ak === "Jual Mitra") {
+                s.jm += l.q;
+            }
+            else if (l.ak === "Jual Umum") {
+                s.ju += l.q;
+            }
         });
 
-        s.total = s.masuk - (s.jm + s.ju);
+        // Rumus Sisa Stok: (Masuk + Rekon) - (Jual Mitra + Jual Umum)
+        s.total = (s.masuk + s.rekon) - (s.jm + s.ju);
 
-        // Fungsi internal untuk format tampilan satuan
+        // Fungsi pemberi satuan (Unit/Ltr)
         const fmt = (val) => {
-            if (!isMinyak) return `<b>${val}</b> <small>Unit</small>`;
-            const kg = (val * RHO).toFixed(2);
-            return `
-                <div style="line-height: 1.2;">
-                    <b>${val.toFixed(2)}</b> <small>Ltr</small><br>
-                    <span style="color: #64748b; font-size: 11px;">(${kg} Kg)</span>
-                </div>
-            `;
+            if (!isMinyak) return `<b>${val}</b><br><small>Unit</small>`;
+            const kg = (val * RHO).toFixed(1);
+            return `<b>${val.toFixed(1)}</b><br><small style="color:#64748b">${kg}kg</small>`;
         };
 
+        // SUSUNAN KOLOM TABEL
         h += `<tr>
-            <td class="sticky-col"><b>${b}</b></td>
-            <td>${fmt(s.masuk)}</td>
-            <td style="color: #ef4444; font-weight: bold;">${fmt(s.rej)}</td>
-            <td>${fmt(s.jm)}</td>
-            <td>${fmt(s.ju)}</td>
-            <td style="background: #dcfce7; border-left: 2px solid #16a34a; font-weight: bold;">${fmt(s.total)}</td>
+            <td class="sticky-col" style="font-size:12px"><b>${b}</b></td>
+            <td style="text-align:center; font-size:10px">${fmt(s.masuk)}</td>
+            <td style="text-align:center; font-size:10px; color:#ef4444">${fmt(s.rej)}</td>
+            <td style="text-align:center; font-size:10px">${fmt(s.rekon)}</td>
+            <td style="text-align:center; font-size:10px">${fmt(s.jm)}</td>
+            <td style="text-align:center; font-size:10px">${fmt(s.ju)}</td>
+            <td style="text-align:center; font-size:10px; background:#dcfce7"><b>${fmt(s.total)}</b></td>
         </tr>`;
     }); 
     document.getElementById('tbStok').innerHTML = h;
