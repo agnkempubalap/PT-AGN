@@ -409,39 +409,40 @@ function updateStok(jenis, qty) {
             }, 500);
         }
         function cellMod(d, k) {
+    // Bersihkan isi modal sebelum diisi agar tidak double
+    const isiModal = document.getElementById('modContent');
+    isiModal.innerHTML = ""; 
+
     let a = D.absensi?.[d]?.[k];
     let aks = Object.values(D.aktivitas || {}).filter(x => x.t === d && x.p?.includes(k));
     
     let listHtml = aks.length > 0 ? aks.map(x => {
-        const isSelesai = x.isCair && x.q > 0;
-        const icon = isSelesai ? '✅' : '⏳';
-        const color = isSelesai ? '#16a34a' : '#f59e0b';
-        return `<li style="margin-bottom:10px; border-bottom:1px solid #f1f5f9; padding-bottom:5px; list-style:none; display:flex; align-items:start; gap:10px;">
-            <div style="font-size:18px;">${icon}</div>
+        const cair = x.isCair && x.q > 0;
+        return `<li style="margin-bottom:8px; list-style:none; display:flex; gap:10px;">
+            <span>${cair ? '✅' : '⏳'}</span>
             <div>
-                <b style="color:${color}; font-size:9px;">${isSelesai ? 'HASIL UNIT' : 'PROGRES'}</b><br>
-                <span style="font-weight:700; font-size:12px;">${x.j}</span><br>
-                <small style="color:#64748b;">Output: ${x.q} unit</small>
+                <b style="color:${cair ? '#16a34a' : '#f59e0b'}; font-size:10px;">${cair ? 'CAIR' : 'PROGRES'}</b><br>
+                <span style="font-weight:bold;">${x.j}</span><br>
+                <small>Qty: ${x.q}</small>
             </div>
         </li>`;
-    }).join('') : '<li style="color:#94a3b8; font-style:italic; list-style:none;">Tidak ada aktivitas.</li>';
+    }).join('') : '<li>Tidak ada aktivitas</li>';
 
-    // DISINI KUNCINYA: Kita gabung semua jadi satu variabel 'content'
+    // Buat variabel content tanpa tombol TUTUP (karena kita akan tes apakah double-nya hilang)
     let content = `
-        <div style="background:#f8fafc; padding:12px; border-radius:12px; margin-bottom:15px; border:1px solid #e2e8f0;">
-            <p style="margin:0; font-size:11px;">PRESENSI:</p>
-            <p style="margin:4px 0; font-weight:800; color:var(--p);">${a?.j || 'ALFA/TANPA KETERANGAN'}</p>
-            <p style="margin:0; font-size:11px;">${a?.jam || '--:--'} s/d ${a?.jamOut || '--:--'}</p>
+        <div style="background:#f0f4f8; padding:10px; border-radius:8px; margin-bottom:10px;">
+            <b>Status: ${a?.j || '-'}</b><br>
+            <small>${a?.jam || '--'} s/d ${a?.jamOut || '--'}</small>
         </div>
-        <p style="font-weight:800; font-size:12px; margin-bottom:12px;">LOG AKTIVITAS</p>
-        <ul style="padding:0; margin:0;">${listHtml}</ul>
-        <div style="margin-top:20px; display:flex; flex-direction:column; gap:8px;">
-            <button class="btn" style="background:var(--d); width:100%;" onclick="if(confirm('Hapus absen ${k}?')) { removeItem('absensi/${d}','${k}'); closeMod(); }">HAPUS ABSENSI</button>
-            <button class="btn" style="background:#64748b; width:100%;" onclick="closeMod()">TUTUP</button>
-        </div>
+        <ul style="padding:0;">${listHtml}</ul>
+        <hr>
+        <button class="btn" style="background:red; width:100%; color:white;" 
+            onclick="if(confirm('Hapus?')){removeItem('absensi/${d}','${k}');closeMod();}">
+            HAPUS ABSEN
+        </button>
     `;
     
-    openMod(`Detail ${k} (${d})`, content);
+    openMod("Detail " + k, content);
 }
 
         async function saveBl() { const t=document.getElementById('blTgl').value, n=document.getElementById('blNama').value, rp=parseInt(document.getElementById('blRp').value), file=document.getElementById('blImg').files[0]; let img=""; if(file){ const c=document.createElement('canvas'), ctx=c.getContext('2d'), i=await createImageBitmap(file); c.width=400; c.height=i.height/i.width*400; ctx.drawImage(i,0,0,400,c.height); img=c.toDataURL('image/jpeg',0.6); } if(n&&rp) db.ref('belanja').push({ t, n, rp, img }).then(()=>{ alert("Nota!"); }); }
