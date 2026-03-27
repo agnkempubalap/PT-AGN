@@ -263,47 +263,47 @@
     let h = "";
     
     B_arr.forEach(b => {
-        // Inisialisasi hitungan untuk setiap barang
-        let s = { masuk: 0, rej: 0, rekon: 0, jm: 0, ju: 0, total: 0 };
+        // Inisialisasi semua kategori saldo
+        let s = { ktr: 0, rdy: 0, rej: 0, rk: 0, jm: 0, ju: 0 };
         const isMinyak = b.toLowerCase().includes("minyak");
 
         Object.values(D.stok_logs || {}).forEach(l => {
             if (l.b !== b) return;
             
             if (l.ak === "Masuk") {
-                if (l.qc === "Accepted") s.masuk += l.q;
-                else s.rej += l.q;
+                if (l.qc === "Reject") s.rej += l.q;
+                else {
+                    l.kon === "Bekas" ? s.ktr += l.q : s.rdy += l.q;
+                }
             } 
             else if (l.ak === "Rekondisi") {
-                s.rekon += l.q;
+                s.rk += l.q; s.ktr -= l.q; s.rdy += l.q;
             }
             else if (l.ak === "Jual Mitra") {
-                s.jm += l.q;
+                s.jm += l.q; s.rdy -= l.q;
             }
             else if (l.ak === "Jual Umum") {
-                s.ju += l.q;
+                s.ju += l.q; s.rdy -= l.q;
             }
         });
 
-        // Rumus Sisa Stok: (Masuk + Rekon) - (Jual Mitra + Jual Umum)
-        s.total = (s.masuk + s.rekon) - (s.jm + s.ju);
-
-        // Fungsi pemberi satuan (Unit/Ltr)
+        // Fungsi pemberi satuan otomatis (Unit / Ltr & Kg)
         const fmt = (val) => {
-            if (!isMinyak) return `<b>${val}</b><br><small>Unit</small>`;
-            const kg = (val * RHO).toFixed(1);
-            return `<b>${val.toFixed(1)}</b><br><small style="color:#64748b">${kg}kg</small>`;
+            let v = parseFloat(val) || 0;
+            if (!isMinyak) return `<b>${v}</b><br><small>Unit</small>`;
+            const kg = (v * RHO).toFixed(1);
+            return `<b>${v.toFixed(1)}</b><br><small style="color:#64748b">${kg}kg</small>`;
         };
 
-        // SUSUNAN KOLOM TABEL
+        // SUSUNAN KOLOM (Semua variabel s.xx harus dimasukkan ke <td>)
         h += `<tr>
             <td class="sticky-col" style="font-size:12px"><b>${b}</b></td>
-            <td style="text-align:center; font-size:10px">${fmt(s.masuk)}</td>
             <td style="text-align:center; font-size:10px; color:#ef4444">${fmt(s.rej)}</td>
-            <td style="text-align:center; font-size:10px">${fmt(s.rekon)}</td>
+            <td style="text-align:center; font-size:10px">${fmt(s.rk)}</td>
             <td style="text-align:center; font-size:10px">${fmt(s.jm)}</td>
             <td style="text-align:center; font-size:10px">${fmt(s.ju)}</td>
-            <td style="text-align:center; font-size:10px; background:#dcfce7"><b>${fmt(s.total)}</b></td>
+            <td style="text-align:center; font-size:10px; background:#fff7ed"><b>${fmt(s.ktr)}</b></td>
+            <td style="text-align:center; font-size:10px; background:#dcfce7"><b>${fmt(s.rdy)}</b></td>
         </tr>`;
     }); 
     document.getElementById('tbStok').innerHTML = h;
