@@ -77,24 +77,26 @@
                 <div class="flex-row"><input type="text" id="inB" placeholder="Barang..."><button class="btn" style="background:var(--p); width:80px" onclick="addItem('master_barang', 'inB')">ADD</button></div>
                 <div id="listB" style="display:flex; flex-wrap:wrap; gap:5px"></div>
             </div>
-            <div class="card">
-                <h3>📥 Logistik & Penjualan</h3>
-                <div class="flex-row"><input type="date" id="stTgl"><select id="stBrg"></select></div>
-                <div class="flex-row"><input type="number" id="stQty" placeholder="Jumlah"><select id="stKon"><option value="Bekas">Kotor</option><option value="Baru">Rdy</option></select></div>
-                            <div class="flex-row">
-                <input type="number" id="stQty" step="any" placeholder="Jumlah" style="flex: 1;">
-                
-                <select id="stSatuan" style="width: 70px; font-weight: bold; background: #eee;">
-                    <option value="Ltr">Ltr</option>
-                    <option value="Kg">Kg</option>
-                </select>
+            <div class="flex-row">
+    <input type="number" id="stQty" step="any" placeholder="Jumlah (Angka)" style="flex: 1;">
+    
+    <select id="stSatuan" style="width: 80px; font-weight: bold; background: #f1f5f9;">
+        <option value="Ltr">Ltr</option>
+        <option value="Kg">Kg</option>
+    </select>
+</div>
 
-                <select id="stKon">
-                    <option value="Bekas">Kotor</option>
-                    <option value="Baru">Rdy</option>
-                </select>
-            </div>
-            
+<div class="flex-row">
+    <select id="stKon" style="flex: 1;">
+        <option value="Bekas">Kotor</option>
+        <option value="Baru">Rdy</option>
+    </select>
+    
+    <select id="stQC" style="flex: 1;">
+        <option value="Accepted">Accepted</option>
+        <option value="Reject">Reject</option>
+    </select>
+</div>          
             <div class="flex-row">
                 <select id="stQC" style="flex: 1;">
                     <option value="Accepted">Accepted</option>
