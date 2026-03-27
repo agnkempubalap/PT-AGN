@@ -519,27 +519,34 @@ function showNotaLogs() {
     openMod("Rekap Nota Belanja", h || "Tidak ada nota di bulan ini");
 }
 
-// --- FUNGSI MODAL UTAMA (TETAP DI SINI AGAR AMAN) ---
+// FUNGSI GLOBAL UNTUK MODAL (AGAR TIDAK CRASH)
 window.openMod = function(t, h) {
-    document.getElementById('modTitle').innerText = t;
-    document.getElementById('modContent').innerHTML = h;
-    document.getElementById('modalUni').style.display = 'flex';
+    const m = document.getElementById('modalUni');
+    if (m) {
+        document.getElementById('modTitle').innerText = t;
+        document.getElementById('modContent').innerHTML = h;
+        m.style.display = 'flex';
+    }
 };
 
 window.closeMod = function() {
-    document.getElementById('modalUni').style.display = 'none';
+    const m = document.getElementById('modalUni');
+    if (m) m.style.display = 'none';
 };
 
 window.cellMod = function(d, k) {
     try {
-        const dataAbsen = (window.D && D.absensi && D.absensi[d]) ? D.absensi[d][k] : null;
-        const semuaKerja = (window.D && D.aktivitas) ? Object.values(D.aktivitas) : [];
-        const listKerja = semuaKerja.filter(x => String(x.t) === String(d) && (x.p && x.p.includes(k)));
+        // AMBIL DATA ABSENSI
+        const absen = (window.D && D.absensi && D.absensi[d]) ? D.absensi[d][k] : null;
+        
+        // AMBIL & FILTER AKTIVITAS
+        const semuaAktv = (window.D && D.aktivitas) ? Object.values(D.aktivitas) : [];
+        const filterAktv = semuaAktv.filter(x => String(x.t) === String(d) && (x.p && x.p.includes(k)));
 
-        let htmlList = listKerja.length > 0 ? listKerja.map(x => {
+        let logHtml = filterAktv.length > 0 ? filterAktv.map(x => {
             const cair = x.isCair && x.q > 0;
             return `
-            <div style="display:flex; gap:10px; margin-bottom:12px; border-bottom:1px solid #eee; padding-bottom:8px; align-items:center; text-align:left;">
+            <div style="display:flex; gap:10px; margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:5px; text-align:left;">
                 <div style="font-size:20px;">${cair ? '✅' : '⏳'}</div>
                 <div style="line-height:1.2;">
                     <b style="color:${cair ? '#16a34a' : '#f59e0b'}; font-size:10px;">${cair ? 'HASIL' : 'PROGRES'}</b><br>
@@ -547,19 +554,19 @@ window.cellMod = function(d, k) {
                     <small>Output: ${x.q || 0} unit</small>
                 </div>
             </div>`;
-        }).join('') : '<p style="color:#999; font-style:italic; font-size:12px;">Tidak ada aktivitas.</p>';
+        }).join('') : '<p style="color:#999; font-style:italic; font-size:12px; text-align:left;">Tidak ada aktivitas.</p>';
 
         const content = `
             <div style="text-align:left;">
                 <div style="background:#f1f5f9; padding:12px; border-radius:10px; margin-bottom:15px; border:1px solid #e2e8f0;">
                     <p style="margin:0; font-size:11px; color:#64748b;">PRESENSI:</p>
-                    <p style="margin:4px 0; font-weight:800; color:#00a8e8;">${dataAbsen?.j || 'TANPA KETERANGAN'}</p>
-                    <p style="margin:0; font-size:11px; color:#64748b;">Jam: ${dataAbsen?.jam || '--:--'} s/d ${dataAbsen?.jamOut || '--:--'}</p>
+                    <p style="margin:4px 0; font-weight:800; color:#00a8e8;">${absen?.j || 'TANPA KETERANGAN'}</p>
+                    <p style="margin:0; font-size:11px; color:#64748b;">Jam: ${absen?.jam || '--:--'} s/d ${absen?.jamOut || '--:--'}</p>
                 </div>
-                <p style="font-weight:bold; font-size:12px; margin-bottom:10px;">LOG AKTIVITAS:</p>
-                <div style="max-height:200px; overflow-y:auto;">${htmlList}</div>
+                <p style="font-weight:bold; font-size:12px; margin-bottom:10px; color:#1e293b;">LOG AKTIVITAS:</p>
+                <div style="max-height:200px; overflow-y:auto; padding-right:5px;">${logHtml}</div>
                 <div style="margin-top:20px;">
-                    <button type="button" class="btn" style="background:#ef4444; color:white; width:100%; border:none; padding:15px; border-radius:8px; font-weight:bold;" 
+                    <button type="button" class="btn" style="background:#ef4444; color:white; width:100%; padding:15px; border-radius:8px; font-weight:bold; border:none; cursor:pointer;" 
                         onclick="if(confirm('Hapus absen ${k}?')){ removeItem('absensi/${d}','${k}'); closeMod(); }">
                         HAPUS ABSENSI
                     </button>
@@ -567,8 +574,11 @@ window.cellMod = function(d, k) {
             </div>`;
 
         openMod("Detail " + k, content);
-    } catch (e) { console.error(e); }
+    } catch (err) {
+        console.error("Error CellMod:", err);
+    }
 };
+
 
 
     </script>
