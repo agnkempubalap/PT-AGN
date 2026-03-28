@@ -179,144 +179,6 @@
             document.getElementById('stBrg').innerHTML = B.map(b=>`<option value="${b[1]}">${b[1]}</option>`).join('');
         }
 
-        // ==========================================
-// BAGIAN 1: PENDETEKSI PERUBAHAN (LISTENERS)
-// ==========================================
-// Taruh ini di dalam window.onload jika ada, 
-// atau biarkan di luar jika ditaruh di paling bawah script.
-
-// 1. Deteksi Barang (Minyak)
-document.getElementById('stBrg').addEventListener('change', function() {
-    const isMinyak = this.value.toLowerCase().includes("minyak");
-    document.getElementById('stUnit').style.display = isMinyak ? "block" : "none";
-});
-
-// 2. Deteksi Aksi (Rekon/Jual) untuk Sembunyikan Dropdown
-document.getElementById('stAksi').addEventListener('change', function() {
-    const ak = this.value;
-    const isRekon = ak === "Rekondisi";
-    const isJual = ak.includes("Jual");
-    
-    // Sembunyikan Kondisi & QC jika sedang Rekon atau Jual
-    const displayMode = (isRekon || isJual) ? "none" : "block";
-    document.getElementById('stKon').style.display = displayMode;
-    document.getElementById('stQC').style.display = displayMode;
-});
-
-// ==========================================
-// BAGIAN 2: LOGIKA SIMPAN (DENGAN PROTEKSI)
-// ==========================================
-function saveSt() {
-    const t = document.getElementById('stTgl').value;
-    const b = document.getElementById('stBrg').value;
-    let q = parseFloat(document.getElementById('stQty').value);
-    const ak = document.getElementById('stAksi').value;
-    const isMinyak = b.toLowerCase().includes("minyak");
-    
-    if(!q || !t || !b) return alert("⚠️ Lengkapi Tanggal, Barang, dan Jumlah!");
-
-    // --- HITUNG STOK REAL-TIME (Cek Saldo) ---
-    let stokKtr = 0;
-    let stokRdy = 0;
-    Object.values(D.stok_logs || {}).forEach(l => {
-        if(l.b !== b) return;
-        if(l.ak === "Masuk") {
-            l.kon === "Bekas" ? stokKtr += l.q : stokRdy += l.q;
-        } else if(l.ak === "Rekondisi") {
-            stokKtr -= l.q; stokRdy += l.q;
-        } else if(l.ak.includes("Jual")) {
-            stokRdy -= l.q;
-        }
-    });
-
-    // --- VALIDASI: CEK APAKAH STOK CUKUP? ---
-    if(ak === "Rekondisi" && q > stokKtr) {
-        return alert(`❌ Gagal! Stok KOTOR ${b} cuma ada ${stokKtr}. Tidak bisa rekon ${q}.`);
-    } 
-    if(ak.includes("Jual") && q > stokRdy) {
-        return alert(`❌ Gagal! Stok READY ${b} cuma ada ${stokRdy}. Tidak bisa jual ${q}.`);
-    }
-
-    // --- KONVERSI MINYAK (Jika Input Kg) ---
-    const unitInput = isMinyak ? document.getElementById('stUnit').value : "Pcs";
-    if (isMinyak && unitInput === "Kg") {
-        q = parseFloat((q / 0.9).toFixed(2)); // Ubah ke standar Liter
-    }
-
-    // --- SET KONDISI OTOMATIS ---
-    let konFinal = isMinyak ? "Baru" : document.getElementById('stKon').value;
-    const qcFinal = (ak === "Masuk") ? document.getElementById('stQC').value : "Accepted";
-
-    // SIMPAN KE FIREBASE
-    db.ref('stok_logs').push({ t, b, q, kon: konFinal, qc: qcFinal, ak: ak }).then(() => {
-        // Logika Upah Jerigen
-        if(ak.includes("Jual") && b.toLowerCase().includes("jerigen")) {
-            let sisa = q;
-            let logs = Object.entries(D.aktivitas || {}).filter(x => x[1].j.toLowerCase().includes(b.toLowerCase()) && !x[1].isCair);
-            logs.forEach(log => {
-                if(sisa <= 0) return;
-                if(log[1].q <= sisa) { db.ref(`aktivitas/${log[0]}`).update({ isCair: true }); sisa -= log[1].q; }
-            });
-        }
-        document.getElementById('stQty').value = ""; 
-        alert(`✅ Berhasil mencatat ${ak} ${b}`);
-    });
-}
-
-// ==========================================
-// BAGIAN 3: TAMPILAN TABEL (DUAL-UNIT)
-// ==========================================
-function renderStok() {
-    const B_arr = Object.values(D.master_barang || {}), fM = document.getElementById('fM').value;
-    let h = "";
-    
-    B_arr.forEach(b => {
-        let s = { ak:0, ab:0, ik:0, ib:0, rej:0, rk:0, jm:0, ju:0 };
-        const isMinyak = b.toLowerCase().includes("minyak");
-
-        Object.values(D.stok_logs || {}).forEach(l => {
-            if(l.b!==b) return; 
-            if(l.t?.slice(0,7)<fM) { 
-                if(l.ak==="Masuk") l.kon==="Bekas"?s.ak+=l.q:s.ab+=l.q; 
-                else if(l.ak==="Rekondisi"){s.ak-=l.q;s.ab+=l.q;} 
-                else if(l.ak.includes("Jual")) s.ab-=l.q; 
-            } else if(l.t?.slice(0,7)===fM) { 
-                if(l.ak==="Masuk") l.kon==="Bekas"?s.ik+=l.q:s.ib+=l.q; 
-                else if(l.ak==="Rekondisi") s.rk+=l.q; 
-                else if(l.ak==="Jual Mitra") s.jm+=l.q; 
-                else if(l.ak==="Jual Umum") s.ju+=l.q; 
-                if(l.qc==="Reject") s.rej+=l.q; 
-            }
-        });
-
-        let ktr = (s.ak+s.ik)-s.rk, rdy = (s.ab+s.ib+s.rk)-(s.jm+s.ju), total = ktr+rdy;
-
-        // Fungsi Helper untuk Tampilan Dual-Unit
-        const dual = (val, isKtrCol = false) => {
-            // Jika ini barang minyak DAN ini kolom kotor, tampilkan strip
-            if (isMinyak && isKtrCol) return `<td style="color:#ccc">-</td>`;
-            
-            if (!isMinyak) return `<td>${val}</td>`;
-            
-            let kg = (val * 0.9).toFixed(1);
-            return `<td style="padding:2px; font-size:10px;">
-                        <b>${val.toFixed(1)}L</b><br>
-                        <span style="color:gray; font-size:8px;">${kg}kg</span>
-                    </td>`;
-        };
-
-        h += `<tr>
-            <td class="sticky-col">${b}</td>
-            ${dual(s.ak, true)}  ${dual(s.ab)}        ${dual(s.ik, true)}  ${dual(s.ib)}        <td style="color:red; font-size:9px;">${isMinyak ? (s.rej*0.9).toFixed(1)+'k' : s.rej}</td>
-            <td>${isMinyak ? "-" : s.rk}</td> ${dual(s.jm)}        ${dual(s.ju)}        ${dual(ktr, true)}   ${dual(rdy)}         <td style="background:var(--p); color:white; font-weight:bold; font-size:10px;">
-                ${isMinyak ? total.toFixed(1)+'L<br>'+(total*0.9).toFixed(1)+'k' : total}
-            </td>
-        </tr>`;
-    }); 
-    document.getElementById('tbStok').innerHTML = h;
-}
-
-
         // --- CHAIN LOGIC KERJA ---
         function renderCheckKaryawan() {
             const tgl = document.getElementById('akTgl').value;
@@ -405,46 +267,95 @@ function renderStok() {
         function showLogs(t) { let l=Object.entries(D[t]||{}).reverse().slice(0,30); openMod("Log", l.map(x=>`<div style="font-size:10px;padding:5px;border-bottom:1px solid #eee"><span>[${x[1].t}] ${x[1].b||x[1].j} (${x[1].q})</span> <b onclick="removeItem('${t}','${x[0]}')" style="color:red; cursor:pointer">×</b></div>`).join('')); }
         function genSlip(n) { const fM=document.getElementById('fUang').value, T=D.tarif||DEF_TARIF; let br=0, bo=0, ka=0, list=""; Object.values(D.aktivitas||{}).forEach(a=>{ if(a.t?.slice(0,7)===fM&&a.p?.includes(n)){ let u=(T[a.j]||0)*a.q/(a.j.includes("pasang")?1:a.p.length); if(a.isCair) { br+=u; list+=`<tr><td>${a.t}</td><td>${a.j}</td><td>${Math.round(u).toLocaleString()}</td></tr>`; } } }); Object.values(D.kasbon_bonus||{}).forEach(kb=>{if(kb.n===n&&kb.t===fM) kb.tipe==="Bonus"?bo+=kb.rp:ka+=kb.rp;}); openMod("Slip", `<div id="p-slip" style="padding:15px; background:white; color:black"><h3>KEMPU BALAP</h3><p>${n} | ${fM}</p><hr><table style="width:100%; font-size:10px">${list}</table><hr><b>Total: Rp ${Math.round((br+bo)-ka).toLocaleString()}</b></div><button class="btn" onclick="expPdf('p-slip','Slip_${n}')">PRINT</button>`); }
 
-// 1. Logika agar Pilihan Ltr/Kg Muncul Otomatis
+// ============================================================
+// 1. OTOMATISASI UI (MENGELOLA DROPDOWN & UNIT)
+// ============================================================
+// Fungsi ini otomatis berjalan saat Anda memilih barang atau aksi
 document.getElementById('stBrg').addEventListener('change', function() {
     const isMinyak = this.value.toLowerCase().includes("minyak");
-    document.getElementById('stUnit').style.display = isMinyak ? "block" : "none";
+    const stUnit = document.getElementById('stUnit');
+    const stKon = document.getElementById('stKon');
+    const stAksi = document.getElementById('stAksi');
+    
+    // Tampilkan unit Ltr/Kg hanya untuk minyak, sembunyikan dropdown Kondisi
+    stUnit.style.display = isMinyak ? "block" : "none";
+    stKon.style.display = isMinyak ? "none" : "block";
+
+    // Update pilihan Aksi: Hilangkan "Rekondisi" jika pilih minyak
+    if (isMinyak) {
+        stAksi.innerHTML = `
+            <option value="Masuk">Masuk</option>
+            <option value="Jual Mitra">Jual Mitra</option>
+            <option value="Jual Umum">Jual Umum</option>
+        `;
+    } else {
+        stAksi.innerHTML = `
+            <option value="Masuk">Masuk</option>
+            <option value="Rekondisi">Rekondisi</option>
+            <option value="Jual Mitra">Jual Mitra</option>
+            <option value="Jual Umum">Jual Umum</option>
+        `;
+    }
 });
 
-// 2. Fungsi Simpan Stok (Dengan Konversi Kg ke Ltr)
+document.getElementById('stAksi').addEventListener('change', function() {
+    const ak = this.value;
+    const isRekon = ak === "Rekondisi";
+    const isJual = ak.includes("Jual");
+    
+    // Sembunyikan dropdown Kondisi & QC saat Rekon atau Jual
+    const displayMode = (isRekon || isJual) ? "none" : "block";
+    document.getElementById('stKon').style.display = displayMode;
+    document.getElementById('stQC').style.display = displayMode;
+});
+
+// ============================================================
+// 2. FUNGSI SIMPAN STOK (DENGAN PROTEKSI STOK MINUS)
+// ============================================================
 function saveSt() {
     const t = document.getElementById('stTgl').value;
     const b = document.getElementById('stBrg').value;
     let q = parseFloat(document.getElementById('stQty').value);
     const ak = document.getElementById('stAksi').value;
     const isMinyak = b.toLowerCase().includes("minyak");
-    const unitInput = isMinyak ? document.getElementById('stUnit').value : "Pcs";
     
-    if(!q) return alert("Isi Jumlah!");
+    if(!q || !t || !b) return alert("⚠️ Mohon isi Tanggal, Barang, dan Jumlah!");
 
-    // Konversi Otomatis: Jika input Kg, simpan sebagai Liter (q / 0.9)
-    if (isMinyak && unitInput === "Kg") {
-        q = parseFloat((q / 0.9).toFixed(2));
-    }
+    // --- PROTEKSI: CEK SALDO STOK SEBELUM SIMPAN ---
+    let sKtr = 0, sRdy = 0;
+    Object.values(D.stok_logs || {}).forEach(l => {
+        if(l.b !== b) return;
+        if(l.ak === "Masuk") {
+            l.kon === "Bekas" ? sKtr += l.q : sRdy += l.q;
+        } else if(l.ak === "Rekondisi") {
+            sKtr -= l.q; sRdy += l.q;
+        } else if(l.ak.includes("Jual")) {
+            sRdy -= l.q;
+        }
+    });
 
+    // Validasi saldo agar tidak minus
+    if(ak === "Rekondisi" && q > sKtr) return alert(`❌ Stok Kotor ${b} tidak cukup! Tersisa: ${sKtr}`);
+    if(ak.includes("Jual") && q > sRdy) return alert(`❌ Stok Ready ${b} tidak cukup! Tersisa: ${sRdy}`);
+
+    // Konversi Minyak jika input dalam Kg
+    const uIn = isMinyak ? document.getElementById('stUnit').value : "Pcs";
+    if (isMinyak && uIn === "Kg") q = parseFloat((q / 0.9).toFixed(2));
+
+    // Atur kondisi otomatis
     let konFinal = isMinyak ? "Baru" : document.getElementById('stKon').value;
     const qcFinal = (ak === "Masuk") ? document.getElementById('stQC').value : "Accepted";
 
+    // Simpan ke Firebase
     db.ref('stok_logs').push({ t, b, q, kon: konFinal, qc: qcFinal, ak: ak }).then(() => {
-        // Cairkan upah jerigen jika ada penjualan
-        if(ak.includes("Jual") && b.toLowerCase().includes("jerigen")) {
-            let sisa = q;
-            let logs = Object.entries(D.aktivitas || {}).filter(x => x[1].j.toLowerCase().includes(b.toLowerCase()) && !x[1].isCair);
-            logs.forEach(log => {
-                if(sisa <= 0) return;
-                if(log[1].q <= sisa) { db.ref(`aktivitas/${log[0]}`).update({ isCair: true }); sisa -= log[1].q; }
-            });
-        }
-        document.getElementById('stQty').value=""; alert("Stok " + b + " Berhasil Disimpan!");
+        document.getElementById('stQty').value = ""; 
+        alert(`✅ Berhasil mencatat ${ak} ${b}`);
     });
 }
 
-// 3. Fungsi Render Tabel (Tampilan Dua Baris: Atas Ltr, Bawah Kg)
+// ============================================================
+// 3. FUNGSI RENDER TABEL (DENGAN TANDA STRIP UNTUK MINYAK)
+// ============================================================
 function renderStok() {
     const B_arr = Object.values(D.master_barang || {}), fM = document.getElementById('fM').value;
     let h = "";
@@ -455,11 +366,11 @@ function renderStok() {
 
         Object.values(D.stok_logs || {}).forEach(l => {
             if(l.b!==b) return; 
-            if(l.t?.slice(0,7)<fM) { 
+            if(l.t?.slice(0,7) < fM) { 
                 if(l.ak==="Masuk") l.kon==="Bekas"?s.ak+=l.q:s.ab+=l.q; 
                 else if(l.ak==="Rekondisi"){s.ak-=l.q;s.ab+=l.q;} 
                 else if(l.ak.includes("Jual")) s.ab-=l.q; 
-            } else if(l.t?.slice(0,7)===fM) { 
+            } else if(l.t?.slice(0,7) === fM) { 
                 if(l.ak==="Masuk") l.kon==="Bekas"?s.ik+=l.q:s.ib+=l.q; 
                 else if(l.ak==="Rekondisi") s.rk+=l.q; 
                 else if(l.ak==="Jual Mitra") s.jm+=l.q; 
@@ -470,23 +381,22 @@ function renderStok() {
 
         let ktr = (s.ak+s.ik)-s.rk, rdy = (s.ab+s.ib+s.rk)-(s.jm+s.ju), total = ktr+rdy;
 
-        // Fungsi Helper untuk membuat tampilan Ltr di atas & Kg di bawah
-        const formatDual = (val) => {
+        // Fungsi Helper untuk Tampilan Dual-Unit & Strip Kolom Kotor
+        const dual = (val, isKtrCol = false) => {
+            if (isMinyak && isKtrCol) return `<td style="color:#ccc">-</td>`;
             if (!isMinyak) return `<td>${val}</td>`;
             let kg = (val * 0.9).toFixed(1);
-            return `<td style="padding:2px; font-size:10px;">
-                        <b>${val.toFixed(1)}</b><br>
-                        <small style="color:#64748b; font-size:8px;">${kg}kg</small>
-                    </td>`;
+            return `<td style="font-size:10px"><b>${val.toFixed(1)}L</b><br><small style="color:gray">${kg}k</small></td>`;
         };
 
-        h += `<tr><td class="sticky-col">${b}</td>
-            ${formatDual(s.ak)}${formatDual(s.ab)}${formatDual(s.ik)}${formatDual(s.ib)}
-            <td style="color:red; font-size:9px;">${isMinyak ? (s.rej*0.9).toFixed(1)+'kg' : s.rej}</td>
+        h += `<tr>
+            <td class="sticky-col">${b}</td>
+            ${dual(s.ak, true)}${dual(s.ab)}${dual(s.ik, true)}${dual(s.ib)}
+            <td style="color:red; font-size:9px;">${isMinyak ? (s.rej*0.9).toFixed(1)+'k' : s.rej}</td>
             <td>${isMinyak ? "-" : s.rk}</td>
-            ${formatDual(s.jm)}${formatDual(s.ju)}${formatDual(ktr)}${formatDual(rdy)}
+            ${dual(s.jm)}${dual(s.ju)}${dual(ktr, true)}${dual(rdy)}
             <td style="background:var(--p); color:white; font-weight:bold; font-size:10px;">
-                ${isMinyak ? total.toFixed(1)+'L<br>'+(total*0.9).toFixed(1)+'kg' : total}
+                ${isMinyak ? total.toFixed(1)+'L<br>'+(total*0.9).toFixed(1)+'k' : total}
             </td>
         </tr>`;
     }); 
