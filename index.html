@@ -409,9 +409,12 @@ function renderStok() {
         let s = { ak:0, ab:0, ik:0, ib:0, rej:0, rk:0, jm:0, ju:0 };
         const nB = b.toUpperCase();
         
-        // Deteksi apakah barang ini punya satuan L atau Kg (Konversi)
-        const isCair = nB.includes("MINYAK") || nB.includes("CAIR") || nB.includes("LITER") || nB.includes("(L)");
-        const isKg = nB.includes("KG") || nB.includes("TIMBANG") || isCair; // Kita anggap barang cair bisa jadi Kg
+        // 1. Deteksi Barang Cair (Minyak/Cair/Air)
+        const isCair = nB.includes("MINYAK") || nB.includes("CAIR") || nB.includes("AIR") || nB.includes("LITER");
+        
+        // 2. Deteksi Barang Timbangan (Kg)
+        // Kita buat isKg aktif jika ada kata KG atau jika itu barang cair (konversi)
+        const isKg = nB.includes("KG") || nB.includes("TIMBANG");
 
         Object.values(D.stok_logs || {}).forEach(l => {
             if(l.b !== b) return; 
@@ -440,15 +443,16 @@ function renderStok() {
             lb = ' <small style="color:orange;font-size:8px;">▲</small>';
         }
 
-        // TAMPILAN: Jika barang cair, kita tampilkan Kg di bawahnya sebagai konversi
+        // --- FUNGSI SATUAN (L / Kg) ---
         const dual = (v, isK) => {
             if (isCair && isK) return `<td style="color:#ccc">-</td>`;
-            // Disini kita paksa muncul 'Kg' di bawah angka untuk barang konversi
-            let unit = isCair ? '<br><small style="font-size:7px;font-weight:normal;">Kg</small>' : '';
-            return `<td style="line-height:1; font-size:10px;">${Math.round(v)}${unit}</td>`;
+            // Tampilkan L jika barang cair, tampilkan Kg jika barang timbangan
+            let u = isCair ? '<br><small style="font-size:7px;">L</small>' : 
+                    isKg ? '<br><small style="font-size:7px;">Kg</small>' : '';
+            return `<td style="line-height:1; font-size:10px;">${Math.round(v)}${u}</td>`;
         };
 
-        const getU = () => isCair ? '<br><small style="font-size:7px;">Kg</small>' : '';
+        const getU = () => isCair ? '<br><small style="font-size:7px;">L</small>' : isKg ? '<br><small style="font-size:7px;">Kg</small>' : '';
 
         h += `<tr ${warn}>
             <td class="sticky-col" onclick="promptThreshold('${b}')" style="cursor:pointer;background:inherit;font-size:9px;white-space:normal;line-height:1;font-weight:bold;">${b}${lb}</td>
