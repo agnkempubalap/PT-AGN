@@ -369,7 +369,11 @@ function renderStok() {
     
     B_arr.forEach(b => {
         let s = { ak:0, ab:0, ik:0, ib:0, rej:0, rk:0, jm:0, ju:0 };
-        const isMinyak = b.toLowerCase().includes("minyak");
+        
+        // --- PERBAIKAN DI SINI ---
+        // Kita gunakan nama barang 'b' untuk mendeteksi apakah itu cairan
+        const namaBarang = b.toLowerCase();
+        const isCair = namaBarang.includes("minyak") || namaBarang.includes("cair");
 
         Object.values(D.stok_logs || {}).forEach(l => {
             if(l.b!==b) return; 
@@ -388,10 +392,10 @@ function renderStok() {
 
         let ktr = (s.ak+s.ik)-s.rk, rdy = (s.ab+s.ib+s.rk)-(s.jm+s.ju), total = ktr+rdy;
 
-        // Fungsi Helper: Menambahkan teks "Kg" dan memperbaiki tampilan Reject
+        // Gunakan variabel 'isCair' di helper dual
         const dual = (val, isKtrCol = false) => {
-            if (isMinyak && isKtrCol) return `<td style="color:#ccc">-</td>`;
-            if (!isMinyak) return `<td>${val}</td>`;
+            if (isCair && isKtrCol) return `<td style="color:#ccc">-</td>`;
+            if (!isCair) return `<td>${val}</td>`;
             let kg = (val * 0.9).toFixed(1);
             return `<td style="font-size:10px"><b>${val.toFixed(1)}L</b><br><small style="color:gray">${kg}kg</small></td>`;
         };
@@ -401,14 +405,14 @@ function renderStok() {
             ${dual(s.ak, true)}${dual(s.ab)}${dual(s.ik, true)}${dual(s.ib)}
             
             <td style="color:red; font-size:10px;">
-                ${isMinyak ? `<b>${s.rej.toFixed(1)}L</b><br><small>${(s.rej*0.9).toFixed(1)}kg</small>` : s.rej}
+                ${isCair ? `<b>${s.rej.toFixed(1)}L</b><br><small>${(s.rej*0.9).toFixed(1)}kg</small>` : s.rej}
             </td>
 
-            <td>${isMinyak ? "-" : s.rk}</td>
+            <td>${isCair ? "-" : s.rk}</td>
             ${dual(s.jm)}${dual(s.ju)}${dual(ktr, true)}${dual(rdy)}
             
             <td style="background:var(--p); color:white; font-weight:bold; font-size:10px;">
-                ${isMinyak ? total.toFixed(1)+'L<br>'+(total*0.9).toFixed(1)+'kg' : total}
+                ${isCair ? total.toFixed(1)+'L<br>'+(total*0.9).toFixed(1)+'kg' : total}
             </td>
         </tr>`;
     }); 
