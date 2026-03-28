@@ -348,6 +348,29 @@ function saveSt() {
 
     // Simpan ke Firebase
     db.ref('stok_logs').push({ t, b, q, kon: konFinal, qc: qcFinal, ak: ak }).then(() => {
+    // ... kode simpan ke firebase ...
+    db.ref('stok_logs').push({ t, b, q, kon: konFinal, qc: qcFinal, ak: ak }).then(() => {
+        // 1. Kosongkan input jumlah
+        document.getElementById('stQty').value = ""; 
+        
+        // 2. Reset pilihan barang ke awal (Opsional, agar kembali ke Kempu)
+        document.getElementById('stBrg').selectedIndex = 0;
+
+        // 3. SEMBUNYIKAN KEMBALI DROPDOWN UNIT & RESET AKSI (PENTING!)
+        document.getElementById('stUnit').style.display = "none";
+        document.getElementById('stKon').style.display = "block";
+        
+        // Kembalikan isi dropdown Aksi ke mode Normal (Kempu/Jerigen)
+        document.getElementById('stAksi').innerHTML = `
+            <option value="Masuk">Masuk</option>
+            <option value="Rekondisi">Rekondisi</option>
+            <option value="Jual Mitra">Jual Mitra</option>
+            <option value="Jual Umum">Jual Umum</option>
+        `;
+
+        alert(`✅ Berhasil mencatat ${ak} ${b}`);
+    });
+}
         document.getElementById('stQty').value = ""; 
         alert(`✅ Berhasil mencatat ${ak} ${b}`);
     });
