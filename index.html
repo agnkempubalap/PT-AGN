@@ -267,9 +267,9 @@
         function showLogs(t) { let l=Object.entries(D[t]||{}).reverse().slice(0,30); openMod("Log", l.map(x=>`<div style="font-size:10px;padding:5px;border-bottom:1px solid #eee"><span>[${x[1].t}] ${x[1].b||x[1].j} (${x[1].q})</span> <b onclick="removeItem('${t}','${x[0]}')" style="color:red; cursor:pointer">×</b></div>`).join('')); }
         function genSlip(n) { const fM=document.getElementById('fUang').value, T=D.tarif||DEF_TARIF; let br=0, bo=0, ka=0, list=""; Object.values(D.aktivitas||{}).forEach(a=>{ if(a.t?.slice(0,7)===fM&&a.p?.includes(n)){ let u=(T[a.j]||0)*a.q/(a.j.includes("pasang")?1:a.p.length); if(a.isCair) { br+=u; list+=`<tr><td>${a.t}</td><td>${a.j}</td><td>${Math.round(u).toLocaleString()}</td></tr>`; } } }); Object.values(D.kasbon_bonus||{}).forEach(kb=>{if(kb.n===n&&kb.t===fM) kb.tipe==="Bonus"?bo+=kb.rp:ka+=kb.rp;}); openMod("Slip", `<div id="p-slip" style="padding:15px; background:white; color:black"><h3>KEMPU BALAP</h3><p>${n} | ${fM}</p><hr><table style="width:100%; font-size:10px">${list}</table><hr><b>Total: Rp ${Math.round((br+bo)-ka).toLocaleString()}</b></div><button class="btn" onclick="expPdf('p-slip','Slip_${n}')">PRINT</button>`); }
 
-// ==========================================
+// ===========================================
 // 1. LISTENER (OTOMATISASI UI)
-// ==========================================
+// ===========================================
 function initStokListeners() {
     const stBrg = document.getElementById('stBrg');
     const stUnit = document.getElementById('stUnit');
@@ -277,129 +277,71 @@ function initStokListeners() {
     const stAksi = document.getElementById('stAksi');
     const stQC = document.getElementById('stQC');
 
-    // Fungsi utama untuk mengatur tampilan UI
-    const refreshUI = (val) => {
-        if (!val) return;
-        const nama = val.toLowerCase();
-        // Cek apakah barang mengandung kata: minyak, cair, atau air
-        const isCair = nama.includes("minyak") || nama.includes("cair") || nama.includes("air");
-        
-        // Atur dropdown Liter/Kg dan Kotor/Ready
+    function updateTampilan(nama) {
+        if (!nama) return;
+        const n = nama.toLowerCase();
+        // Cek Minyak, Cair, atau Air
+        const isCair = n.includes("minyak") || n.includes("cair") || n.includes("air");
+
         stUnit.style.display = isCair ? "block" : "none";
         stKon.style.display = isCair ? "none" : "block";
 
-        // Atur pilihan Aksi (Sembunyikan Rekondisi jika cairan)
         if (isCair) {
-            stAksi.innerHTML = `
-                <option value="Masuk">Masuk</option>
-                <option value="Jual Mitra">Jual Mitra</option>
-                <option value="Jual Umum">Jual Umum</option>
-            `;
+            stAksi.innerHTML = '<option value="Masuk">Masuk</option><option value="Jual Mitra">Jual Mitra</option><option value="Jual Umum">Jual Umum</option>';
         } else {
-            stAksi.innerHTML = `
-                <option value="Masuk">Masuk</option>
-                <option value="Rekondisi">Rekondisi</option>
-                <option value="Jual Mitra">Jual Mitra</option>
-                <option value="Jual Umum">Jual Umum</option>
-            `;
+            stAksi.innerHTML = '<option value="Masuk">Masuk</option><option value="Rekondisi">Rekondisi</option><option value="Jual Mitra">Jual Mitra</option><option value="Jual Umum">Jual Umum</option>';
         }
-    };
+    }
 
-    // 1. Jalankan saat Anda memilih barang secara manual
-    stBrg.addEventListener('change', function() {
-        refreshUI(this.value);
+    stBrg.addEventListener('change', function() { updateTampilan(this.value); });
+
+    stAksi.addEventListener('change', function() {
+        const ak = this.value, n = stBrg.value.toLowerCase();
+        const isCair = n.includes("minyak") || n.includes("cair") || n.includes("air");
+        stKon.style.display = (isCair || ak === "Rekondisi" || ak.includes("Jual")) ? "none" : "block";
+        stQC.style.display = (ak === "Rekondisi" || ak.includes("Jual")) ? "none" : "block";
     });
 
-    // 2. SOLUSI: Jalankan otomatis saat daftar barang berubah/refresh
-    // Ini yang akan menghilangkan Liter saat balik ke 'Kempu'
+    // Otomatis reset UI jika database barang berubah (Tambah Barang Baru)
     db.ref('master_barang').on('value', () => {
-        setTimeout(() => {
-            refreshUI(stBrg.value);
-        }, 500); // Beri jeda 0.5 detik agar dropdown terisi dulu
-    });
-
-    // 3. Listener untuk Aksi (Rekon/Jual)
-    stAksi.addEventListener('change', function() {
-        const ak = this.value;
-        const isCair = stBrg.value.toLowerCase().includes("minyak") || stBrg.value.toLowerCase().includes("cair");
-        const isRekon = ak === "Rekondisi";
-        const isJual = ak.includes("Jual");
-        
-        stKon.style.display = (isCair || isRekon || isJual) ? "none" : "block";
-        stQC.style.display = (isRekon || isJual) ? "none" : "block";
+        setTimeout(() => { updateTampilan(stBrg.value); }, 500);
     });
 }
 
-    // Listener 2: Deteksi Aksi (Sembunyikan Kondisi saat Jual/Rekon)
-    stAksi.addEventListener('change', function() {
-        const ak = this.value;
-        const isCair = stBrg.value.toLowerCase().includes("minyak") || stBrg.value.toLowerCase().includes("cair");
-        const isRekon = ak === "Rekondisi";
-        const isJual = ak.includes("Jual");
-        
-        // Sembunyikan input yang tidak perlu
-        stKon.style.display = (isCair || isRekon || isJual) ? "none" : "block";
-        stQC.style.display = (isRekon || isJual) ? "none" : "block";
-    });
-}
-
-// Menjalankan listener
+// Jalankan Listener
 initStokListeners();
 
-// ==========================================
-// 2. FUNGSI SIMPAN (DENGAN RESET UI)
-// ==========================================
+// ===========================================
+// 2. SIMPAN DATA STOK
+// ===========================================
 function saveSt() {
     const t = document.getElementById('stTgl').value;
     const b = document.getElementById('stBrg').value;
     const qRaw = document.getElementById('stQty').value;
     const ak = document.getElementById('stAksi').value;
-    
-    // Deteksi apakah barang adalah cairan (Minyak atau mengandung kata Cair)
-    const isCair = b.toLowerCase().includes("minyak") || b.toLowerCase().includes("cair");
-    
+    const isCair = b.toLowerCase().includes("minyak") || b.toLowerCase().includes("cair") || b.toLowerCase().includes("air");
+
     if(!qRaw || !t || !b) return alert("⚠️ Isi data dengan lengkap!");
     let q = parseFloat(qRaw);
 
-    // Logika Konversi: Jika barang cair dan inputnya Kg, ubah ke Liter
+    // Konversi Kg ke Liter jika barang cair
     const uIn = isCair ? document.getElementById('stUnit').value : "Pcs";
-    if (isCair && uIn === "Kg") {
-        q = parseFloat((q / 0.9).toFixed(2));
-    }
+    if (isCair && uIn === "Kg") q = parseFloat((q / 0.9).toFixed(2));
 
-    // Tentukan Kondisi dan QC
     const konFinal = isCair ? "Baru" : document.getElementById('stKon').value;
     const qcFinal = (ak === "Masuk") ? document.getElementById('stQC').value : "Accepted";
 
-    // Simpan ke Firebase
-    db.ref('stok_logs').push({ 
-        t: t, 
-        b: b, 
-        q: q, 
-        kon: konFinal, 
-        qc: qcFinal, 
-        ak: ak 
-    }).then(() => {
-        // === BAGIAN RESET FORM & UI (PENTING) ===
-        document.getElementById('stQty').value = ""; // Kosongkan jumlah
-        document.getElementById('stBrg').selectedIndex = 0; // Balikkan ke pilihan 'Kempu'
+    db.ref('stok_logs').push({ t:t, b:b, q:q, kon:konFinal, qc:qcFinal, ak:ak }).then(() => {
+        // RESET FORM
+        document.getElementById('stQty').value = "";
+        document.getElementById('stBrg').selectedIndex = 0;
         
-        // Paksa tampilan dropdown kembali ke mode Normal (Bukan Cair)
-        document.getElementById('stUnit').style.display = "none"; // Sembunyikan Ltr/Kg
-        document.getElementById('stKon').style.display = "block"; // Munculkan kembali Kotor/Ready
-        document.getElementById('stQC').style.display = "block";  // Munculkan kembali Accepted/Reject
+        // RESET UI KEMBALI KE KEMPU MODE
+        document.getElementById('stUnit').style.display = "none";
+        document.getElementById('stKon').style.display = "block";
+        document.getElementById('stQC').style.display = "block";
 
-        // Reset pilihan Aksi ke 'Masuk' agar Rekondisi muncul lagi
-        document.getElementById('stAksi').innerHTML = `
-            <option value="Masuk">Masuk</option>
-            <option value="Rekondisi">Rekondisi</option>
-            <option value="Jual Mitra">Jual Mitra</option>
-            <option value="Jual Umum">Jual Umum</option>
-        `;
-
-        alert("✅ Stok " + b + " berhasil disimpan & Form Reset!");
-    }).catch(err => {
-        alert("❌ Error: " + err.message);
+        alert("✅ Berhasil disimpan & UI Reset!");
     });
 }
 
