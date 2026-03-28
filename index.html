@@ -430,33 +430,61 @@ function promptThreshold(barang) {
 // ---------------------------------------
 
 function saveSt() {
+    // 1. Ambil Data (ID disesuaikan dengan foto HTML Mas)
     const t = document.getElementById('stTgl').value;
     const b = document.getElementById('stBrg').value;
-    const qRaw = document.getElementById('stQty').value;
+    const qRaw = document.getElementById('qty').value; // Tadinya 'stQty', ganti jadi 'qty' agar pas dengan HTML
     const ak = document.getElementById('stAksi').value;
+    
+    // Pastikan b ada isinya sebelum di-toLowerCase
+    if(!b) return alert("⚠️ Pilih Barang dulu Mas!");
     const isCair = b.toLowerCase().includes("minyak") || b.toLowerCase().includes("cair") || b.toLowerCase().includes("air");
 
-    if(!qRaw || !t || !b) return alert("⚠️ Isi data dengan lengkap!");
+    // 2. Validasi Lengkap
+    if(!qRaw || !t) return alert("⚠️ Isi Tanggal & Jumlah dengan lengkap!");
     let q = parseFloat(qRaw);
 
-    // Konversi Kg ke Liter jika barang cair
-    const uIn = isCair ? document.getElementById('stUnit').value : "Pcs";
-    if (isCair && uIn === "Kg") q = parseFloat((q / 0.9).toFixed(2));
+    // 3. Logika Konversi Kg ke Liter (Tetap Ada)
+    const stUnit = document.getElementById('stUnit');
+    const uIn = isCair ? stUnit.value : "Pcs";
+    
+    // Jika input dalam Kg untuk cairan, dikonversi ke Liter (0.9)
+    if (isCair && uIn === "Kg") {
+        q = parseFloat((q / 0.9).toFixed(2));
+    }
 
-    const konFinal = isCair ? "Baru" : document.getElementById('stKon').value;
-    const qcFinal = (ak === "Masuk") ? document.getElementById('stQC').value : "Accepted";
+    // 4. Atur Kondisi & QC Final (Sesuai Logika Mas)
+    // ID disesuaikan: 'kon' -> 'stKon', 'qc' -> 'stQC'
+    const stKon = document.getElementById('stKon');
+    const stQC = document.getElementById('stQC');
+    
+    const konFinal = isCair ? "Baru" : stKon.value;
+    const qcFinal = (ak === "Masuk") ? stQC.value : "Accepted";
 
-    db.ref('stok_logs').push({ t:t, b:b, q:q, kon:konFinal, qc:qcFinal, ak:ak }).then(() => {
-        // RESET FORM
-        document.getElementById('stQty').value = "";
-        document.getElementById('stBrg').selectedIndex = 0;
+    // 5. Simpan ke Firebase
+    db.ref('stok_logs').push({ 
+        t: t, 
+        b: b, 
+        q: q, 
+        unit: isCair ? "Liter" : "Pcs", // Catat satuan akhirnya
+        kon: konFinal, 
+        qc: qcFinal, 
+        ak: ak 
+    }).then(() => {
+        // 6. RESET FORM & UI (Kembali ke default)
+        document.getElementById('qty').value = "";
         
-        // RESET UI KEMBALI KE KEMPU MODE
-        document.getElementById('stUnit').style.display = "none";
-        document.getElementById('stKon').style.display = "block";
-        document.getElementById('stQC').style.display = "block";
+        // Sembunyikan kembali pop-up Liter/Kg
+        stUnit.style.display = "none";
+        stKon.style.display = "block";
+        stQC.style.display = "block";
 
-        alert("✅ Berhasil disimpan & UI Reset!");
+        alert("✅ Data " + b + " Berhasil Disimpan!");
+        
+        // Update tabel kalau ada fungsinya
+        if (typeof renderStok === "function") renderStok();
+    }).catch((err) => {
+        alert("❌ Gagal Simpan: " + err.message);
     });
 }
 
