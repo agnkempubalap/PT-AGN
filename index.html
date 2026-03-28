@@ -103,25 +103,25 @@
 </div>
 
             <div class="table-area" id="areaStok">
-    <table>
+    <table style="table-layout: fixed; width: 100%; border-collapse: collapse;">
         <thead>
-            <tr style="font-size: 8px; text-align: center; line-height: 1.1;">
-                <th class="sticky-col" style="width:60px;">BRG</th>
-                <th style="width:35px; white-space:normal;">AWAL KTR</th>
-                <th style="width:35px; white-space:normal;">AWAL RDY</th>
-                <th style="width:35px; white-space:normal;">IN KTR</th>
-                <th style="width:35px; white-space:normal;">IN RDY</th>
-                <th style="width:30px; color:var(--d);">REJ</th>
-                <th style="width:35px; white-space:normal;">REKON</th>
-                <th style="width:35px;">MITRA</th>
-                <th style="width:35px;">UMUM</th>
-                <th style="width:38px; background:#fef3c7; white-space:normal;">STOK KTR</th>
-                <th style="width:38px; background:#dcfce7; white-space:normal;">STOK RDY</th>
-                <th style="width:40px; background:var(--p); color:white;">TOTAL</th>
+            <tr style="font-size: 8px; text-align: center; line-height: 1.1; background: #f8f9fa;">
+                <th class="sticky-col" style="width: 60px;">BRG</th>
+                
+                <th style="width: 35px; white-space: normal;">AWAL KTR</th>
+                <th style="width: 35px; white-space: normal;">AWAL RDY</th>
+                <th style="width: 35px; white-space: normal;">IN KTR</th>
+                <th style="width: 35px; white-space: normal;">IN RDY</th>
+                <th style="width: 35px; color: var(--d);">REJ</th>
+                <th style="width: 35px; white-space: normal;">REKON</th>
+                <th style="width: 35px;">MITRA</th>
+                <th style="width: 35px;">UMUM</th>
+                <th style="width: 35px; background: #fef3c7;">STOK KTR</th>
+                <th style="width: 35px; background: #dcfce7;">STOK RDY</th>
+                <th style="width: 40px; background: var(--p); color: white;">TOTAL</th>
             </tr>
         </thead>
-        <tbody id="tbStok">
-            </tbody>
+        <tbody id="tbStok"></tbody>
     </table>
 </div>
 
@@ -445,9 +445,10 @@ function renderStok() {
 
         // --- FUNGSI ANGKA (Bungkus Teks Agar Kotak Seragam) ---
         const dual = (v, isKtrCol = false) => {
-            if (isCair && isKtrCol) return `<td style="color:#ccc">-</td>`;
-            // style white-space:normal membuat kotak tidak melar ke samping
-            return `<td style="white-space:normal; word-break:break-all;">${Math.round(v)}</td>`;
+    if (isCair && isKtrCol) return `<td style="color:#ccc">-</td>`;
+    // Kita tambahkan overflow hidden agar angka tidak meluber keluar kotak
+    return `<td style="overflow:hidden; text-overflow:ellipsis;">${Math.round(v)}</td>`;
+};
         };
 
         // --- PENYUSUNAN BARIS ---
