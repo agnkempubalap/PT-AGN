@@ -420,7 +420,7 @@ function renderStok() {
                 if(l.ak === "Masuk") l.kon === "Bekas" ? s.ik += l.q : s.ib += l.q; 
                 else if(l.ak === "Rekondisi") s.rk += l.q; 
                 else if(l.ak === "Jual Mitra") s.jm += l.q; 
-                else if(l.ak === "Jual Umum") s.ju += l.q; 
+                else if(l.ak.includes("Jual Umum")) s.ju += l.q; 
                 if(l.qc === "Reject") s.rej += l.q; 
             }
         });
@@ -437,31 +437,34 @@ function renderStok() {
             lb = ' <small style="color:orange;font-size:8px;">▲</small>';
         }
 
-        // Wadah Flexbox agar isi kotak selalu di tengah secara vertikal dan horizontal
-        const wrap = (content) => `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:35px; line-height:1;">${content}</div>`;
+        // --- KUNCI: Fungsi Flexbox agar isi kotak PASTI di tengah ---
+        const wrap = (content) => `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:38px; text-align:center; width:100%;">${content}</div>`;
 
-        const fmt = (v) => {
+        const fmt = (v, forceUnit = false) => {
             if (isCair) {
                 let valL = Math.round(v);
                 let valKg = (v * 0.9).toFixed(1);
-                return wrap(`<span style="color:#2980b9; font-weight:bold;">${valL}L</span>
-                             <span style="color:#27ae60; border-top:1px solid #ddd; width:100%; margin-top:2px; font-size:9px;">${valKg}Kg</span>`);
+                return wrap(`<span style="color:#2980b9; font-weight:bold; font-size:10px;">${valL}L</span>
+                             <span style="color:#27ae60; border-top:1px solid #ddd; width:80%; margin-top:2px; font-size:9px;">${valKg}Kg</span>`);
             } else {
-                return wrap(`<span style="font-weight:bold;">${Math.round(v)}</span>
-                             <span style="color:#aaa; font-size:8px; border-top:1px solid #eee; width:100%; margin-top:2px;">Unit</span>`);
+                return wrap(`<span style="font-weight:bold; font-size:10px;">${Math.round(v)}</span>
+                             <span style="color:#aaa; font-size:8px; border-top:1px solid #eee; width:80%; margin-top:2px;">Unit</span>`);
             }
         };
 
         const dual = (v, isK) => {
-            if (isCair && isK) return `<td style="color:#ccc; text-align:center;">-</td>`;
-            return `<td style="padding: 0; text-align:center;">${fmt(v)}</td>`;
+            // Jika kolom AWAL KTR atau IN KTR untuk minyak, kasih strip tengah
+            if (isCair && isK) return `<td style="padding:0;">${wrap('<span style="color:#ccc;">-</span>')}</td>`;
+            return `<td style="padding:0;">${fmt(v)}</td>`;
         };
 
         h += `<tr ${warn}>
-            <td class="sticky-col" onclick="promptThreshold('${b}')" style="cursor:pointer;background:inherit;font-size:9px;white-space:normal;line-height:1;font-weight:bold;text-align:left;padding-left:3px;">${b}${lb}</td>
+            <td class="sticky-col" onclick="promptThreshold('${b}')" style="cursor:pointer;background:inherit;font-size:9px;white-space:normal;line-height:1;font-weight:bold;text-align:left;padding-left:3px;">
+                <div style="display:flex; align-items:center; min-height:38px;">${b}${lb}</div>
+            </td>
             ${dual(s.ak,true)}${dual(s.ab)}${dual(s.ik,true)}${dual(s.ib)}
             <td style="color:red; padding:0;">${fmt(s.rej)}</td>
-            <td style="background:#fffde7; padding:0;">${isCair ? "-" : fmt(s.rk)}</td>
+            <td style="background:#fffde7; padding:0;">${isCair ? wrap('<span style="color:#ccc;">-</span>') : fmt(s.rk)}</td>
             ${dual(s.jm)}${dual(s.ju)}${dual(ktr,true)}${dual(rdy)}
             <td style="background:#2ecc71; color:white; padding:0;">
                 ${fmt(total)}
