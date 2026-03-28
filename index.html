@@ -338,7 +338,7 @@
               //TAB STOK
 // ==========================================
 // 1. LISTENER (OTOMATISASI UI)
-// ==========================================
+// ---------------------------------------
 function initStokListeners() {
     // Ambil semua elemen
     const stBrg = document.getElementById('stBrg');
@@ -404,9 +404,7 @@ function initStokListeners() {
 // Panggil fungsinya
 initStokListeners();
 
-// ===========================================
-// 2. FUNGSI AMBANG BATAS (THRESHOLD)
-// ===========================================
+//FUNGSI AMBANG BATAS
 
 // Fungsi untuk menyimpan batas ke Firebase
 function setThreshold(namaBarang, angka) {
@@ -427,9 +425,10 @@ function promptThreshold(barang) {
     }
 }
 
-// ===========================================
-// 3. SIMPAN DATA STOK
-// ===========================================
+// ---------------------------------------
+// 2. SIMPAN DATA STOK
+// ---------------------------------------
+
 function saveSt() {
     const t = document.getElementById('stTgl').value;
     const b = document.getElementById('stBrg').value;
@@ -461,9 +460,10 @@ function saveSt() {
     });
 }
 
-// ===========================================
-// 4. RENDER TABEL (LOGISTIK & STOK)
-// ===========================================
+// ---------------------------------------
+// 3. RENDER TABEL (LOGISTIK & STOK)
+// ---------------------------------------
+
 function renderStok() {
     const B_arr = Object.values(D.master_barang || {}), 
           fM = document.getElementById('fM').value;
