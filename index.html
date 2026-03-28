@@ -388,6 +388,7 @@ function renderStok() {
     B_arr.forEach(b => {
         let s = { ak:0, ab:0, ik:0, ib:0, rej:0, rk:0, jm:0, ju:0 };
         const namaBarang = b.toLowerCase();
+        // Variabel isCair harus ada agar fungsi dual() tidak error
         const isCair = namaBarang.includes("minyak") || namaBarang.includes("cair") || namaBarang.includes("air");
 
         Object.values(D.stok_logs || {}).forEach(l => {
@@ -409,38 +410,25 @@ function renderStok() {
         let rdy = (s.ab + s.ib + s.rk) - (s.jm + s.ju);
         let total = ktr + rdy;
 
-                // 2. LOGIKA WARNA (THRESHOLD & KOSONG)
+        // 1. LOGIKA WARNA
         const limit = D.thresholds[b] || 0;
         let warningStyle = "";
-        let lb = ""; // Label status singkat
-
-        if (total <= 0) {
-            warningStyle = 'style="background-color:#ffebee; color:#c62828; border-left:3px solid red;"';
-            lb = ' <b style="font-size:8px; color:red;">(0)</b>';
-        } else if (total <= limit && limit > 0) {
-            warningStyle = 'style="background-color:#fff9c4; color:#856404; border-left:3px solid orange;"';
-            lb = ' <b style="font-size:8px; color:orange;">(!)</b>';
-        }
-
-        const dual = (val, isKtrCol = false) => {
-            if (isCair && isKtrCol) return `<td style="color:#ccc">-</td>`;
-            // Angka dibulatkan (Math.round) agar kotak tidak melar
-            let v = Math.round(val);
-            return `<td>${v}${isCair ? 'L' : ''}</td>`;
-        };
-
-        // 3. PENYUSUNAN BARIS (FIT & RAMPIH)
-                // 1. Label status super minimalis (Hanya simbol)
         let lb = (total <= 0) ? ' <span style="color:red;font-size:8px;">●</span>' : 
                  (total <= limit && limit > 0) ? ' <span style="color:orange;font-size:8px;">▲</span>' : '';
 
-        // 2. Fungsi angka (Tanpa huruf L, tanpa koma)
-        const dual = (v, isKtr = false) => {
-            if (isCair && isKtr) return `<td style="color:#ccc">-</td>`;
+        if (total <= 0) {
+            warningStyle = 'style="background-color:#ffebee; color:#c62828; border-left:3px solid red;"';
+        } else if (total <= limit && limit > 0) {
+            warningStyle = 'style="background-color:#fff9c4; color:#856404; border-left:3px solid orange;"';
+        }
+
+        // 2. FUNGSI ANGKA (DUAL)
+        const dual = (v, isKtrCol = false) => {
+            if (isCair && isKtrCol) return `<td style="color:#ccc">-</td>`;
             return `<td>${Math.round(v)}</td>`;
         };
 
-        // 3. Susunan Baris (Dibuat sangat tipis)
+        // 3. PENYUSUNAN BARIS
         h += `<tr ${warningStyle}>
             <td class="sticky-col" onclick="promptThreshold('${b}')" style="cursor:pointer; background:inherit; font-size:9px;">
                 ${b}${lb}
