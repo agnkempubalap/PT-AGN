@@ -277,24 +277,25 @@ function initStokListeners() {
     const stAksi = document.getElementById('stAksi');
     const stQC = document.getElementById('stQC');
 
-    // Listener 1: Deteksi jenis barang (Cair vs Non-Cair)
-    stBrg.addEventListener('change', function() {
-        const nama = this.value.toLowerCase();
-        // Otomatis: jika ada kata 'minyak' atau 'cair', anggap barang cair
-        const isCair = nama.includes("minyak") || nama.includes("cair");
+    // Fungsi utama untuk mengatur tampilan UI
+    const refreshUI = (val) => {
+        if (!val) return;
+        const nama = val.toLowerCase();
+        // Cek apakah barang mengandung kata: minyak, cair, atau air
+        const isCair = nama.includes("minyak") || nama.includes("cair") || nama.includes("air");
         
+        // Atur dropdown Liter/Kg dan Kotor/Ready
         stUnit.style.display = isCair ? "block" : "none";
         stKon.style.display = isCair ? "none" : "block";
 
+        // Atur pilihan Aksi (Sembunyikan Rekondisi jika cairan)
         if (isCair) {
-            // Sembunyikan 'Rekondisi' untuk barang cair
             stAksi.innerHTML = `
                 <option value="Masuk">Masuk</option>
                 <option value="Jual Mitra">Jual Mitra</option>
                 <option value="Jual Umum">Jual Umum</option>
             `;
         } else {
-            // Pilihan lengkap untuk Kempu/Jerigen
             stAksi.innerHTML = `
                 <option value="Masuk">Masuk</option>
                 <option value="Rekondisi">Rekondisi</option>
@@ -302,7 +303,32 @@ function initStokListeners() {
                 <option value="Jual Umum">Jual Umum</option>
             `;
         }
+    };
+
+    // 1. Jalankan saat Anda memilih barang secara manual
+    stBrg.addEventListener('change', function() {
+        refreshUI(this.value);
     });
+
+    // 2. SOLUSI: Jalankan otomatis saat daftar barang berubah/refresh
+    // Ini yang akan menghilangkan Liter saat balik ke 'Kempu'
+    db.ref('master_barang').on('value', () => {
+        setTimeout(() => {
+            refreshUI(stBrg.value);
+        }, 500); // Beri jeda 0.5 detik agar dropdown terisi dulu
+    });
+
+    // 3. Listener untuk Aksi (Rekon/Jual)
+    stAksi.addEventListener('change', function() {
+        const ak = this.value;
+        const isCair = stBrg.value.toLowerCase().includes("minyak") || stBrg.value.toLowerCase().includes("cair");
+        const isRekon = ak === "Rekondisi";
+        const isJual = ak.includes("Jual");
+        
+        stKon.style.display = (isCair || isRekon || isJual) ? "none" : "block";
+        stQC.style.display = (isRekon || isJual) ? "none" : "block";
+    });
+}
 
     // Listener 2: Deteksi Aksi (Sembunyikan Kondisi saat Jual/Rekon)
     stAksi.addEventListener('change', function() {
