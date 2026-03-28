@@ -106,18 +106,18 @@
     <table style="table-layout: fixed; width: 100%; border-collapse: collapse;">
         <thead>
     <tr style="font-size: 8px; text-align: center; line-height: 1.1; background: #f4f4f4;">
-        <th class="sticky-col" style="width: 60px;">BRG</th>
-        <th style="width: 40px; white-space: normal; word-wrap: break-word;">AWAL<br>KTR</th>
-        <th style="width: 40px; white-space: normal; word-wrap: break-word;">AWAL<br>RDY</th>
-        <th style="width: 40px; white-space: normal; word-wrap: break-word;">IN<br>KTR</th>
-        <th style="width: 40px; white-space: normal; word-wrap: break-word;">IN<br>RDY</th>
-        <th style="width: 30px; color: red;">REJ</th>
-        <th style="width: 40px; white-space: normal;">REK<br>ON</th>
-        <th style="width: 40px;">MIT<br>RA</th>
-        <th style="width: 40px;">UM<br>UM</th>
-        <th style="width: 42px; background: #fef3c7; white-space: normal;">STOK<br>KTR</th>
-        <th style="width: 42px; background: #dcfce7; white-space: normal;">STOK<br>RDY</th>
-        <th style="width: 45px; background: #2ecc71; color: white;">TOT<br>AL</th>
+        <th class="sticky-col" style="width: 65px;">BRG</th>
+        <th style="width: 42px; white-space: normal;">AWAL<br>KTR</th>
+        <th style="width: 42px; white-space: normal;">AWAL<br>RDY</th>
+        <th style="width: 42px; white-space: normal;">IN<br>KTR</th>
+        <th style="width: 42px; white-space: normal;">IN<br>RDY</th>
+        <th style="width: 32px; color: red;">REJ</th>
+        <th style="width: 42px;">REKON</th>
+        <th style="width: 42px;">MITRA</th>
+        <th style="width: 42px;">UMUM</th>
+        <th style="width: 45px; background: #fef3c7;">STOK<br>KTR</th>
+        <th style="width: 45px; background: #dcfce7;">STOK<br>RDY</th>
+        <th style="width: 50px; background: #2ecc71; color: white;">TOTAL</th>
     </tr>
 </thead>
         <tbody id="tbStok"></tbody>
@@ -411,7 +411,7 @@ function renderStok() {
         
         // Deteksi Satuan: L (Liter) atau KG (Kilogram)
         const isL = nB.includes("MINYAK") || nB.includes("CAIR") || nB.includes("LITER") || nB.includes("(L)");
-        const isKg = nB.includes("KG") || nB.includes("TIMBANG") || nB.includes("BERAT");
+        const isKg = nB.includes("KG") || nB.includes("TIMBANG") || nB.includes("BERAT") || nB.includes("SERBUK");
 
         Object.values(D.stok_logs || {}).forEach(l => {
             if(l.b !== b) return; 
@@ -445,7 +445,7 @@ function renderStok() {
             if (isL && isK) return `<td style="color:#ccc">-</td>`;
             let unit = isL ? '<br><small style="font-size:7px;">L</small>' : 
                        isKg ? '<br><small style="font-size:7px;">Kg</small>' : '';
-            return `<td style="line-height:1; font-size:10px;">${Math.round(v)}${unit}</td>`;
+            return `<td style="line-height:1; font-size:10px; white-space:nowrap;">${Math.round(v)}${unit}</td>`;
         };
 
         const getUnit = () => isL ? '<br><small style="font-size:7px;">L</small>' : isKg ? '<br><small style="font-size:7px;">Kg</small>' : '';
