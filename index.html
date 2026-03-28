@@ -105,20 +105,19 @@
             <div class="table-area" id="areaStok">
     <table style="table-layout: fixed; width: 100%; border-collapse: collapse;">
         <thead>
-            <tr style="font-size: 8px; text-align: center; line-height: 1.1; background: #f8f9fa;">
-                <th class="sticky-col" style="width: 60px;">BRG</th>
-                
-                <th style="width: 35px; white-space: normal;">AWAL KTR</th>
-                <th style="width: 35px; white-space: normal;">AWAL RDY</th>
-                <th style="width: 35px; white-space: normal;">IN KTR</th>
-                <th style="width: 35px; white-space: normal;">IN RDY</th>
-                <th style="width: 35px; color: var(--d);">REJ</th>
-                <th style="width: 35px; white-space: normal;">REKON</th>
-                <th style="width: 35px;">MITRA</th>
-                <th style="width: 35px;">UMUM</th>
+            <tr style="font-size: 8px; text-align: center; line-height: 1; background: #f4f4f4;">
+                <th class="sticky-col" style="width: 55px;">BRG</th>
+                <th style="width: 32px; white-space: normal;">AWAL KTR</th>
+                <th style="width: 32px; white-space: normal;">AWAL RDY</th>
+                <th style="width: 32px; white-space: normal;">IN KTR</th>
+                <th style="width: 32px; white-space: normal;">IN RDY</th>
+                <th style="width: 25px; color: red;">REJ</th>
+                <th style="width: 32px; white-space: normal;">REKON</th>
+                <th style="width: 32px;">MITRA</th>
+                <th style="width: 32px;">UMUM</th>
                 <th style="width: 35px; background: #fef3c7;">STOK KTR</th>
                 <th style="width: 35px; background: #dcfce7;">STOK RDY</th>
-                <th style="width: 40px; background: var(--p); color: white;">TOTAL</th>
+                <th style="width: 38px; background: #2ecc71; color: white;">TOTAL</th>
             </tr>
         </thead>
         <tbody id="tbStok"></tbody>
@@ -404,13 +403,12 @@ function renderStok() {
     const B_arr = Object.values(D.master_barang || {}), 
           fM = document.getElementById('fM').value;
     let h = "";
-    
     if (!D.thresholds) D.thresholds = {};
 
     B_arr.forEach(b => {
         let s = { ak:0, ab:0, ik:0, ib:0, rej:0, rk:0, jm:0, ju:0 };
-        const namaBarang = b.toLowerCase();
-        const isCair = namaBarang.includes("minyak") || namaBarang.includes("cair") || namaBarang.includes("air");
+        const nB = b.toLowerCase();
+        const isCair = nB.includes("minyak") || nB.includes("cair") || nB.includes("air");
 
         Object.values(D.stok_logs || {}).forEach(l => {
             if(l.b !== b) return; 
@@ -427,42 +425,30 @@ function renderStok() {
             }
         });
 
-        let ktr = (s.ak + s.ik) - s.rk;
-        let rdy = (s.ab + s.ib + s.rk) - (s.jm + s.ju);
-        let total = ktr + rdy;
-
-        // --- LOGIKA WARNA & SIMBOL ---
+        let ktr = (s.ak + s.ik) - s.rk, rdy = (s.ab + s.ib + s.rk) - (s.jm + s.ju), total = ktr + rdy;
         const limit = D.thresholds[b] || 0;
-        let warningStyle = "";
-        let lb = (total <= 0) ? ' <span style="color:red;font-size:8px;">●</span>' : 
-                 (total <= limit && limit > 0) ? ' <span style="color:orange;font-size:8px;">▲</span>' : '';
+        let warn = "", lb = "";
 
         if (total <= 0) {
-            warningStyle = 'style="background-color:#ffebee; color:#c62828; border-left:3px solid red;"';
+            warn = 'style="background:#ffebee;color:#c62828;border-left:3px solid red;"';
+            lb = ' <small style="color:red;">●</small>';
         } else if (total <= limit && limit > 0) {
-            warningStyle = 'style="background-color:#fff9c4; color:#856404; border-left:3px solid orange;"';
+            warn = 'style="background:#fff9c4;color:#856404;border-left:3px solid orange;"';
+            lb = ' <small style="color:orange;">▲</small>';
         }
 
-        // --- FUNGSI ANGKA (Bungkus Teks Agar Kotak Seragam) ---
-        const dual = (v, isKtrCol = false) => {
-    if (isCair && isKtrCol) return `<td style="color:#ccc">-</td>`;
-    // Kita tambahkan overflow hidden agar angka tidak meluber keluar kotak
-    return `<td style="overflow:hidden; text-overflow:ellipsis;">${Math.round(v)}</td>`;
-};
+        const dual = (v, isK) => {
+            if (isCair && isK) return `<td style="color:#ccc">-</td>`;
+            return `<td>${Math.round(v)}</td>`;
         };
 
-        // --- PENYUSUNAN BARIS ---
-        h += `<tr ${warningStyle}>
-            <td class="sticky-col" onclick="promptThreshold('${b}')" style="cursor:pointer; background:inherit; font-size:9px; font-weight:bold; white-space:normal; line-height:1;">
-                ${b}${lb}
-            </td>
-            ${dual(s.ak, true)}${dual(s.ab)}${dual(s.ik, true)}${dual(s.ib)}
+        h += `<tr ${warn}>
+            <td class="sticky-col" onclick="promptThreshold('${b}')" style="cursor:pointer;background:inherit;font-size:9px;white-space:normal;line-height:1;">${b}${lb}</td>
+            ${dual(s.ak,true)}${dual(s.ab)}${dual(s.ik,true)}${dual(s.ib)}
             <td style="color:red;">${Math.round(s.rej)}</td>
             <td style="background:#fffde7;">${isCair ? "-" : s.rk}</td>
-            ${dual(s.jm)}${dual(s.ju)}${dual(ktr, true)}${dual(rdy)}
-            <td style="background:#2ecc71; color:white; font-weight:bold;">
-                ${Math.round(total)}
-            </td>
+            ${dual(s.jm)}${dual(s.ju)}${dual(ktr,true)}${dual(rdy)}
+            <td style="background:#2ecc71;color:white;font-weight:bold;">${Math.round(total)}</td>
         </tr>`;
     }); 
     document.getElementById('tbStok').innerHTML = h;
