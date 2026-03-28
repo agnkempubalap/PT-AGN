@@ -36,7 +36,6 @@
         .modal-box { background: white; width: 100%; max-width: 600px; border-radius: 15px; padding: 15px; max-height: 85vh; overflow-y: auto; }
         .check-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
         .check-item { display: flex; align-items: center; gap: 8px; background: #f8fafc; padding: 10px; border-radius: 10px; border: 1px solid #eee; cursor: pointer; }
-.today-col { background-color: #fef3c7 !important; border: 2px solid var(--w) !important; }
     </style>
 </head>
 <body>
@@ -52,13 +51,9 @@
     <div class="container">
         <div id="tab-absen" class="tab-content active">
             <div class="card">
-    <h3>👥 Master Karyawan</h3>
-    <div style="display: flex; gap: 8px;">
-        <input type="text" id="inK" placeholder="Nama Karyawan..." style="flex: 1; height: 45px;">
-        <button class="btn" style="background:var(--p); width: 100px; margin: 0; height: 45px;" onclick="addItem('master_karyawan', 'inK')">ADD</button>
-    </div>
-    <div id="listK" style="display:flex; flex-wrap:wrap; gap:5px; margin-top: 10px;"></div>
-</div>
+                <h3>👥 Master Karyawan <input type="text" id="inK" placeholder="Nama..." style="width:100px; height:30px"> <button class="btn" style="background:var(--p); width:50px; margin:0" onclick="addItem('master_karyawan', 'inK')">ADD</button></h3>
+                <div id="listK" style="display:flex; flex-wrap:wrap; gap:5px"></div>
+            </div>
             <div class="card">
                 <h3>📅 Input Absensi <input type="date" id="absTgl" style="width:115px; height:30px"></h3>
                 <div class="flex-row"><select id="selK"></select><select id="absJenis" onchange="toggleIzin()"><option value="Hadir">Masuk</option><option value="Pulang">Pulang</option><option value="Izin">Izin</option><option value="Alpa">Alpa</option></select></div>
@@ -68,13 +63,11 @@
             <div class="card">
                 <h3>📊 Laporan <input type="month" id="fM" style="width:110px; height:30px"></h3>
                 <div class="table-area" id="areaAbsen"><table><thead id="thA"></thead><tbody id="tbA"></tbody></table></div>
-                <div style="display: flex; gap: 8px; margin-top: 15px;">
-    <button class="btn" style="background:var(--w); color:black; flex: 1; margin: 0; padding: 10px 5px; font-size: 12px;" onclick="openLiburMod()">⚙️ SET LIBUR</button>
-    
-    <button class="btn" style="background:var(--d); flex: 1; margin: 0; padding: 10px 5px; font-size: 12px;" onclick="expPdf('areaAbsen','Absensi_Bulanan')">PDF</button>
-    
-    <button class="btn" style="background:var(--s); flex: 1; margin: 0; padding: 10px 5px; font-size: 12px;" onclick="expEx('areaAbsen','Absen')">EXCEL</button>
-</div>
+                <div class="flex-row">
+                    <button class="btn" style="background:var(--w); color:black" onclick="openLiburMod()">⚙️ SET LIBUR</button>
+                    <button class="btn" style="background:var(--s)" onclick="expEx('areaAbsen','Absen')">EXCEL</button>
+                    <button class="btn" style="background:var(--d)" onclick="expPdf('areaAbsen','Absensi_Bulanan')">PDF</button>
+                </div>
             </div>
         </div>
 
@@ -130,16 +123,11 @@
                 <div class="flex-row"><input type="number" id="blRp" placeholder="Rp"><input type="file" id="blImg" accept="image/*"></div>
                 <button class="btn" style="background:var(--d)" onclick="saveBl()">SIMPAN NOTA</button>
             </div>
-            <div style="display: flex; gap: 5px; margin-top: 15px;">
-    <button class="btn" style="background:#6c757d; flex: 1; font-size: 11px; padding: 10px 2px;" 
-        onclick="showLogs('aktivitas')">LOG KERJA</button>
-
-    <button class="btn" style="background:#f39c12; flex: 1; font-size: 11px; padding: 10px 2px;" 
-        onclick="showNotaLogs()">REKAP NOTA</button>
-
-    <button class="btn" style="background:#00a8e8; flex: 1; font-size: 11px; padding: 10px 2px;" 
-        onclick="genRekapKerja()">REKAP KERJA PDF</button>
-</div>
+            <div class="flex-row">
+                <button class="btn" style="background:#64748b" onclick="showLogs('aktivitas')">LOG KERJA</button>
+                <button class="btn" style="background:var(--w); color:black" onclick="showNotaLogs()">REKAP NOTA</button>
+                <button class="btn" style="background:#0ea5e9" onclick="genRekapKerja()">REKAP KERJA PDF</button>
+            </div>
         </div>
 
         <div id="tab-gaji" class="tab-content">
@@ -230,92 +218,28 @@
 
         // --- CHAIN LOGIC KERJA ---
         function renderCheckKaryawan() {
-    const tgl = document.getElementById('akTgl').value;
-    if (!tgl) return; // Pengaman jika tanggal kosong
-    
-    const K = Object.values(D.master_karyawan || {});
-    const absensiHariIni = (D.absensi && D.absensi[tgl]) ? D.absensi[tgl] : {};
-    
-    document.getElementById('akKaryawan').innerHTML = K.map(k => {
-        const a = absensiHariIni[k] || {};
-        const status = a.j || "";
-        const sudahAbsen = ['Hadir', 'Telat', 'Lembur'].includes(status);
-        
-        return `<label class="check-item" style="${sudahAbsen ? '' : 'opacity:0.3; background:#eee'}">
-            <input type="checkbox" class="chk-k" value="${k}" ${sudahAbsen ? '' : 'disabled'}> 
-            <span style="font-weight:${sudahAbsen ? '700' : '400'}">${k} ${sudahAbsen ? '' : '(X)'}</span>
-        </label>`;
-    }).join('');
-}
+            const tgl = document.getElementById('akTgl').value;
+            const K = Object.values(D.master_karyawan || {});
+            document.getElementById('akKaryawan').innerHTML = K.map(k => {
+                const a = D.absensi?.[tgl]?.[k];
+                const sudahAbsen = a && ['Hadir', 'Telat', 'Lembur'].includes(a.j);
+                return `<label class="check-item" style="${sudahAbsen?'':'opacity:0.3; background:#eee'}">
+                    <input type="checkbox" class="chk-k" value="${k}" ${sudahAbsen?'':'disabled'}> 
+                    <span style="font-weight:${sudahAbsen?'700':'400'}">${k} ${sudahAbsen?'':'(X)'}</span>
+                </label>`;
+            }).join('');
+        }
 
-                        // FUNGSI SIMPAN KERJA
         function saveAk() {
-    const tgl = document.getElementById('akTgl').value;
-    const jenis = document.getElementById('akJenis').value;
-    const qty = parseInt(document.getElementById('akQty').value) || 0; // Jika kosong, otomatis 0
-    const karyawan = Array.from(document.querySelectorAll('.chk-k:checked')).map(c => c.value);
-
-    if (karyawan.length === 0) return alert("Pilih minimal satu karyawan!");
-    if (!jenis) return alert("Pilih jenis kegiatan!");
-
-    const id = Date.now();
-    
-    // Logika Otomatis
-    const data = {
-        t: tgl,
-        j: qty > 0 ? jenis : "(PROGRES) " + jenis, // Tandai jika cuma progres
-        q: qty,
-        p: karyawan,
-        isCair: qty > 0 ? true : false, // Gaji hanya cair jika ada qty
-        isProgres: qty > 0 ? false : true
-    };
-
-    // 1. Simpan ke Database Aktivitas (Pasti masuk Kalender)
-    db.ref('aktivitas/' + id).set(data, (err) => {
-        if (err) return alert("Gagal simpan: " + err);
-        
-        // 2. Jika Qty > 0, otomatis update Stok Barang Jadi
-        if (qty > 0) {
-            updateStok(jenis, qty); 
-            alert("Berhasil! Stok bertambah & Gaji tercatat.");
-        } else {
-            alert("Progres tercatat di kalender (Absen Masuk).");
+            const tgl=document.getElementById('akTgl').value, q=parseInt(document.getElementById('akQty').value)||0, p=Array.from(document.querySelectorAll('.chk-k:checked')).map(c=>c.value), j=document.getElementById('akJenis').value;
+            if(!p.length || q<=0) return alert("Pilih Karyawan & Isi Qty!");
+            let ilegal = p.filter(k => !D.absensi?.[tgl]?.[k] || !['Hadir','Telat','Lembur'].includes(D.absensi[tgl][k].j));
+            if(ilegal.length) return alert("Ada Karyawan belum absen!");
+            const cairAwal = !j.toLowerCase().includes("jerigen"); 
+            db.ref('aktivitas').push({ t:tgl, j, q, p, isCair: cairAwal }).then(()=>{
+                document.getElementById('akQty').value=""; document.querySelectorAll('.chk-k').forEach(c=>c.checked=false); alert("Kerja Tersimpan!");
+            });
         }
-
-        // Reset Form agar siap input lagi
-        document.getElementById('akQty').value = '';
-        document.querySelectorAll('.chk-k').forEach(c => c.checked = false);
-        if(typeof renderAk === 'function') renderAk(); // Refresh tampilan jika ada
-    });
-}
-
-// Fungsi pembantu untuk update stok otomatis
-function updateStok(jenis, qty) {
-    // Sesuaikan dengan ID stok Anda (misal: kempu_1000l)
-    const stokRef = db.ref('stok/kempu_1000l'); 
-    stokRef.transaction((current) => {
-        return (current || 0) + qty;
-    });
-}
-
-        // FUNGSI REKAP PDF
-        function expPdf(id, name) {
-            const el = document.getElementById(id);
-            if(!el) return alert("Data tabel belum muncul. Klik LOG KERJA dulu!");
-            html2pdf().from(el).set({ 
-                margin: 0.3, 
-                filename: name + '.pdf',
-                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-            }).save();
-        }
-        // FUNGSI REKAP NOTA (EXCEL)
-        function expEx(id, name) {
-            const table = document.getElementById(id);
-            if(!table) return alert("Data tabel belum muncul. Klik LOG KERJA dulu!");
-            const wb = XLSX.utils.table_to_book(table);
-            XLSX.writeFile(wb, name + ".xlsx");
-        }
-
 
         // --- LOGIKA GAJI ---
         function renderGaji() {
@@ -338,77 +262,32 @@ function updateStok(jenis, qty) {
         }
 
         // --- FUNGSI PENDUKUNG ---
-                function saveAbs() {
+        function saveAbs() {
             const n=document.getElementById('selK').value, t=document.getElementById('absTgl').value, j=document.getElementById('absJenis').value;
             const jamStr = new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}).replace('.',':');
             const ref = db.ref(`absensi/${t}/${n}`);
-            
-            if(j==="Pulang") {
-                // PROTEKSI: Cek apakah dia sudah absen masuk atau statusnya Alpa
-                ref.once('value').then(s => {
-                    const data = s.val();
-                    if(!data || data.j === "Alpa") {
-                        alert("Gagal: Karyawan ini belum absen masuk atau berstatus ALPA!");
-                    } else {
-                        ref.update({ jamOut: jamStr }).then(()=>alert("Jam Pulang Berhasil Dicatat!"));
-                    }
-                });
-            } 
+            if(j==="Pulang") ref.update({ jamOut: jamStr }).then(()=>alert("Pulang!")); 
             else {
-                // Logika Masuk, Izin, Alpa (Tetap seperti aslinya)
                 let stat = (j==="Izin"||j==="Alpa") ? j : (new Date(t).getDay()===0||D.libur?.[t]?"Lembur":(new Date()>new Date(t+"T09:30:00")?"Telat":"Hadir"));
-                ref.set({ j: stat, jam: jamStr, ket: document.getElementById('absKet').value||"" }).then(()=>{ alert(stat + " Berhasil!"); });
+                ref.set({ j: stat, jam: jamStr, ket: document.getElementById('absKet').value||"" }).then(()=>{ alert(stat + "!"); });
             }
         }
         function renderAll() {
-            let fM = document.getElementById('fM').value;
-            if(!fM) return;
-
-            const K_arr = Object.values(D.master_karyawan || {});
-            const parts = fM.split('-');
-            const Y = parts[0], M = parts[1];
-            const lastD = new Date(Y, M, 0).getDate();
-            const today = new Date().toISOString().split('T')[0];
-
-            let th = `<tr><th class="sticky-col">NAMA</th>`; 
-            for(let i=1; i<=lastD; i++) {
-                let d = `${Y}-${M}-${String(i).padStart(2,'0')}`;
-                let cls = (d === today) ? 'class="today-col"' : '';
-                th += `<th ${cls}>${i}</th>`;
-            }
-            th += `<th style="background:#dcfce7">H</th><th style="background:#fef3c7">T</th><th style="background:#ffedd5">L</th><th style="background:#e0f2fe">I</th><th style="background:#f1f5f9">A</th></tr>`; 
-            document.getElementById('thA').innerHTML = th;
-
-            let tb = ""; 
-            K_arr.forEach(k => {
-                let r = `<td class="sticky-col">${k}</td>`, tH=0, tT=0, tL=0, tI=0, tA=0;
+            const K_arr = Object.values(D.master_karyawan || {}), fM = document.getElementById('fM').value; if(!fM) return;
+            const Y=fM.split('-')[0], M=fM.split('-')[1], lastD = new Date(Y, M, 0).getDate();
+            let th = `<tr><th class="sticky-col">NAMA</th>`; for(let i=1; i<=lastD; i++) th += `<th>${i}</th>`; th += `<th>H/T</th><th>L</th><th>I/A</th></tr>`; document.getElementById('thA').innerHTML = th;
+            let tb = ""; K_arr.forEach(k => {
+                let r = `<td class="sticky-col">${k}</td>`, tH=0, tL=0, tO=0;
                 for(let i=1; i<=lastD; i++) {
                     let d = `${Y}-${M}-${String(i).padStart(2,'0')}`, a = D.absensi?.[d]?.[k], isL = D.libur?.[d]||new Date(d).getDay()===0;
                     let txt=isL?"M":"-", cls=isL?"bg-m":"bg-none";
-                    let tdCls = (d === today) ? 'class="today-col"' : '';
-
-                    if(a) { 
-                        txt=a.j ? a.j[0] : "-"; 
-                        cls="bg-"+(a.j ? a.j[0].toLowerCase() : "none"); 
-                        if(a.j==="Hadir") tH++; 
-                        else if(a.j==="Telat") tT++;
-                        else if(a.j==="Lembur") tL++; 
-                        else if(a.j==="Izin") tI++;
-                        else if(a.j==="Alpa") tA++;
-                    }
-                    r += `<td ${tdCls}><div class="badge ${cls}" onclick="cellMod('${d}','${k}')">${txt}${a?.jamOut?'<div class="dot"></div>':''}</div></td>`;
+                    if(a) { txt=a.j[0]; cls="bg-"+a.j[0].toLowerCase(); if(a.j==="Hadir"||a.j==="Telat") tH++; else if(a.j==="Lembur") tL++; else tO++; }
+                    r += `<td><div class="badge ${cls}" onclick="cellMod('${d}','${k}')">${txt}${a?.jamOut?'<div class="dot"></div>':''}</div></td>`;
                 }
-                tb += `<tr>${r}<td>${tH}</td><td>${tT}</td><td>${tL}</td><td>${tI}</td><td>${tA}</td></tr>`;
-            }); 
-            document.getElementById('tbA').innerHTML = tb;
-
-            // Auto-scroll ke kolom hari ini
-            setTimeout(() => {
-                const activeCol = document.querySelector('.today-col');
-                if(activeCol) activeCol.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-            }, 500);
+                tb += `<tr>${r}<td>${tH}</td><td>${tL}</td><td>${tO}</td></tr>`;
+            }); document.getElementById('tbA').innerHTML = tb;
         }
-        
+        function cellMod(d,k) { let a=D.absensi?.[d]?.[k], aks=Object.values(D.aktivitas||{}).filter(x=>x.t===d&&x.p?.includes(k)); openMod(`Detail ${k} (${d})`, `<p>Status: ${a?.j||'-'}</p><p>Jam: ${a?.jam||'-'} s/d ${a?.jamOut||'-'}</p><hr><ul>${aks.map(x=>`<li>${x.j} (${x.q}) ${x.isCair?'✅':'⏳'}</li>`).join('')||'Kerja: -'}</ul><br><button class='btn' onclick="removeItem('absensi/${d}','${k}')">HAPUS ABSEN</button>`); }
         async function saveBl() { const t=document.getElementById('blTgl').value, n=document.getElementById('blNama').value, rp=parseInt(document.getElementById('blRp').value), file=document.getElementById('blImg').files[0]; let img=""; if(file){ const c=document.createElement('canvas'), ctx=c.getContext('2d'), i=await createImageBitmap(file); c.width=400; c.height=i.height/i.width*400; ctx.drawImage(i,0,0,400,c.height); img=c.toDataURL('image/jpeg',0.6); } if(n&&rp) db.ref('belanja').push({ t, n, rp, img }).then(()=>{ alert("Nota!"); }); }
         function openModKB() { const fM=document.getElementById('fUang').value, K=Object.values(D.master_karyawan||{}), L=Object.entries(D.kasbon_bonus||{}).filter(x=>x[1].t===fM).reverse(); let h=`<select id="kbN">${K.map(k=>`<option>${k}</option>`).join('')}</select><select id="kbT"><option value="Bonus">Bonus</option><option value="Kasbon">Kasbon</option></select><input type="number" id="kbR" placeholder="Rp"><button class="btn" onclick="saveKB()">SIMPAN</button><hr>${L.map(x=>`<div style="font-size:10px;padding:5px;border-bottom:1px solid #eee"><b>${x[1].n}</b>: ${x[1].tipe} Rp ${x[1].rp.toLocaleString()} <b onclick="removeItem('kasbon_bonus','${x[0]}')" style="color:red; cursor:pointer">×</b></div>`).join('')}`; openMod("Kasbon / Bonus", h); }
         function saveKB() { const n=document.getElementById('kbN').value, t=document.getElementById('fUang').value, tipe=document.getElementById('kbT').value, rp=parseInt(document.getElementById('kbR').value); if(rp) db.ref('kasbon_bonus').push({n,t,tipe,rp}).then(()=>openModKB()); }
@@ -419,133 +298,11 @@ function updateStok(jenis, qty) {
         function addItem(p,id) { const v=document.getElementById(id).value; if(v) db.ref(p).push(v).then(()=>document.getElementById(id).value=""); }
         function removeItem(p,k) { if(confirm("Hapus?")) db.ref(`${p}/${k}`).remove().then(()=>closeMod()); }
         function expEx(id,n) { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById(id)), n+'.xlsx'); }
-        function expPdf(id, n) {
-    const element = document.getElementById(id);
-    if (!element || element.innerHTML.trim() === "") return alert("Data kosong, tidak bisa buat PDF!");
-    
-    const opt = {
-        margin: [10, 10],
-        filename: n + '.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, letterRendering: true },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } // Ubah ke portrait agar lebih aman di HP
-    };
-    
-    // Beri sedikit delay agar browser HP sempat memproses render
-    alert("Sedang memproses PDF, mohon tunggu...");
-    html2pdf().set(opt).from(element).save().catch(err => alert("Gagal buat PDF: " + err));
-}
-        
-function showNotaLogs() {
-    if (!D || !D.belanja) return alert("Belum ada data nota belanja!");
-    
-    // Ambil bulan yang sedang dipilih user
-    const fM = document.getElementById('fM').value;
-    
-    // Filter nota yang bulannya sama dengan yang dipilih
-    let list = Object.entries(D.belanja).filter(x => x[1].t && x[1].t.slice(0, 7) === fM).reverse();
-    
-    let h = list.map(x => `
-        <div style="font-size:11px; padding:10px; border-bottom:1px solid #eee;">
-            <b>${x[1].t}</b> - ${x[1].n} <br>
-            <span style="color:var(--d); font-weight:800;">Rp ${x[1].rp.toLocaleString()}</span>
-            ${x[1].img ? `<br><img src="${x[1].img}" style="width:100%; border-radius:8px; margin-top:5px;">` : ''}
-            <div style="margin-top:5px;">
-                <b onclick="removeItem('belanja','${x[0]}')" style="color:red; cursor:pointer;">[ HAPUS NOTA ]</b>
-            </div>
-        </div>
-    `).join('');
-    
-    openMod("Rekap Nota - " + fM, h || "Tidak ada nota untuk bulan ini.");
-}
-
+        function expPdf(id,n) { html2pdf().set({margin:5, filename:n+'.pdf', jsPDF:{orientation:'landscape'}}).from(document.getElementById(id)).save(); }
+        function openMod(t,h) { document.getElementById('modTitle').innerText=t; document.getElementById('modContent').innerHTML=h; document.getElementById('modalUni').style.display='flex'; }
+        function closeMod() { document.getElementById('modalUni').style.display='none'; }
+        function showLogs(t) { let l=Object.entries(D[t]||{}).reverse().slice(0,30); openMod("Log", l.map(x=>`<div style="font-size:10px;padding:5px;border-bottom:1px solid #eee"><span>[${x[1].t}] ${x[1].b||x[1].j} (${x[1].q})</span> <b onclick="removeItem('${t}','${x[0]}')" style="color:red; cursor:pointer">×</b></div>`).join('')); }
         function genSlip(n) { const fM=document.getElementById('fUang').value, T=D.tarif||DEF_TARIF; let br=0, bo=0, ka=0, list=""; Object.values(D.aktivitas||{}).forEach(a=>{ if(a.t?.slice(0,7)===fM&&a.p?.includes(n)){ let u=(T[a.j]||0)*a.q/(a.j.includes("pasang")?1:a.p.length); if(a.isCair) { br+=u; list+=`<tr><td>${a.t}</td><td>${a.j}</td><td>${Math.round(u).toLocaleString()}</td></tr>`; } } }); Object.values(D.kasbon_bonus||{}).forEach(kb=>{if(kb.n===n&&kb.t===fM) kb.tipe==="Bonus"?bo+=kb.rp:ka+=kb.rp;}); openMod("Slip", `<div id="p-slip" style="padding:15px; background:white; color:black"><h3>KEMPU BALAP</h3><p>${n} | ${fM}</p><hr><table style="width:100%; font-size:10px">${list}</table><hr><b>Total: Rp ${Math.round((br+bo)-ka).toLocaleString()}</b></div><button class="btn" onclick="expPdf('p-slip','Slip_${n}')">PRINT</button>`); }
-
-function genRekapKerja() {
-    const fM = document.getElementById('fM').value;
-    if (!D.aktivitas) return alert("Data aktivitas masih kosong!");
-    
-    let html = `<div id="print-area-rekap" style="padding:15px; background:white; color:black; font-family:Arial, sans-serif;">
-        <h2 style="text-align:center; font-size:16px; margin-bottom:5px;">LAPORAN REKAP KERJA</h2>
-        <p style="text-align:center; font-size:12px; margin-bottom:15px;">Periode: ${fM}</p>
-        <table border="1" style="width:100%; border-collapse:collapse; font-size:10px;">
-            <thead>
-                <tr style="background:#f2f2f2;">
-                    <th style="padding:5px;">Tgl</th>
-                    <th style="padding:5px;">Kegiatan</th>
-                    <th style="padding:5px;">Qty</th>
-                    <th style="padding:5px;">Karyawan</th>
-                </tr>
-            </thead>
-            <tbody>`;
-            
-    // Filter data berdasarkan bulan yang dipilih di input fM
-    const dataFiltered = Object.values(D.aktivitas).filter(a => a.t && a.t.slice(0, 7) === fM);
-    
-    if (dataFiltered.length === 0) return alert("Tidak ada data kerja di bulan ini!");
-
-    dataFiltered.sort((a, b) => a.t.localeCompare(b.t)).forEach(a => {
-        html += `<tr>
-            <td style="padding:5px; text-align:center;">${a.t}</td>
-            <td style="padding:5px;">${a.j}</td>
-            <td style="padding:5px; text-align:center;">${a.q}</td>
-            <td style="padding:5px;">${a.p ? a.p.join(', ') : '-'}</td>
-        </tr>`;
-    });
-    
-    html += `</tbody></table></div>`;
-    
-    // Tampilkan preview di modal dulu agar user bisa lihat sebelum download
-    openMod("Preview Rekap Kerja", html + `<button class="btn" style="background:var(--d); margin-top:15px;" onclick="expPdf('print-area-rekap','Rekap_Kerja_${fM}')">DOWNLOAD PDF</button>`);
-}
-
-// Tambahan fungsi Rekap Nota agar tombol "REKAP NOTA" juga jalan
-function showNotaLogs() {
-    if (!D.belanja) return alert("Belum ada data nota!");
-    const fM = document.getElementById('fM').value;
-    let list = Object.entries(D.belanja).filter(x => x[1].t.slice(0,7) === fM).reverse();
-    
-    let h = list.map(x => `
-        <div style="font-size:11px; padding:10px; border-bottom:1px solid #eee; margin-bottom:5px;">
-            <b>${x[1].t}</b> - ${x[1].n} <br>
-            <span style="color:var(--d); font-weight:800;">Rp ${x[1].rp.toLocaleString()}</span>
-            ${x[1].img ? `<br><img src="${x[1].img}" style="width:100%; max-width:200px; margin-top:5px; border-radius:8px;">` : ''}
-            <div style="margin-top:5px;">
-                <b onclick="removeItem('belanja','${x[0]}')" style="color:red; cursor:pointer;">[ HAPUS ]</b>
-            </div>
-        </div>
-    `).join('');
-    
-    openMod("Rekap Nota Belanja", h || "Tidak ada nota di bulan ini");
-<script>
-window.openMod = function(t, h) {
-    const modal = document.getElementById('modalUni');
-    if (modal) {
-        document.getElementById('modTitle').innerText = t;
-        document.getElementById('modContent').innerHTML = h;
-        modal.style.display = 'flex';
-    }
-};
-
-window.closeMod = function() {
-    const modal = document.getElementById('modalUni');
-    if (modal) modal.style.display = 'none';
-};
-
-window.cellMod = function(d, k) {
-    try {
-        const db = window.D || {};
-        const absen = (db.absensi && db.absensi[d]) ? db.absensi[d][k] : null;
-        const semuaAktv = db.aktivitas ? Object.values(db.aktivitas) : [];
-        const filterAktv = semuaAktv.filter(x => String(x.t) === String(d) && (x.p && x.p.includes(k)));
-        let logHtml = filterAktv.length > 0 ? filterAktv.map(x => {
-            const cair = x.isCair && x.q > 0;
-            return `<div style="display:flex; gap:10px; margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:5px; text-align:left;"><div style="font-size:20px;">${cair ? '✅' : '⏳'}</div><div style="line-height:1.2;"><b style="color:${cair ? '#16a34a' : '#f59e0b'}; font-size:10px;">${cair ? 'HASIL' : 'PROGRES'}</b><br><span style="font-weight:700; font-size:12px;">${x.j}</span><br><small>Output: ${x.q || 0} unit</small></div></div>`;
-        }).join('') : '<p style="color:#999; font-style:italic; font-size:12px; text-align:left;">Tidak ada aktivitas.</p>';
-        const content = `<div style="text-align:left;"><div style="background:#f1f5f9; padding:12px; border-radius:10px; margin-bottom:15px; border:1px solid #e2e8f0;"><p style="margin:0; font-size:11px;">PRESENSI:</p><p style="margin:4px 0; font-weight:800; color:#00a8e8;">${absen?.j || 'TANPA KETERANGAN'}</p><p style="margin:0; font-size:11px;">Jam: ${absen?.jam || '--:--'} s/d ${absen?.jamOut || '--:--'}</p></div><p style="font-weight:bold; font-size:12px; margin-bottom:10px;">LOG AKTIVITAS:</p><div style="max-height:200px; overflow-y:auto;">${logHtml}</div><div style="margin-top:20px;"><button type="button" class="btn" style="background:#ef4444; color:white; width:100%; padding:15px; border-radius:8px; font-weight:bold; border:none;" onclick="if(confirm('Hapus absen ${k}?')){ removeItem('absensi/${d}','${k}'); closeMod(); }">HAPUS ABSENSI</button></div></div>`;
-        window.openMod("Detail " + k, content);
-    } catch (e) { console.error(e); }
-};
-</script>
+    </script>
 </body>
 </html>
