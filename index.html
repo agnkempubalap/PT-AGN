@@ -328,27 +328,42 @@ function saveSt() {
     const b = document.getElementById('stBrg').value;
     const qRaw = document.getElementById('stQty').value;
     const ak = document.getElementById('stAksi').value;
-    const isMinyak = b.toLowerCase().includes("minyak");
+    
+    // Deteksi apakah barang adalah cairan (Minyak atau mengandung kata Cair)
+    const isCair = b.toLowerCase().includes("minyak") || b.toLowerCase().includes("cair");
     
     if(!qRaw || !t || !b) return alert("⚠️ Isi data dengan lengkap!");
     let q = parseFloat(qRaw);
 
-    // Konversi Minyak Kg -> Ltr
-    const uIn = isMinyak ? document.getElementById('stUnit').value : "Pcs";
-    if (isMinyak && uIn === "Kg") q = parseFloat((q / 0.9).toFixed(2));
+    // Logika Konversi: Jika barang cair dan inputnya Kg, ubah ke Liter
+    const uIn = isCair ? document.getElementById('stUnit').value : "Pcs";
+    if (isCair && uIn === "Kg") {
+        q = parseFloat((q / 0.9).toFixed(2));
+    }
 
-    const konFinal = isMinyak ? "Baru" : document.getElementById('stKon').value;
+    // Tentukan Kondisi dan QC
+    const konFinal = isCair ? "Baru" : document.getElementById('stKon').value;
     const qcFinal = (ak === "Masuk") ? document.getElementById('stQC').value : "Accepted";
 
-    db.ref('stok_logs').push({ t, b, q, kon: konFinal, qc: qcFinal, ak: ak }).then(() => {
-        // RESET FORM & UI
-        document.getElementById('stQty').value = ""; 
-        document.getElementById('stBrg').selectedIndex = 0;
+    // Simpan ke Firebase
+    db.ref('stok_logs').push({ 
+        t: t, 
+        b: b, 
+        q: q, 
+        kon: konFinal, 
+        qc: qcFinal, 
+        ak: ak 
+    }).then(() => {
+        // === BAGIAN RESET FORM & UI (PENTING) ===
+        document.getElementById('stQty').value = ""; // Kosongkan jumlah
+        document.getElementById('stBrg').selectedIndex = 0; // Balikkan ke pilihan 'Kempu'
         
-        // Paksa UI kembali ke tampilan awal (Kempu Mode)
-        document.getElementById('stUnit').style.display = "none";
-        document.getElementById('stKon').style.display = "block";
-        document.getElementById('stQC').style.display = "block";
+        // Paksa tampilan dropdown kembali ke mode Normal (Bukan Cair)
+        document.getElementById('stUnit').style.display = "none"; // Sembunyikan Ltr/Kg
+        document.getElementById('stKon').style.display = "block"; // Munculkan kembali Kotor/Ready
+        document.getElementById('stQC').style.display = "block";  // Munculkan kembali Accepted/Reject
+
+        // Reset pilihan Aksi ke 'Masuk' agar Rekondisi muncul lagi
         document.getElementById('stAksi').innerHTML = `
             <option value="Masuk">Masuk</option>
             <option value="Rekondisi">Rekondisi</option>
@@ -356,8 +371,10 @@ function saveSt() {
             <option value="Jual Umum">Jual Umum</option>
         `;
 
-        alert("✅ Berhasil disimpan & UI Reset!");
-    }).catch(err => alert("Error: " + err));
+        alert("✅ Stok " + b + " berhasil disimpan & Form Reset!");
+    }).catch(err => {
+        alert("❌ Error: " + err.message);
+    });
 }
 
 // ==========================================
