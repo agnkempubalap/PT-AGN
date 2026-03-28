@@ -90,36 +90,46 @@
                 <div id="listB" style="display:flex; flex-wrap:wrap; gap:5px"></div>
             </div>
             <div class="card">
-    <h3>📥 Logistik & Penjualan</h3>
-    <div class="flex-row"><input type="date" id="stTgl"><select id="stBrg"></select></div>
-    <div style="display: flex; gap: 5px; margin-bottom: 15px; align-items: center;">
-    
+    <h3><span role="img" aria-label="package">📦</span> Logistik & Penjualan</h3>
+<div class="flex-row">
+    <input type="date" id="stTgl">
+    <select id="stBrg">
+        </select>
+</div>
+
+<div style="display: flex; gap: 5px; margin-bottom: 15px; align-items: center;">
     <input type="number" id="qty" placeholder="Jumlah" 
            style="flex: 1.2; min-width: 0; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 13px;">
 
-    <select id="stUnit" style="display: none; flex: 0.8; padding: 10px; border: 1px solid #ddd; border-radius: 5px; background: #f0f7ff;">
-    <option value="L">L</option>
-    <option value="Kg">Kg</option>
-</select>
+    <select id="stUnit" style="display: none; flex: 0.8; min-width: 0; padding: 10px; border: 1px solid #ddd; border-radius: 5px; background: #f0f7ff;">
+        <option value="L">L</option>
+        <option value="Kg">Kg</option>
+    </select>
 
-    <select id="kon" style="flex: 1; min-width: 0; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 12px;">
+    <select id="stKon" style="flex: 1; min-width: 0; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 12px;">
         <option value="Bekas">Kotor</option>
         <option value="Rekondisi">Bersih</option>
     </select>
 
-    <select id="qc" style="flex: 1.3; min-width: 0; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 12px;">
+    <select id="stQC" style="flex: 1.3; min-width: 0; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 12px;">
         <option value="Accepted">Accepted</option>
         <option value="Reject">Reject</option>
     </select>
 </div>
-            <select id="stAksi">
-            <option value="Masuk">Masuk</option>
-            <option value="Rekondisi">Rekon</option>
-            <option value="Jual Mitra">Jual Mitra</option>
-            <option value="Jual Umum">Jual Umum</option>
-        </select>
-    </div>
-    <button class="btn" style="background:var(--p)" onclick="saveSt()">PROSES STOK</button>
+
+<div style="margin-bottom: 10px;">
+    <select id="stAksi" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+        <option value="Masuk">Masuk</option>
+        <option value="Rekondisi">Rekon</option>
+        <option value="Jual Mitra">Jual Mitra</option>
+        <option value="Jual Umum">Jual Umum</option>
+    </select>
+</div>
+
+<div>
+    <button class="btn" style="background: var(--p); width: 100%; margin-top: 10px;" onclick="saveSt()">
+        PROSES STOK
+    </button>
 </div>
 
             <div class="table-area" id="areaStok">
@@ -330,61 +340,65 @@
 // 1. LISTENER (OTOMATISASI UI)
 // ==========================================
 function initStokListeners() {
-    // 1. Ambil semua elemen (Pakai ID sesuai HTML Mas)
+    // Ambil semua elemen
     const stBrg = document.getElementById('stBrg');
     const stUnit = document.getElementById('stUnit');
     const stKon = document.getElementById('stKon');
-    const stAksi = document.getElementById('stAksi');
     const stQC = document.getElementById('stQC');
+    const stAksi = document.getElementById('stAksi');
 
-    // PENGAMAN: Jika salah satu elemen gak ketemu, jangan lanjut (biar gak crash)
-    if (!stBrg || !stUnit || !stKon || !stAksi || !stQC) {
-        console.error("Ada ID yang belum pas di HTML Mas!");
-        return;
-    }
+    // Fungsi Utama Pengetur Tampilan
+    function updateUI() {
+        if (!stBrg || !stAksi) return;
 
-    function updateTampilan() {
-        // Ambil nilai saat ini
-        const nama = stBrg.value ? stBrg.value.toLowerCase() : "";
+        const nama = stBrg.value.toLowerCase();
         const aksi = stAksi.value;
-        
-        // Cek apakah barang cairan
         const isCair = nama.includes("minyak") || nama.includes("cair") || nama.includes("air");
 
-        // A. Atur Dropdown Satuan (L/Kg)
-        stUnit.style.display = isCair ? "block" : "none";
-
-        // B. Atur Pilihan di Dropdown Aksi (Masuk, Rekon, Jual)
-        // Kita simpan dulu pilihan user sebelum diupdate biar gak loncat
-        const pilihanSekarang = stAksi.value;
-
+        // --- LOGIKA 1: BARANG CAIRAN ---
         if (isCair) {
-            stAksi.innerHTML = '<option value="Masuk">Masuk</option><option value="Jual Mitra">Jual Mitra</option><option value="Jual Umum">Jual Umum</option>';
-            // Kalau cair, gak mungkin 'Rekondisi', jadi paksa ke 'Masuk'
-            if (pilihanSekarang === "Rekondisi") stAksi.value = "Masuk";
-            else stAksi.value = pilihanSekarang;
-        } else {
-            stAksi.innerHTML = '<option value="Masuk">Masuk</option><option value="Rekondisi">Rekondisi</option><option value="Jual Mitra">Jual Mitra</option><option value="Jual Umum">Jual Umum</option>';
-            stAksi.value = pilihanSekarang;
-        }
+            stUnit.style.display = "block"; // Munculkan L/Kg
+            stKon.style.display = "none";   // Sembunyikan Kotor
+            stQC.style.display = "none";    // Sembunyikan ACC
+            
+            // Hapus pilihan 'Rekondisi' dari dropdown Aksi jika sedang pilih cairan
+            if (stAksi.querySelector('option[value="Rekondisi"]')) {
+                stAksi.querySelector('option[value="Rekondisi"]').remove();
+            }
+            // Paksa QC ke Accepted secara sistem (meski sembunyi)
+            stQC.value = "Accepted";
+        } 
+        
+        // --- LOGIKA 2: AKSI REKONDISI (Untuk barang non-cair) ---
+        else {
+            stUnit.style.display = "none"; // Sembunyikan L/Kg
+            
+            // Pastikan pilihan 'Rekondisi' ada lagi kalau bukan cairan
+            if (!stAksi.querySelector('option[value="Rekondisi"]')) {
+                const opt = document.createElement('option');
+                opt.value = "Rekondisi";
+                opt.innerHTML = "Rekondisi";
+                stAksi.appendChild(opt);
+            }
 
-        // C. Atur Sembunyi/Muncul Kotor & ACC
-        // Logika: Sembunyi jika (Cair) ATAU (Aksi Rekon) ATAU (Aksi Jual)
-        const sembunyi = isCair || stAksi.value === "Rekondisi" || stAksi.value.includes("Jual");
-        
-        stKon.style.display = sembunyi ? "none" : "block";
-        stQC.style.display = sembunyi ? "none" : "block";
-        
-        // Jika Cair, otomatis set Accepted
-        if (isCair) stQC.value = "Accepted";
+            // Jika pilih Rekondisi atau Jual, sembunyikan Kotor & ACC
+            if (aksi === "Rekondisi" || aksi.includes("Jual")) {
+                stKon.style.display = "none";
+                stQC.style.display = "none";
+            } else {
+                // Munculkan kembali jika pilih 'Masuk'
+                stKon.style.display = "block";
+                stQC.style.display = "block";
+            }
+        }
     }
 
-    // 2. Pasang Listener (Alarm)
-    stBrg.onchange = updateTampilan;
-    stAksi.onchange = updateTampilan;
+    // Jalankan setiap ada perubahan
+    stBrg.addEventListener('change', updateUI);
+    stAksi.addEventListener('change', updateUI);
 
-    // 3. Jalankan pertama kali
-    updateTampilan();
+    // Jalankan sekali saat start
+    updateUI();
 }
 
 // Panggil fungsinya
