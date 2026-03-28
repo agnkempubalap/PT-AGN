@@ -417,28 +417,29 @@ function renderStok() {
         let rdy = (s.ab + s.ib + s.rk) - (s.jm + s.ju);
         let total = ktr + rdy;
 
-        // 2. LOGIKA WARNA MERAH (THRESHOLD)
+                // 2. LOGIKA WARNA (THRESHOLD & KOSONG)
         const limit = D.thresholds[b] || 0;
         let warningStyle = "";
-        // Jika stok total (Ready + Kotor) kurang dari atau sama dengan limit
-        if (total <= limit && limit > 0) {
-            warningStyle = 'style="background-color: #ffebee; color: #c62828; border-left: 6px solid red;"';
+        let labelStatus = "";
+
+        if (total <= 0) {
+            // JIKA HABIS (0 atau Minus) -> MERAH
+            warningStyle = 'style="background-color: #ffebee; color: #c62828; border-left: 6px solid #f44336;"';
+            labelStatus = '<br><span style="font-size:8px; background:#f44336; color:white; padding:1px 4px; border-radius:2px;">HABIS / KOSONG!</span>';
+        } 
+        else if (total <= limit && limit > 0) {
+            // JIKA MENYENTUH THRESHOLD -> KUNING
+            warningStyle = 'style="background-color: #fff9c4; color: #856404; border-left: 6px solid #ffeb3b;"';
+            labelStatus = '<br><span style="font-size:8px; background:#fbc02d; color:black; padding:1px 4px; border-radius:2px;">STOK TIPIS!</span>';
         }
 
-        // Fungsi pembantu untuk tampilan kolom (Liter vs Pcs)
-        const dual = (val, isKtrCol = false) => {
-            if (isCair && isKtrCol) return `<td style="color:#ccc; background:#f9f9f9">-</td>`;
-            if (!isCair) return `<td>${val}</td>`;
-            let kg = (val * 0.9).toFixed(1);
-            return `<td style="font-size:10px"><b>${val.toFixed(1)}L</b><br><small style="color:gray">${kg}kg</small></td>`;
-        };
-
         // 3. PENYUSUNAN BARIS TABEL (HTML)
-        h += `<tr ${warningStyle}>
-            <td class="sticky-col" onclick="promptThreshold('${b}')" style="cursor:pointer; background: white;">
-                <div style="font-weight:bold; color:#2c3e50;">${b}</div>
-                ${total <= limit && limit > 0 ? '<span style="font-size:8px; background:red; color:white; padding:1px 4px; border-radius:2px;">STOK TIPIS!</span>' : `<small style="font-size:9px; color:blue;">Limit: ${limit}</small>`}
+                h += `<tr ${warningStyle}>
+            <td class="sticky-col" onclick="promptThreshold('${b}')" style="cursor:pointer; background: inherit;">
+                <div style="font-weight:bold;">${b}</div>
+                ${labelStatus ? labelStatus : `<small style="font-size:9px; color:blue;">Limit: ${limit}</small>`}
             </td>
+            ...
             
             ${dual(s.ak, true)}
             ${dual(s.ab)}
