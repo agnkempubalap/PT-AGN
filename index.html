@@ -330,65 +330,64 @@
 // 1. LISTENER (OTOMATISASI UI)
 // ==========================================
 function initStokListeners() {
+    // 1. Ambil semua elemen (Pakai ID sesuai HTML Mas)
     const stBrg = document.getElementById('stBrg');
     const stUnit = document.getElementById('stUnit');
     const stKon = document.getElementById('stKon');
     const stAksi = document.getElementById('stAksi');
     const stQC = document.getElementById('stQC');
 
-    function initStokListeners() {
-    const stBrg = document.getElementById('stBrg');
-    const stUnit = document.getElementById('stUnit');
-    const stKon = document.getElementById('stKon');
-    const stAksi = document.getElementById('stAksi');
-    const stQC = document.getElementById('stQC');
-
-    function updateTampilan() {
-        const n = stBrg.value.toLowerCase();
-        const ak = stAksi.value;
-        const isCair = n.includes("minyak") || n.includes("cair") || n.includes("air");
-
-        // 1. ATUR UNIT (L/KG)
-        stUnit.style.display = isCair ? "block" : "none";
-
-        // 2. ATUR DROPDOWN AKSI (Hapus Rekondisi jika Cair)
-        if (isCair) {
-            stAksi.innerHTML = `
-                <option value="Masuk">Masuk</option>
-                <option value="Jual Mitra">Jual Mitra</option>
-                <option value="Jual Umum">Jual Umum</option>
-            `;
-            // Paksa QC jadi Accepted kalau cair
-            stQC.value = "Accepted";
-        } else {
-            // Jika bukan cair, simpan dulu nilai aksi biar gak reset ke 'Masuk' terus
-            const valSkg = stAksi.value;
-            stAksi.innerHTML = `
-                <option value="Masuk">Masuk</option>
-                <option value="Rekondisi">Rekondisi</option>
-                <option value="Jual Mitra">Jual Mitra</option>
-                <option value="Jual Umum">Jual Umum</option>
-            `;
-            stAksi.value = valSkg || "Masuk";
-        }
-
-        // 3. LOGIKA SEMBUNYI KOTOR & ACC
-        // Sembunyi jika: (Cair) ATAU (Aksi Rekondisi) ATAU (Aksi Jual)
-        const sembunyi = isCair || stAksi.value === "Rekondisi" || stAksi.value.includes("Jual");
-
-        stKon.style.display = sembunyi ? "none" : "block";
-        stQC.style.display = sembunyi ? "none" : "block";
+    // PENGAMAN: Jika salah satu elemen gak ketemu, jangan lanjut (biar gak crash)
+    if (!stBrg || !stUnit || !stKon || !stAksi || !stQC) {
+        console.error("Ada ID yang belum pas di HTML Mas!");
+        return;
     }
 
-    // LISTENER: Langsung panggil updateTampilan setiap ada perubahan
-    stBrg.addEventListener('change', updateTampilan);
-    stAksi.addEventListener('change', updateTampilan);
+    function updateTampilan() {
+        // Ambil nilai saat ini
+        const nama = stBrg.value ? stBrg.value.toLowerCase() : "";
+        const aksi = stAksi.value;
+        
+        // Cek apakah barang cairan
+        const isCair = nama.includes("minyak") || nama.includes("cair") || nama.includes("air");
 
-    // Jalankan sekali pas awal buka biar sinkron
+        // A. Atur Dropdown Satuan (L/Kg)
+        stUnit.style.display = isCair ? "block" : "none";
+
+        // B. Atur Pilihan di Dropdown Aksi (Masuk, Rekon, Jual)
+        // Kita simpan dulu pilihan user sebelum diupdate biar gak loncat
+        const pilihanSekarang = stAksi.value;
+
+        if (isCair) {
+            stAksi.innerHTML = '<option value="Masuk">Masuk</option><option value="Jual Mitra">Jual Mitra</option><option value="Jual Umum">Jual Umum</option>';
+            // Kalau cair, gak mungkin 'Rekondisi', jadi paksa ke 'Masuk'
+            if (pilihanSekarang === "Rekondisi") stAksi.value = "Masuk";
+            else stAksi.value = pilihanSekarang;
+        } else {
+            stAksi.innerHTML = '<option value="Masuk">Masuk</option><option value="Rekondisi">Rekondisi</option><option value="Jual Mitra">Jual Mitra</option><option value="Jual Umum">Jual Umum</option>';
+            stAksi.value = pilihanSekarang;
+        }
+
+        // C. Atur Sembunyi/Muncul Kotor & ACC
+        // Logika: Sembunyi jika (Cair) ATAU (Aksi Rekon) ATAU (Aksi Jual)
+        const sembunyi = isCair || stAksi.value === "Rekondisi" || stAksi.value.includes("Jual");
+        
+        stKon.style.display = sembunyi ? "none" : "block";
+        stQC.style.display = sembunyi ? "none" : "block";
+        
+        // Jika Cair, otomatis set Accepted
+        if (isCair) stQC.value = "Accepted";
+    }
+
+    // 2. Pasang Listener (Alarm)
+    stBrg.onchange = updateTampilan;
+    stAksi.onchange = updateTampilan;
+
+    // 3. Jalankan pertama kali
     updateTampilan();
 }
 
-// Jangan lupa panggil fungsinya di paling bawah script
+// Panggil fungsinya
 initStokListeners();
 
 // ===========================================
