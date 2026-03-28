@@ -372,27 +372,32 @@ function renderStok() {
 
         let ktr = (s.ak+s.ik)-s.rk, rdy = (s.ab+s.ib+s.rk)-(s.jm+s.ju), total = ktr+rdy;
 
+        // Fungsi Helper: Menambahkan teks "Kg" dan memperbaiki tampilan Reject
         const dual = (val, isKtrCol = false) => {
             if (isMinyak && isKtrCol) return `<td style="color:#ccc">-</td>`;
             if (!isMinyak) return `<td>${val}</td>`;
             let kg = (val * 0.9).toFixed(1);
-            return `<td style="font-size:10px"><b>${val.toFixed(1)}L</b><br><small style="color:gray">${kg}k</small></td>`;
+            return `<td style="font-size:10px"><b>${val.toFixed(1)}L</b><br><small style="color:gray">${kg}kg</small></td>`;
         };
 
         h += `<tr>
             <td class="sticky-col">${b}</td>
             ${dual(s.ak, true)}${dual(s.ab)}${dual(s.ik, true)}${dual(s.ib)}
-            <td style="color:red; font-size:9px;">${isMinyak ? (s.rej*0.9).toFixed(1)+'k' : s.rej}</td>
+            
+            <td style="color:red; font-size:10px;">
+                ${isMinyak ? `<b>${s.rej.toFixed(1)}L</b><br><small>${(s.rej*0.9).toFixed(1)}kg</small>` : s.rej}
+            </td>
+
             <td>${isMinyak ? "-" : s.rk}</td>
             ${dual(s.jm)}${dual(s.ju)}${dual(ktr, true)}${dual(rdy)}
+            
             <td style="background:var(--p); color:white; font-weight:bold; font-size:10px;">
-                ${isMinyak ? total.toFixed(1)+'L<br>'+(total*0.9).toFixed(1)+'k' : total}
+                ${isMinyak ? total.toFixed(1)+'L<br>'+(total*0.9).toFixed(1)+'kg' : total}
             </td>
         </tr>`;
     }); 
     document.getElementById('tbStok').innerHTML = h;
 }
-
 
     </script>
 </body>
