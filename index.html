@@ -102,7 +102,29 @@
     <button class="btn" style="background:var(--p)" onclick="saveSt()">PROSES STOK</button>
 </div>
 
-            <div class="table-area" id="areaStok"><table><thead><tr><th class="sticky-col">BRG</th><th>AWAL KTR</th><th>AWAL RDY</th><th>IN KTR</th><th>IN RDY</th><th style="color:var(--d)">REJ</th><th>REKON</th><th>MITRA</th><th>UMUM</th><th style="background:#fef3c7">STOK KTR</th><th style="background:#dcfce7">STOK RDY</th><th style="background:var(--p); color:white">TOTAL</th></tr></thead><tbody id="tbStok"></tbody></table></div>
+            <div class="table-area" id="areaStok">
+    <table>
+        <thead>
+            <tr style="font-size: 8px; text-align: center; line-height: 1.1;">
+                <th class="sticky-col" style="width:60px;">BRG</th>
+                <th style="width:35px; white-space:normal;">AWAL KTR</th>
+                <th style="width:35px; white-space:normal;">AWAL RDY</th>
+                <th style="width:35px; white-space:normal;">IN KTR</th>
+                <th style="width:35px; white-space:normal;">IN RDY</th>
+                <th style="width:30px; color:var(--d);">REJ</th>
+                <th style="width:35px; white-space:normal;">REKON</th>
+                <th style="width:35px;">MITRA</th>
+                <th style="width:35px;">UMUM</th>
+                <th style="width:38px; background:#fef3c7; white-space:normal;">STOK KTR</th>
+                <th style="width:38px; background:#dcfce7; white-space:normal;">STOK RDY</th>
+                <th style="width:40px; background:var(--p); color:white;">TOTAL</th>
+            </tr>
+        </thead>
+        <tbody id="tbStok">
+            </tbody>
+    </table>
+</div>
+
             <div class="flex-row">
                 <button class="btn" style="background:var(--s)" onclick="expEx('areaStok','Stok')">EXCEL</button>
                 <button class="btn" style="background:var(--d)" onclick="expPdf('areaStok','Laporan_Stok')">PDF</button>
@@ -409,6 +431,7 @@ function renderStok() {
         let rdy = (s.ab + s.ib + s.rk) - (s.jm + s.ju);
         let total = ktr + rdy;
 
+        // --- LOGIKA WARNA & SIMBOL ---
         const limit = D.thresholds[b] || 0;
         let warningStyle = "";
         let lb = (total <= 0) ? ' <span style="color:red;font-size:8px;">●</span>' : 
@@ -420,15 +443,16 @@ function renderStok() {
             warningStyle = 'style="background-color:#fff9c4; color:#856404; border-left:3px solid orange;"';
         }
 
-        // FUNGSI ANGKA: Pakai 'white-space:normal' agar teks bisa bungkus/turun kebawah
+        // --- FUNGSI ANGKA (Bungkus Teks Agar Kotak Seragam) ---
         const dual = (v, isKtrCol = false) => {
             if (isCair && isKtrCol) return `<td style="color:#ccc">-</td>`;
-            return `<td style="white-space:normal; word-break:break-word;">${Math.round(v)}</td>`;
+            // style white-space:normal membuat kotak tidak melar ke samping
+            return `<td style="white-space:normal; word-break:break-all;">${Math.round(v)}</td>`;
         };
 
-        // SUSUNAN BARIS: Tambahkan style manual pada TD agar bungkus teks aktif
+        // --- PENYUSUNAN BARIS ---
         h += `<tr ${warningStyle}>
-            <td class="sticky-col" onclick="promptThreshold('${b}')" style="cursor:pointer; background:inherit; font-size:9px; white-space:normal; word-break:break-word; min-width:50px; max-width:60px;">
+            <td class="sticky-col" onclick="promptThreshold('${b}')" style="cursor:pointer; background:inherit; font-size:9px; font-weight:bold; white-space:normal; line-height:1;">
                 ${b}${lb}
             </td>
             ${dual(s.ak, true)}${dual(s.ab)}${dual(s.ik, true)}${dual(s.ib)}
