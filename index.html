@@ -291,18 +291,26 @@ function renderStok() {
 
         let ktr = (s.ak+s.ik)-s.rk, rdy = (s.ab+s.ib+s.rk)-(s.jm+s.ju), total = ktr+rdy;
 
-        const dual = (val) => {
+        // Fungsi Helper untuk Tampilan Dual-Unit
+        const dual = (val, isKtrCol = false) => {
+            // Jika ini barang minyak DAN ini kolom kotor, tampilkan strip
+            if (isMinyak && isKtrCol) return `<td style="color:#ccc">-</td>`;
+            
             if (!isMinyak) return `<td>${val}</td>`;
+            
             let kg = (val * 0.9).toFixed(1);
-            return `<td style="padding:2px; font-size:10px;"><b>${val.toFixed(1)}L</b><br><span style="color:gray; font-size:8px;">${kg}kg</span></td>`;
+            return `<td style="padding:2px; font-size:10px;">
+                        <b>${val.toFixed(1)}L</b><br>
+                        <span style="color:gray; font-size:8px;">${kg}kg</span>
+                    </td>`;
         };
 
-        h += `<tr><td class="sticky-col">${b}</td>
-            ${dual(s.ak)}${dual(s.ab)}${dual(s.ik)}${dual(s.ib)}
-            <td style="color:red; font-size:9px;">${isMinyak ? (s.rej*0.9).toFixed(1)+'k' : s.rej}</td>
-            <td>${isMinyak ? "-" : s.rk}</td>
-            ${dual(s.jm)}${dual(s.ju)}${dual(ktr)}${dual(rdy)}
-            <td style="background:var(--p); color:white; font-weight:bold; font-size:10px;">${isMinyak ? total.toFixed(1)+'L<br>'+(total*0.9).toFixed(1)+'k' : total}</td>
+        h += `<tr>
+            <td class="sticky-col">${b}</td>
+            ${dual(s.ak, true)}  ${dual(s.ab)}        ${dual(s.ik, true)}  ${dual(s.ib)}        <td style="color:red; font-size:9px;">${isMinyak ? (s.rej*0.9).toFixed(1)+'k' : s.rej}</td>
+            <td>${isMinyak ? "-" : s.rk}</td> ${dual(s.jm)}        ${dual(s.ju)}        ${dual(ktr, true)}   ${dual(rdy)}         <td style="background:var(--p); color:white; font-weight:bold; font-size:10px;">
+                ${isMinyak ? total.toFixed(1)+'L<br>'+(total*0.9).toFixed(1)+'k' : total}
+            </td>
         </tr>`;
     }); 
     document.getElementById('tbStok').innerHTML = h;
