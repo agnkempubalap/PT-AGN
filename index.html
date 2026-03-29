@@ -405,14 +405,20 @@
              //Log Riwayat
 //----------------------------------------
         function showLogs(t) { let l=Object.entries(D[t]||{}).reverse().slice(0,30); openMod("Log", l.map(x=>`<div style="font-size:10px;padding:5px;border-bottom:1px solid #eee"><span>[${x[1].t}] ${x[1].b||x[1].j} (${x[1].q})</span> <b onclick="removeItem('${t}','${x[0]}')" style="color:red; cursor:pointer">×</b></div>`).join('')); }
-        
 
-//=========================================
-              //TAB STOK
-// ==========================================
+//========================================
+               //TAB ABSEN
+//========================================
+// 1. LISTENER (OTOMATISASI UI)
+//----------------------------------------
+      
+
+//========================================
+                //TAB STOK
+// =======================================
 // 1. LISTENER (OTOMATISASI UI)
 // ---------------------------------------
-function initStokListeners() {
+      function initStokListeners() {
     // Ambil semua elemen
     const stBrg = document.getElementById('stBrg');
     const stUnit = document.getElementById('stUnit');
