@@ -419,399 +419,146 @@ function cellMod(d, k) {
 
 
 //========================================
-                //TAB STOK
-// =======================================
-
-// 1. LISTENER (OTOMATISASI UI)
-// ---------------------------------------
-      function initStokListeners() {
-    // Ambil semua elemen
+//                TAB STOK
+//========================================
+function initStokListeners() {
     const stBrg = document.getElementById('stBrg');
-    const stUnit = document.getElementById('stUnit');
-    const stKon = document.getElementById('stKon');
-    const stQC = document.getElementById('stQC');
     const stAksi = document.getElementById('stAksi');
+    if (!stBrg || !stAksi) return;
 
-    // A. Fungsi Utama Pengetur Tampilan
     function updateUI() {
-        if (!stBrg || !stAksi) return;
-
         const nama = stBrg.value.toLowerCase();
         const aksi = stAksi.value;
         const isCair = nama.includes("minyak") || nama.includes("cair") || nama.includes("air");
    
-        // --- LOGIKA 1: BARANG CAIRAN ---
         if (isCair) {
-            stUnit.style.display = "block"; // Munculkan L/Kg
-            stKon.style.display = "none";   // Sembunyikan Kotor
-            stQC.style.display = "none";    // Sembunyikan ACC
-            
-            // Hapus pilihan 'Rekondisi' dari dropdown Aksi jika sedang pilih cairan
-            if (stAksi.querySelector('option[value="Rekondisi"]')) {
-                stAksi.querySelector('option[value="Rekondisi"]').remove();
-            }
-            // Paksa QC ke Accepted secara sistem (meski sembunyi)
-            stQC.value = "Accepted";
-        } 
-        
-        // --- LOGIKA 2: AKSI REKONDISI (Untuk barang non-cair) ---
-        else {
-            stUnit.style.display = "none"; // Sembunyikan L/Kg
-            
-            // Pastikan pilihan 'Rekondisi' ada lagi kalau bukan cairan
-            if (!stAksi.querySelector('option[value="Rekondisi"]')) {
-                const opt = document.createElement('option');
-                opt.value = "Rekondisi";
-                opt.innerHTML = "Rekondisi";
-                stAksi.appendChild(opt);
-            }
-
-            // Jika pilih Rekondisi atau Jual, sembunyikan Kotor & ACC
-            if (aksi === "Rekondisi" || aksi.includes("Jual")) {
-                stKon.style.display = "none";
-                stQC.style.display = "none";
-            } else {
-                // Munculkan kembali jika pilih 'Masuk'
-                stKon.style.display = "block";
-                stQC.style.display = "block";
-            }
+            document.getElementById('stUnit').style.display = "block";
+            document.getElementById('stKon').style.display = "none";
+            document.getElementById('stQC').style.display = "none";
+            document.getElementById('stQC').value = "Accepted";
+        } else {
+            document.getElementById('stUnit').style.display = "none";
+            document.getElementById('stKon').style.display = (aksi === "Rekondisi" || aksi.includes("Jual")) ? "none" : "block";
+            document.getElementById('stQC').style.display = (aksi === "Rekondisi" || aksi.includes("Jual")) ? "none" : "block";
         }
     }
-
-    // Jalankan setiap ada perubahan
     stBrg.addEventListener('change', updateUI);
     stAksi.addEventListener('change', updateUI);
-
-    // Jalankan sekali saat start
     updateUI();
 }
 
-// Panggil fungsinya
-initStokListeners();
-
-     // B. FUNGSI AMBANG BATAS
-
-// Fungsi untuk menyimpan batas ke Firebase
-function setThreshold(namaBarang, angka) {
-    db.ref('thresholds/' + namaBarang).set(parseFloat(angka));
-}
-
-// Fungsi Pop-up saat nama barang di tabel diklik
-function promptThreshold(barang) {
-    // Ambil nilai lama jika ada, kalau tidak ada default 0
-    let currentLimit = (D.thresholds && D.thresholds[barang]) ? D.thresholds[barang] : 0;
-    
-    let newLimit = prompt("Set batas minimal stok untuk " + barang + ":", currentLimit);
-    
-    if (newLimit !== null && newLimit !== "") {
-        setThreshold(barang, newLimit);
-        // Alert ini opsional, bisa dihapus jika ingin lebih cepat
-        alert("Batas " + barang + " diatur ke: " + newLimit);
-    }
-}
-
-// ---------------------------------------
-// 2. SIMPAN DATA STOK
-// ---------------------------------------
-
 function saveSt() {
-    // 1. Ambil Data (ID disesuaikan dengan foto HTML Mas)
     const t = document.getElementById('stTgl').value;
     const b = document.getElementById('stBrg').value;
-    const qRaw = document.getElementById('qty').value; // Tadinya 'stQty', ganti jadi 'qty' agar pas dengan HTML
+    const qRaw = document.getElementById('qty').value;
     const ak = document.getElementById('stAksi').value;
     
-    // Pastikan b ada isinya sebelum di-toLowerCase
-    if(!b) return alert("⚠️ Pilih Barang dulu Mas!");
-    const isCair = b.toLowerCase().includes("minyak") || b.toLowerCase().includes("cair") || b.toLowerCase().includes("air");
-
-    // 2. Validasi Lengkap
-    if(!qRaw || !t) return alert("⚠️ Isi Tanggal & Jumlah dengan lengkap!");
+    if(!b || !qRaw || !t) return alert("⚠️ Data belum lengkap!");
     let q = parseFloat(qRaw);
+    const isCair = b.toLowerCase().includes("minyak") || b.toLowerCase().includes("cair");
 
-    // 3. Logika Konversi Kg ke Liter (Tetap Ada)
-    const stUnit = document.getElementById('stUnit');
-    const uIn = isCair ? stUnit.value : "Pcs";
-    
-    // Jika input dalam Kg untuk cairan, dikonversi ke Liter (0.9)
-    if (isCair && uIn === "Kg") {
-        q = parseFloat((q / 0.9).toFixed(2));
+    if (isCair && document.getElementById('stUnit').value === "Kg") {
+        q = parseFloat((q / 0.9).toFixed(2)); // Konversi Kg ke Liter
     }
 
-    // 4. Atur Kondisi & QC Final (Sesuai Logika Mas)
-    // ID disesuaikan: 'kon' -> 'stKon', 'qc' -> 'stQC'
-    const stKon = document.getElementById('stKon');
-    const stQC = document.getElementById('stQC');
-    
-    const konFinal = isCair ? "Baru" : stKon.value;
-    const qcFinal = (ak === "Masuk") ? stQC.value : "Accepted";
-
-    // 5. Simpan ke Firebase
     db.ref('stok_logs').push({ 
-        t: t, 
-        b: b, 
-        q: q, 
-        unit: isCair ? "Liter" : "Pcs", // Catat satuan akhirnya
-        kon: konFinal, 
-        qc: qcFinal, 
-        ak: ak 
+        t, b, q, 
+        unit: isCair ? "Liter" : "Pcs",
+        kon: isCair ? "Baru" : document.getElementById('stKon').value, 
+        qc: (ak === "Masuk") ? document.getElementById('stQC').value : "Accepted", 
+        ak 
     }).then(() => {
-        // 6. RESET FORM & UI (Kembali ke default)
         document.getElementById('qty').value = "";
-        
-        // Sembunyikan kembali pop-up Liter/Kg
-        stUnit.style.display = "none";
-        stKon.style.display = "block";
-        stQC.style.display = "block";
-
-        alert("✅ Data " + b + " Berhasil Disimpan!");
-        
-        // Update tabel kalau ada fungsinya
-        if (typeof renderStok === "function") renderStok();
-    }).catch((err) => {
-        alert("❌ Gagal Simpan: " + err.message);
+        alert("✅ Stok " + b + " Tersimpan!");
+        renderStok();
     });
 }
 
-     
-// ---------------------------------------
-// 3. RENDER TABEL (LOGISTIK & STOK)
-// ---------------------------------------
-
-      function renderStok() {
-    const B_arr = Object.values(D.master_barang || {}), 
-          fM = document.getElementById('fM').value;
+function renderStok() {
+    const B_arr = Object.values(D.master_barang || {});
+    const fM = document.getElementById('fM').value;
     let h = "";
-    if (!D.thresholds) D.thresholds = {};
-
     B_arr.forEach(b => {
         let s = { ak:0, ab:0, ik:0, ib:0, rej:0, rk:0, jm:0, ju:0 };
-        const nB = b.toUpperCase();
-        const isCair = nB.includes("MINYAK") || nB.includes("CAIR") || nB.includes("AIR") || nB.includes("LITER");
-
         Object.values(D.stok_logs || {}).forEach(l => {
-            if(l.b !== b) return; 
-            if(l.t?.slice(0,7) < fM) { 
-                if(l.ak === "Masuk") l.kon === "Bekas" ? s.ak += l.q : s.ab += l.q; 
-                else if(l.ak === "Rekondisi") { s.ak -= l.q; s.ab += l.q; } 
-                else if(l.ak.includes("Jual")) s.ab -= l.q; 
-            } else if(l.t?.slice(0,7) === fM) { 
-                if(l.ak === "Masuk") l.kon === "Bekas" ? s.ik += l.q : s.ib += l.q; 
-                else if(l.ak === "Rekondisi") s.rk += l.q; 
-                else if(l.ak === "Jual Mitra") s.jm += l.q; 
-                else if(l.ak.includes("Jual Umum")) s.ju += l.q; 
-                if(l.qc === "Reject") s.rej += l.q; 
+            if(l.b !== b) return;
+            let bln = l.t?.slice(0,7);
+            if(bln < fM) { 
+                if(l.ak === "Masuk") l.kon === "Bekas" ? s.ak += l.q : s.ab += l.q;
+                else if(l.ak === "Rekondisi") { s.ak -= l.q; s.ab += l.q; }
+                else if(l.ak.includes("Jual")) s.ab -= l.q;
+            } else if(bln === fM) {
+                if(l.ak === "Masuk") l.kon === "Bekas" ? s.ik += l.q : s.ib += l.q;
+                else if(l.ak === "Rekondisi") s.rk += l.q;
+                else if(l.ak === "Jual Mitra") s.jm += l.q;
+                else if(l.ak.includes("Jual Umum")) s.ju += l.q;
+                if(l.qc === "Reject") s.rej += l.q;
             }
         });
-
-        let ktr = (s.ak + s.ik) - s.rk, rdy = (s.ab + s.ib + s.rk) - (s.jm + s.ju), total = ktr + rdy;
-        const limit = D.thresholds[b] || 0;
-        let warn = "", lb = "";
-
-        if (total <= 0) {
-            warn = 'style="background:#ffebee;color:#c62828;border-left:3px solid red;"';
-            lb = ' <small style="color:red;font-size:8px;">●</small>';
-        } else if (total <= limit && limit > 0) {
-            warn = 'style="background:#fff9c4;color:#856404;border-left:3px solid orange;"';
-            lb = ' <small style="color:orange;font-size:8px;">▲</small>';
-        }
-
-        // --- KUNCI: Fungsi Flexbox agar isi kotak PASTI di tengah ---
-        const wrap = (content) => `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:38px; text-align:center; width:100%;">${content}</div>`;
-
-        const fmt = (v, forceUnit = false) => {
-            if (isCair) {
-                let valL = Math.round(v);
-                let valKg = (v * 0.9).toFixed(1);
-                return wrap(`<span style="color:#2980b9; font-weight:bold; font-size:10px;">${valL}L</span>
-                             <span style="color:#27ae60; border-top:1px solid #ddd; width:80%; margin-top:2px; font-size:9px;">${valKg}Kg</span>`);
-            } else {
-                return wrap(`<span style="font-weight:bold; font-size:10px;">${Math.round(v)}</span>
-                             <span style="color:#aaa; font-size:8px; border-top:1px solid #eee; width:80%; margin-top:2px;">Unit</span>`);
-            }
-        };
-
-        const dual = (v, isK) => {
-            // Jika kolom AWAL KTR atau IN KTR untuk minyak, kasih strip tengah
-            if (isCair && isK) return `<td style="padding:0;">${wrap('<span style="color:#ccc;">-</span>')}</td>`;
-            return `<td style="padding:0;">${fmt(v)}</td>`;
-        };
-
-        h += `<tr ${warn}>
-            <td class="sticky-col" onclick="promptThreshold('${b}')" style="cursor:pointer;background:inherit;font-size:9px;white-space:normal;line-height:1;font-weight:bold;text-align:left;padding-left:3px;">
-                <div style="display:flex; align-items:center; min-height:38px;">${b}${lb}</div>
-            </td>
-            ${dual(s.ak,true)}${dual(s.ab)}${dual(s.ik,true)}${dual(s.ib)}
-            <td style="color:red; padding:0;">${fmt(s.rej)}</td>
-            <td style="background:#fffde7; padding:0;">${isCair ? wrap('<span style="color:#ccc;">-</span>') : fmt(s.rk)}</td>
-            ${dual(s.jm)}${dual(s.ju)}${dual(ktr,true)}${dual(rdy)}
-            <td style="background:#2ecc71; color:white; padding:0;">
-                ${fmt(total)}
-            </td>
-        </tr>`;
-    }); 
+        let ktr = (s.ak + s.ik) - s.rk, rdy = (s.ab + s.ib + s.rk) - (s.jm + s.ju);
+        h += `<tr><td class="sticky-col">${b}</td><td>${s.ak}</td><td>${s.ab}</td><td>${s.ik}</td><td>${s.ib}</td><td>${s.rej}</td><td>${s.rk}</td><td>${s.jm}</td><td>${s.ju}</td><td>${ktr}</td><td>${rdy}</td><td style="background:#2ecc71;color:white">${ktr+rdy}</td></tr>`;
+    });
     document.getElementById('tbStok').innerHTML = h;
 }
 
-
 //========================================
-        //TAB AKTIVITAS DAN BELANJA
+//        TAB AKTIVITAS DAN BELANJA
 //========================================
-
-// 1. LISTENER DAN UI
-//----------------------------------------
-      //Sama dengan listener Tab Absen
-
-//----------------------------------------
-// 2. SIMPAN DATA AKTIVITAS 
-//----------------------------------------
-      function saveAk() {
-            const tgl=document.getElementById('akTgl').value, q=parseInt(document.getElementById('akQty').value)||0, p=Array.from(document.querySelectorAll('.chk-k:checked')).map(c=>c.value), j=document.getElementById('akJenis').value;
-            if(!p.length || q<=0) return alert("Pilih Karyawan & Isi Qty!");
-            let ilegal = p.filter(k => !D.absensi?.[tgl]?.[k] || !['Hadir','Telat','Lembur'].includes(D.absensi[tgl][k].j));
-            if(ilegal.length) return alert("Ada Karyawan belum absen!");
-            const cairAwal = !j.toLowerCase().includes("jerigen"); 
-            db.ref('aktivitas').push({ t:tgl, j, q, p, isCair: cairAwal }).then(()=>{
-                document.getElementById('akQty').value=""; document.querySelectorAll('.chk-k').forEach(c=>c.checked=false); alert("Kerja Tersimpan!");
-            });
-        }
-
-//----------------------------------------
-// 3. RENDER TAMPILAN TAB AKTIVITAS
-//----------------------------------------
-   // A. Aktivitas 
-    // 1. Render Nama Barang dan Karyawan
-          function initUI() {
-    const K = Object.entries(D.master_karyawan || {}), B = Object.entries(D.master_barang || {});
-    // ... kode listK dan listB tetap sama ...
-    
-    // PERBAIKAN: value="${k[0]}" agar yang tersimpan ke database adalah ID
+function initUI() {
+    const K = Object.entries(D.master_karyawan || {});
+    const B = Object.entries(D.master_barang || {});
     document.getElementById('selK').innerHTML = K.map(k=>`<option value="${k[0]}">${k[1]}</option>`).join('');
     document.getElementById('stBrg').innerHTML = B.map(b=>`<option value="${b[1]}">${b[1]}</option>`).join('');
+    renderCheckKaryawan();
 }
 
-
-     // 2. Render Logika Check Karyawan 
-           function renderCheckKaryawan() {
+function renderCheckKaryawan() {
     const tgl = document.getElementById('akTgl').value;
-    // Gunakan entries agar dapat ID (k[0]) dan Nama (k[1])
-    const K = Object.entries(D.master_karyawan || {}); 
-    
+    const K = Object.entries(D.master_karyawan || {});
     document.getElementById('akKaryawan').innerHTML = K.map(k => {
-        // Cari absen pakai ID (k[0])
-        const a = D.absensi?.[tgl]?.[k[0]]; 
-        const sudahAbsen = a && ['Hadir', 'Telat', 'Lembur'].includes(a.j);
-        
-        return `<label class="check-item" style="${sudahAbsen ? '' : 'opacity:0.3; background:#eee'}">
-            <input type="checkbox" class="chk-k" value="${k[0]}" ${sudahAbsen ? '' : 'disabled'}> 
-            <span style="font-weight:${sudahAbsen ? '700' : '400'}">${k[1]} ${sudahAbsen ? '' : '(X)'}</span>
+        const a = D.absensi?.[tgl]?.[k[0]];
+        const ok = a && ['Hadir','Telat','Lembur'].includes(a.j);
+        return `<label class="check-item" style="${ok?'':'opacity:0.3'}">
+            <input type="checkbox" class="chk-k" value="${k[0]}" ${ok?'':'disabled'}> ${k[1]}
         </label>`;
     }).join('');
 }
 
-  
-   // B. Belanja
-          async function saveBl() { const t=document.getElementById('blTgl').value, n=document.getElementById('blNama').value, rp=parseInt(document.getElementById('blRp').value), file=document.getElementById('blImg').files[0]; let img=""; if(file){ const c=document.createElement('canvas'), ctx=c.getContext('2d'), i=await createImageBitmap(file); c.width=400; c.height=i.height/i.width*400; ctx.drawImage(i,0,0,400,c.height); img=c.toDataURL('image/jpeg',0.6); } if(n&&rp) db.ref('belanja').push({ t, n, rp, img }).then(()=>{ alert("Nota!"); }); }
-
-
-
-//========================================
-               //TAB GAJI
-//========================================
-
-// 1. LISTENER (OTOMISASI UI)
-//----------------------------------------
- 
-    // 1.Sama Dengan Listener Tab Absen
-
-    // 2.Membuka Pop Up Kasbon dan Bonus
-         function openModKB() { const fM=document.getElementById('fUang').value, K=Object.values(D.master_karyawan||{}), L=Object.entries(D.kasbon_bonus||{}).filter(x=>x[1].t===fM).reverse(); let h=`<select id="kbN">${K.map(k=>`<option>${k}</option>`).join('')}</select><select id="kbT"><option value="Bonus">Bonus</option><option value="Kasbon">Kasbon</option></select><input type="number" id="kbR" placeholder="Rp"><button class="btn" onclick="saveKB()">SIMPAN</button><hr>${L.map(x=>`<div style="font-size:10px;padding:5px;border-bottom:1px solid #eee"><b>${x[1].n}</b>: ${x[1].tipe} Rp ${x[1].rp.toLocaleString()} <b onclick="removeItem('kasbon_bonus','${x[0]}')" style="color:red; cursor:pointer">×</b></div>`).join('')}`; openMod("Kasbon / Bonus", h); }
-
-    // 3. Fungsi Edit Gaji 
-           function editTarif() { 
-    let h = `<div style="display:grid;grid-template-columns: 1fr 1fr;gap:5px">`;
-    h += Object.entries(D.tarif || DEF_TARIF).map(t => `
-        <div>
-            <label style="font-size:9px">${t[0]}</label>
-            <input type="number" id="trf_${t[0].replace(/ /g, '_')}" value="${t[1]}">
-        </div>`).join('');
-    h += `</div><button class="btn" onclick="saveTarif()">UPDATE</button>`;
-    openMod("Tarif", h); 
+function saveAk() {
+    const t=document.getElementById('akTgl').value, q=parseInt(document.getElementById('akQty').value)||0, p=Array.from(document.querySelectorAll('.chk-k:checked')).map(c=>c.value), j=document.getElementById('akJenis').value;
+    if(!p.length || q<=0) return alert("Pilih Karyawan & Isi Qty!");
+    db.ref('aktivitas').push({ t, j, q, p, isCair: !j.toLowerCase().includes("jerigen") }).then(()=>{
+        alert("✅ Kerja Tersimpan!");
+        renderGaji();
+    });
 }
 
-     // 4.Slip Gaji Karyawan
-         function genSlip(n) { 
-    const fM = document.getElementById('fUang').value;
-    const T = D.tarif || DEF_TARIF;
-    let br = 0, bo = 0, ka = 0, list = "";
+//========================================
+//               TAB GAJI
+//========================================
+function renderGaji() {
+    const fM = document.getElementById('fUang').value, T = D.tarif||DEF_TARIF, K = Object.entries(D.master_karyawan||{});
+    let tG=0;
+    let h = `<table><tr><th class="sticky-col">NAMA</th><th>BORONG</th><th>BONUS</th><th>KASBON</th><th>NETT</th><th>SLIP</th></tr>`;
     
-    // Hitung Borongan
-    Object.values(D.aktivitas || {}).forEach(a => {
-        if(a.t?.slice(0,7) === fM && a.p?.includes(n)) {
-            let u = (T[a.j] || 0) * a.q / (a.j.includes("pasang") ? 1 : a.p.length);
-            if(a.isCair) { 
-                br += u; 
-                list += `<tr><td>${a.t}</td><td>${a.j}</td><td>${Math.round(u).toLocaleString()}</td></tr>`;
+    K.forEach(k => {
+        let br=0, bo=0, ka=0;
+        Object.values(D.aktivitas||{}).forEach(a => {
+            if(a.t?.slice(0,7)===fM && a.p?.includes(k[0])) {
+                br += (T[a.j]||0)*a.q/(a.j.includes("pasang")?1:a.p.length);
             }
-        }
+        });
+        Object.values(D.kasbon_bonus||{}).forEach(kb => { if(kb.n===k[0] && kb.t===fM) kb.tipe==="Bonus"?bo+=kb.rp:ka+=kb.rp; });
+        let nett = (br+bo)-ka; tG+=nett;
+        h += `<tr><td class="sticky-col">${k[1]}</td><td>${Math.round(br).toLocaleString()}</td><td>${bo.toLocaleString()}</td><td>${ka.toLocaleString()}</td><td><b>Rp ${Math.round(nett).toLocaleString()}</b></td><td><button class="btn" onclick="genSlip('${k[0]}')">SLIP</button></td></tr>`;
     });
-
-    // Hitung Kasbon & Bonus
-    Object.values(D.kasbon_bonus || {}).forEach(kb => {
-        if(kb.t?.slice(0,7) === fM && kb.n === n) {
-            if(kb.j === 'Bonus') bo += kb.rp;
-            if(kb.j === 'Kasbon') ka += kb.rp;
-        }
-    });
-
-    // Mas bisa tambahkan modal cetak di sini jika perlu
-    console.log("Detail untuk:", n, "Borongan:", br, "Bonus:", bo, "Kasbon:", ka);
-    // Contoh output sederhana ke modal
-    openMod("Slip: " + n, `<table>${list}</table><hr>Nett: ${Math.round(br + bo - ka).toLocaleString()}`);
+    document.getElementById('areaGaji').innerHTML = h+"</table>";
+    document.getElementById('gTotal').innerText = "Rp "+Math.round(tG).toLocaleString();
 }
 
-     
- 
+// Inisialisasi awal saat data Firebase masuk
+initStokListeners();
 
-
-//----------------------------------------
-// 2. SIMPAN DATA GAJI
-//----------------------------------------
-     // 1. Simpan Keseluruhan 
-     function saveKB() { const n=document.getElementById('kbN').value, t=document.getElementById('fUang').value, tipe=document.getElementById('kbT').value, rp=parseInt(document.getElementById('kbR').value); if(rp) db.ref('kasbon_bonus').push({n,t,tipe,rp}).then(()=>openModKB()); }
-    
-      // 2. Simpan Tarif Gaji
-          function saveTarif() { 
-    let nT = {};
-    Object.keys(D.tarif || DEF_TARIF).forEach(k => {
-        nT[k] = parseInt(document.getElementById(`trf_${k.replace(/ /g, '_')}`).value) || 0;
-    });
-    db.ref('tarif').set(nT).then(() => { alert("Update Berhasil!"); }); 
-}
-
-//----------------------------------------
-// 3. RENDER TAMPILAN TAB GAJI
-//----------------------------------------
-      
-      // Logika Gaji
-            function renderGaji() {
-            const fM = document.getElementById('fUang').value, T = D.tarif||DEF_TARIF, K = Object.values(D.master_karyawan||{});
-            let tG=0, tN=0; Object.values(D.belanja||{}).forEach(b => { if(b.t?.slice(0,7)===fM) tN+=b.rp; });
-            let h = `<table><tr><th class="sticky-col">NAMA</th><th>BORONG CAIR</th><th><span style="color:#f97316">PENDING</span></th><th>BONUS</th><th>KASBON</th><th>NETT</th><th>SLIP</th></tr>`;
-            K.forEach(k => {
-                let brCair=0, brPend=0, bo=0, ka=0;
-                Object.values(D.aktivitas||{}).forEach(a => {
-                    if(a.t?.slice(0,7)===fM && a.p?.includes(k)) {
-                        let upah = (T[a.j]||0)*a.q/(a.j.includes("pasang")?1:a.p.length);
-                        if(a.isCair) brCair += upah; else brPend += upah;
-                    }
-                });
-                Object.values(D.kasbon_bonus||{}).forEach(kb => { if(kb.n===k && kb.t===fM) kb.tipe==="Bonus"?bo+=kb.rp:ka+=kb.rp; });
-                let nett = (brCair+bo)-ka; tG+=nett;
-                h += `<tr><td class="sticky-col">${k}</td><td>${Math.round(brCair).toLocaleString()}</td><td style="color:#f97316">${Math.round(brPend).toLocaleString()}</td><td>${bo.toLocaleString()}</td><td>${ka.toLocaleString()}</td><td style="font-weight:800">Rp ${Math.round(nett).toLocaleString()}</td><td><button class="btn" style="padding:5px;font-size:9px" onclick="genSlip('${k}')">SLIP</button></td></tr>`;
-            });
-            document.getElementById('gTotal').innerText = "Rp "+Math.round(tG).toLocaleString(); document.getElementById('nTotal').innerText = "Rp "+tN.toLocaleString(); document.getElementById('areaGaji').innerHTML = h+"</table>";
-        }
 
   </script>
 </body>
