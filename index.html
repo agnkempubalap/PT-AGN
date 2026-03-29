@@ -223,24 +223,45 @@
         firebase.initializeApp(fbConfig); const db = firebase.database();
         let D = {}; const DEF_TARIF = { "Rekondisi Kempu":100000, "Rekondisi jerigen 18L":2000, "Rekondisi jerigen 5L":1000, "muat barang":600000, "bongkar barang":600000, "kirim minyak":150000, "pasang pangkalan":500000, "pasang agen":700000 };
 
-        window.onload = () => {
-            const t = new Date().toISOString().split('T')[0];
-            ['absTgl','stTgl','akTgl','blTgl'].forEach(i => { if(document.getElementById(i)) document.getElementById(i).value = t });
-            ['fM','fUang'].forEach(i => { if(document.getElementById(i)) document.getElementById(i).value = t.slice(0, 7) });
-            db.ref('/').on('value', s => { 
-  D = s.val() || {}; 
-  // Pengaman agar data threshold tidak error saat kosong
-  if (!D.thresholds) D.thresholds = {}; 
-  
-  initUI(); 
-  autoRender(); 
-});
-            
-        function autoRender() { renderAll(); renderStok(); renderGaji(); renderCheckKaryawan(); }
-        function tab(id) { document.querySelectorAll('.tab-content, .nav-btn').forEach(e => e.classList.remove('active')); document.getElementById('tab-'+id).classList.add('active'); document.getElementById('nav-'+id).classList.add('active'); autoRender(); }
+        //========================================
+//               GLOBAL INIT
+//========================================
+window.onload = () => {
+    const t = new Date().toISOString().split('T')[0];
+    // Isi otomatis tanggal ke semua input yang ada
+    ['absTgl', 'stTgl', 'akTgl', 'blTgl'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = t;
+    });
 
-               
-        
+    // Jalankan render pertama kali saat data Firebase masuk
+    db.ref('/').on('value', s => {
+        D = s.val() || {};
+        if (!D.thresholds) D.thresholds = {};
+        initUI();
+        autoRender();
+    });
+};
+
+function autoRender() {
+    // Gunakan try-catch agar jika satu fungsi error, yang lain tidak ikut mati
+    try { renderAll(); } catch(e) { console.error("Err renderAll:", e); }
+    try { renderStok(); } catch(e) { console.error("Err renderStok:", e); }
+    try { renderGaji(); } catch(e) { console.error("Err renderGaji:", e); }
+    try { renderCheckKaryawan(); } catch(e) { console.error("Err renderCheck:", e); }
+}
+
+function tab(id) {
+    document.querySelectorAll('.tab-content, .nav-btn').forEach(e => e.classList.remove('active'));
+    const targetTab = document.getElementById('tab-' + id);
+    const targetNav = document.getElementById('nav-' + id);
+    if (targetTab) targetTab.classList.add('active');
+    if (targetNav) targetNav.classList.add('active');
+    autoRender();
+}
+ { document.querySelectorAll('.tab-content, .nav-btn').forEach(e => e.classList.remove('active')); document.getElementById('tab-'+id).classList.add('active'); document.getElementById('nav-'+id).classList.add('active'); autoRender(); }
+
+                      
 //========================================
            //GLOBAL UTILITIES 
 //========================================
@@ -319,46 +340,96 @@
 //========================================
 //               TAB ABSEN
 //========================================
-// 1. LISTENER (OTOMATISASI UI)
+
+// 1. LISTENER & OTOMATISASI
 //----------------------------------------
+// Fungsi ini otomatis jalan saat bulan atau filter uang diganti
 document.getElementById('fM').onchange = () => { renderAll(); renderStok(); };
 document.getElementById('fUang').onchange = () => { renderGaji(); };
 
-//----------------------------------------
 // 2. SIMPAN DATA ABSEN
 //----------------------------------------
 function saveAbs() {
-    const n = document.getElementById('selK').value; // Pastikan ini ID Karyawan
+    const n = document.getElementById('selK').value; // Ini ID Karyawan (k[0])
     const t = document.getElementById('absTgl').value;
     const j = document.getElementById('absJenis').value;
+    const ket = document.getElementById('absKet').value || "";
+    
+    // Format jam Indonesia (HH:mm)
     const jamStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':');
     const ref = db.ref(`absensi/${t}/${n}`);
     
     if (j === "Pulang") {
-        ref.update({ jamOut: jamStr }).then(() => alert("Pulang!"));
+        ref.update({ jamOut: jamStr }).then(() => {
+            alert("✅ Jam Pulang Tercatat!");
+            renderAll();
+        });
     } else {
-        let stat = (j === "Izin" || j === "Alpa") ? j : (new Date(t).getDay() === 0 || D.libur?.[t] ? "Lembur" : (new Date() > new Date(t + "T09:30:00") ? "Telat" : "Hadir"));
-        ref.set({ j: stat, jam: jamStr, ket: document.getElementById('absKet').value || "" }).then(() => { alert(stat + "!"); });
+        // Logika Otomatis: Cek apakah hari Minggu atau Libur Toko untuk status Lembur
+        const isMinggu = new Date(t).getDay() === 0;
+        const isLiburToko = D.libur?.[t];
+        const jamSekarang = new Date();
+        const batasTelat = new Date(t + "T09:30:00");
+
+        let stat = j; // Default sesuai pilihan (Izin/Alpa)
+        if (j === "Masuk") {
+            if (isMinggu || isLiburToko) {
+                stat = "Lembur";
+            } else {
+                stat = (jamSekarang > batasTelat) ? "Telat" : "Hadir";
+            }
+        }
+        
+        ref.set({ 
+            j: stat, 
+            jam: jamStr, 
+            ket: ket 
+        }).then(() => { 
+            alert("✅ " + stat + " Berhasil Dicatat!");
+            document.getElementById('absKet').value = "";
+            renderAll(); 
+        });
     }
 }
 
+// 3. FITUR LIBUR TOKO
+//----------------------------------------
 function saveL() { 
     let s = new Date(document.getElementById('lS').value);
     let e = new Date(document.getElementById('lE').value);
+    if (!s || !e) return alert("Pilih tanggal!");
+    
     while (s <= e) {
         db.ref('libur').update({ [s.toISOString().split('T')[0]]: "OFF" });
         s.setDate(s.getDate() + 1);
     }
-    alert("Libur Terpasang!");
+    alert("✅ Libur Toko Terpasang!");
+    renderAll();
 }
 
 function openLiburMod() {
     let l = Object.entries(D.libur || {}).sort((a, b) => b[0].localeCompare(a[0]));
-    openMod("Libur Toko", `Mulai: <input type="date" id="lS"> s/d <input type="date" id="lE"><button class="btn" onclick="saveL()">SET</button><hr>${l.map(x => `<div>${x[0]} <b onclick="removeItem('libur','${x[0]}')" style="color:red; cursor:pointer">×</b></div>`).join('')}`);
+    let h = `
+        <div style="text-align:left">
+            Mulai: <input type="date" id="lS" class="form-control" style="margin-bottom:10px">
+            Sampai: <input type="date" id="lE" class="form-control" style="margin-bottom:10px">
+            <button class="btn" onclick="saveL()">PASANG LIBUR</button>
+            <hr>
+            <p><b>Daftar Libur:</b></p>
+            <div style="max-height:150px; overflow-y:auto">
+                ${l.map(x => `
+                    <div style="display:flex; justify-content:space-between; padding:5px; border-bottom:1px solid #eee">
+                        <span>${x[0]}</span>
+                        <b onclick="removeItem('libur','${x[0]}')" style="color:red; cursor:pointer">Hapus</b>
+                    </div>
+                `).join('') || 'Belum ada jadwal libur'}
+            </div>
+        </div>
+    `;
+    openMod("Pengaturan Libur Toko", h);
 }
 
-//----------------------------------------
-// 3. RENDER TAB ABSEN
+// 4. RENDER TABEL UTAMA (KALENDER)
 //----------------------------------------
 function renderAll() {
     const fM = document.getElementById('fM').value;
@@ -368,11 +439,13 @@ function renderAll() {
     const Y = fM.split('-')[0], M = fM.split('-')[1];
     const lastD = new Date(Y, M, 0).getDate();
 
+    // Header Tanggal
     let th = `<tr><th class="sticky-col">NAMA</th>`;
     for (let i = 1; i <= lastD; i++) th += `<th>${i}</th>`;
     th += `<th>H/T</th><th>L</th></tr>`;
     document.getElementById('thA').innerHTML = th;
 
+    // Isi Baris Karyawan
     let tb = "";
     K_arr.forEach(k => {
         let r = `<td class="sticky-col">${k[1]}</td>`, thC = 0, tlC = 0, toC = 0;
@@ -398,6 +471,8 @@ function renderAll() {
     document.getElementById('tbA').innerHTML = tb;
 }
 
+// 5. DETAIL POP-UP (SAAT TANGGAL DIKLIK)
+//----------------------------------------
 function cellMod(d, k) { 
     const a = D.absensi?.[d]?.[k];
     const n = D.master_karyawan?.[k] || "Karyawan";
@@ -405,13 +480,16 @@ function cellMod(d, k) {
     
     let h = `
         <div style="text-align:left">
-            <p><b>Status:</b> ${a?.j || '-'}</p>
+            <p><b>Status:</b> ${a?.j || 'Belum Absen'}</p>
             <p><b>Jam:</b> ${a?.jam || '-'} s/d ${a?.jamOut || '-'}</p>
+            <p><b>Ket:</b> ${a?.ket || '-'}</p>
             <hr>
-            <p><b>Daftar Kerja:</b></p>
-            <ul style="padding-left:20px">${aks.map(x => `<li>${x.j} (${x.q}) ${x.isCair ? '✅' : '⏳'}</li>`).join('') || '<li>Tidak ada kerjaan</li>'}</ul>
+            <p><b>Pekerjaan Hari Ini:</b></p>
+            <ul style="padding-left:20px; font-size:12px">
+                ${aks.map(x => `<li>${x.j} (${x.q}) ${x.isCair ? '✅' : '⏳'}</li>`).join('') || '<li>Tidak ada aktivitas kerja</li>'}
+            </ul>
             <br>
-            <button class="btn" style="background:#ff4d4d;width:100%" onclick="removeItem('absensi/${d}','${k}')">HAPUS ABSEN</button>
+            <button class="btn" style="background:#ff4d4d; width:100%" onclick="removeItem('absensi/${d}','${k}')">HAPUS DATA ABSEN</button>
         </div>
     `;
     openMod(`Detail ${n} (${d})`, h); 
