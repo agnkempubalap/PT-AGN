@@ -162,12 +162,10 @@
     </table>
 </div>
 
-            <div class="flex-row">
-                <button class="btn" style="background:var(--s)" onclick="expEx('areaStok','Stok')">EXCEL</button>
-                <div style="display: flex; gap: 8px; margin-top: 15px; flex-wrap: wrap;">
-    <button onclick="expEx('areaStok', 'Stok_Kempu')" class="btn" style="background: #28a745; flex: 1; min-width: 80px;">EXCEL</button>
-    <button onclick="expPdf('areaStok', 'Laporan_Stok')" class="btn" style="background: #fff; color: #000; border: 1px solid #ccc; flex: 1; min-width: 100px;">Cetak PDF</button>
-    <button onclick="showLogs('stok_logs')" class="btn" style="background: #6c757d; flex: 1; min-width: 80px;">LOG</button>
+            <div style="display: flex; gap: 5px; margin-top: 15px; flex-wrap: wrap;">
+    <button onclick="expEx('areaStok', 'Stok_Kempu')" class="btn" style="background: #28a745; flex: 1; min-width: 80px; padding: 10px;">EXCEL</button>
+    <button onclick="expPdf('areaStok', 'Laporan_Stok')" class="btn" style="background: #fff; color: #000; border: 1px solid #ccc; flex: 1; min-width: 100px; padding: 10px;">Cetak PDF</button>
+    <button onclick="showLogs('stok_logs')" class="btn" style="background: #6c757d; flex: 1; min-width: 80px; padding: 10px;">LOG</button>
 </div>
 
                 <button class="btn" style="background:#64748b" onclick="showLogs('stok_logs')">LOG</button>
@@ -338,43 +336,31 @@
              // Fungsi PDF
 //----------------------------------------
      function expPdf(id, n) {
-    const original = document.getElementById(id);
-    if (!original) return alert("ID " + id + " tidak ketemu!");
+    const element = document.getElementById(id);
+    if (!element) return alert("Tabel tidak ditemukan!");
 
-    // 1. Buat salinan sementara biar gak blank
-    const clone = original.cloneNode(true);
-    clone.style.position = "fixed";
-    clone.style.left = "-9999px"; // Sembunyikan dari pandangan mata
-    clone.style.top = "0";
-    clone.style.display = "block";
-    clone.style.background = "white"; // Paksa background putih agar teks terlihat
-    document.body.appendChild(clone);
-
+    // Setelan khusus buat HP Android agar kebaca WPS
     const opt = {
-        margin: 10,
+        margin: 8,
         filename: n + '.pdf',
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { 
             scale: 2, 
-            useCORS: true, 
-            allowTaint: true,
-            letterRendering: true 
+            useCORS: true,
+            scrollY: 0,
+            windowWidth: element.scrollWidth
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
     };
 
-    // 2. Beri jeda sebentar biar salinan terbaca sempurna oleh sistem
-    setTimeout(() => {
-        html2pdf().set(opt).from(clone).save().then(() => {
-            document.body.removeChild(clone); // Hapus salinan setelah selesai
-            alert("✅ PDF Berhasil diunduh!");
-        }).catch(err => {
-            console.error(err);
-            document.body.removeChild(clone);
-        });
-    }, 800); // Jeda 0,8 detik
+    // Proses 'Memaksa' Render
+    html2pdf().set(opt).from(element).toPdf().get('pdf').then(function (pdf) {
+        // Ini memastikan proses gambar selesai baru di-save
+        pdf.save();
+    });
 }
 
+//----------------------------------------
         function openMod(t,h) { document.getElementById('modTitle').innerText=t; document.getElementById('modContent').innerHTML=h; document.getElementById('modalUni').style.display='flex'; }
         function closeMod() { document.getElementById('modalUni').style.display='none'; }
         function showLogs(t) { let l=Object.entries(D[t]||{}).reverse().slice(0,30); openMod("Log", l.map(x=>`<div style="font-size:10px;padding:5px;border-bottom:1px solid #eee"><span>[${x[1].t}] ${x[1].b||x[1].j} (${x[1].q})</span> <b onclick="removeItem('${t}','${x[0]}')" style="color:red; cursor:pointer">×</b></div>`).join('')); }
