@@ -254,7 +254,6 @@ window.onload = () => {
 };
 
 function autoRender() {
-    // Gunakan try-catch ini adalah kunci agar tab tidak macet total kalau ada 1 fungsi error
     try {
         if (typeof renderAll === "function") renderAll(); 
         if (typeof renderStok === "function") renderStok();
@@ -262,8 +261,8 @@ function autoRender() {
         if (typeof renderCheckKaryawan === "function") renderCheckKaryawan();
         if (typeof renderMasterKaryawan === "function") renderMasterKaryawan();
         if (typeof renderMasterBarang === "function") renderMasterBarang();
-    } catch (err) {
-        console.error("Render macet di:", err);
+    } catch (e) {
+        console.error("Gagal render:", e);
     }
 }
        
@@ -824,30 +823,37 @@ function saveTarif() {
 // Inisialisasi awal UI
 initUI();
 
-// Taruh paling bawah sebelum tutup script
+//========================================
+//         FUNGSI MASTER (LIST)
+//========================================
+
 function renderMasterKaryawan() {
-    let c = document.getElementById('listMasterKaryawan');
-    if (!c || !D.master_karyawan) return;
-    let h = Object.entries(D.master_karyawan).map(k => `
-        <div style="display:flex;justify-content:space-between;padding:5px;border-bottom:1px solid #eee">
-            <span>${k[1]}</span>
-            <b onclick="removeItem('master_karyawan','${k[0]}')" style="color:red;cursor:pointer">×</b>
-        </div>`).join('');
-    c.innerHTML = h;
+    const el = document.getElementById('listMasterKaryawan');
+    if (!el || !D.master_karyawan) return;
+    
+    let html = "";
+    Object.entries(D.master_karyawan).forEach(([id, nama]) => {
+        html += `<div style="display:flex; justify-content:space-between; padding:5px; border-bottom:1px solid #eee">
+            <span>${nama}</span>
+            <b onclick="removeItem('master_karyawan','${id}')" style="color:red; cursor:pointer">×</b>
+        </div>`;
+    });
+    el.innerHTML = html || "Belum ada karyawan";
 }
 
 function renderMasterBarang() {
-    let c = document.getElementById('listMasterBarang');
-    if (!c || !D.master_barang) return;
-    let h = Object.entries(D.master_barang).map(b => `
-        <div style="display:flex;justify-content:space-between;padding:5px;border-bottom:1px solid #eee">
-            <span>${b[1]}</span>
-            <b onclick="removeItem('master_barang','${b[0]}')" style="color:red;cursor:pointer">×</b>
-        </div>`).join('');
-    c.innerHTML = h;
+    const el = document.getElementById('listMasterBarang');
+    if (!el || !D.master_barang) return;
+    
+    let html = "";
+    Object.entries(D.master_barang).forEach(([id, nama]) => {
+        html += `<div style="display:flex; justify-content:space-between; padding:5px; border-bottom:1px solid #eee">
+            <span>${nama}</span>
+            <b onclick="removeItem('master_barang','${id}')" style="color:red; cursor:pointer">×</b>
+        </div>`;
+    });
+    el.innerHTML = html || "Belum ada barang";
 }
-
-
 
   </script>
 </body>
