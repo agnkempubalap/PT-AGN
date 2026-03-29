@@ -235,102 +235,11 @@
   initUI(); 
   autoRender(); 
 });
-            document.getElementById('fM').onchange = autoRender;
-            document.getElementById('fUang').onchange = autoRender;
-        };
-
+            
         function autoRender() { renderAll(); renderStok(); renderGaji(); renderCheckKaryawan(); }
         function tab(id) { document.querySelectorAll('.tab-content, .nav-btn').forEach(e => e.classList.remove('active')); document.getElementById('tab-'+id).classList.add('active'); document.getElementById('nav-'+id).classList.add('active'); autoRender(); }
 
-        function initUI() {
-            const K = Object.entries(D.master_karyawan || {}), B = Object.entries(D.master_barang || {});
-            document.getElementById('listK').innerHTML = K.map(k=>`<span style="background:#fff; border:1px solid #ddd; padding:4px; border-radius:5px; font-size:9px">${k[1]} <b onclick="removeItem('master_karyawan','${k[0]}')" style="color:red;cursor:pointer">×</b></span>`).join('');
-            document.getElementById('listB').innerHTML = B.map(b=>`<span style="background:#fff; border:1px solid #ddd; padding:4px; border-radius:5px; font-size:9px">${b[1]} <b onclick="removeItem('master_barang','${b[0]}')" style="color:red;cursor:pointer">×</b></span>`).join('');
-            document.getElementById('selK').innerHTML = K.map(k=>`<option value="${k[1]}">${k[1]}</option>`).join('');
-            document.getElementById('stBrg').innerHTML = B.map(b=>`<option value="${b[1]}">${b[1]}</option>`).join('');
-        }
-
-        // --- CHAIN LOGIC KERJA ---
-        function renderCheckKaryawan() {
-            const tgl = document.getElementById('akTgl').value;
-            const K = Object.values(D.master_karyawan || {});
-            document.getElementById('akKaryawan').innerHTML = K.map(k => {
-                const a = D.absensi?.[tgl]?.[k];
-                const sudahAbsen = a && ['Hadir', 'Telat', 'Lembur'].includes(a.j);
-                return `<label class="check-item" style="${sudahAbsen?'':'opacity:0.3; background:#eee'}">
-                    <input type="checkbox" class="chk-k" value="${k}" ${sudahAbsen?'':'disabled'}> 
-                    <span style="font-weight:${sudahAbsen?'700':'400'}">${k} ${sudahAbsen?'':'(X)'}</span>
-                </label>`;
-            }).join('');
-        }
-
-        function saveAk() {
-            const tgl=document.getElementById('akTgl').value, q=parseInt(document.getElementById('akQty').value)||0, p=Array.from(document.querySelectorAll('.chk-k:checked')).map(c=>c.value), j=document.getElementById('akJenis').value;
-            if(!p.length || q<=0) return alert("Pilih Karyawan & Isi Qty!");
-            let ilegal = p.filter(k => !D.absensi?.[tgl]?.[k] || !['Hadir','Telat','Lembur'].includes(D.absensi[tgl][k].j));
-            if(ilegal.length) return alert("Ada Karyawan belum absen!");
-            const cairAwal = !j.toLowerCase().includes("jerigen"); 
-            db.ref('aktivitas').push({ t:tgl, j, q, p, isCair: cairAwal }).then(()=>{
-                document.getElementById('akQty').value=""; document.querySelectorAll('.chk-k').forEach(c=>c.checked=false); alert("Kerja Tersimpan!");
-            });
-        }
-
-        // --- LOGIKA GAJI ---
-        function renderGaji() {
-            const fM = document.getElementById('fUang').value, T = D.tarif||DEF_TARIF, K = Object.values(D.master_karyawan||{});
-            let tG=0, tN=0; Object.values(D.belanja||{}).forEach(b => { if(b.t?.slice(0,7)===fM) tN+=b.rp; });
-            let h = `<table><tr><th class="sticky-col">NAMA</th><th>BORONG CAIR</th><th><span style="color:#f97316">PENDING</span></th><th>BONUS</th><th>KASBON</th><th>NETT</th><th>SLIP</th></tr>`;
-            K.forEach(k => {
-                let brCair=0, brPend=0, bo=0, ka=0;
-                Object.values(D.aktivitas||{}).forEach(a => {
-                    if(a.t?.slice(0,7)===fM && a.p?.includes(k)) {
-                        let upah = (T[a.j]||0)*a.q/(a.j.includes("pasang")?1:a.p.length);
-                        if(a.isCair) brCair += upah; else brPend += upah;
-                    }
-                });
-                Object.values(D.kasbon_bonus||{}).forEach(kb => { if(kb.n===k && kb.t===fM) kb.tipe==="Bonus"?bo+=kb.rp:ka+=kb.rp; });
-                let nett = (brCair+bo)-ka; tG+=nett;
-                h += `<tr><td class="sticky-col">${k}</td><td>${Math.round(brCair).toLocaleString()}</td><td style="color:#f97316">${Math.round(brPend).toLocaleString()}</td><td>${bo.toLocaleString()}</td><td>${ka.toLocaleString()}</td><td style="font-weight:800">Rp ${Math.round(nett).toLocaleString()}</td><td><button class="btn" style="padding:5px;font-size:9px" onclick="genSlip('${k}')">SLIP</button></td></tr>`;
-            });
-            document.getElementById('gTotal').innerText = "Rp "+Math.round(tG).toLocaleString(); document.getElementById('nTotal').innerText = "Rp "+tN.toLocaleString(); document.getElementById('areaGaji').innerHTML = h+"</table>";
-        }
-
-        // --- FUNGSI PENDUKUNG ---
-        function saveAbs() {
-            const n=document.getElementById('selK').value, t=document.getElementById('absTgl').value, j=document.getElementById('absJenis').value;
-            const jamStr = new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}).replace('.',':');
-            const ref = db.ref(`absensi/${t}/${n}`);
-            if(j==="Pulang") ref.update({ jamOut: jamStr }).then(()=>alert("Pulang!")); 
-            else {
-                let stat = (j==="Izin"||j==="Alpa") ? j : (new Date(t).getDay()===0||D.libur?.[t]?"Lembur":(new Date()>new Date(t+"T09:30:00")?"Telat":"Hadir"));
-                ref.set({ j: stat, jam: jamStr, ket: document.getElementById('absKet').value||"" }).then(()=>{ alert(stat + "!"); });
-            }
-        }
-        function renderAll() {
-            const K_arr = Object.values(D.master_karyawan || {}), fM = document.getElementById('fM').value; if(!fM) return;
-            const Y=fM.split('-')[0], M=fM.split('-')[1], lastD = new Date(Y, M, 0).getDate();
-            let th = `<tr><th class="sticky-col">NAMA</th>`; for(let i=1; i<=lastD; i++) th += `<th>${i}</th>`; th += `<th>H/T</th><th>L</th><th>I/A</th></tr>`; document.getElementById('thA').innerHTML = th;
-            let tb = ""; K_arr.forEach(k => {
-                let r = `<td class="sticky-col">${k}</td>`, tH=0, tL=0, tO=0;
-                for(let i=1; i<=lastD; i++) {
-                    let d = `${Y}-${M}-${String(i).padStart(2,'0')}`, a = D.absensi?.[d]?.[k], isL = D.libur?.[d]||new Date(d).getDay()===0;
-                    let txt=isL?"M":"-", cls=isL?"bg-m":"bg-none";
-                    if(a) { txt=a.j[0]; cls="bg-"+a.j[0].toLowerCase(); if(a.j==="Hadir"||a.j==="Telat") tH++; else if(a.j==="Lembur") tL++; else tO++; }
-                    r += `<td><div class="badge ${cls}" onclick="cellMod('${d}','${k}')">${txt}${a?.jamOut?'<div class="dot"></div>':''}</div></td>`;
-                }
-                tb += `<tr>${r}<td>${tH}</td><td>${tL}</td><td>${tO}</td></tr>`;
-            }); document.getElementById('tbA').innerHTML = tb;
-        }
-        function cellMod(d,k) { let a=D.absensi?.[d]?.[k], aks=Object.values(D.aktivitas||{}).filter(x=>x.t===d&&x.p?.includes(k)); openMod(`Detail ${k} (${d})`, `<p>Status: ${a?.j||'-'}</p><p>Jam: ${a?.jam||'-'} s/d ${a?.jamOut||'-'}</p><hr><ul>${aks.map(x=>`<li>${x.j} (${x.q}) ${x.isCair?'✅':'⏳'}</li>`).join('')||'Kerja: -'}</ul><br><button class='btn' onclick="removeItem('absensi/${d}','${k}')">HAPUS ABSEN</button>`); }
-        async function saveBl() { const t=document.getElementById('blTgl').value, n=document.getElementById('blNama').value, rp=parseInt(document.getElementById('blRp').value), file=document.getElementById('blImg').files[0]; let img=""; if(file){ const c=document.createElement('canvas'), ctx=c.getContext('2d'), i=await createImageBitmap(file); c.width=400; c.height=i.height/i.width*400; ctx.drawImage(i,0,0,400,c.height); img=c.toDataURL('image/jpeg',0.6); } if(n&&rp) db.ref('belanja').push({ t, n, rp, img }).then(()=>{ alert("Nota!"); }); }
-        function openModKB() { const fM=document.getElementById('fUang').value, K=Object.values(D.master_karyawan||{}), L=Object.entries(D.kasbon_bonus||{}).filter(x=>x[1].t===fM).reverse(); let h=`<select id="kbN">${K.map(k=>`<option>${k}</option>`).join('')}</select><select id="kbT"><option value="Bonus">Bonus</option><option value="Kasbon">Kasbon</option></select><input type="number" id="kbR" placeholder="Rp"><button class="btn" onclick="saveKB()">SIMPAN</button><hr>${L.map(x=>`<div style="font-size:10px;padding:5px;border-bottom:1px solid #eee"><b>${x[1].n}</b>: ${x[1].tipe} Rp ${x[1].rp.toLocaleString()} <b onclick="removeItem('kasbon_bonus','${x[0]}')" style="color:red; cursor:pointer">×</b></div>`).join('')}`; openMod("Kasbon / Bonus", h); }
-        function saveKB() { const n=document.getElementById('kbN').value, t=document.getElementById('fUang').value, tipe=document.getElementById('kbT').value, rp=parseInt(document.getElementById('kbR').value); if(rp) db.ref('kasbon_bonus').push({n,t,tipe,rp}).then(()=>openModKB()); }
-        function editTarif() { let h=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">${Object.entries(D.tarif||DEF_TARIF).map(t=>`<div><label style="font-size:9px">${t[0]}</label><input type="number" id="trf_${t[0].replace(/ /g,'_')}" value="${t[1]}"></div>`).join('')}</div><button class="btn" onclick="saveTarif()">UPDATE</button>`; openMod("Tarif", h); }
-        function saveTarif() { let nT={}; Object.keys(D.tarif||DEF_TARIF).forEach(k=>nT[k]=parseInt(document.getElementById(`trf_${k.replace(/ /g,'_')}`).value)||0); db.ref('tarif').set(nT).then(()=>alert("Update!")); }
-        function openLiburMod() { let l=Object.entries(D.libur||{}).sort((a,b)=>b[0].localeCompare(a[0])); openMod("Libur Toko", `Mulai: <input type="date" id="lS"> s/d <input type="date" id="lE"><button class="btn" onclick="saveL()">SET</button><hr>${l.map(x=>`<div>${x[0]} <b onclick="removeItem('libur','${x[0]}')" style="color:red; cursor:pointer">×</b></div>`).join('')}`); }
-        function saveL() { let s=new Date(document.getElementById('lS').value), e=new Date(document.getElementById('lE').value); while(s<=e){ db.ref('libur').update({[s.toISOString().split('T')[0]]:"OFF"}); s.setDate(s.getDate()+1); } }
-
-  function genSlip(n) { const fM=document.getElementById('fUang').value, T=D.tarif||DEF_TARIF; let br=0, bo=0, ka=0, list=""; Object.values(D.aktivitas||{}).forEach(a=>{ if(a.t?.slice(0,7)===fM&&a.p?.includes(n)){ let u=(T[a.j]||0)*a.q/(a.j.includes("pasang")?1:a.p.length); if(a.isCair) { br+=u; list+=`<tr><td>${a.t}</td><td>${a.j}</td><td>${Math.round(u).toLocaleString()}</td></tr>`; } } }); Object.values(D.kasbon_bonus||{}).forEach(kb=>{if(kb.n===n&&kb.t===fM) kb.tipe==="Bonus"?bo+=kb.rp:ka+=kb.rp;}); openMod("Slip", `<div id="p-slip" style="padding:15px; background:white; color:black"><h3>KEMPU BALAP</h3><p>${n} | ${fM}</p><hr><table style="width:100%; font-size:10px">${list}</table><hr><b>Total: Rp ${Math.round((br+bo)-ka).toLocaleString()}</b></div><button class="btn" onclick="expPdf('p-slip','Slip_${n}')">PRINT</button>`); }
+               
         
 //========================================
            //GLOBAL UTILITIES 
@@ -374,7 +283,7 @@
     table.setAttribute('cellspacing', '0');
     table.setAttribute('cellpadding', '5');
 
-    // Proses export
+    // Proses Export
     const wb = XLSX.utils.table_to_book(table, { sheet: "Sheet1" });
     XLSX.writeFile(wb, n + '.xlsx');
 
@@ -406,16 +315,66 @@
 //----------------------------------------
         function showLogs(t) { let l=Object.entries(D[t]||{}).reverse().slice(0,30); openMod("Log", l.map(x=>`<div style="font-size:10px;padding:5px;border-bottom:1px solid #eee"><span>[${x[1].t}] ${x[1].b||x[1].j} (${x[1].q})</span> <b onclick="removeItem('${t}','${x[0]}')" style="color:red; cursor:pointer">×</b></div>`).join('')); }
 
+
 //========================================
                //TAB ABSEN
 //========================================
 // 1. LISTENER (OTOMATISASI UI)
 //----------------------------------------
-      
+    document.getElementById('fM').onchange = autoRender;
+            document.getElementById('fUang').onchange = autoRender;
+        };
+
+//----------------------------------------
+// 2. SIMPAN DATA ABSEN
+//----------------------------------------
+    // 1. Save Tab Absen 
+          function saveAbs() {
+            const n=document.getElementById('selK').value, t=document.getElementById('absTgl').value, j=document.getElementById('absJenis').value;
+            const jamStr = new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}).replace('.',':');
+            const ref = db.ref(`absensi/${t}/${n}`);
+            if(j==="Pulang") ref.update({ jamOut: jamStr }).then(()=>alert("Pulang!")); 
+            else {
+                let stat = (j==="Izin"||j==="Alpa") ? j : (new Date(t).getDay()===0||D.libur?.[t]?"Lembur":(new Date()>new Date(t+"T09:30:00")?"Telat":"Hadir"));
+                ref.set({ j: stat, jam: jamStr, ket: document.getElementById('absKet').value||"" }).then(()=>{ alert(stat + "!"); });
+            }
+        }
+    
+     // 2. Save Libur 
+          function saveL() { let s=new Date(document.getElementById('lS').value), e=new Date(document.getElementById('lE').value); while(s<=e){ db.ref('libur').update({[s.toISOString().split('T')[0]]:"OFF"}); s.setDate(s.getDate()+1); } }
+
+     // 3. Pop Up Kalender
+          function openLiburMod() { let l=Object.entries(D.libur||{}).sort((a,b)=>b[0].localeCompare(a[0])); openMod("Libur Toko", `Mulai: <input type="date" id="lS"> s/d <input type="date" id="lE"><button class="btn" onclick="saveL()">SET</button><hr>${l.map(x=>`<div>${x[0]} <b onclick="removeItem('libur','${x[0]}')" style="color:red; cursor:pointer">×</b></div>`).join('')}`); }
+
+//----------------------------------------
+// 3. RENDER TAB ABSEN
+//----------------------------------------
+    // 1. Render Bulanan 
+      function renderAll() {
+            const K_arr = Object.values(D.master_karyawan || {}), fM = document.getElementById('fM').value; if(!fM) return;
+            const Y=fM.split('-')[0], M=fM.split('-')[1], lastD = new Date(Y, M, 0).getDate();
+            let th = `<tr><th class="sticky-col">NAMA</th>`; for(let i=1; i<=lastD; i++) th += `<th>${i}</th>`; th += `<th>H/T</th><th>L</th><th>I/A</th></tr>`; document.getElementById('thA').innerHTML = th;
+            let tb = ""; K_arr.forEach(k => {
+                let r = `<td class="sticky-col">${k}</td>`, tH=0, tL=0, tO=0;
+                for(let i=1; i<=lastD; i++) {
+                    let d = `${Y}-${M}-${String(i).padStart(2,'0')}`, a = D.absensi?.[d]?.[k], isL = D.libur?.[d]||new Date(d).getDay()===0;
+                    let txt=isL?"M":"-", cls=isL?"bg-m":"bg-none";
+                    if(a) { txt=a.j[0]; cls="bg-"+a.j[0].toLowerCase(); if(a.j==="Hadir"||a.j==="Telat") tH++; else if(a.j==="Lembur") tL++; else tO++; }
+                    r += `<td><div class="badge ${cls}" onclick="cellMod('${d}','${k}')">${txt}${a?.jamOut?'<div class="dot"></div>':''}</div></td>`;
+                }
+                tb += `<tr>${r}<td>${tH}</td><td>${tL}</td><td>${tO}</td></tr>`;
+            }); document.getElementById('tbA').innerHTML = tb;
+        }
+    
+    // 2. Render Detail Kalender
+          function cellMod(d,k) { let a=D.absensi?.[d]?.[k], aks=Object.values(D.aktivitas||{}).filter(x=>x.t===d&&x.p?.includes(k)); openMod(`Detail ${k} (${d})`, `<p>Status: ${a?.j||'-'}</p><p>Jam: ${a?.jam||'-'} s/d ${a?.jamOut||'-'}</p><hr><ul>${aks.map(x=>`<li>${x.j} (${x.q}) ${x.isCair?'✅':'⏳'}</li>`).join('')||'Kerja: -'}</ul><br><button class='btn' onclick="removeItem('absensi/${d}','${k}')">HAPUS ABSEN</button>`); }
+
+
 
 //========================================
                 //TAB STOK
 // =======================================
+
 // 1. LISTENER (OTOMATISASI UI)
 // ---------------------------------------
       function initStokListeners() {
@@ -426,14 +385,14 @@
     const stQC = document.getElementById('stQC');
     const stAksi = document.getElementById('stAksi');
 
-    // Fungsi Utama Pengetur Tampilan
+    // A. Fungsi Utama Pengetur Tampilan
     function updateUI() {
         if (!stBrg || !stAksi) return;
 
         const nama = stBrg.value.toLowerCase();
         const aksi = stAksi.value;
         const isCair = nama.includes("minyak") || nama.includes("cair") || nama.includes("air");
-
+   
         // --- LOGIKA 1: BARANG CAIRAN ---
         if (isCair) {
             stUnit.style.display = "block"; // Munculkan L/Kg
@@ -483,7 +442,7 @@
 // Panggil fungsinya
 initStokListeners();
 
-//FUNGSI AMBANG BATAS
+     // B. FUNGSI AMBANG BATAS
 
 // Fungsi untuk menyimpan batas ke Firebase
 function setThreshold(namaBarang, angka) {
@@ -567,11 +526,12 @@ function saveSt() {
     });
 }
 
+     
 // ---------------------------------------
 // 3. RENDER TABEL (LOGISTIK & STOK)
 // ---------------------------------------
 
-function renderStok() {
+      function renderStok() {
     const B_arr = Object.values(D.master_barang || {}), 
           fM = document.getElementById('fM').value;
     let h = "";
@@ -646,6 +606,157 @@ function renderStok() {
     document.getElementById('tbStok').innerHTML = h;
 }
 
-    </script>
+
+//========================================
+        //TAB AKTIVITAS DAN BELANJA
+//========================================
+
+// 1. LISTENER DAN UI
+//----------------------------------------
+      //Sama dengan listener Tab Absen
+
+//----------------------------------------
+// 2. SIMPAN DATA AKTIVITAS 
+//----------------------------------------
+      function saveAk() {
+            const tgl=document.getElementById('akTgl').value, q=parseInt(document.getElementById('akQty').value)||0, p=Array.from(document.querySelectorAll('.chk-k:checked')).map(c=>c.value), j=document.getElementById('akJenis').value;
+            if(!p.length || q<=0) return alert("Pilih Karyawan & Isi Qty!");
+            let ilegal = p.filter(k => !D.absensi?.[tgl]?.[k] || !['Hadir','Telat','Lembur'].includes(D.absensi[tgl][k].j));
+            if(ilegal.length) return alert("Ada Karyawan belum absen!");
+            const cairAwal = !j.toLowerCase().includes("jerigen"); 
+            db.ref('aktivitas').push({ t:tgl, j, q, p, isCair: cairAwal }).then(()=>{
+                document.getElementById('akQty').value=""; document.querySelectorAll('.chk-k').forEach(c=>c.checked=false); alert("Kerja Tersimpan!");
+            });
+        }
+
+//----------------------------------------
+// 3. RENDER TAMPILAN TAB AKTIVITAS
+//----------------------------------------
+   // A. Aktivitas 
+    // 1. Render Nama Barang dan Karyawan
+          function initUI() {
+            const K = Object.entries(D.master_karyawan || {}), B = Object.entries(D.master_barang || {});
+            document.getElementById('listK').innerHTML = K.map(k=>`<span style="background:#fff; border:1px solid #ddd; padding:4px; border-radius:5px; font-size:9px">${k[1]} <b onclick="removeItem('master_karyawan','${k[0]}')" style="color:red;cursor:pointer">×</b></span>`).join('');
+            document.getElementById('listB').innerHTML = B.map(b=>`<span style="background:#fff; border:1px solid #ddd; padding:4px; border-radius:5px; font-size:9px">${b[1]} <b onclick="removeItem('master_barang','${b[0]}')" style="color:red;cursor:pointer">×</b></span>`).join('');
+            document.getElementById('selK').innerHTML = K.map(k=>`<option value="${k[1]}">${k[1]}</option>`).join('');
+            document.getElementById('stBrg').innerHTML = B.map(b=>`<option value="${b[1]}">${b[1]}</option>`).join('');
+        }
+
+     // 2. Render Logika Check Karyawan 
+           function renderCheckKaryawan() {
+            const tgl = document.getElementById('akTgl').value;
+            const K = Object.values(D.master_karyawan || {});
+            document.getElementById('akKaryawan').innerHTML = K.map(k => {
+                const a = D.absensi?.[tgl]?.[k];
+                const sudahAbsen = a && ['Hadir', 'Telat', 'Lembur'].includes(a.j);
+                return `<label class="check-item" style="${sudahAbsen?'':'opacity:0.3; background:#eee'}">
+                    <input type="checkbox" class="chk-k" value="${k}" ${sudahAbsen?'':'disabled'}> 
+                    <span style="font-weight:${sudahAbsen?'700':'400'}">${k} ${sudahAbsen?'':'(X)'}</span>
+                </label>`;
+            }).join('');
+        }
+  
+   // B. Belanja
+          async function saveBl() { const t=document.getElementById('blTgl').value, n=document.getElementById('blNama').value, rp=parseInt(document.getElementById('blRp').value), file=document.getElementById('blImg').files[0]; let img=""; if(file){ const c=document.createElement('canvas'), ctx=c.getContext('2d'), i=await createImageBitmap(file); c.width=400; c.height=i.height/i.width*400; ctx.drawImage(i,0,0,400,c.height); img=c.toDataURL('image/jpeg',0.6); } if(n&&rp) db.ref('belanja').push({ t, n, rp, img }).then(()=>{ alert("Nota!"); }); }
+
+
+
+//========================================
+               //TAB GAJI
+//========================================
+
+// 1. LISTENER (OTOMISASI UI)
+//----------------------------------------
+ 
+    // 1.Sama Dengan Listener Tab Absen
+
+    // 2.Membuka Pop Up Kasbon dan Bonus
+         function openModKB() { const fM=document.getElementById('fUang').value, K=Object.values(D.master_karyawan||{}), L=Object.entries(D.kasbon_bonus||{}).filter(x=>x[1].t===fM).reverse(); let h=`<select id="kbN">${K.map(k=>`<option>${k}</option>`).join('')}</select><select id="kbT"><option value="Bonus">Bonus</option><option value="Kasbon">Kasbon</option></select><input type="number" id="kbR" placeholder="Rp"><button class="btn" onclick="saveKB()">SIMPAN</button><hr>${L.map(x=>`<div style="font-size:10px;padding:5px;border-bottom:1px solid #eee"><b>${x[1].n}</b>: ${x[1].tipe} Rp ${x[1].rp.toLocaleString()} <b onclick="removeItem('kasbon_bonus','${x[0]}')" style="color:red; cursor:pointer">×</b></div>`).join('')}`; openMod("Kasbon / Bonus", h); }
+
+     // 3. Fungsi Edit Gaji 
+           function editTarif() { 
+    let h = `<div style="display:grid;grid-template-columns: 1fr 1fr;gap:5px">`;
+    h += Object.entries(D.tarif || DEF_TARIF).map(t => `
+        <div>
+            <label style="font-size:9px">${t[0]}</label>
+            <input type="number" id="trf_${t[0].replace(/ /g, '_')}" value="${t[1]}">
+        </div>`).join('');
+    h += `</div><button class="btn" onclick="saveTarif()">UPDATE</button>`;
+    openMod("Tarif", h); 
+}
+
+     // 4.Slip Gaji Karyawan
+         function genSlip(n) { 
+    const fM = document.getElementById('fUang').value;
+    const T = D.tarif || DEF_TARIF;
+    let br = 0, bo = 0, ka = 0, list = "";
+    
+    // Hitung Borongan
+    Object.values(D.aktivitas || {}).forEach(a => {
+        if(a.t?.slice(0,7) === fM && a.p?.includes(n)) {
+            let u = (T[a.j] || 0) * a.q / (a.j.includes("pasang") ? 1 : a.p.length);
+            if(a.isCair) { 
+                br += u; 
+                list += `<tr><td>${a.t}</td><td>${a.j}</td><td>${Math.round(u).toLocaleString()}</td></tr>`;
+            }
+        }
+    });
+
+    // Hitung Kasbon & Bonus
+    Object.values(D.kasbon_bonus || {}).forEach(kb => {
+        if(kb.t?.slice(0,7) === fM && kb.n === n) {
+            if(kb.j === 'Bonus') bo += kb.rp;
+            if(kb.j === 'Kasbon') ka += kb.rp;
+        }
+    });
+
+    // Mas bisa tambahkan modal cetak di sini jika perlu
+    console.log("Detail untuk:", n, "Borongan:", br, "Bonus:", bo, "Kasbon:", ka);
+    // Contoh output sederhana ke modal
+    openMod("Slip: " + n, `<table>${list}</table><hr>Nett: ${Math.round(br + bo - ka).toLocaleString()}`);
+}
+ 
+
+
+//----------------------------------------
+// 2. SIMPAN DATA GAJI
+//----------------------------------------
+     // 1. Simpan Keseluruhan 
+     function saveKB() { const n=document.getElementById('kbN').value, t=document.getElementById('fUang').value, tipe=document.getElementById('kbT').value, rp=parseInt(document.getElementById('kbR').value); if(rp) db.ref('kasbon_bonus').push({n,t,tipe,rp}).then(()=>openModKB()); }
+    
+      // 2. Simpan Tarif Gaji
+          function saveTarif() { 
+    let nT = {};
+    Object.keys(D.tarif || DEF_TARIF).forEach(k => {
+        nT[k] = parseInt(document.getElementById(`trf_${k.replace(/ /g, '_')}`).value) || 0;
+    });
+    db.ref('tarif').set(nT).then(() => { alert("Update Berhasil!"); }); 
+}
+
+//----------------------------------------
+// 3. RENDER TAMPILAN TAB GAJI
+//----------------------------------------
+      
+      // Logika Gaji
+            function renderGaji() {
+            const fM = document.getElementById('fUang').value, T = D.tarif||DEF_TARIF, K = Object.values(D.master_karyawan||{});
+            let tG=0, tN=0; Object.values(D.belanja||{}).forEach(b => { if(b.t?.slice(0,7)===fM) tN+=b.rp; });
+            let h = `<table><tr><th class="sticky-col">NAMA</th><th>BORONG CAIR</th><th><span style="color:#f97316">PENDING</span></th><th>BONUS</th><th>KASBON</th><th>NETT</th><th>SLIP</th></tr>`;
+            K.forEach(k => {
+                let brCair=0, brPend=0, bo=0, ka=0;
+                Object.values(D.aktivitas||{}).forEach(a => {
+                    if(a.t?.slice(0,7)===fM && a.p?.includes(k)) {
+                        let upah = (T[a.j]||0)*a.q/(a.j.includes("pasang")?1:a.p.length);
+                        if(a.isCair) brCair += upah; else brPend += upah;
+                    }
+                });
+                Object.values(D.kasbon_bonus||{}).forEach(kb => { if(kb.n===k && kb.t===fM) kb.tipe==="Bonus"?bo+=kb.rp:ka+=kb.rp; });
+                let nett = (brCair+bo)-ka; tG+=nett;
+                h += `<tr><td class="sticky-col">${k}</td><td>${Math.round(brCair).toLocaleString()}</td><td style="color:#f97316">${Math.round(brPend).toLocaleString()}</td><td>${bo.toLocaleString()}</td><td>${ka.toLocaleString()}</td><td style="font-weight:800">Rp ${Math.round(nett).toLocaleString()}</td><td><button class="btn" style="padding:5px;font-size:9px" onclick="genSlip('${k}')">SLIP</button></td></tr>`;
+            });
+            document.getElementById('gTotal').innerText = "Rp "+Math.round(tG).toLocaleString(); document.getElementById('nTotal').innerText = "Rp "+tN.toLocaleString(); document.getElementById('areaGaji').innerHTML = h+"</table>";
+        }
+
+  </script>
 </body>
 </html>
