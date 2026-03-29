@@ -51,9 +51,15 @@
     <div class="container">
         <div id="tab-absen" class="tab-content active">
             <div class="card">
-                <h3>👥 Master Karyawan <input type="text" id="inK" placeholder="Nama..." style="width:100px; height:30px"> <button class="btn" style="background:var(--p); width:50px; margin:0" onclick="addItem('master_karyawan', 'inK')">ADD</button></h3>
-                <div id="listK" style="display:flex; flex-wrap:wrap; gap:5px"></div>
-            </div>
+    <h3>MASTER KARYAWAN</h3>
+    <div style="display: flex; gap: 8px;">
+        <input type="text" id="namaKaryawan" placeholder="Nama Karyawan Baru...">
+        <button class="btn" style="background: var(--p); width: auto; min-width: 80px;" onclick="tambahKaryawan()">ADD</button>
+    </div>
+    
+    <div id="listKaryawan" style="margin-top: 15px;">
+        </div>
+</div>
             <div class="card">
                 <h3>📅 Input Absensi <input type="date" id="absTgl" style="width:115px; height:30px"></h3>
                 <div class="flex-row"><select id="selK"></select><select id="absJenis" onchange="toggleIzin()"><option value="Hadir">Masuk</option><option value="Pulang">Pulang</option><option value="Izin">Izin</option><option value="Alpa">Alpa</option></select></div>
@@ -62,12 +68,23 @@
             </div>
             <div class="card">
                 <h3>📊 Laporan <input type="month" id="fM" style="width:110px; height:30px"></h3>
-                <div class="table-area" id="areaAbsen"><table><thead id="thA"></thead><tbody id="tbA"></tbody></table></div>
-                <div class="flex-row">
-                    <button class="btn" style="background:var(--w); color:black" onclick="openLiburMod()">⚙️ SET LIBUR</button>
-                    <button class="btn" style="background:var(--s)" onclick="expEx('areaAbsen','Absen')">EXCEL</button>
-                    <button class="btn" style="background:var(--d)" onclick="expPdf('areaAbsen','Absensi_Bulanan')">PDF</button>
-                </div>
+                <div class="table-area">
+    <table>
+        <thead>
+            <tr>
+                <th class="sticky-col">Nama</th>
+                <th>H</th><th>T</th><th>L</th><th>I</th><th>A</th>
+            </tr>
+        </thead>
+        <tbody id="bodyLaporan">
+            </tbody>
+    </table>
+</div>
+                <div class="flex-row" style="display: flex; justify-content: space-between; gap: 5px;">
+    <button class="btn" style="background: #22c55e;" onclick="exportExcel()">EXCEL</button>
+    <button class="btn" style="background: #e11d48;" onclick="exportPDF()">PDF</button>
+    <button class="btn" style="background: var(--w);" onclick="setLibur()">LIBUR</button>
+</div>
             </div>
         </div>
 
@@ -243,7 +260,7 @@ function renderAll() {
     
     let th = `<tr><th class="sticky-col">NAMA</th>`; 
     for(let i=1; i<=lastD; i++) th += `<th>${i}</th>`; 
-    th += `<th>H/T</th><th>L</th></tr>`; 
+    th += `<th>H</th><th>T</th><th>L</th><th>I</th><th>A</th></tr>`; 
     document.getElementById('thA').innerHTML = th;
 
     let tb = ""; 
