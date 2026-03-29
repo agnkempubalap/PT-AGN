@@ -365,31 +365,45 @@
              //Fungsi Excel
 //----------------------------------------    
       function expEx(id, n) {
-    // 1. Ambil tabel asli
-    const originalTable = document.getElementById(id);
-    if (!originalTable) return alert("Tabel tidak ditemukan!");
+    const table = document.getElementById(id);
+    if (!table) return alert("Tabel tidak ditemukan!");
 
-    // 2. Buat 'fotokopi' tabel agar tampilan di web tidak berubah
-    const tableClone = originalTable.cloneNode(true);
+    // 1. Ambil data dari tabel HTML
+    const wb = XLSX.utils.table_to_book(table, { sheet: "Sheet1" });
+    const ws = wb.Sheets["Sheet1"];
 
-    // 3. Tambahkan border dan gaya langsung ke sel tabel (Inline Style)
-    const cells = tableClone.querySelectorAll('th, td');
-    cells.forEach(cell => {
-        cell.style.border = "1px solid black"; // Tambah garis/border
-        cell.style.textAlign = "center";      // Rata tengah semua kolom
-        cell.style.padding = "5px";
-    });
+    // 2. Tentukan jangkauan (range) sel (misal: A1 sampai Z100)
+    const range = XLSX.utils.decode_range(ws['!ref']);
 
-    // 4. Warnai Header (Baris Judul)
-    const headerCells = tableClone.querySelectorAll('thead th, tr:first-child th');
-    headerCells.forEach(th => {
-        th.style.backgroundColor = "#dc3545"; // Warna Merah (Sesuai brand Kempu Balap)
-        th.style.color = "white";             // Tulisan Putih
-        th.style.fontWeight = "bold";
-    });
+    // 3. Tambahkan instruksi Border & Aligment ke tiap sel
+    for (let R = range.s.r; R <= range.e.r; ++R) {
+        for (let C = range.s.c; C <= range.e.c; ++C) {
+            const cell_address = { c: C, r: R };
+            const cell_ref = XLSX.utils.encode_cell(cell_address);
+            
+            if (!ws[cell_ref]) continue;
 
-    // 5. Proses Export menggunakan library XLSX
-    const wb = XLSX.utils.table_to_book(tableClone, { sheet: "Sheet1" });
+            // Inisialisasi style jika belum ada
+            if (!ws[cell_ref].s) ws[cell_ref].s = {};
+            
+            // Tambahkan Border (Garis)
+            ws[cell_ref].s.border = {
+                top: { style: "thin" }, bottom: { style: "thin" },
+                left: { style: "thin" }, right: { style: "thin" }
+            };
+
+            // Rata Tengah (Alignment)
+            ws[cell_ref].s.alignment = { vertical: "center", horizontal: "center" };
+
+            // Khusus Baris Pertama (Header): Warna Merah & Teks Putih
+            if (R === 0) {
+                ws[cell_ref].s.fill = { fgColor: { rgb: "DC3545" } }; // Merah
+                ws[cell_ref].s.font = { color: { rgb: "FFFFFF" }, bold: true }; // Putih Bold
+            }
+        }
+    }
+
+    // 4. Proses Simpan
     XLSX.writeFile(wb, n + '.xlsx');
 }
 
