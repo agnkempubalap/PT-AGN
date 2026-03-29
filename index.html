@@ -329,9 +329,9 @@
         function saveTarif() { let nT={}; Object.keys(D.tarif||DEF_TARIF).forEach(k=>nT[k]=parseInt(document.getElementById(`trf_${k.replace(/ /g,'_')}`).value)||0); db.ref('tarif').set(nT).then(()=>alert("Update!")); }
         function openLiburMod() { let l=Object.entries(D.libur||{}).sort((a,b)=>b[0].localeCompare(a[0])); openMod("Libur Toko", `Mulai: <input type="date" id="lS"> s/d <input type="date" id="lE"><button class="btn" onclick="saveL()">SET</button><hr>${l.map(x=>`<div>${x[0]} <b onclick="removeItem('libur','${x[0]}')" style="color:red; cursor:pointer">×</b></div>`).join('')}`); }
         function saveL() { let s=new Date(document.getElementById('lS').value), e=new Date(document.getElementById('lE').value); while(s<=e){ db.ref('libur').update({[s.toISOString().split('T')[0]]:"OFF"}); s.setDate(s.getDate()+1); } }
-        function addItem(p,id) { const v=document.getElementById(id).value; if(v) db.ref(p).push(v).then(()=>document.getElementById(id).value=""); }
-        function removeItem(p,k) { if(confirm("Hapus?")) db.ref(`${p}/${k}`).remove().then(()=>closeMod()); }
-        function expEx(id,n) { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById(id)), n+'.xlsx'); }
+
+  function genSlip(n) { const fM=document.getElementById('fUang').value, T=D.tarif||DEF_TARIF; let br=0, bo=0, ka=0, list=""; Object.values(D.aktivitas||{}).forEach(a=>{ if(a.t?.slice(0,7)===fM&&a.p?.includes(n)){ let u=(T[a.j]||0)*a.q/(a.j.includes("pasang")?1:a.p.length); if(a.isCair) { br+=u; list+=`<tr><td>${a.t}</td><td>${a.j}</td><td>${Math.round(u).toLocaleString()}</td></tr>`; } } }); Object.values(D.kasbon_bonus||{}).forEach(kb=>{if(kb.n===n&&kb.t===fM) kb.tipe==="Bonus"?bo+=kb.rp:ka+=kb.rp;}); openMod("Slip", `<div id="p-slip" style="padding:15px; background:white; color:black"><h3>KEMPU BALAP</h3><p>${n} | ${fM}</p><hr><table style="width:100%; font-size:10px">${list}</table><hr><b>Total: Rp ${Math.round((br+bo)-ka).toLocaleString()}</b></div><button class="btn" onclick="expPdf('p-slip','Slip_${n}')">PRINT</button>`); }
+        
 //========================================
            //GLOBAL UTILITIES 
 //========================================
@@ -369,35 +369,62 @@
     const table = document.getElementById(id);
     if (!table) return alert("Tabel tidak ditemukan!");
 
-    // 1. Desain tabel buat Excel (Border, Warna Header, Rata Tengah)
-    const style = `
-        <style>
-            table { border-collapse: collapse; }
-            th, td { border: 1px solid black; text-align: center; padding: 5px; }
-            th { background-color: #dc3545; color: white; font-weight: bold; }
-        </style>
-    `;
+    // 1. Tambahkan Border & Center ke semua sel HTML secara paksa
+    const cells = table.querySelectorAll('th, td');
+    cells.forEach(cell => {
+        cell.setAttribute('border', '1'); // Paksa atribut border
+        cell.style.border = "1px solid black";
+        cell.style.textAlign = "center";
+        cell.style.verticalAlign = "middle";
+    });
 
-    // 2. Gabungkan Style dengan isi Tabel
-    const html = style + table.outerHTML;
+    // 2. Warnai Header (Merah) & Teks (Putih) secara inline
+    const headers = table.querySelectorAll('th');
+    headers.forEach(th => {
+        th.style.backgroundColor = "#dc3545";
+        th.style.color = "#ffffff";
+        th.style.fontWeight = "bold";
+    });
 
-    // 3. Proses Download agar bisa dibuka WPS
-    const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = n + '.xls'; // Gunakan ekstensi .xls
-    a.click();
-    window.URL.revokeObjectURL(url);
+    // 3. Proses Export menggunakan library SheetJS (XLSX)
+    // Kita tambahkan sheetStubs agar sel kosong tetap punya border
+    const wb = XLSX.utils.table_to_book(table, { 
+        sheet: "Laporan Stok",
+        raw: false,
+        display: true 
+    });
+
+    // 4. Simpan file
+    XLSX.writeFile(wb, n + '.xlsx');
+    
+    // 5. Kembalikan tampilan tabel asli (biar di web gak kelihatan kaku)
+    if(typeof autoRender === "function") autoRender();
 }
 
+//----------------------------------------
+             //Fungsi Pop Up
+//----------------------------------------
+    // 1. OpenMod
+          function openMod(t,h) { document.getElementById('modTitle').innerText=t; document.getElementById('modContent').innerHTML=h; document.getElementById('modalUni').style.display='flex'; }
+
+    // 2. CloseMod
+        function closeMod() { document.getElementById('modalUni').style.display='none'; }
 
 //----------------------------------------
-function openMod(t,h) { document.getElementById('modTitle').innerText=t; document.getElementById('modContent').innerHTML=h; document.getElementById('modalUni').style.display='flex'; }
-        function closeMod() { document.getElementById('modalUni').style.display='none'; }
-        function showLogs(t) { let l=Object.entries(D[t]||{}).reverse().slice(0,30); openMod("Log", l.map(x=>`<div style="font-size:10px;padding:5px;border-bottom:1px solid #eee"><span>[${x[1].t}] ${x[1].b||x[1].j} (${x[1].q})</span> <b onclick="removeItem('${t}','${x[0]}')" style="color:red; cursor:pointer">×</b></div>`).join('')); }
-        function genSlip(n) { const fM=document.getElementById('fUang').value, T=D.tarif||DEF_TARIF; let br=0, bo=0, ka=0, list=""; Object.values(D.aktivitas||{}).forEach(a=>{ if(a.t?.slice(0,7)===fM&&a.p?.includes(n)){ let u=(T[a.j]||0)*a.q/(a.j.includes("pasang")?1:a.p.length); if(a.isCair) { br+=u; list+=`<tr><td>${a.t}</td><td>${a.j}</td><td>${Math.round(u).toLocaleString()}</td></tr>`; } } }); Object.values(D.kasbon_bonus||{}).forEach(kb=>{if(kb.n===n&&kb.t===fM) kb.tipe==="Bonus"?bo+=kb.rp:ka+=kb.rp;}); openMod("Slip", `<div id="p-slip" style="padding:15px; background:white; color:black"><h3>KEMPU BALAP</h3><p>${n} | ${fM}</p><hr><table style="width:100%; font-size:10px">${list}</table><hr><b>Total: Rp ${Math.round((br+bo)-ka).toLocaleString()}</b></div><button class="btn" onclick="expPdf('p-slip','Slip_${n}')">PRINT</button>`); }
+       //Hapus dan Tambah Firebase
+//----------------------------------------
+    // 1. Add Item
+          function addItem(p,id) { const v=document.getElementById(id).value; if(v) db.ref(p).push(v).then(()=>document.getElementById(id).value=""); }
+   
+    // 2. Remove Item
+        function removeItem(p,k) { if(confirm("Hapus?")) db.ref(`${p}/${k}`).remove().then(()=>closeMod()); }
+        function expEx(id,n) { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById(id)), n+'.xlsx'); }
 
+//----------------------------------------
+             //Log Riwayat
+//----------------------------------------
+        function showLogs(t) { let l=Object.entries(D[t]||{}).reverse().slice(0,30); openMod("Log", l.map(x=>`<div style="font-size:10px;padding:5px;border-bottom:1px solid #eee"><span>[${x[1].t}] ${x[1].b||x[1].j} (${x[1].q})</span> <b onclick="removeItem('${t}','${x[0]}')" style="color:red; cursor:pointer">×</b></div>`).join('')); }
+        
 
 //=========================================
               //TAB STOK
