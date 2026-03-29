@@ -645,30 +645,7 @@ function initUI() {
     renderCheckKaryawan();
 }
 
-function renderMasterKaryawan() {
-    const container = document.getElementById('listMasterKaryawan'); // Pastikan ID ini ada di HTML Mas
-    if (!container || !D.master_karyawan) return;
-
-    const K = Object.entries(D.master_karyawan);
-    let h = K.map(k => `
-        <div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #eee; align-items:center">
-            <span>${k[1]}</span>
-            <b onclick="removeItem('master_karyawan','${k[0]}')" style="color:red; cursor:pointer; font-size:18px">×</b>
-        </div>
-    `).join('');
-    
-    container.innerHTML = h || '<p style="font-size:10px; color:gray">Belum ada karyawan</p>';
-}
-
-function renderMasterBarang() {
-    const container = document.getElementById('listMasterBarang');
-    if (!container || !D.master_barang) return;
-
-    const B = Object.entries(D.master_barang);
-    let h = B.map(b => `
-        <div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #eee; align-items:center">
-            <span>${b[1]}</span>
-            <b onclick="removeItem('master_barang','${b[0]}')" style="color:red; cursor:pointer; font-size:18px">×</b>
+ onclick="removeItem('master_barang','${b[0]}')" style="color:red; cursor:pointer; font-size:18px">×</b>
         </div>
     `).join('');
     
@@ -846,6 +823,29 @@ function saveTarif() {
 
 // Inisialisasi awal UI
 initUI();
+
+// Taruh paling bawah sebelum tutup script
+function renderMasterKaryawan() {
+    let c = document.getElementById('listMasterKaryawan');
+    if (!c || !D.master_karyawan) return;
+    let h = Object.entries(D.master_karyawan).map(k => `
+        <div style="display:flex;justify-content:space-between;padding:5px;border-bottom:1px solid #eee">
+            <span>${k[1]}</span>
+            <b onclick="removeItem('master_karyawan','${k[0]}')" style="color:red;cursor:pointer">×</b>
+        </div>`).join('');
+    c.innerHTML = h;
+}
+
+function renderMasterBarang() {
+    let c = document.getElementById('listMasterBarang');
+    if (!c || !D.master_barang) return;
+    let h = Object.entries(D.master_barang).map(b => `
+        <div style="display:flex;justify-content:space-between;padding:5px;border-bottom:1px solid #eee">
+            <span>${b[1]}</span>
+            <b onclick="removeItem('master_barang','${b[0]}')" style="color:red;cursor:pointer">×</b>
+        </div>`).join('');
+    c.innerHTML = h;
+}
 
 
 
