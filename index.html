@@ -254,16 +254,22 @@ window.onload = () => {
 };
 
 function autoRender() {
-    // Gunakan try-catch agar jika satu tab ada error, tab lain (seperti Kalender) tetap muncul
-    try {
-        if (typeof renderAll === "function") renderAll(); 
-        if (typeof renderStok === "function") renderStok();
-        if (typeof renderGaji === "function") renderGaji();
-        if (typeof renderCheckKaryawan === "function") renderCheckKaryawan();
+    renderAll(); 
+    renderStok(); 
+    renderGaji(); 
+    renderCheckKaryawan(); 
+    renderMasterKaryawan();
+    renderMasterBarang(); // <--- Pastikan baris ini sudah ada
+}
+
+        
+        // TAMBAHKAN INI AGAR LIST DI MASTER MUNCUL
+        if (typeof renderMasterKaryawan === "function") renderMasterKaryawan();
     } catch (e) {
         console.error("Gagal Render:", e);
     }
 }
+
 
 function tab(id) {
     // Fungsi pindah halaman tab
@@ -633,6 +639,36 @@ function initUI() {
     
     // Render list centang karyawan (untuk Aktivitas)
     renderCheckKaryawan();
+}
+
+function renderMasterKaryawan() {
+    const container = document.getElementById('listMasterKaryawan'); // Pastikan ID ini ada di HTML Mas
+    if (!container || !D.master_karyawan) return;
+
+    const K = Object.entries(D.master_karyawan);
+    let h = K.map(k => `
+        <div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #eee; align-items:center">
+            <span>${k[1]}</span>
+            <b onclick="removeItem('master_karyawan','${k[0]}')" style="color:red; cursor:pointer; font-size:18px">×</b>
+        </div>
+    `).join('');
+    
+    container.innerHTML = h || '<p style="font-size:10px; color:gray">Belum ada karyawan</p>';
+}
+
+function renderMasterBarang() {
+    const container = document.getElementById('listMasterBarang');
+    if (!container || !D.master_barang) return;
+
+    const B = Object.entries(D.master_barang);
+    let h = B.map(b => `
+        <div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #eee; align-items:center">
+            <span>${b[1]}</span>
+            <b onclick="removeItem('master_barang','${b[0]}')" style="color:red; cursor:pointer; font-size:18px">×</b>
+        </div>
+    `).join('');
+    
+    container.innerHTML = h || '<p style="font-size:10px; color:gray">Belum ada barang</p>';
 }
 
 // 2. Render List Centang (Hanya yang sudah absen yang bisa dipilih)
