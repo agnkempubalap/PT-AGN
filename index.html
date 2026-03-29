@@ -536,28 +536,120 @@ function saveAk() {
 //========================================
 //               TAB GAJI
 //========================================
-function renderGaji() {
-    const fM = document.getElementById('fUang').value, T = D.tarif||DEF_TARIF, K = Object.entries(D.master_karyawan||{});
-    let tG=0;
-    let h = `<table><tr><th class="sticky-col">NAMA</th><th>BORONG</th><th>BONUS</th><th>KASBON</th><th>NETT</th><th>SLIP</th></tr>`;
+
+// 1. POP-UP KASBON & BONUS
+function openModKB() { 
+    const fM = document.getElementById('fUang').value;
+    const K = Object.entries(D.master_karyawan || {});
+    const L = Object.entries(D.kasbon_bonus || {}).filter(x => x[1].t === fM).reverse();
     
-    K.forEach(k => {
-        let br=0, bo=0, ka=0;
-        Object.values(D.aktivitas||{}).forEach(a => {
-            if(a.t?.slice(0,7)===fM && a.p?.includes(k[0])) {
-                br += (T[a.j]||0)*a.q/(a.j.includes("pasang")?1:a.p.length);
-            }
-        });
-        Object.values(D.kasbon_bonus||{}).forEach(kb => { if(kb.n===k[0] && kb.t===fM) kb.tipe==="Bonus"?bo+=kb.rp:ka+=kb.rp; });
-        let nett = (br+bo)-ka; tG+=nett;
-        h += `<tr><td class="sticky-col">${k[1]}</td><td>${Math.round(br).toLocaleString()}</td><td>${bo.toLocaleString()}</td><td>${ka.toLocaleString()}</td><td><b>Rp ${Math.round(nett).toLocaleString()}</b></td><td><button class="btn" onclick="genSlip('${k[0]}')">SLIP</button></td></tr>`;
-    });
-    document.getElementById('areaGaji').innerHTML = h+"</table>";
-    document.getElementById('gTotal').innerText = "Rp "+Math.round(tG).toLocaleString();
+    let h = `
+        <select id="kbN">${K.map(k => `<option value="${k[0]}">${k[1]}</option>`).join('')}</select>
+        <select id="kbT"><option value="Bonus">Bonus</option><option value="Kasbon">Kasbon</option></select>
+        <input type="number" id="kbR" placeholder="Rp">
+        <button class="btn" onclick="saveKB()">SIMPAN</button>
+        <hr>
+        ${L.map(x => `
+            <div style="font-size:10px;padding:5px;border-bottom:1px solid #eee">
+                <b>${D.master_karyawan[x[1].n]}</b>: ${x[1].tipe} Rp ${x[1].rp.toLocaleString()} 
+                <b onclick="removeItem('kasbon_bonus','${x[0]}')" style="color:red; cursor:pointer">×</b>
+            </div>`).join('')}
+    `; 
+    openMod("Kasbon / Bonus", h); 
 }
 
-// Inisialisasi awal saat data Firebase masuk
-initStokListeners();
+function saveKB() { 
+    const n = document.getElementById('kbN').value, 
+          t = document.getElementById('fUang').value, 
+          tipe = document.getElementById('kbT').value, 
+          rp = parseInt(document.getElementById('kbR').value); 
+    if(rp) db.ref('kasbon_bonus').push({n, t, tipe, rp}).then(() => openModKB()); 
+}
+
+// 2. RENDER TAMPILAN TAB GAJI (FULL VERSION)
+function renderGaji() {
+    const fM = document.getElementById('fUang').value;
+    const T = D.tarif || DEF_TARIF;
+    const K = Object.entries(D.master_karyawan || {});
+    
+    let tG = 0, tN = 0; 
+    // Hitung Total Belanja Nota
+    Object.values(D.belanja || {}).forEach(b => { if(b.t?.slice(0,7) === fM) tN += b.rp; });
+
+    let h = `
+        <table>
+            <tr>
+                <th class="sticky-col">NAMA</th>
+                <th>CAIR</th>
+                <th><span style="color:#f97316">PENDING</span></th>
+                <th>BONUS</th>
+                <th>KASBON</th>
+                <th>NETT</th>
+                <th>SLIP</th>
+            </tr>`;
+
+    K.forEach(k => {
+        let brCair = 0, brPend = 0, bo = 0, ka = 0;
+        
+        // Hitung Borongan per Karyawan
+        Object.values(D.aktivitas || {}).forEach(a => {
+            if(a.t?.slice(0,7) === fM && a.p?.includes(k[0])) {
+                let upah = (T[a.j] || 0) * a.q / (a.j.includes("pasang") ? 1 : a.p.length);
+                if(a.isCair) brCair += upah; else brPend += upah;
+            }
+        });
+
+        // Hitung Kasbon & Bonus
+        Object.values(D.kasbon_bonus || {}).forEach(kb => { 
+            if(kb.n === k[0] && kb.t === fM) {
+                kb.tipe === "Bonus" ? bo += kb.rp : ka += kb.rp;
+            } 
+        });
+
+        let nett = (brCair + bo) - ka; 
+        tG += nett;
+
+        h += `
+            <tr>
+                <td class="sticky-col">${k[1]}</td>
+                <td>${Math.round(brCair).toLocaleString()}</td>
+                <td style="color:#f97316">${Math.round(brPend).toLocaleString()}</td>
+                <td>${bo.toLocaleString()}</td>
+                <td>${ka.toLocaleString()}</td>
+                <td style="font-weight:800">Rp ${Math.round(nett).toLocaleString()}</td>
+                <td><button class="btn" style="padding:5px;font-size:9px" onclick="genSlip('${k[0]}')">SLIP</button></td>
+            </tr>`;
+    });
+
+    // Update Ringkasan di Atas Tabel
+    document.getElementById('gTotal').innerText = "Rp " + Math.round(tG).toLocaleString(); 
+    document.getElementById('nTotal').innerText = "Rp " + tN.toLocaleString(); 
+    document.getElementById('areaGaji').innerHTML = h + "</table>";
+}
+
+// 3. EDIT TARIF
+function editTarif() { 
+    let h = `<div style="display:grid;grid-template-columns: 1fr 1fr;gap:5px">`;
+    h += Object.entries(D.tarif || DEF_TARIF).map(t => `
+        <div>
+            <label style="font-size:9px">${t[0]}</label>
+            <input type="number" id="trf_${t[0].replace(/ /g, '_')}" value="${t[1]}">
+        </div>`).join('');
+    h += `</div><button class="btn" onclick="saveTarif()">UPDATE</button>`;
+    openMod("Tarif Borongan", h); 
+}
+
+function saveTarif() { 
+    let nT = {};
+    Object.keys(D.tarif || DEF_TARIF).forEach(k => {
+        nT[k] = parseInt(document.getElementById(`trf_${k.replace(/ /g, '_')}`).value) || 0;
+    });
+    db.ref('tarif').set(nT).then(() => { alert("Tarif Berhasil Diupdate!"); }); 
+}
+
+// Inisialisasi awal UI
+initUI();
+
 
 
   </script>
