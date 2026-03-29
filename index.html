@@ -317,48 +317,57 @@
 
 
 //========================================
-               //TAB ABSEN
+//               TAB ABSEN
 //========================================
 // 1. LISTENER (OTOMATISASI UI)
 //----------------------------------------
-    document.getElementById('fM').onchange = autoRender;
-            document.getElementById('fUang').onchange = autoRender;
+document.getElementById('fM').onchange = () => { renderAll(); renderStok(); };
+document.getElementById('fUang').onchange = () => { renderGaji(); };
 
 //----------------------------------------
 // 2. SIMPAN DATA ABSEN
 //----------------------------------------
-    // 1. Save Tab Absen 
-          function saveAbs() {
-            const n=document.getElementById('selK').value, t=document.getElementById('absTgl').value, j=document.getElementById('absJenis').value;
-            const jamStr = new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}).replace('.',':');
-            const ref = db.ref(`absensi/${t}/${n}`);
-            if(j==="Pulang") ref.update({ jamOut: jamStr }).then(()=>alert("Pulang!")); 
-            else {
-                let stat = (j==="Izin"||j==="Alpa") ? j : (new Date(t).getDay()===0||D.libur?.[t]?"Lembur":(new Date()>new Date(t+"T09:30:00")?"Telat":"Hadir"));
-                ref.set({ j: stat, jam: jamStr, ket: document.getElementById('absKet').value||"" }).then(()=>{ alert(stat + "!"); });
-            }
-        }
+function saveAbs() {
+    const n = document.getElementById('selK').value; // Pastikan ini ID Karyawan
+    const t = document.getElementById('absTgl').value;
+    const j = document.getElementById('absJenis').value;
+    const jamStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':');
+    const ref = db.ref(`absensi/${t}/${n}`);
     
-     // 2. Save Libur 
-          function saveL() { let s=new Date(document.getElementById('lS').value), e=new Date(document.getElementById('lE').value); while(s<=e){ db.ref('libur').update({[s.toISOString().split('T')[0]]:"OFF"}); s.setDate(s.getDate()+1); } }
+    if (j === "Pulang") {
+        ref.update({ jamOut: jamStr }).then(() => alert("Pulang!"));
+    } else {
+        let stat = (j === "Izin" || j === "Alpa") ? j : (new Date(t).getDay() === 0 || D.libur?.[t] ? "Lembur" : (new Date() > new Date(t + "T09:30:00") ? "Telat" : "Hadir"));
+        ref.set({ j: stat, jam: jamStr, ket: document.getElementById('absKet').value || "" }).then(() => { alert(stat + "!"); });
+    }
+}
 
-     // 3. Pop Up Kalender
-          function openLiburMod() { let l=Object.entries(D.libur||{}).sort((a,b)=>b[0].localeCompare(a[0])); openMod("Libur Toko", `Mulai: <input type="date" id="lS"> s/d <input type="date" id="lE"><button class="btn" onclick="saveL()">SET</button><hr>${l.map(x=>`<div>${x[0]} <b onclick="removeItem('libur','${x[0]}')" style="color:red; cursor:pointer">×</b></div>`).join('')}`); }
+function saveL() { 
+    let s = new Date(document.getElementById('lS').value);
+    let e = new Date(document.getElementById('lE').value);
+    while (s <= e) {
+        db.ref('libur').update({ [s.toISOString().split('T')[0]]: "OFF" });
+        s.setDate(s.getDate() + 1);
+    }
+    alert("Libur Terpasang!");
+}
+
+function openLiburMod() {
+    let l = Object.entries(D.libur || {}).sort((a, b) => b[0].localeCompare(a[0]));
+    openMod("Libur Toko", `Mulai: <input type="date" id="lS"> s/d <input type="date" id="lE"><button class="btn" onclick="saveL()">SET</button><hr>${l.map(x => `<div>${x[0]} <b onclick="removeItem('libur','${x[0]}')" style="color:red; cursor:pointer">×</b></div>`).join('')}`);
+}
 
 //----------------------------------------
 // 3. RENDER TAB ABSEN
 //----------------------------------------
-       // 1. Render Bulanan (Tabel Utama)
 function renderAll() {
     const fM = document.getElementById('fM').value;
-    if (!fM) return;
+    if (!fM || !D.master_karyawan) return;
 
-    // Mengambil data karyawan (ID dan Nama)
-    const K_arr = Object.entries(D.master_karyawan || {}); 
+    const K_arr = Object.entries(D.master_karyawan); 
     const Y = fM.split('-')[0], M = fM.split('-')[1];
     const lastD = new Date(Y, M, 0).getDate();
 
-    // Render Header Tabel
     let th = `<tr><th class="sticky-col">NAMA</th>`;
     for (let i = 1; i <= lastD; i++) th += `<th>${i}</th>`;
     th += `<th>H/T</th><th>L</th></tr>`;
@@ -366,12 +375,10 @@ function renderAll() {
 
     let tb = "";
     K_arr.forEach(k => {
-        // k[1] adalah NAMA
         let r = `<td class="sticky-col">${k[1]}</td>`, thC = 0, tlC = 0, toC = 0;
         
         for (let i = 1; i <= lastD; i++) {
             const d = `${Y}-${M}-${String(i).padStart(2, '0')}`;
-            // k[0] adalah ID untuk mencari di database
             const a = D.absensi?.[d]?.[k[0]]; 
             const isL = D.libur?.[d];
             
@@ -384,8 +391,6 @@ function renderAll() {
                 else if (a.j === "Lembur") { txt = "L"; toC++; }
                 else { txt = "I"; }
             }
-
-            // Memanggil cellMod dengan ID karyawan (k[0])
             r += `<td class="${cls}" onclick="cellMod('${d}','${k[0]}')">${txt}</td>`;
         }
         tb += `<tr>${r}<td>${thC}/${tlC}</td><td>${toC}</td></tr>`;
@@ -393,13 +398,9 @@ function renderAll() {
     document.getElementById('tbA').innerHTML = tb;
 }
 
-// 2. Render Detail Kalender (Pop-up Detail)
 function cellMod(d, k) { 
-    // Ambil data absen berdasarkan tanggal (d) dan ID karyawan (k)
     const a = D.absensi?.[d]?.[k];
-    // Ambil nama dari master data menggunakan ID
     const n = D.master_karyawan?.[k] || "Karyawan";
-    // Filter aktivitas kerja yang sesuai tanggal dan ID karyawan
     const aks = Object.values(D.aktivitas || {}).filter(x => x.t === d && x.p?.includes(k));
     
     let h = `
@@ -407,15 +408,12 @@ function cellMod(d, k) {
             <p><b>Status:</b> ${a?.j || '-'}</p>
             <p><b>Jam:</b> ${a?.jam || '-'} s/d ${a?.jamOut || '-'}</p>
             <hr>
-            <p><b>Daftar Pekerjaan:</b></p>
-            <ul style="padding-left:20px">
-                ${aks.map(x => `<li>${x.j} (${x.q}) ${x.isCair ? '✅' : '⏳'}</li>`).join('') || '<li>Tidak ada aktivitas kerja</li>'}
-            </ul>
+            <p><b>Daftar Kerja:</b></p>
+            <ul style="padding-left:20px">${aks.map(x => `<li>${x.j} (${x.q}) ${x.isCair ? '✅' : '⏳'}</li>`).join('') || '<li>Tidak ada kerjaan</li>'}</ul>
             <br>
-            <button class="btn" style="background:#ff4d4d;width:100%" onclick="removeItem('absensi/${d}','${k}')">HAPUS ABSENSI</button>
+            <button class="btn" style="background:#ff4d4d;width:100%" onclick="removeItem('absensi/${d}','${k}')">HAPUS ABSEN</button>
         </div>
     `;
-    // Memanggil fungsi openMod untuk menampilkan pop-up
     openMod(`Detail ${n} (${d})`, h); 
 }
 
