@@ -254,15 +254,19 @@ window.onload = () => {
 };
 
 function autoRender() {
-    renderAll(); 
-    renderStok(); 
-    renderGaji(); 
-    renderCheckKaryawan(); 
-    renderMasterKaryawan();
-    renderMasterBarang(); // <--- Pastikan baris ini sudah ada
+    // Gunakan try-catch ini adalah kunci agar tab tidak macet total kalau ada 1 fungsi error
+    try {
+        if (typeof renderAll === "function") renderAll(); 
+        if (typeof renderStok === "function") renderStok();
+        if (typeof renderGaji === "function") renderGaji();
+        if (typeof renderCheckKaryawan === "function") renderCheckKaryawan();
+        if (typeof renderMasterKaryawan === "function") renderMasterKaryawan();
+        if (typeof renderMasterBarang === "function") renderMasterBarang();
+    } catch (err) {
+        console.error("Render macet di:", err);
+    }
 }
-
-        
+       
         // TAMBAHKAN INI AGAR LIST DI MASTER MUNCUL
         if (typeof renderMasterKaryawan === "function") renderMasterKaryawan();
     } catch (e) {
