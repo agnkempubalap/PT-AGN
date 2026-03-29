@@ -349,12 +349,12 @@
 //----------------------------------------
 // 3. RENDER TAB ABSEN
 //----------------------------------------
-       // 1. Render Bulanan (Tabel Utama)
+       // 1. Render Bulanan
 function renderAll() {
-    const fEl = document.getElementById('fM');
-    if (!fEl) return;
-    const fM = fEl.value;
+    const fM = document.getElementById('fM').value; // Pastikan ID di HTML adalah 'fM'
+    if (!fM) return;
 
+    // Mas pakai format Array dari Object.entries agar k[0] adalah ID dan k[1] adalah Nama
     const K_arr = Object.entries(D.master_karyawan || {}); 
     const Y = fM.split('-')[0], M = fM.split('-')[1];
     const lastD = new Date(Y, M, 0).getDate();
@@ -366,35 +366,36 @@ function renderAll() {
 
     let tb = "";
     K_arr.forEach(k => {
-        let r = `<td class="sticky-col">${k[1]}</td>`, totalH = 0, totalL = 0;
+        let r = `<td class="sticky-col">${k[1]}</td>`, thCount = 0, tlCount = 0, toCount = 0;
         
         for (let i = 1; i <= lastD; i++) {
             const d = `${Y}-${M}-${String(i).padStart(2, '0')}`;
-            const a = D.absensi?.[d]?.[k[0]]; 
+            const a = D.absensi?.[d]?.[k[0]]; // Menggunakan k[0] sebagai ID karyawan
             const isL = D.libur?.[d];
             
             let cls = isL ? "bg-m" : "";
             let txt = "-";
             
             if (a) {
-                if (a.j === "Hadir") { txt = "H"; totalH++; }
-                else if (a.j === "Telat") { txt = "T"; totalH++; }
-                else if (a.j === "Lembur") { txt = "L"; totalL++; }
+                if (a.j === "Hadir") { txt = "H"; thCount++; }
+                else if (a.j === "Telat") { txt = "T"; tlCount++; }
+                else if (a.j === "Lembur") { txt = "L"; toCount++; }
                 else { txt = "I"; }
             }
 
-            // Fungsi cellMod dipanggil di sini saat sel diklik
+            // PENTING: cellMod harus menerima ID karyawan (k[0])
             r += `<td class="${cls}" onclick="cellMod('${d}','${k[0]}')">${txt}</td>`;
         }
-        tb += `<tr>${r}<td>${totalH}</td><td>${totalL}</td></tr>`;
+        tb += `<tr>${r}<td>${thCount}/${tlCount}</td><td>${toCount}</td></tr>`;
     });
     document.getElementById('tbA').innerHTML = tb;
 }
 
-// 2. Render Detail Kalender (Pop-up yang tadi hilang)
+// 2. Render Detail Kalender (Pop-up)
 function cellMod(d, k) { 
     const a = D.absensi?.[d]?.[k];
-    const n = D.master_karyawan?.[k] || k;
+    const n = D.master_karyawan?.[k] || "Karyawan";
+    // Filter aktivitas berdasarkan tanggal dan ID karyawan
     const aks = Object.values(D.aktivitas || {}).filter(x => x.t === d && x.p?.includes(k));
     
     let h = `
@@ -402,14 +403,15 @@ function cellMod(d, k) {
             <p><b>Status:</b> ${a?.j || '-'}</p>
             <p><b>Jam:</b> ${a?.jam || '-'} s/d ${a?.jamOut || '-'}</p>
             <hr>
-            <p><b>Pekerjaan:</b></p>
-            <ul style="padding-left:20px">${aks.map(x => `<li>${x.j} (${x.q}) ${x.isCair ? '✅' : '⏳'}</li>`).join('') || '<li>Tidak ada aktivitas</li>'}</ul>
+            <p><b>Daftar Kerja:</b></p>
+            <ul style="padding-left:20px">${aks.map(x => `<li>${x.j} (${x.q}) ${x.isCair ? '✅' : '⏳'}</li>`).join('') || '<li>Tidak ada kerjaan</li>'}</ul>
             <br>
             <button class="btn" style="background:#ff4d4d;width:100%" onclick="removeItem('absensi/${d}','${k}')">HAPUS ABSEN</button>
         </div>
     `;
     openMod(`Detail ${n} (${d})`, h); 
 }
+
 
 //========================================
                 //TAB STOK
