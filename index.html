@@ -349,12 +349,13 @@
 //----------------------------------------
 // 3. RENDER TAB ABSEN
 //----------------------------------------
-       // 1. Render Bulanan
+       // 1. Render Bulanan (Tabel Utama)
 function renderAll() {
-    const fM = document.getElementById('fM').value;
-    if (!fM) return;
+    const fEl = document.getElementById('fM');
+    if (!fEl) return;
+    const fM = fEl.value;
 
-    const K_arr = Object.values(D.master_karyawan || {});
+    const K_arr = Object.entries(D.master_karyawan || {}); 
     const Y = fM.split('-')[0], M = fM.split('-')[1];
     const lastD = new Date(Y, M, 0).getDate();
 
@@ -365,42 +366,50 @@ function renderAll() {
 
     let tb = "";
     K_arr.forEach(k => {
-        let r = `<td class="sticky-col">${k[1]}</td>`, th = 0, tl = 0, to = 0;
+        let r = `<td class="sticky-col">${k[1]}</td>`, totalH = 0, totalL = 0;
+        
         for (let i = 1; i <= lastD; i++) {
             const d = `${Y}-${M}-${String(i).padStart(2, '0')}`;
-            const a = D.absensi?.[d]?.[k[0]];
+            const a = D.absensi?.[d]?.[k[0]]; 
             const isL = D.libur?.[d];
             
-            let cls = isL ? "bg-m" : "bg-none";
-            let txt = a ? (a.j === "Hadir" || a.j === "Telat" ? "H" : (a.j === "Lembur" ? "L" : "I")) : "-";
+            let cls = isL ? "bg-m" : "";
+            let txt = "-";
             
-            if (a?.j === "Hadir") th++;
-            if (a?.j === "Telat") tl++;
-            if (a?.j === "Lembur") to++;
+            if (a) {
+                if (a.j === "Hadir") { txt = "H"; totalH++; }
+                else if (a.j === "Telat") { txt = "T"; totalH++; }
+                else if (a.j === "Lembur") { txt = "L"; totalL++; }
+                else { txt = "I"; }
+            }
 
+            // Fungsi cellMod dipanggil di sini saat sel diklik
             r += `<td class="${cls}" onclick="cellMod('${d}','${k[0]}')">${txt}</td>`;
         }
-        tb += `<tr>${r}<td>${th}/${tl}</td><td>${to}</td></tr>`;
+        tb += `<tr>${r}<td>${totalH}</td><td>${totalL}</td></tr>`;
     });
     document.getElementById('tbA').innerHTML = tb;
 }
 
-     // 2. Render Detail Kalender (Popup)
+// 2. Render Detail Kalender (Pop-up yang tadi hilang)
 function cellMod(d, k) { 
     const a = D.absensi?.[d]?.[k];
+    const n = D.master_karyawan?.[k] || k;
     const aks = Object.values(D.aktivitas || {}).filter(x => x.t === d && x.p?.includes(k));
     
     let h = `
-        <p><b>Status:</b> ${a?.j || '-'}</p>
-        <p><b>Jam:</b> ${a?.jam || '-'} s/d ${a?.jamOut || '-'}</p>
-        <hr>
-        <ul>${aks.map(x => `<li>${x.j} (${x.q}) ${x.isCair ? '✅' : '⏳'}</li>`).join('') || '<li>Tidak ada aktivitas</li>'}</ul>
-        <br>
-        <button class="btn" style="background:red" onclick="removeItem('absensi/${d}','${k}')">HAPUS ABSEN</button>
+        <div style="text-align:left">
+            <p><b>Status:</b> ${a?.j || '-'}</p>
+            <p><b>Jam:</b> ${a?.jam || '-'} s/d ${a?.jamOut || '-'}</p>
+            <hr>
+            <p><b>Pekerjaan:</b></p>
+            <ul style="padding-left:20px">${aks.map(x => `<li>${x.j} (${x.q}) ${x.isCair ? '✅' : '⏳'}</li>`).join('') || '<li>Tidak ada aktivitas</li>'}</ul>
+            <br>
+            <button class="btn" style="background:#ff4d4d;width:100%" onclick="removeItem('absensi/${d}','${k}')">HAPUS ABSEN</button>
+        </div>
     `;
-    openMod(`Detail ${k} (${d})`, h); 
+    openMod(`Detail ${n} (${d})`, h); 
 }
-
 
 //========================================
                 //TAB STOK
