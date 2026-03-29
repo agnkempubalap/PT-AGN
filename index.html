@@ -330,29 +330,25 @@
 //========================================
            //GLOBAL UTILITIES 
 //========================================
-  // Fungsi PDF
+             // Fungsi PDF
+//----------------------------------------
      function expPdf(id, n) {
-    const element = document.getElementById(id);
-    if (!element) return alert("Wah, tabelnya nggak ketemu Mas!");
+    const el = document.getElementById(id);
+    
+    // Kalau ID salah panggil, dia bakal alert di HP Mas
+    if (!el) {
+        return alert("⚠️ ID '" + id + "' tidak ketemu! Coba cek tombolnya.");
+    }
 
-    // Konfigurasi agar hasil tajam dan tidak putih
     const opsi = {
-        margin: 5,
+        margin: 10,
         filename: n + '.pdf',
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
-            scale: 2,           // Biar tulisan nggak pecah
-            useCORS: true,      // Penting kalau ada data dari Firebase
-            letterRendering: true
-        },
+        html2canvas: { scale: 2, useCORS: true },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
     };
 
-    // PROSES: Set opsi -> Ambil elemen -> Tunggu Render -> Baru Simpan
-    html2pdf().set(opsi).from(element).toPdf().get('pdf').then(function (pdf) {
-        // Ini perintah simpan yang diproses SETELAH render selesai
-        pdf.save();
-    });
+    html2pdf().set(opsi).from(el).save();
 }
 
         function openMod(t,h) { document.getElementById('modTitle').innerText=t; document.getElementById('modContent').innerHTML=h; document.getElementById('modalUni').style.display='flex'; }
