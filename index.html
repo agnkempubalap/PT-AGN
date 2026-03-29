@@ -362,7 +362,39 @@
 }
 
 //----------------------------------------
-        function openMod(t,h) { document.getElementById('modTitle').innerText=t; document.getElementById('modContent').innerHTML=h; document.getElementById('modalUni').style.display='flex'; }
+             //Fungsi Excel
+//----------------------------------------    
+      function expEx(id, n) {
+    // 1. Ambil tabel asli
+    const originalTable = document.getElementById(id);
+    if (!originalTable) return alert("Tabel tidak ditemukan!");
+
+    // 2. Buat 'fotokopi' tabel agar tampilan di web tidak berubah
+    const tableClone = originalTable.cloneNode(true);
+
+    // 3. Tambahkan border dan gaya langsung ke sel tabel (Inline Style)
+    const cells = tableClone.querySelectorAll('th, td');
+    cells.forEach(cell => {
+        cell.style.border = "1px solid black"; // Tambah garis/border
+        cell.style.textAlign = "center";      // Rata tengah semua kolom
+        cell.style.padding = "5px";
+    });
+
+    // 4. Warnai Header (Baris Judul)
+    const headerCells = tableClone.querySelectorAll('thead th, tr:first-child th');
+    headerCells.forEach(th => {
+        th.style.backgroundColor = "#dc3545"; // Warna Merah (Sesuai brand Kempu Balap)
+        th.style.color = "white";             // Tulisan Putih
+        th.style.fontWeight = "bold";
+    });
+
+    // 5. Proses Export menggunakan library XLSX
+    const wb = XLSX.utils.table_to_book(tableClone, { sheet: "Sheet1" });
+    XLSX.writeFile(wb, n + '.xlsx');
+}
+
+//----------------------------------------
+function openMod(t,h) { document.getElementById('modTitle').innerText=t; document.getElementById('modContent').innerHTML=h; document.getElementById('modalUni').style.display='flex'; }
         function closeMod() { document.getElementById('modalUni').style.display='none'; }
         function showLogs(t) { let l=Object.entries(D[t]||{}).reverse().slice(0,30); openMod("Log", l.map(x=>`<div style="font-size:10px;padding:5px;border-bottom:1px solid #eee"><span>[${x[1].t}] ${x[1].b||x[1].j} (${x[1].q})</span> <b onclick="removeItem('${t}','${x[0]}')" style="color:red; cursor:pointer">×</b></div>`).join('')); }
         function genSlip(n) { const fM=document.getElementById('fUang').value, T=D.tarif||DEF_TARIF; let br=0, bo=0, ka=0, list=""; Object.values(D.aktivitas||{}).forEach(a=>{ if(a.t?.slice(0,7)===fM&&a.p?.includes(n)){ let u=(T[a.j]||0)*a.q/(a.j.includes("pasang")?1:a.p.length); if(a.isCair) { br+=u; list+=`<tr><td>${a.t}</td><td>${a.j}</td><td>${Math.round(u).toLocaleString()}</td></tr>`; } } }); Object.values(D.kasbon_bonus||{}).forEach(kb=>{if(kb.n===n&&kb.t===fM) kb.tipe==="Bonus"?bo+=kb.rp:ka+=kb.rp;}); openMod("Slip", `<div id="p-slip" style="padding:15px; background:white; color:black"><h3>KEMPU BALAP</h3><p>${n} | ${fM}</p><hr><table style="width:100%; font-size:10px">${list}</table><hr><b>Total: Rp ${Math.round((br+bo)-ka).toLocaleString()}</b></div><button class="btn" onclick="expPdf('p-slip','Slip_${n}')">PRINT</button>`); }
