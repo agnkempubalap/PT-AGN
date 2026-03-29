@@ -369,36 +369,17 @@
     const table = document.getElementById(id);
     if (!table) return alert("Tabel tidak ditemukan!");
 
-    // 1. Tambahkan Border & Center ke semua sel HTML secara paksa
-    const cells = table.querySelectorAll('th, td');
-    cells.forEach(cell => {
-        cell.setAttribute('border', '1'); // Paksa atribut border
-        cell.style.border = "1px solid black";
-        cell.style.textAlign = "center";
-        cell.style.verticalAlign = "middle";
-    });
+    // Trik: Tambahkan atribut border langsung ke tabel sebelum di-export
+    table.setAttribute('border', '1');
+    table.setAttribute('cellspacing', '0');
+    table.setAttribute('cellpadding', '5');
 
-    // 2. Warnai Header (Merah) & Teks (Putih) secara inline
-    const headers = table.querySelectorAll('th');
-    headers.forEach(th => {
-        th.style.backgroundColor = "#dc3545";
-        th.style.color = "#ffffff";
-        th.style.fontWeight = "bold";
-    });
-
-    // 3. Proses Export menggunakan library SheetJS (XLSX)
-    // Kita tambahkan sheetStubs agar sel kosong tetap punya border
-    const wb = XLSX.utils.table_to_book(table, { 
-        sheet: "Laporan Stok",
-        raw: false,
-        display: true 
-    });
-
-    // 4. Simpan file
+    // Proses export
+    const wb = XLSX.utils.table_to_book(table, { sheet: "Sheet1" });
     XLSX.writeFile(wb, n + '.xlsx');
-    
-    // 5. Kembalikan tampilan tabel asli (biar di web gak kelihatan kaku)
-    if(typeof autoRender === "function") autoRender();
+
+    // Kembalikan ke tampilan semula di web
+    table.removeAttribute('border');
 }
 
 //----------------------------------------
