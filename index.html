@@ -217,9 +217,7 @@
             <button class="btn" style="background:var(--d)" onclick="expPdf('areaGaji','Rekap_Gaji_Karyawan')">DOWNLOAD PDF GAJI</button>
         </div>
     </div>
-//========================================
-              //FIREBASE
-//========================================
+
     <script>
         const fbConfig = { apiKey: "AIzaSyAu67MAhWBxdmciPi3xOKWhdy-uP4u9tXI", authDomain: "pt-agn.firebaseapp.com", databaseURL: "https://pt-agn-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "pt-agn", appId: "1:810494462386:web:432a3050c054bdd8437cab" };
         firebase.initializeApp(fbConfig); const db = firebase.database();
@@ -227,40 +225,48 @@
 
         //========================================
 //               GLOBAL INIT
-//========================================
+//=======================================
 window.onload = () => {
-    // 1. Set tanggal otomatis hari ini
+    // 1. Set tanggal otomatis ke semua input (Absen, Stok, Kerja, Belanja)
     const t = new Date().toISOString().split('T')[0];
     ['absTgl', 'stTgl', 'akTgl', 'blTgl'].forEach(id => {
         let el = document.getElementById(id);
         if (el) el.value = t;
     });
 
-    // 2. Tarik data dari Firebase (Realtime)
-    db.ref('/').on('value', s => {
-        D = s.val() || {};
+    // 2. Hubungkan ke Firebase (Realtime Update)
+    db.ref('/').on('value', snapshot => {
+        // Simpan data ke variabel global D
+        D = snapshot.val() || {};
+        
+        // Pengaman jika data penting masih kosong di database
+        if (!D.master_karyawan) D.master_karyawan = {};
         if (!D.thresholds) D.thresholds = {};
         
-        // Inisialisasi UI dan Render data pertama kali
+        console.log("Data Berhasil Dimuat. Mengupdate UI...");
+        
+        // PENTING: Jalankan initUI dulu agar Nama Karyawan muncul di dropdown
         initUI();
+        
+        // PENTING: Jalankan autoRender agar Kalender langsung digambar
         autoRender();
     });
 };
 
 function autoRender() {
-    // try-catch ini penting agar jika satu tab error, tab lain nggak ikut mati
+    // Gunakan try-catch agar jika satu tab ada error, tab lain (seperti Kalender) tetap muncul
     try {
         if (typeof renderAll === "function") renderAll(); 
         if (typeof renderStok === "function") renderStok();
         if (typeof renderGaji === "function") renderGaji();
         if (typeof renderCheckKaryawan === "function") renderCheckKaryawan();
     } catch (e) {
-        console.error("Ada fungsi render yang error:", e);
+        console.error("Gagal Render:", e);
     }
 }
 
 function tab(id) {
-    // Fungsi pindah tab
+    // Fungsi pindah halaman tab
     document.querySelectorAll('.tab-content, .nav-btn').forEach(e => e.classList.remove('active'));
     
     const targetTab = document.getElementById('tab-' + id);
@@ -269,7 +275,7 @@ function tab(id) {
     if (targetTab) targetTab.classList.add('active');
     if (targetNav) targetNav.classList.add('active');
     
-    // Setiap pindah tab, refresh data tampilannya
+    // Setiap pindah tab, pastikan data di-refresh ulang
     autoRender();
 }
 
