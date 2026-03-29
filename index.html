@@ -431,23 +431,38 @@ function openLiburMod() {
 
 // 4. RENDER TABEL UTAMA (KALENDER)
 //----------------------------------------
+//----------------------------------------
+// 3. RENDER TAB ABSEN (KALENDER)
+//----------------------------------------
 function renderAll() {
-    const fM = document.getElementById('fM').value;
-    if (!fM || !D.master_karyawan) return;
+    // 1. Cek apakah elemen Filter Bulan ada
+    const fMEl = document.getElementById('fM');
+    if (!fMEl) return;
+    const fM = fMEl.value;
+    if (!fM) return;
+
+    // 2. Pastikan data Master Karyawan sudah ditarik dari Firebase
+    if (!D || !D.master_karyawan) {
+        console.log("Data karyawan belum muat...");
+        return;
+    }
 
     const K_arr = Object.entries(D.master_karyawan); 
     const Y = fM.split('-')[0], M = fM.split('-')[1];
     const lastD = new Date(Y, M, 0).getDate();
 
-    // Header Tanggal
+    // 3. Render Header (Tanggal 1 - Selesai)
     let th = `<tr><th class="sticky-col">NAMA</th>`;
     for (let i = 1; i <= lastD; i++) th += `<th>${i}</th>`;
     th += `<th>H/T</th><th>L</th></tr>`;
-    document.getElementById('thA').innerHTML = th;
+    
+    const thA = document.getElementById('thA');
+    if (thA) thA.innerHTML = th;
 
-    // Isi Baris Karyawan
+    // 4. Render Baris Karyawan
     let tb = "";
     K_arr.forEach(k => {
+        // k[1] adalah Nama, k[0] adalah ID
         let r = `<td class="sticky-col">${k[1]}</td>`, thC = 0, tlC = 0, toC = 0;
         
         for (let i = 1; i <= lastD; i++) {
@@ -462,14 +477,18 @@ function renderAll() {
                 if (a.j === "Hadir") { txt = "H"; thC++; }
                 else if (a.j === "Telat") { txt = "T"; tlC++; }
                 else if (a.j === "Lembur") { txt = "L"; toC++; }
-                else { txt = "I"; }
+                else if (a.j === "Izin" || a.j === "Alpa") { txt = "I"; }
             }
+            // Kirim ID k[0] ke fungsi cellMod
             r += `<td class="${cls}" onclick="cellMod('${d}','${k[0]}')">${txt}</td>`;
         }
         tb += `<tr>${r}<td>${thC}/${tlC}</td><td>${toC}</td></tr>`;
     });
-    document.getElementById('tbA').innerHTML = tb;
+    
+    const tbA = document.getElementById('tbA');
+    if (tbA) tbA.innerHTML = tb;
 }
+
 
 // 5. DETAIL POP-UP (SAAT TANGGAL DIKLIK)
 //----------------------------------------
