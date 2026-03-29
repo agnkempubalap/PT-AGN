@@ -241,44 +241,92 @@ function expEx(id,n) { XLSX.writeFile(XLSX.utils.table_to_book(document.getEleme
 // --- 3. LOGIKA TAB ABSENSI ---
 
 function saveAbs() {
-    const n=document.getElementById('selK').value, t=document.getElementById('absTgl').value, j=document.getElementById('absJenis').value;
-    const jamStr = new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}).replace('.',':');
+    const n = document.getElementById('selK').value,
+          t = document.getElementById('absTgl').value,
+          j = document.getElementById('absJenis').value,
+          ketInput = document.getElementById('absKet').value || "-";
+
+    if (!n || !t) return alert("Pilih Nama & Tanggal!");
+
+    const jamStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':');
     const ref = db.ref(`absensi/${t}/${n}`);
-    
-    if(j==="Pulang") {
-        ref.update({ jamOut: jamStr }).then(()=>alert("Jam Pulang Tercatat!")); 
+
+    // 1. CEK STATUS LAMA (Untuk Proteksi Alpa)
+    // Kita ambil data dari variabel global D yang sudah tersinkron dengan Firebase
+    const dataLama = D.absensi?.[t]?.[n]?.j;
+
+    if (j === "Pulang" && dataLama === "Alpa") {
+        alert("Karyawan status ALPA tidak bisa input Jam Pulang!");
+        return; 
+    }
+
+    // 2. PROSES INPUT BERDASARKAN JENIS
+    if (j === "Pulang") {
+        ref.update({ 
+            jamOut: jamStr,
+            aktivitas: ketInput // Menyimpan catatan aktivitas saat pulang
+        }).then(() => {
+            alert(`Jam Pulang ${n} Tercatat!\nAktivitas: ${ketInput}`);
+            closeMod(); // Menutup pop-up jika ada
+        });
     } else {
-        // Logika Status Otomatis (Hadir/Telat/Lembur)
-        let stat = (j==="Izin"||j==="Alpa") ? j : (new Date(t).getDay()===0||D.libur?.[t]?"Lembur":(new Date()>new Date(t+"T09:30:00")?"Telat":"Hadir"));
-        ref.set({ j: stat, jam: jamStr, ket: document.getElementById('absKet').value||"" }).then(()=>alert("Absen " + stat + " Berhasil!"));
+        // Logika Status Otomatis (Hadir/Telat/Lembur/Izin/Alpa)
+        let stat = (j === "Izin" || j === "Alpa") ? j : 
+                   (new Date(t).getDay() === 0 || D.libur?.[t]) ? "Lembur" : 
+                   (new Date() > new Date(t + "T09:30:00")) ? "Telat" : "Hadir";
+
+        ref.set({ 
+            j: stat, 
+            jam: jamStr, 
+            ket: ketInput 
+        }).then(() => {
+            alert("Absen " + stat + " Berhasil!");
+            closeMod();
+        });
     }
 }
 
+
 function renderAll() {
-    const K_arr = Object.values(D.master_karyawan || {}), fM = document.getElementById('fM').value; if(!fM) return;
-    const Y=fM.split('-')[0], M=fM.split('-')[1], lastD = new Date(Y, M, 0).getDate();
-    
-    let th = `<tr><th class="sticky-col">NAMA</th>`; 
-    for(let i=1; i<=lastD; i++) th += `<th>${i}</th>`; 
-    th += `<th>H</th><th>T</th><th>L</th><th>I</th><th>A</th></tr>`; 
+    const K_arr = Object.values(D.master_karyawan || {}), 
+          fM = document.getElementById('fM').value;
+    if(!fM) return;
+
+    const [Y, M] = fM.split('-'),
+          lastD = new Date(Y, M, 0).getDate();
+
+    // 1. MEMBUAT HEADER TABEL
+    let th = `<tr><th class="sticky-col">NAMA</th>`;
+    for(let i=1; i<=lastD; i++) th += `<th>${i}</th>`;
+    th += `<th>H</th><th>T</th><th>L</th><th>I</th><th>A</th></tr>`;
     document.getElementById('thA').innerHTML = th;
 
-    let tb = ""; 
+    // 2. MEMPROSES DATA TIAP KARYAWAN
+    let tb = "";
     K_arr.forEach(k => {
-        let r = `<td class="sticky-col">${k}</td>`, tH=0, tL=0;
+        let r = `<td class="sticky-col">${k.nama}</td>`, 
+            tH=0, tT=0, tL=0, tI=0, tA=0;
+
         for(let i=1; i<=lastD; i++) {
-            let d = `${Y}-${M}-${String(i).padStart(2,'0')}`, a = D.absensi?.[d]?.[k], isL = D.libur?.[d]||new Date(d).getDay()===0;
-            let txt=isL?"M":"-", cls=isL?"bg-m":"bg-none";
-            if(a) { 
-                txt=a.j[0]; cls="bg-"+a.j[0].toLowerCase(); 
-                if(a.j==="Hadir"||a.j==="Telat") tH++; else if(a.j==="Lembur") tL++; 
-            }
-            r += `<td><div class="badge ${cls}" onclick="cellMod('${d}','${k}')">${txt}${a?.jamOut?'<div class="dot"></div>':''}</div></td>`;
-        }
-        tb += `<tr>${r}<td>${tH}</td><td>${tL}</td></tr>`;
-    }); 
-    document.getElementById('tbA').innerHTML = tb;
-}
+            let d = `${Y}-${M}-${String(i).padStart(2,'0')}`,
+                a = D.absensi?.[d]?.[k.nama],
+                isL = D.libur?.[d];
+
+            if(isL) {
+                r += `<td class="bg-off">L</td>`;
+            } else if(a) {
+                let s = a.j;
+                // Hitung Rekap
+                if(s === "Hadir") tH++;
+                else if(s === "Telat") tT++;
+                else if(s === "Lembur") tL++;
+                else if(s === "Izin") tI++;
+                else if(s === "Alpa") tA++;
+
+                // Tampilkan Badge Singkat (Huruf Depan)
+                let cls = s === "Hadir" ? "bg-h" : s === "Telat" ? "bg-t" : s === "Lembur" ? "bg-l" : s === "Izin" ? "bg-i" : "bg-a";
+                r += `<td><div class="badge ${cls}">${
+
 
 function cellMod(d,k) { 
     let a=D.absensi?.[d]?.[k]; 
