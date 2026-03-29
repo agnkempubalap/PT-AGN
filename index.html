@@ -217,7 +217,9 @@
             <button class="btn" style="background:var(--d)" onclick="expPdf('areaGaji','Rekap_Gaji_Karyawan')">DOWNLOAD PDF GAJI</button>
         </div>
     </div>
-
+//========================================
+              //FIREBASE
+//========================================
     <script>
         const fbConfig = { apiKey: "AIzaSyAu67MAhWBxdmciPi3xOKWhdy-uP4u9tXI", authDomain: "pt-agn.firebaseapp.com", databaseURL: "https://pt-agn-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "pt-agn", appId: "1:810494462386:web:432a3050c054bdd8437cab" };
         firebase.initializeApp(fbConfig); const db = firebase.database();
@@ -227,39 +229,49 @@
 //               GLOBAL INIT
 //========================================
 window.onload = () => {
+    // 1. Set tanggal otomatis hari ini
     const t = new Date().toISOString().split('T')[0];
-    // Isi otomatis tanggal ke semua input yang ada
     ['absTgl', 'stTgl', 'akTgl', 'blTgl'].forEach(id => {
-        const el = document.getElementById(id);
+        let el = document.getElementById(id);
         if (el) el.value = t;
     });
 
-    // Jalankan render pertama kali saat data Firebase masuk
+    // 2. Tarik data dari Firebase (Realtime)
     db.ref('/').on('value', s => {
         D = s.val() || {};
         if (!D.thresholds) D.thresholds = {};
+        
+        // Inisialisasi UI dan Render data pertama kali
         initUI();
         autoRender();
     });
 };
 
 function autoRender() {
-    // Gunakan try-catch agar jika satu fungsi error, yang lain tidak ikut mati
-    try { renderAll(); } catch(e) { console.error("Err renderAll:", e); }
-    try { renderStok(); } catch(e) { console.error("Err renderStok:", e); }
-    try { renderGaji(); } catch(e) { console.error("Err renderGaji:", e); }
-    try { renderCheckKaryawan(); } catch(e) { console.error("Err renderCheck:", e); }
+    // try-catch ini penting agar jika satu tab error, tab lain nggak ikut mati
+    try {
+        if (typeof renderAll === "function") renderAll(); 
+        if (typeof renderStok === "function") renderStok();
+        if (typeof renderGaji === "function") renderGaji();
+        if (typeof renderCheckKaryawan === "function") renderCheckKaryawan();
+    } catch (e) {
+        console.error("Ada fungsi render yang error:", e);
+    }
 }
 
 function tab(id) {
+    // Fungsi pindah tab
     document.querySelectorAll('.tab-content, .nav-btn').forEach(e => e.classList.remove('active'));
+    
     const targetTab = document.getElementById('tab-' + id);
     const targetNav = document.getElementById('nav-' + id);
+    
     if (targetTab) targetTab.classList.add('active');
     if (targetNav) targetNav.classList.add('active');
+    
+    // Setiap pindah tab, refresh data tampilannya
     autoRender();
 }
- { document.querySelectorAll('.tab-content, .nav-btn').forEach(e => e.classList.remove('active')); document.getElementById('tab-'+id).classList.add('active'); document.getElementById('nav-'+id).classList.add('active'); autoRender(); }
 
                       
 //========================================
