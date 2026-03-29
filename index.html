@@ -133,7 +133,8 @@
 </div>
 
             <div class="table-area" id="areaStok">
-    <table style="table-layout: fixed; width: 100%; border-collapse: collapse;">
+    <table border="1" style="table-layout: fixed; border-collapse: collapse; ...">
+
         <thead>
     <tr style="font-size: 8px; text-align: center; line-height: 1.1; background: #f4f4f4;">
         <th class="sticky-col" style="width: 65px; vertical-align: middle;">BRG</th>
@@ -368,44 +369,28 @@
     const table = document.getElementById(id);
     if (!table) return alert("Tabel tidak ditemukan!");
 
-    // 1. Ambil data dari tabel HTML
-    const wb = XLSX.utils.table_to_book(table, { sheet: "Sheet1" });
-    const ws = wb.Sheets["Sheet1"];
+    // 1. Desain tabel buat Excel (Border, Warna Header, Rata Tengah)
+    const style = `
+        <style>
+            table { border-collapse: collapse; }
+            th, td { border: 1px solid black; text-align: center; padding: 5px; }
+            th { background-color: #dc3545; color: white; font-weight: bold; }
+        </style>
+    `;
 
-    // 2. Tentukan jangkauan (range) sel (misal: A1 sampai Z100)
-    const range = XLSX.utils.decode_range(ws['!ref']);
+    // 2. Gabungkan Style dengan isi Tabel
+    const html = style + table.outerHTML;
 
-    // 3. Tambahkan instruksi Border & Aligment ke tiap sel
-    for (let R = range.s.r; R <= range.e.r; ++R) {
-        for (let C = range.s.c; C <= range.e.c; ++C) {
-            const cell_address = { c: C, r: R };
-            const cell_ref = XLSX.utils.encode_cell(cell_address);
-            
-            if (!ws[cell_ref]) continue;
-
-            // Inisialisasi style jika belum ada
-            if (!ws[cell_ref].s) ws[cell_ref].s = {};
-            
-            // Tambahkan Border (Garis)
-            ws[cell_ref].s.border = {
-                top: { style: "thin" }, bottom: { style: "thin" },
-                left: { style: "thin" }, right: { style: "thin" }
-            };
-
-            // Rata Tengah (Alignment)
-            ws[cell_ref].s.alignment = { vertical: "center", horizontal: "center" };
-
-            // Khusus Baris Pertama (Header): Warna Merah & Teks Putih
-            if (R === 0) {
-                ws[cell_ref].s.fill = { fgColor: { rgb: "DC3545" } }; // Merah
-                ws[cell_ref].s.font = { color: { rgb: "FFFFFF" }, bold: true }; // Putih Bold
-            }
-        }
-    }
-
-    // 4. Proses Simpan
-    XLSX.writeFile(wb, n + '.xlsx');
+    // 3. Proses Download agar bisa dibuka WPS
+    const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = n + '.xls'; // Gunakan ekstensi .xls
+    a.click();
+    window.URL.revokeObjectURL(url);
 }
+
 
 //----------------------------------------
 function openMod(t,h) { document.getElementById('modTitle').innerText=t; document.getElementById('modContent').innerHTML=h; document.getElementById('modalUni').style.display='flex'; }
