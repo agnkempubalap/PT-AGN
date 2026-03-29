@@ -504,34 +504,76 @@ function renderStok() {
 //========================================
 //        TAB AKTIVITAS DAN BELANJA
 //========================================
+
+// 1. Inisialisasi Pilihan Karyawan & Barang
 function initUI() {
     const K = Object.entries(D.master_karyawan || {});
     const B = Object.entries(D.master_barang || {});
-    document.getElementById('selK').innerHTML = K.map(k=>`<option value="${k[0]}">${k[1]}</option>`).join('');
-    document.getElementById('stBrg').innerHTML = B.map(b=>`<option value="${b[1]}">${b[1]}</option>`).join('');
+    
+    // Dropdown pilih satu karyawan (untuk Absen)
+    document.getElementById('selK').innerHTML = K.map(k => `<option value="${k[0]}">${k[1]}</option>`).join('');
+    
+    // Dropdown pilih barang (untuk Stok)
+    document.getElementById('stBrg').innerHTML = B.map(b => `<option value="${b[1]}">${b[1]}</option>`).join('');
+    
+    // Render list centang karyawan (untuk Aktivitas)
     renderCheckKaryawan();
 }
 
+// 2. Render List Centang (Hanya yang sudah absen yang bisa dipilih)
 function renderCheckKaryawan() {
     const tgl = document.getElementById('akTgl').value;
     const K = Object.entries(D.master_karyawan || {});
+    
     document.getElementById('akKaryawan').innerHTML = K.map(k => {
         const a = D.absensi?.[tgl]?.[k[0]];
-        const ok = a && ['Hadir','Telat','Lembur'].includes(a.j);
-        return `<label class="check-item" style="${ok?'':'opacity:0.3'}">
-            <input type="checkbox" class="chk-k" value="${k[0]}" ${ok?'':'disabled'}> ${k[1]}
-        </label>`;
+        // Syarat bisa dipilih: Harus sudah absen Hadir, Telat, atau Lembur
+        const ok = a && ['Hadir', 'Telat', 'Lembur'].includes(a.j);
+        
+        return `
+            <label class="check-item" style="${ok ? '' : 'opacity:0.3; background:#eee'}">
+                <input type="checkbox" class="chk-k" value="${k[0]}" ${ok ? '' : 'disabled'}> 
+                <span style="font-weight:${ok ? '700' : '400'}">${k[1]} ${ok ? '' : '(X)'}</span>
+            </label>`;
     }).join('');
 }
 
+// 3. Simpan Aktivitas Kerja (Borongan)
 function saveAk() {
-    const t=document.getElementById('akTgl').value, q=parseInt(document.getElementById('akQty').value)||0, p=Array.from(document.querySelectorAll('.chk-k:checked')).map(c=>c.value), j=document.getElementById('akJenis').value;
-    if(!p.length || q<=0) return alert("Pilih Karyawan & Isi Qty!");
-    db.ref('aktivitas').push({ t, j, q, p, isCair: !j.toLowerCase().includes("jerigen") }).then(()=>{
-        alert("✅ Kerja Tersimpan!");
+    const t = document.getElementById('akTgl').value;
+    const q = parseInt(document.getElementById('akQty').value) || 0;
+    const j = document.getElementById('akJenis').value;
+    // Ambil semua ID karyawan yang dicentang
+    const p = Array.from(document.querySelectorAll('.chk-k:checked')).map(c => c.value);
+    
+    if (!p.length || q <= 0) return alert("Pilih Karyawan & Isi Qty!");
+
+    db.ref('aktivitas').push({ 
+        t, j, q, p, 
+        isCair: !j.toLowerCase().includes("jerigen") // Jerigen biasanya pending/tidak langsung cair
+    }).then(() => {
+        document.getElementById('akQty').value = "";
+        alert("✅ Kerja Borongan Tersimpan!");
+        renderGaji(); // Langsung update tampilan gaji
+    });
+}
+
+// 4. Simpan Belanja / Nota Toko
+function saveBl() {
+    const t = document.getElementById('blTgl').value;
+    const ket = document.getElementById('blKet').value;
+    const rp = parseInt(document.getElementById('blRp').value) || 0;
+    
+    if (rp <= 0) return alert("Isi Nominal Belanja!");
+    
+    db.ref('belanja').push({ t, ket, rp }).then(() => {
+        document.getElementById('blKet').value = "";
+        document.getElementById('blRp').value = "";
+        alert("✅ Nota Belanja Tersimpan!");
         renderGaji();
     });
 }
+
 
 //========================================
 //               TAB GAJI
