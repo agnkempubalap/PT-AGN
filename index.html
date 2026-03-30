@@ -52,12 +52,16 @@
         <div id="tab-absen" class="tab-content active">
             <div class="card">
     <h3>👥 Master Karyawan</h3>
-    <div class="flex-row-align">
-    <input type="text" id="inK" placeholder="Nama..." style="flex: 1;">
-    <button class="btn btn-add" style="background:var(--p);" onclick="addItem('master_karyawan', 'inK')">ADD</button>
-</div>
+    <div style="display: flex; align-items: center; gap: 5px; margin-bottom: 12px;">
+        
+        <input type="text" id="inK" placeholder="Nama..." style="flex: 1; margin: 0;">
+        
+        <button class="btn" style="background:var(--p); width: 60px; min-width: 60px; margin: 0; padding: 10px 0; font-size: 10px;" onclick="addItem('master_karyawan', 'inK')">ADD</button>
+        
+    </div>
     <div id="listK" style="display:flex; flex-wrap:wrap; gap:5px"></div>
 </div>
+
             <div class="card">
                 <h3>📅 Input Absensi <input type="date" id="absTgl" style="width:115px; height:30px"></h3>
                 <div class="flex-row"><select id="selK"></select><select id="absJenis" onchange="toggleIzin()"><option value="Hadir">Masuk</option><option value="Pulang">Pulang</option><option value="Izin">Izin</option><option value="Alpa">Alpa</option></select></div>
@@ -76,14 +80,11 @@
         </div>
 
         <div id="tab-stok" class="tab-content">
-            <div class="card">
-    <h3>📦 Master Barang</h3>
-    <div class="flex-row-align">
-    <input type="text" id="inB" placeholder="Nama Barang..." style="flex: 1;">
-    <button class="btn btn-add" style="background:var(--p);" onclick="addItem('master_barang', 'inB')">ADD</button>
+            <div style="display: flex; align-items: center; gap: 5px; margin-bottom: 12px;">
+    <input type="text" id="inB" placeholder="Nama Barang..." style="flex: 1; margin: 0;">
+    <button class="btn" style="background:var(--p); width: 60px; min-width: 60px; margin: 0; padding: 10px 0; font-size: 10px;" onclick="addItem('master_barang', 'inB')">ADD</button>
 </div>
-    <div id="listB" style="display:flex; flex-wrap:wrap; gap:5px"></div>
-</div>
+
             <div class="card">
                 <h3>📥 Logistik & Penjualan</h3>
                 <div class="flex-row"><input type="date" id="stTgl"><select id="stBrg"></select></div>
