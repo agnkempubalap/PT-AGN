@@ -265,85 +265,81 @@
     const [Y, M] = fM.split('-'), lastD = new Date(Y, M, 0).getDate();
     const K_arr = Object.values(D.master_karyawan || {});
 
-    // HEADER: Balik ke satu baris (Hanya Angka Tanggal)
+    // --- 1. HEADER TABEL (Satu Baris, Bersih) ---
     let th = `<tr><th class="sticky-col">NAMA</th>`;
     for(let i=1; i<=lastD; i++) {
         const isToday = (new Date().getDate() == i && new Date().getMonth() + 1 == M && new Date().getFullYear() == Y);
+        // Highlight hijau muda untuk tanggal hari ini agar tetap tahu hari apa tanpa baris tambahan
         th += `<th ${isToday ? 'id="todayCol" style="background:#dcfce7"' : ''}>${i}</th>`;
     }
-    th += `<th style="color:var(--s)">H</th><th style="color:var(--p)">L</th><th style="color:#f97316">T</th><th style="color:var(--w)">I</th><th style="color:var(--d)">A</th></tr>`;
+    // Header Rekap (H, L, T, I, A)
+    th += `<th style="color:var(--s)">H</th><th style="color:var(--w)">L</th><th style="color:#f97316">T</th><th style="color:var(--w)">I</th><th style="color:var(--d)">A</th></tr>`;
     elTh.innerHTML = th;
 
-    // ISI TABEL
+    // --- 2. ISI TABEL (BADGE & LOGIKA WARNA) ---
     let tb = "";
     K_arr.forEach(k => {
         let r = `<td class="sticky-col">${k}</td>`, tH=0, tL=0, tT=0, tI=0, tA=0;
+        
         for(let i=1; i<=lastD; i++) {
             let d = `${fM}-${String(i).padStart(2,'0')}`, a = D.absensi?.[d]?.[k];
             let isMinggu = new Date(d).getDay() === 0;
             let isLiburToko = D.libur && D.libur[d];
             
             let txt = "-", cls = "bg-none";
+            
+            // Logika Libur Rutin & Toko
             if (isMinggu) { txt = "M"; cls = "bg-m"; } 
             else if (isLiburToko) { txt = "OFF"; cls = "bg-off"; }
 
             if(a) { 
-                txt = a.j[0]; 
-                cls = "bg-" + a.j.toLowerCase()[0];
-                if(a.j==="Hadir") tH++; else if(a.j==="Telat") tT++; else if(a.j==="Izin") tI++; else if(a.j==="Alpa") tA++;
+                txt = a.j[0]; // Ambil inisial (H, T, L, I, A)
+                
+                // LOGIKA WARNA KHUSUS: 
+                // Jika status "Lembur", paksa pakai class biru (bg-w) agar sinkron dengan rekap L
+                if (a.j === "Lembur") {
+                    cls = "bg-w"; 
+                    txt = "L"; 
+                } else {
+                    cls = "bg-" + a.j.toLowerCase()[0];
+                }
+
+                // Hitung Rekap per baris
+                if(a.j==="Hadir") tH++; 
+                else if(a.j==="Telat") tT++; 
+                else if(a.j==="Izin") tI++; 
+                else if(a.j==="Alpa") tA++;
+                
+                // Jika ada nilai lembur (jam), tambahkan ke total L
                 if(a.l) tL += parseFloat(a.l);
             }
             
             let styleOff = (txt === "OFF") ? "font-size:7px;" : "";
             r += `<td><div class="badge ${cls}" style="${styleOff}" onclick="cellMod('${d}','${k}')">${txt}${a?.jamOut?'<div class="dot"></div>':''}</div></td>`;
         }
-        tb += `<tr>${r}<td>${tH}</td><td>${tL}</td><td>${tT}</td><td>${tI}</td><td>${tA}</td></tr>`;
+        
+        // Baris Rekap per Karyawan (Paling Kanan)
+        tb += `<tr>${r}
+            <td style="font-weight:800; color:var(--s)">${tH}</td>
+            <td style="font-weight:800; color:var(--w)">${tL}</td>
+            <td style="font-weight:800; color:#f97316">${tT}</td>
+            <td style="font-weight:800; color:var(--w)">${tI}</td>
+            <td style="font-weight:800; color:var(--d)">${tA}</td>
+        </tr>`;
     });
     elTb.innerHTML = tb;
 
-    // Tetap pakai Auto Scroll supaya praktis
+    // --- 3. AUTO SCROLL KE HARI INI ---
     setTimeout(() => {
-        const todayEl = document.getElementById('todayCol'), area = document.getElementById('areaAbsen');
-        if (todayEl && area) area.scrollTo({ left: todayEl.offsetLeft - area.offsetWidth / 2, behavior: 'smooth' });
-    }, 300);
-}
-
-
-        function cellMod(d, k) {
-    let a = D.absensi?.[d]?.[k],
-        aks = Object.values(D.aktivitas || {}).filter(x => x.t === d && x.p?.includes(k));
-    
-    // LOGIKA WARNA YG DISAMAKAN DENGAN TABEL UTAMA
-    let bgCol = "#94a3b8"; // Default Abu-abu (None)
-    
-    if (a?.j === "Hadir") bgCol = "var(--s)";      // Hijau
-    else if (a?.j === "Telat") bgCol = "var(--p)";  // Kuning/Orange
-    else if (a?.j === "Izin") bgCol = "var(--w)";   // Biru
-    else if (a?.j === "Alpa") bgCol = "var(--d)";   // Merah
-    else if (a?.j === "Lembur") bgCol = "var(--p)"; // Kuning (Sama dengan Telat)
-
-    let ket = a?.ket ? `<div style="margin-top:8px; padding:8px; background:#f1f5f9; border-radius:5px; font-size:11px; color:#475569; font-style:italic;"><b>Ket:</b> ${a.ket}</div>` : "";
-
-    openMod(`Detail ${k} (${d})`, `
-        <div style="font-size:13px">
-            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
-                <b>Status:</b> 
-                <span style="background:${bgCol}; color:white; padding:4px 12px; border-radius:15px; font-size:10px; font-weight:800; text-transform:uppercase; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                    ${a?.j || '-'}
-                </span>
-            </div>
-            <p style="margin-bottom:5px;"><b>Jam:</b> ${a?.jam || '-'} s/d ${a?.jamOut || '-'}</p>
-            ${ket}
-            <hr style="margin:15px 0; border:0; border-top:1px solid #eee;">
-            <p style="font-weight:bold; margin-bottom:8px; color:#64748b;">Pekerjaan:</p>
-            <ul style="padding-left:18px; margin-bottom:15px; color:#334155;">
-                ${aks.map(x => `<li style="margin-bottom:4px">${x.j} (${x.q}) ${x.isCair ? '✅' : '⏳'}</li>`).join('') || '<li>- Belum ada data kerja -</li>'}
-            </ul>
-            <button class="btn" style="background:var(--d); width:100%; margin:0; font-weight:bold; height:45px; display:flex; align-items:center; justify-content:center; gap:8px;" onclick="if(confirm('Hapus absen ${k}?')){removeItem('absensi/${d}','${k}'); closeMod();}">
-                🗑️ HAPUS DATA ABSEN
-            </button>
-        </div>
-    `);
+        const todayEl = document.getElementById('todayCol');
+        const area = document.getElementById('areaAbsen');
+        if (todayEl && area) {
+            area.scrollTo({
+                left: todayEl.offsetLeft - (area.offsetWidth / 2),
+                behavior: 'smooth'
+            });
+        }
+    }, 400);
 }
 
 
