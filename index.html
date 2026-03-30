@@ -52,10 +52,10 @@
         <div id="tab-absen" class="tab-content active">
             <div class="card">
     <h3>👥 Master Karyawan</h3>
-    <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-        <input type="text" id="inK" placeholder="Nama..." style="flex: 1;">
-        <button class="btn" style="background:var(--p); width: 80px; margin: 0;" onclick="addItem('master_karyawan', 'inK')">ADD</button>
-    </div>
+    <div class="flex-row-align">
+    <input type="text" id="inK" placeholder="Nama..." style="flex: 1;">
+    <button class="btn btn-add" style="background:var(--p);" onclick="addItem('master_karyawan', 'inK')">ADD</button>
+</div>
     <div id="listK" style="display:flex; flex-wrap:wrap; gap:5px"></div>
 </div>
             <div class="card">
@@ -78,10 +78,10 @@
         <div id="tab-stok" class="tab-content">
             <div class="card">
     <h3>📦 Master Barang</h3>
-    <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-        <input type="text" id="inB" placeholder="Nama Barang..." style="flex: 1;">
-        <button class="btn" style="background:var(--p); width: 80px; margin: 0;" onclick="addItem('master_barang', 'inB')">ADD</button>
-    </div>
+    <div class="flex-row-align">
+    <input type="text" id="inB" placeholder="Nama Barang..." style="flex: 1;">
+    <button class="btn btn-add" style="background:var(--p);" onclick="addItem('master_barang', 'inB')">ADD</button>
+</div>
     <div id="listB" style="display:flex; flex-wrap:wrap; gap:5px"></div>
 </div>
             <div class="card">
