@@ -250,18 +250,36 @@
     }
 
     // Render Barang
-    if (listB && D.master_barang) {
-        const B = Object.entries(D.master_barang);
-        listB.innerHTML = B.map(b => `<span style="background:#fff; border:1px solid #ddd; padding:6px; border-radius:8px; font-size:11px">${b[1]} <b onclick="removeItem('master_barang','${b[0]}')" style="color:red; cursor:pointer">×</b></span>`).join('');
-        if (stBrg) stBrg.innerHTML = B.map(b => `<option value="${b[1]}">${b[1]}</option>`).join('');
-    }
-}
+        if (listB && D.master_barang) {
+            const B = Object.entries(D.master_barang);
+            listB.innerHTML = B.map(b => 
+            `<span style="background:#fff; border:1px solid #ddd; padding:6px; border-radius:8px; font-size:11px">${b[1]} 
+            <b onclick="removeItem('master_barang','${b[0]}')" style="color:red; cursor:pointer">×</b></span>`).join('');
+            
+            if (stBrg) {
+                stBrg.innerHTML = B.map(b => `<option value="${b[1]}">${b[1]}</option>`).join('');
+                
+                // TAMBAHKAN BARIS INI:
+                cekJenisBarang();
+            }
+        }
 
 
         function openMod(t,h) { document.getElementById('modTitle').innerText=t; document.getElementById('modContent').innerHTML=h; document.getElementById('modalUni').style.display='flex'; }
         function closeMod() { document.getElementById('modalUni').style.display='none'; }
         function addItem(p,id) { const v=document.getElementById(id).value; if(v) db.ref(p).push(v).then(()=>document.getElementById(id).value=""); }
-        function removeItem(p,k) { if(confirm("Hapus?")) db.ref(`${p}/${k}`).remove().then(()=>closeMod()); }
+        function removeItem(p, k) {
+    if (confirm("Hapus?")) {
+        db.ref(`${p}/${k}`).remove().then(() => {
+            closeMod();
+            // TAMBAHKAN INI: Jika yang dihapus adalah barang, cek ulang tampilan UI
+            if (p.includes('barang')) {
+                cekJenisBarang();
+            }
+        });
+    }
+}
+
         function expEx(id,n) { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById(id)), n+'.xlsx'); }
         function expPdf(id,n) { html2pdf().set({margin:5, filename:n+'.pdf', jsPDF:{orientation:'landscape'}}).from(document.getElementById(id)).save(); }
         function showLogs(t) { let l=Object.entries(D[t]||{}).reverse().slice(0,30); openMod("Log", l.map(x=>`<div style="font-size:10px;padding:5px;border-bottom:1px solid #eee"><span>[${x[1].t}] ${x[1].b||x[1].j} (${x[1].q})</span> <b onclick="removeItem('${t}','${x[0]}')" style="color:red; cursor:pointer">×</b></div>`).join('')); }
