@@ -263,28 +263,31 @@ function tab(id) {
         }
 
         function renderAll() {
-    // 1. Ambil Data Karyawan & Bulan yang dipilih
-    const K_arr = Object.values(D.master_karyawan || {});
-    const fM = document.getElementById('fM').value;
+    // 1. Ambil elemen tabel
+    const elTh = document.getElementById('thA');
+    const elTb = document.getElementById('tbA');
+    const elFM = document.getElementById('fM');
+    
+    // Cek apakah elemen HTML dan Data Firebase (D) sudah siap
+    if (!elTh || !elTb || !elFM || !D) return;
+
+    const fM = elFM.value;
     if (!fM) return;
+
+    // 2. Ambil Daftar Karyawan
+    const K_arr = Object.values(D.master_karyawan || {});
+    if (K_arr.length === 0) return;
 
     const Y = fM.split('-')[0], M = fM.split('-')[1];
     const lastD = new Date(Y, M, 0).getDate();
 
-    // 2. Buat Header Tabel (H T L I A)
+    // 3. Buat Header (H T L I A)
     let th = `<tr><th class="sticky-col">NAMA</th>`;
     for (let i = 1; i <= lastD; i++) th += `<th>${i}</th>`;
-    
-    // Menambahkan kolom T (Telat) di antara H dan L
-    th += `<th style="color:var(--s)">H</th>
-           <th style="color:#f97316">T</th> 
-           <th style="color:var(--p)">L</th>
-           <th style="color:var(--w)">I</th>
-           <th style="color:var(--d)">A</th></tr>`;
-    
-    document.getElementById('thA').innerHTML = th;
+    th += `<th style="color:var(--s)">H</th><th style="color:#f97316">T</th><th style="color:var(--p)">L</th><th style="color:var(--w)">I</th><th style="color:var(--d)">A</th></tr>`;
+    elTh.innerHTML = th;
 
-    // 3. Buat Isi Tabel
+    // 4. Buat Isi Tabel
     let tb = "";
     K_arr.forEach(k => {
         let r = `<td class="sticky-col">${k}</td>`;
@@ -292,39 +295,25 @@ function tab(id) {
 
         for (let i = 1; i <= lastD; i++) {
             const tgl = `${fM}-${String(i).padStart(2, '0')}`;
+            // Pastikan jalur data absensi benar
             const data = (D.absensi && D.absensi[tgl] && D.absensi[tgl][k]) ? D.absensi[tgl][k] : null;
             
-            const s = data ? data.s : ''; // Status
-            const l = data ? parseFloat(data.l || 0) : 0; // Jam Lembur
+            const s = data ? data.s : ''; 
+            const l = data ? parseFloat(data.l || 0) : 0;
 
-            // LOGIKA HITUNG BARU:
             if (s === 'Hadir') tH++;
-            else if (s === 'Telat') tT++; // Menghitung Telat
+            else if (s === 'Telat') tT++;
             else if (s === 'Izin') tI++;
             else if (s === 'Alpa') tA++;
-            
-            tL += l; // Akumulasi Lembur
+            tL += l;
 
-            // Warna Sel agar mudah dibedakan
             let bg = "";
             let code = "";
             if (s === 'Hadir') { bg = "#e8f5e9"; code = "H"; }
-            else if (s === 'Telat') { bg = "#fff3e0"; code = "T"; } // Warna oranye muda untuk telat
+            else if (s === 'Telat') { bg = "#fff3e0"; code = "T"; }
             else if (s === 'Izin') { bg = "#fff9c4"; code = "I"; }
             else if (s === 'Alpa') { bg = "#ffeade"; code = "A"; }
-            
-            r += `<td style="background:${bg}; font-size:10px; text-align:center">${code}</td>`;
-        }
 
-        // Tampilkan semua total di akhir baris
-        r += `<td style="font-weight:bold; color:var(--s)">${tH}</td>
-              <td style="font-weight:bold; color:#f97316">${tT}</td>
-              <td style="font-weight:bold; color:var(--p)">${tL}</td>
-              <td style="font-weight:bold; color:var(--w)">${tI}</td>
-              <td style="font-weight:bold; color:var(--d)">${tA}</td>`;
-        
-        tb += `<tr>${r}</tr>`;
-    });
 
     document.getElementById('tbA').innerHTML = tb;
 }
