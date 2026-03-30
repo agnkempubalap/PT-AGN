@@ -263,43 +263,69 @@ function tab(id) {
         }
 
         function renderAll() {
-    const K_arr = Object.values(D.master_karyawan || {}), fM = document.getElementById('fM').value; 
-    if(!fM) return;
+    // 1. Ambil Data Karyawan & Bulan yang dipilih
+    const K_arr = Object.values(D.master_karyawan || {});
+    const fM = document.getElementById('fM').value;
+    if (!fM) return;
+
+    const Y = fM.split('-')[0], M = fM.split('-')[1];
+    const lastD = new Date(Y, M, 0).getDate();
+
+    // 2. Buat Header Tabel (H T L I A)
+    let th = `<tr><th class="sticky-col">NAMA</th>`;
+    for (let i = 1; i <= lastD; i++) th += `<th>${i}</th>`;
     
-    const Y = fM.split('-')[0], M = fM.split('-')[1], lastD = new Date(Y, M, 0).getDate();
+    // Menambahkan kolom T (Telat) di antara H dan L
+    th += `<th style="color:var(--s)">H</th>
+           <th style="color:#f97316">T</th> 
+           <th style="color:var(--p)">L</th>
+           <th style="color:var(--w)">I</th>
+           <th style="color:var(--d)">A</th></tr>`;
     
-    // Header Tabel: Tambah kolom H, L, I, A secara terpisah
-    let th = `<tr><th class="sticky-col">NAMA</th>`; 
-    for(let i=1; i<=lastD; i++) th += `<th>${i}</th>`; 
-    th += `<th style="color:var(--s)">H</th><th style="color:var(--p)">L</th><th style="color:var(--w)">I</th><th style="color:var(--d)">A</th></tr>`; 
     document.getElementById('thA').innerHTML = th;
 
-    let tb = ""; 
+    // 3. Buat Isi Tabel
+    let tb = "";
     K_arr.forEach(k => {
         let r = `<td class="sticky-col">${k}</td>`;
-        let tH=0, tL=0, tI=0, tA=0; // Counter masing-masing status
+        let tH = 0, tT = 0, tL = 0, tI = 0, tA = 0;
 
-        for(let i=1; i<=lastD; i++) {
-            let d = `${Y}-${M}-${String(i).padStart(2,'0')}`, a = D.absensi?.[d]?.[k];
-            let isL = D.libur?.[d] || new Date(d).getDay()===0;
-            let txt = isL ? "M" : "-"; 
-            let cls = isL ? "bg-m" : "bg-none";
+        for (let i = 1; i <= lastD; i++) {
+            const tgl = `${fM}-${String(i).padStart(2, '0')}`;
+            const data = (D.absensi && D.absensi[tgl] && D.absensi[tgl][k]) ? D.absensi[tgl][k] : null;
+            
+            const s = data ? data.s : ''; // Status
+            const l = data ? parseFloat(data.l || 0) : 0; // Jam Lembur
 
-            if(a) { 
-                txt = a.j[0]; 
-                cls = "bg-" + a.j[0].toLowerCase(); 
-                
-                // Logika Hitung Terpisah
-                if(a.j === "Hadir" || a.j === "Telat") tH++; 
-                else if(a.j === "Lembur") tL++; 
-                else if(a.j === "Izin") tI++; 
-                else if(a.j === "Alpa") tA++; 
-            }
-            r += `<td><div class="badge ${cls}" onclick="cellMod('${d}','${k}')">${txt}${a?.jamOut?'<div class="dot"></div>':''}</div></td>`;
+            // LOGIKA HITUNG BARU:
+            if (s === 'Hadir') tH++;
+            else if (s === 'Telat') tT++; // Menghitung Telat
+            else if (s === 'Izin') tI++;
+            else if (s === 'Alpa') tA++;
+            
+            tL += l; // Akumulasi Lembur
+
+            // Warna Sel agar mudah dibedakan
+            let bg = "";
+            let code = "";
+            if (s === 'Hadir') { bg = "#e8f5e9"; code = "H"; }
+            else if (s === 'Telat') { bg = "#fff3e0"; code = "T"; } // Warna oranye muda untuk telat
+            else if (s === 'Izin') { bg = "#fff9c4"; code = "I"; }
+            else if (s === 'Alpa') { bg = "#ffeade"; code = "A"; }
+            
+            r += `<td style="background:${bg}; font-size:10px; text-align:center">${code}</td>`;
         }
-        // Masukkan ke kolom rekap masing-masing
-        tb += `<tr>${r}<td style="font-weight:bold">${tH}</td><td style="font-weight:bold">${tL}</td><td style="font-weight:bold">${tI}</td><td style="font-weight:bold">${tA}</td></tr>`;
-    }); 
+
+        // Tampilkan semua total di akhir baris
+        r += `<td style="font-weight:bold; color:var(--s)">${tH}</td>
+              <td style="font-weight:bold; color:#f97316">${tT}</td>
+              <td style="font-weight:bold; color:var(--p)">${tL}</td>
+              <td style="font-weight:bold; color:var(--w)">${tI}</td>
+              <td style="font-weight:bold; color:var(--d)">${tA}</td>`;
+        
+        tb += `<tr>${r}</tr>`;
+    });
+
     document.getElementById('tbA').innerHTML = tb;
 }
 
