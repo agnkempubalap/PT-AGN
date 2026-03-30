@@ -199,12 +199,28 @@
         function tab(id) { document.querySelectorAll('.tab-content, .nav-btn').forEach(e => e.classList.remove('active')); document.getElementById('tab-'+id).classList.add('active'); document.getElementById('nav-'+id).classList.add('active'); autoRender(); }
         
         function initUI() {
-            const K = Object.entries(D.master_karyawan || {}), B = Object.entries(D.master_barang || {});
-            document.getElementById('listK').innerHTML = K.map(k=>`<span style="background:#fff; border:1px solid #ddd; padding:4px; border-radius:5px; font-size:9px">${k[1]} <b onclick="removeItem('master_karyawan','${k[0]}')" style="color:red;cursor:pointer">×</b></span>`).join('');
-            document.getElementById('listB').innerHTML = B.map(b=>`<span style="background:#fff; border:1px solid #ddd; padding:4px; border-radius:5px; font-size:9px">${b[1]} <b onclick="removeItem('master_barang','${b[0]}')" style="color:red;cursor:pointer">×</b></span>`).join('');
-            document.getElementById('selK').innerHTML = K.map(k=>`<option value="${k[1]}">${k[1]}</option>`).join('');
-            document.getElementById('stBrg').innerHTML = B.map(b=>`<option value="${b[1]}">${b[1]}</option>`).join('');
-        }
+    // Ambil data karyawan dan barang dari Firebase
+    const K = Object.entries(D.master_karyawan || {});
+    const B = Object.entries(D.master_barang || {});
+
+    // 1. Tampilkan List Karyawan (yang ada tombol hapusnya)
+    document.getElementById('listK').innerHTML = K.map(k=>`<span style="background:#fff; border:1px solid #ddd; padding:4px; border-radius:5px; font-size:9px">${k[1]} <b onclick="removeItem('master_karyawan','${k[0]}')" style="color:red;cursor:pointer">×</b></span>`).join('');
+    
+    // 2. ISI DROPDOWN NAMA (Ini yang sempat hilang)
+    const selK = document.getElementById('selK');
+    if (selK) {
+        selK.innerHTML = K.map(k => `<option value="${k[1]}">${k[1]}</option>`).join('');
+    }
+
+    // 3. Tampilkan List Barang & Dropdown Barang
+    document.getElementById('listB').innerHTML = B.map(b=>`<span style="background:#fff; border:1px solid #ddd; padding:4px; border-radius:5px; font-size:9px">${b[1]} <b onclick="removeItem('master_barang','${b[0]}')" style="color:red;cursor:pointer">×</b></span>`).join('');
+    
+    const stBrg = document.getElementById('stBrg');
+    if (stBrg) {
+        stBrg.innerHTML = B.map(b => `<option value="${b[1]}">${b[1]}</option>`).join('');
+    }
+}
+
 
         function openMod(t,h) { document.getElementById('modTitle').innerText=t; document.getElementById('modContent').innerHTML=h; document.getElementById('modalUni').style.display='flex'; }
         function closeMod() { document.getElementById('modalUni').style.display='none'; }
