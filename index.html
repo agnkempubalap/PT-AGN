@@ -504,35 +504,56 @@ document.getElementById('fMStok').value = blnSkrg;
 // Tambahkan ini supaya tabel stok langsung muncul otomatis
 renderStok();
 
-function cekJenisBarang() {
-    const stBrg = document.getElementById('stBrg');
-    if (!stBrg) return; // Keamanan jika elemen belum ada
-
-    const brg = stBrg.value.toLowerCase();
-    const isCair = brg.includes('cair') || brg.includes('minyak');
+function renderMaster(key, idList) {
+    const data = Object.keys(D[key] || {});
+    const list = document.getElementById(idList);
     
+    // Render tombol-tombol hapus di Master
+    list.innerHTML = data.map(v => `
+        <div class="chip">
+            ${v} <span onclick="delItem('${key}', '${v}')">×</span>
+        </div>`).join('');
+
+    // Khusus untuk Master Barang, update juga dropdown di form stok
+    if (key === 'master_barang') {
+        const sel = document.getElementById('stBrg');
+        if (sel) {
+            sel.innerHTML = data.map(v => `<option value="${v}">${v}</option>`).join('');
+            // PENTING: Panggil pengecekan agar UI langsung sinkron setelah hapus/tambah
+            cekJenisBarang();
+        }
+    }
+}
+
+function cekJenisBarang() {
+    const sel = document.getElementById('stBrg');
+    if (!sel) return;
+
+    // Ambil nilai yang sedang terpilih di dropdown
+    const val = sel.value ? sel.value.toLowerCase() : "";
+    const isCair = val.includes('cair') || val.includes('minyak');
+
+    // Elemen-elemen yang akan dimanipulasi
     const rowQC = document.getElementById('rowQC');
     const stSatuan = document.getElementById('stSatuan');
     const optRekon = document.getElementById('optRekon');
     const stAksi = document.getElementById('stAksi');
 
     if (isCair) {
-        rowQC.style.display = 'none';
-        stSatuan.style.display = 'block';
-        optRekon.style.display = 'none';
-        if (stAksi.value === 'Rekondisi') stAksi.value = 'Masuk';
+        // MODE CAIRAN/MINYAK
+        if (rowQC) rowQC.style.display = 'none';
+        if (stSatuan) stSatuan.style.display = 'block';
+        if (optRekon) optRekon.style.display = 'none';
+        
+        // Jika sedang pilih 'Rekon', pindahkan ke 'Masuk' karena rekon tidak ada di cairan
+        if (stAksi && stAksi.value === 'Rekondisi') stAksi.value = 'Masuk';
     } else {
-        // RESET SEMUA KE POSISI NORMAL
-        rowQC.style.display = 'flex';
-        stSatuan.style.display = 'none';
-        optRekon.style.display = 'block';
-        // Pastikan nilai satuan dikosongkan agar tidak ikut tersimpan secara gaib
-        stSatuan.value = 'Liter'; 
+        // MODE DEFAULT (Kempu, IBC, dll)
+        if (rowQC) rowQC.style.display = 'flex';
+        if (stSatuan) stSatuan.style.display = 'none';
+        if (optRekon) optRekon.style.display = 'block';
     }
 }
-
-
-
 
         // ==========================================
         // 5. TAB AKTIVITAS LOGIC (CHAIN LOGIC)
