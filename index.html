@@ -51,9 +51,13 @@
     <div class="container">
         <div id="tab-absen" class="tab-content active">
             <div class="card">
-                <h3>👥 Master Karyawan <input type="text" id="inK" placeholder="Nama..." style="width:100px; height:30px"> <button class="btn" style="background:var(--p); width:50px; margin:0" onclick="addItem('master_karyawan', 'inK')">ADD</button></h3>
-                <div id="listK" style="display:flex; flex-wrap:wrap; gap:5px"></div>
-            </div>
+    <h3>👥 Master Karyawan</h3>
+    <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+        <input type="text" id="inK" placeholder="Nama..." style="flex: 1;">
+        <button class="btn" style="background:var(--p); width: 80px; margin: 0;" onclick="addItem('master_karyawan', 'inK')">ADD</button>
+    </div>
+    <div id="listK" style="display:flex; flex-wrap:wrap; gap:5px"></div>
+</div>
             <div class="card">
                 <h3>📅 Input Absensi <input type="date" id="absTgl" style="width:115px; height:30px"></h3>
                 <div class="flex-row"><select id="selK"></select><select id="absJenis" onchange="toggleIzin()"><option value="Hadir">Masuk</option><option value="Pulang">Pulang</option><option value="Izin">Izin</option><option value="Alpa">Alpa</option></select></div>
@@ -73,10 +77,13 @@
 
         <div id="tab-stok" class="tab-content">
             <div class="card">
-                <h3>📦 Master Barang</h3>
-                <div class="flex-row"><input type="text" id="inB" placeholder="Barang..."><button class="btn" style="background:var(--p); width:80px" onclick="addItem('master_barang', 'inB')">ADD</button></div>
-                <div id="listB" style="display:flex; flex-wrap:wrap; gap:5px"></div>
-            </div>
+    <h3>📦 Master Barang</h3>
+    <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+        <input type="text" id="inB" placeholder="Nama Barang..." style="flex: 1;">
+        <button class="btn" style="background:var(--p); width: 80px; margin: 0;" onclick="addItem('master_barang', 'inB')">ADD</button>
+    </div>
+    <div id="listB" style="display:flex; flex-wrap:wrap; gap:5px"></div>
+</div>
             <div class="card">
                 <h3>📥 Logistik & Penjualan</h3>
                 <div class="flex-row"><input type="date" id="stTgl"><select id="stBrg"></select></div>
