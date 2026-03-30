@@ -263,60 +263,50 @@ function tab(id) {
         }
 
         function renderAll() {
-    // 1. Ambil elemen tabel
-    const elTh = document.getElementById('thA');
-    const elTb = document.getElementById('tbA');
-    const elFM = document.getElementById('fM');
-    
-    // Cek apakah elemen HTML dan Data Firebase (D) sudah siap
-    if (!elTh || !elTb || !elFM || !D) return;
+    // 1. Ambil data dari Firebase (D) dan input bulan (fM)
+    const container = document.getElementById('tbA');
+    const header = document.getElementById('thA');
+    const inputBulan = document.getElementById('fM');
 
-    const fM = elFM.value;
+    // Cek apakah data dan elemen ada, kalau tidak ada kita "diam" (biar gak crash)
+    if (!D || !container || !header || !inputBulan) return;
+
+    const fM = inputBulan.value;
     if (!fM) return;
 
-    // 2. Ambil Daftar Karyawan
-    const K_arr = Object.values(D.master_karyawan || {});
+    // 2. Ambil daftar nama karyawan
+    const K_arr = D.master_karyawan ? Object.values(D.master_karyawan) : [];
     if (K_arr.length === 0) return;
 
+    // 3. Hitung jumlah hari dalam bulan itu
     const Y = fM.split('-')[0], M = fM.split('-')[1];
     const lastD = new Date(Y, M, 0).getDate();
 
-    // 3. Buat Header (H T L I A)
+    // 4. Gambar Kepala Tabel (H T L I A)
     let th = `<tr><th class="sticky-col">NAMA</th>`;
     for (let i = 1; i <= lastD; i++) th += `<th>${i}</th>`;
-    th += `<th style="color:var(--s)">H</th><th style="color:#f97316">T</th><th style="color:var(--p)">L</th><th style="color:var(--w)">I</th><th style="color:var(--d)">A</th></tr>`;
-    elTh.innerHTML = th;
+    th += `<th>H</th><th>T</th><th>L</th><th>I</th><th>A</th></tr>`;
+    header.innerHTML = th;
 
-    // 4. Buat Isi Tabel
+    // 5. Gambar Isi Tabel
     let tb = "";
     K_arr.forEach(k => {
-        let r = `<td class="sticky-col">${k}</td>`;
-        let tH = 0, tT = 0, tL = 0, tI = 0, tA = 0;
+        // Jika k adalah objek, ambil k.nama. Jika k adalah string, pakai k langsung.
+        let nama = (typeof k === 'object') ? (k.nama || k[1]) : k;
+        let r = `<td class="sticky-col">${nama}</td>`;
+        let tH=0, tT=0, tL=0, tI=0, tA=0;
 
         for (let i = 1; i <= lastD; i++) {
             const tgl = `${fM}-${String(i).padStart(2, '0')}`;
-            // Pastikan jalur data absensi benar
-            const data = (D.absensi && D.absensi[tgl] && D.absensi[tgl][k]) ? D.absensi[tgl][k] : null;
+            const absen = (D.absensi && D.absensi[tgl] && D.absensi[tgl][nama]) ? D.absensi[tgl][nama] : null;
             
-            const s = data ? data.s : ''; 
-            const l = data ? parseFloat(data.l || 0) : 0;
+            const s = absen ? absen.s : ''; // Status
+            const l = absen ? parseFloat(absen.l || 0) : 0; // Lembur
 
-            if (s === 'Hadir') tH++;
-            else if (s === 'Telat') tT++;
-            else if (s === 'Izin') tI++;
-            else if (s === 'Alpa') tA++;
-            tL += l;
-
+            let char = "";
             let bg = "";
-            let code = "";
-            if (s === 'Hadir') { bg = "#e8f5e9"; code = "H"; }
-            else if (s === 'Telat') { bg = "#fff3e0"; code = "T"; }
-            else if (s === 'Izin') { bg = "#fff9c4"; code = "I"; }
-            else if (s === 'Alpa') { bg = "#ffeade"; code = "A"; }
+            if (s === 'Hadir') { tH++; char = "H"; bg = "#e8f5e9"; }
 
-
-    document.getElementById('tbA').innerHTML = tb;
-}
 
         function cellMod(d,k) { let a=D.absensi?.[d]?.[k], aks=Object.values(D.aktivitas||{}).filter(x=>x.t===d&&x.p?.includes(k)); openMod(`Detail ${k} (${d})`, `<p>Status: ${a?.j||'-'}</p><p>Jam: ${a?.jam||'-'} s/d ${a?.jamOut||'-'}</p><hr><ul>${aks.map(x=>`<li>${x.j} (${x.q}) ${x.isCair?'✅':'⏳'}</li>`).join('')||'Kerja: -'}</ul><br><button class='btn' onclick="removeItem('absensi/${d}','${k}')">HAPUS ABSEN</button>`); }
         function openLiburMod() { let l=Object.entries(D.libur||{}).sort((a,b)=>b[0].localeCompare(a[0])); openMod("Libur Toko", `Mulai: <input type="date" id="lS"> s/d <input type="date" id="lE"><button class="btn" onclick="saveL()">SET</button><hr>${l.map(x=>`<div>${x[0]} <b onclick="removeItem('libur','${x[0]}')" style="color:red; cursor:pointer">×</b></div>`).join('')}`); }
