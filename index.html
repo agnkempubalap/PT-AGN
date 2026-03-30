@@ -228,74 +228,52 @@
         }
 
         function renderAll() {
-    // 1. Ambil elemen dan data awal
     const elTb = document.getElementById('tbA'), elTh = document.getElementById('thA'), elFM = document.getElementById('fM');
     if (!D || !elTb || !elTh || !elFM) return;
     
     const fM = elFM.value; 
-    if (!fM) return;
-
     const [Y, M] = fM.split('-'), lastD = new Date(Y, M, 0).getDate();
     const K_arr = Object.values(D.master_karyawan || {});
 
-    // 2. Buat Header Tabel (Tanggal + 5 Kolom Rekap: H, L, T, I, A)
     let th = `<tr><th class="sticky-col">NAMA</th>`;
-    for(let i=1; i<=lastD; i++) th += `<th>${i}</th>`;
+    for(let i=1; i<=lastD; i++) {
+        // Beri ID khusus pada header tanggal hari ini
+        const isToday = (new Date().getDate() == i && new Date().getMonth() + 1 == M && new Date().getFullYear() == Y);
+        th += `<th ${isToday ? 'id="todayCol"' : ''}>${i}</th>`;
+    }
     
-    // Rekap tanpa kolom Pulang (.)
-    th += `<th style="color:var(--s)">H</th>
-           <th style="color:var(--p)">L</th>
-           <th style="color:#f97316">T</th>
-           <th style="color:var(--w)">I</th>
-           <th style="color:var(--d)">A</th></tr>`;
+    th += `<th style="color:var(--s)">H</th><th style="color:var(--p)">L</th><th style="color:#f97316">T</th><th style="color:var(--w)">I</th><th style="color:var(--d)">A</th></tr>`;
     elTh.innerHTML = th;
 
-    // 3. Buat Isi Tabel
     let tb = "";
     K_arr.forEach(k => {
-        let r = `<td class="sticky-col">${k}</td>`;
-        let tH=0, tL=0, tT=0, tI=0, tA=0;
-
+        let r = `<td class="sticky-col">${k}</td>`, tH=0, tL=0, tT=0, tI=0, tA=0;
         for(let i=1; i<=lastD; i++) {
-            let d = `${fM}-${String(i).padStart(2,'0')}`, 
-                a = D.absensi?.[d]?.[k], 
-                isL = D.libur?.[d] || new Date(d).getDay() === 0;
-            
-            let txt = isL ? "M" : "-", 
-                cls = isL ? "bg-m" : "bg-none";
-            
+            let d = `${fM}-${String(i).padStart(2,'0')}`, a = D.absensi?.[d]?.[k], isL = D.libur?.[d]||new Date(d).getDay()===0;
+            let txt=isL?"M":"-", cls=isL?"bg-m":"bg-none";
             if(a) { 
-                txt = a.j[0]; 
-                cls = "bg-" + a.j.toLowerCase()[0];
-                
-                // Hitung Rekap
-                if(a.j === "Hadir") tH++; 
-                else if(a.j === "Telat") tT++; 
-                else if(a.j === "Izin") tI++; 
-                else if(a.j === "Alpa") tA++;
-                
-                // Hitung Lembur (L)
-                if(a.j === "Lembur") tL++; 
-                else if(a.l) tL += parseFloat(a.l);
+                txt=a.j[0]; cls="bg-"+a.j.toLowerCase()[0];
+                if(a.j==="Hadir") tH++; else if(a.j==="Telat") tT++; else if(a.j==="Izin") tI++; else if(a.j==="Alpa") tA++;
+                if(a.l) tL += parseFloat(a.l);
             }
-            
-            // Render Kotak di Kalender (Titik putih tetap muncul jika ada jamOut)
             r += `<td><div class="badge ${cls}" onclick="cellMod('${d}','${k}')">${txt}${a?.jamOut?'<div class="dot"></div>':''}</div></td>`;
         }
-        
-        // Tampilkan 5 kolom rekap di ujung kanan
-        tb += `<tr>${r}
-            <td style="font-weight:800; color:var(--s)">${tH}</td>
-            <td style="font-weight:800; color:var(--p)">${tL}</td>
-            <td style="font-weight:800; color:#f97316">${tT}</td>
-            <td style="font-weight:800; color:var(--w)">${tI}</td>
-            <td style="font-weight:800; color:var(--d)">${tA}</td>
-        </tr>`;
+        tb += `<tr>${r}<td>${tH}</td><td>${tL}</td><td>${tT}</td><td>${tI}</td><td>${tA}</td></tr>`;
     });
-
     elTb.innerHTML = tb;
-}
 
+    // --- BAGIAN OTOMATIS GESER KE HARI INI ---
+    setTimeout(() => {
+        const todayEl = document.getElementById('todayCol');
+        const area = document.getElementById('areaAbsen');
+        if (todayEl && area) {
+            area.scrollTo({
+                left: todayEl.offsetLeft - area.offsetWidth / 2,
+                behavior: 'smooth'
+            });
+        }
+    }, 300); 
+}
 
 
         function cellMod(d,k) { let a=D.absensi?.[d]?.[k], aks=Object.values(D.aktivitas||{}).filter(x=>x.t===d&&x.p?.includes(k)); openMod(`Detail ${k} (${d})`, `<p>Status: ${a?.j||'-'}</p><p>Jam: ${a?.jam||'-'} s/d ${a?.jamOut||'-'}</p><hr><ul>${aks.map(x=>`<li>${x.j} (${x.q}) ${x.isCair?'✅':'⏳'}</li>`).join('')||'Kerja: -'}</ul><br><button class='btn' onclick="removeItem('absensi/${d}','${k}')">HAPUS ABSEN</button>`); }
