@@ -93,29 +93,43 @@
 
 
             <div class="card">
-                <h3>📥 Logistik & Penjualan</h3>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:8px;">
-    <h3 style="margin:0; font-size:15px;">📦 Logistik & Penjualan</h3>
-    
-    <input type="date" id="stTgl" class="in" style="width:135px; margin:0; padding:4px; height:32px; font-size:12px; border:1px solid #ddd; border-radius:5px;">
-</div>
+                <div class="card" style="border-top: 5px solid var(--p);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; padding-bottom:8px; border-bottom:1px solid #eee;">
+        <h3 style="margin:0; font-size:14px; display:flex; align-items:center; gap:5px;">
+            📦 Logistik & Penjualan
+        </h3>
+        <input type="date" id="stTgl" class="in" style="width:130px; margin:0; padding:4px; height:32px; font-size:12px; border:1px solid #ddd; border-radius:5px;">
+    </div>
 
-  
-    <input type="month" id="fM_Stok" class="in" style="width:135px; margin:0; padding:5px;" onchange="renderStok()">
-</div>
+    <div class="flex-row">
+        <select id="stBrg" class="in"></select>
+    </div>
 
-                <div class="flex-row"><input type="number" id="stQty" placeholder="Jumlah"><select id="stKon"><option value="Bekas">Kotor</option><option value="Baru">Rdy</option></select></div>
-                <div class="flex-row">
-                    <select id="stQC"><option value="Accepted">Accepted</option><option value="Reject">Reject</option></select>
-                    <select id="stAksi">
-                        <option value="Masuk">Masuk</option>
-                        <option value="Rekondisi">Rekon</option>
-                        <option value="Jual Mitra">Jual Mitra</option>
-                        <option value="Jual Umum">Jual Umum</option>
-                    </select>
-                </div>
-                <button class="btn" style="background:var(--p)" onclick="saveSt()">PROSES STOK & CAIRKAN UPAH</button>
-            </div>
+    <div class="flex-row">
+        <input type="number" id="stQty" class="in" placeholder="Jumlah">
+        <select id="stKon" class="in">
+             <option value="Bekas">Kotor</option>
+             <option value="Baru">Rdy</option>
+        </select>
+    </div>
+
+    <div class="flex-row">
+        <select id="stQC" class="in">
+             <option value="Accepted">Accepted</option>
+             <option value="Reject">Reject</option>
+        </select>
+        <select id="stAksi" class="in">
+             <option value="Masuk">Masuk</option>
+             <option value="Rekondisi">Rekon</option>
+             <option value="Jual Mitra">Jual Mitra</option>
+             <option value="Jual Umum">Jual Umum</option>
+        </select>
+    </div>
+
+    <button class="btn" style="background:var(--p); width:100%; color:white; font-weight:bold; margin-top:10px;" onclick="saveSt()">
+        PROSES STOK
+    </button>
+</div>
             <div class="table-area" id="areaStok"><table><thead><tr><th class="sticky-col">BRG</th><th>AWAL KTR</th><th>AWAL RDY</th><th>IN KTR</th><th>IN RDY</th><th style="color:var(--d)">REJ</th><th>REKON</th><th>MITRA</th><th>UMUM</th><th style="background:#fef3c7">STOK KTR</th><th style="background:#dcfce7">STOK RDY</th><th style="background:var(--p); color:white">TOTAL</th></tr></thead><tbody id="tbStok"></tbody></table></div>
             <div class="flex-row">
                 <button class="btn" style="background:var(--s)" onclick="expEx('areaStok','Stok')">EXCEL</button>
