@@ -100,38 +100,41 @@
     </div>
 
     <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <h3 style="margin-bottom: 0;">📥 Logistik & Penjualan</h3>
-            <input type="date" id="stTgl" style="width: 120px; height: 30px;">
-        </div>
-
-        <div class="flex-row" style="display: flex; gap: 8px; margin-bottom: 10px;">
-            <select id="stBrg" style="flex: 2;"></select>
-            <input type="number" id="stQty" placeholder="Jumlah" style="flex: 1;">
-        </div>
-
-        <div class="flex-row" style="display: flex; gap: 8px; margin-bottom: 10px;">
-            <select id="stKon" style="flex: 1;">
-                <option value="Bekas">Kotor</option>
-                <option value="Baru">Rdy</option>
-            </select>
-            <select id="stQC" style="flex: 1;">
-                <option value="Accepted">Accepted</option>
-                <option value="Reject">Reject</option>
-            </select>
-        </div>
-
-        <div class="flex-row">
-            <select id="stAksi">
-                <option value="Masuk">Masuk</option>
-                <option value="Rekondisi">Rekon</option>
-                <option value="Jual Mitra">Jual Mitra</option>
-                <option value="Jual Umum">Jual Umum</option>
-            </select>
-        </div>
-
-        <button class="btn" style="background:var(--p)" onclick="saveSt()">PROSES STOK & CAIRKAN UPAH</button>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3 style="margin-bottom: 0;">📥 Logistik</h3>
+        <input type="date" id="stTgl" style="width: 120px; height: 30px;">
     </div>
+    
+    <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+        <select id="stBrg" style="flex: 2;" onchange="cekJenisBarang()"></select>
+        <input type="number" id="stQty" placeholder="Jumlah" style="flex: 1;">
+        <select id="stSatuan" style="flex: 0.8; display: none;">
+            <option value="Liter">Liter</option>
+            <option value="Kg">Kg</option>
+        </select>
+    </div>
+
+    <div id="rowQC" style="display: flex; gap: 8px; margin-bottom: 10px;">
+        <select id="stKon" style="flex: 1;">
+            <option value="Bekas">Kotor</option>
+            <option value="Baru">Rdy</option>
+        </select>
+        <select id="stQC" style="flex: 1;">
+            <option value="Accepted">Accepted</option>
+            <option value="Reject">Reject</option>
+        </select>
+    </div>
+
+    <div class="flex-row">
+        <select id="stAksi">
+            <option value="Masuk">Masuk</option>
+            <option id="optRekon" value="Rekondisi">Rekon</option>
+            <option value="Jual Mitra">Jual Mitra</option>
+            <option value="Jual Umum">Jual Umum</option>
+        </select>
+    </div>
+    <button class="btn" style="background:var(--p)" onclick="saveSt()">PROSES STOK</button>
+</div>
 
             <div class="card">
         <h3 style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
@@ -500,6 +503,29 @@ document.getElementById('fMStok').value = blnSkrg;
 
 // Tambahkan ini supaya tabel stok langsung muncul otomatis
 renderStok();
+
+function cekJenisBarang() {
+    const brg = document.getElementById('stBrg').value.toLowerCase();
+    const isCair = brg.includes('cair') || brg.includes('minyak');
+    
+    const rowQC = document.getElementById('rowQC');
+    const stSatuan = document.getElementById('stSatuan');
+    const optRekon = document.getElementById('optRekon');
+    const stAksi = document.getElementById('stAksi');
+
+    if (isCair) {
+        // Jika Minyak/Cair
+        rowQC.style.display = 'none';      // Sembunyikan Baris QC
+        stSatuan.style.display = 'block'; // Munculkan Liter/Kg
+        optRekon.style.display = 'none';   // Hilangkan pilihan Rekon
+        if(stAksi.value === 'Rekondisi') stAksi.value = 'Masuk';
+    } else {
+        // Jika Barang Biasa (IBC, dll)
+        rowQC.style.display = 'flex';     // Munculkan Baris QC
+        stSatuan.style.display = 'none';  // Sembunyikan Liter/Kg
+        optRekon.style.display = 'block'; // Munculkan pilihan Rekon
+    }
+}
 
 
 
