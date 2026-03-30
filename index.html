@@ -196,28 +196,28 @@
 
 
         // ==========================================
-        // 2. GLOBAL UTILITIES (NAV, MODAL, EXPORT)
-        // ==========================================
-        function autoRender() { renderAll(); renderStok(); renderGaji(); renderCheckKaryawan(); }
-        // GANTI fungsi tab(id) yang lama dengan ini:
-function tab(id) { 
-    // 1. Hilangkan tanda 'active' dari semua tombol dan konten tab
-    document.querySelectorAll('.tab-content, .nav-btn').forEach(e => e.classList.remove('active')); 
-    
-    // 2. Aktifkan tab yang diklik
-    document.getElementById('tab-' + id).classList.add('active'); 
-    document.getElementById('nav-' + id).classList.add('active'); 
-    
-    // 3. PAKSA gambar ulang semua tabel agar data muncul (Penting!)
-    autoRender(); 
+// 2. GLOBAL UTILITIES (NAV, MODAL, EXPORT)
+// ==========================================
+
+function autoRender() {
+    renderAll();
+    if(typeof renderStok === 'function') renderStok();
+    if(typeof renderGaji === 'function') renderGaji();
+    if(typeof renderCheckKaryawan === 'function') renderCheckKaryawan();
 }
 
-// Pastikan fungsi autoRender-nya juga lengkap seperti ini:
-function autoRender() { 
-    renderAll();           // Menggambar Tabel Absen
-    renderStok();          // Menggambar Tabel Stok
-    renderGaji();          // Menggambar Tabel Gaji
-    renderCheckKaryawan(); // Mengupdate list absen di tab Kerja
+function tab(id) {
+    // 1. Hilangkan tanda 'active' dari semua tombol dan konten tab
+    document.querySelectorAll('.tab-content, .nav-btn').forEach(e => 
+        e.classList.remove('active')
+    );
+
+    // 2. Aktifkan tab yang diklik
+    document.getElementById('tab-' + id).classList.add('active');
+    document.getElementById('nav-' + id).classList.add('active');
+
+    // 3. PAKSA gambar ulang semua tabel agar data muncul (Penting!)
+    autoRender();
 }
       
         function initUI() {
