@@ -264,58 +264,81 @@
     const fM = elFM.value; 
     const [Y, M] = fM.split('-'), lastD = new Date(Y, M, 0).getDate();
     const K_arr = Object.values(D.master_karyawan || {});
+    const hariArr = ['M', 'S', 'S', 'R', 'K', 'J', 'S'];
 
-    let th = `<tr><th class="sticky-col">NAMA</th>`;
+    // --- 1. MEMBUAT HEADER (HARI & TANGGAL) ---
+    let thHari = `<tr style="background:#f8fafc; color:#94a3b8; font-size:9px;"><th class="sticky-col" style="background:#f8fafc !important; border-bottom:none">HARI</th>`;
+    let thTgl = `<tr><th class="sticky-col" style="border-top:none">NAMA</th>`;
+
     for(let i=1; i<=lastD; i++) {
+        const tglObj = new Date(Y, M - 1, i);
+        const nHari = hariArr[tglObj.getDay()];
         const isToday = (new Date().getDate() == i && new Date().getMonth() + 1 == M && new Date().getFullYear() == Y);
-        th += `<th ${isToday ? 'id="todayCol"' : ''}>${i}</th>`;
+        const warnaMinggu = nHari === 'M' ? 'color:var(--d)' : '';
+        
+        thHari += `<th style="${warnaMinggu}">${nHari}</th>`;
+        thTgl += `<th ${isToday ? 'id="todayCol"' : ''}>${i}</th>`;
     }
-    th += `<th style="color:var(--s)">H</th><th style="color:var(--p)">L</th><th style="color:#f97316">T</th><th style="color:var(--w)">I</th><th style="color:var(--d)">A</th></tr>`;
-    elTh.innerHTML = th;
+    
+    // Header Rekap di Kanan
+    thHari += `<th colspan="5" style="text-align:center; letter-spacing:2px">REKAP</th></tr>`;
+    thTgl += `<th style="color:var(--s)">H</th><th style="color:var(--p)">L</th><th style="color:#f97316">T</th><th style="color:var(--w)">I</th><th style="color:var(--d)">A</th></tr>`;
+    
+    elTh.innerHTML = thHari + thTgl;
 
+    // --- 2. MEMBUAT ISI TABEL ---
     let tb = "";
     K_arr.forEach(k => {
         let r = `<td class="sticky-col">${k}</td>`, tH=0, tL=0, tT=0, tI=0, tA=0;
+        
         for(let i=1; i<=lastD; i++) {
             let d = `${fM}-${String(i).padStart(2,'0')}`, a = D.absensi?.[d]?.[k];
-            
-            // LOGIKA LIBUR BARU:
             let isMinggu = new Date(d).getDay() === 0;
             let isLiburToko = D.libur && D.libur[d];
             
             let txt = "-", cls = "bg-none";
             
-            // Prioritas 1: Jika Hari Minggu (Tetap "M" meskipun Libur Toko)
-            if (isMinggu) {
-                txt = "M";
-                cls = "bg-m";
-            } 
-            // Prioritas 2: Jika Libur Toko tapi bukan Minggu
-            else if (isLiburToko) {
-                txt = "OFF";
-                cls = "bg-off";
-            }
+            // Logika Teks Libur
+            if (isMinggu) { txt = "M"; cls = "bg-m"; } 
+            else if (isLiburToko) { txt = "OFF"; cls = "bg-off"; }
 
             if(a) { 
                 txt = a.j[0]; 
                 cls = "bg-" + a.j.toLowerCase()[0];
-                if(a.j==="Hadir") tH++; else if(a.j==="Telat") tT++; else if(a.j==="Izin") tI++; else if(a.j==="Alpa") tA++;
+                // Hitung Rekap
+                if(a.j==="Hadir") tH++; 
+                else if(a.j==="Telat") tT++; 
+                else if(a.j==="Izin") tI++; 
+                else if(a.j==="Alpa") tA++;
                 if(a.l) tL += parseFloat(a.l);
             }
             
-            // Penyesuaian font-size untuk tulisan "OFF" agar tidak meluber
             let styleOff = (txt === "OFF") ? "font-size:7px;" : "";
             r += `<td><div class="badge ${cls}" style="${styleOff}" onclick="cellMod('${d}','${k}')">${txt}${a?.jamOut?'<div class="dot"></div>':''}</div></td>`;
         }
-        tb += `<tr>${r}<td>${tH}</td><td>${tL}</td><td>${tT}</td><td>${tI}</td><td>${tA}</td></tr>`;
+        
+        // Baris Rekap per Karyawan
+        tb += `<tr>${r}
+            <td style="font-weight:800; color:var(--s)">${tH}</td>
+            <td style="font-weight:800; color:var(--p)">${tL}</td>
+            <td style="font-weight:800; color:#f97316">${tT}</td>
+            <td style="font-weight:800; color:var(--w)">${tI}</td>
+            <td style="font-weight:800; color:var(--d)">${tA}</td>
+        </tr>`;
     });
     elTb.innerHTML = tb;
 
-    // Auto Scroll ke hari ini
+    // --- 3. AUTO SCROLL KE HARI INI ---
     setTimeout(() => {
-        const todayEl = document.getElementById('todayCol'), area = document.getElementById('areaAbsen');
-        if (todayEl && area) area.scrollTo({ left: todayEl.offsetLeft - area.offsetWidth / 2, behavior: 'smooth' });
-    }, 300);
+        const todayEl = document.getElementById('todayCol');
+        const area = document.getElementById('areaAbsen');
+        if (todayEl && area) {
+            area.scrollTo({
+                left: todayEl.offsetLeft - (area.offsetWidth / 2),
+                behavior: 'smooth'
+            });
+        }
+    }, 400);
 }
 
         function cellMod(d,k) { let a=D.absensi?.[d]?.[k], aks=Object.values(D.aktivitas||{}).filter(x=>x.t===d&&x.p?.includes(k)); openMod(`Detail ${k} (${d})`, `<p>Status: ${a?.j||'-'}</p><p>Jam: ${a?.jam||'-'} s/d ${a?.jamOut||'-'}</p><hr><ul>${aks.map(x=>`<li>${x.j} (${x.q}) ${x.isCair?'✅':'⏳'}</li>`).join('')||'Kerja: -'}</ul><br><button class='btn' onclick="removeItem('absensi/${d}','${k}')">HAPUS ABSEN</button>`); }
