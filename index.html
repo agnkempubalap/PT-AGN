@@ -237,11 +237,9 @@
 
     let th = `<tr><th class="sticky-col">NAMA</th>`;
     for(let i=1; i<=lastD; i++) {
-        // Beri ID khusus pada header tanggal hari ini
         const isToday = (new Date().getDate() == i && new Date().getMonth() + 1 == M && new Date().getFullYear() == Y);
         th += `<th ${isToday ? 'id="todayCol"' : ''}>${i}</th>`;
     }
-    
     th += `<th style="color:var(--s)">H</th><th style="color:var(--p)">L</th><th style="color:#f97316">T</th><th style="color:var(--w)">I</th><th style="color:var(--d)">A</th></tr>`;
     elTh.innerHTML = th;
 
@@ -249,32 +247,46 @@
     K_arr.forEach(k => {
         let r = `<td class="sticky-col">${k}</td>`, tH=0, tL=0, tT=0, tI=0, tA=0;
         for(let i=1; i<=lastD; i++) {
-            let d = `${fM}-${String(i).padStart(2,'0')}`, a = D.absensi?.[d]?.[k], isL = D.libur?.[d]||new Date(d).getDay()===0;
-            let txt=isL?"M":"-", cls=isL?"bg-m":"bg-none";
+            let d = `${fM}-${String(i).padStart(2,'0')}`, a = D.absensi?.[d]?.[k];
+            
+            // LOGIKA LIBUR BARU:
+            let isMinggu = new Date(d).getDay() === 0;
+            let isLiburToko = D.libur && D.libur[d];
+            
+            let txt = "-", cls = "bg-none";
+            
+            // Prioritas 1: Jika Hari Minggu (Tetap "M" meskipun Libur Toko)
+            if (isMinggu) {
+                txt = "M";
+                cls = "bg-m";
+            } 
+            // Prioritas 2: Jika Libur Toko tapi bukan Minggu
+            else if (isLiburToko) {
+                txt = "OFF";
+                cls = "bg-off";
+            }
+
             if(a) { 
-                txt=a.j[0]; cls="bg-"+a.j.toLowerCase()[0];
+                txt = a.j[0]; 
+                cls = "bg-" + a.j.toLowerCase()[0];
                 if(a.j==="Hadir") tH++; else if(a.j==="Telat") tT++; else if(a.j==="Izin") tI++; else if(a.j==="Alpa") tA++;
                 if(a.l) tL += parseFloat(a.l);
             }
-            r += `<td><div class="badge ${cls}" onclick="cellMod('${d}','${k}')">${txt}${a?.jamOut?'<div class="dot"></div>':''}</div></td>`;
+            
+            // Penyesuaian font-size untuk tulisan "OFF" agar tidak meluber
+            let styleOff = (txt === "OFF") ? "font-size:7px;" : "";
+            r += `<td><div class="badge ${cls}" style="${styleOff}" onclick="cellMod('${d}','${k}')">${txt}${a?.jamOut?'<div class="dot"></div>':''}</div></td>`;
         }
         tb += `<tr>${r}<td>${tH}</td><td>${tL}</td><td>${tT}</td><td>${tI}</td><td>${tA}</td></tr>`;
     });
     elTb.innerHTML = tb;
 
-    // --- BAGIAN OTOMATIS GESER KE HARI INI ---
+    // Auto Scroll ke hari ini
     setTimeout(() => {
-        const todayEl = document.getElementById('todayCol');
-        const area = document.getElementById('areaAbsen');
-        if (todayEl && area) {
-            area.scrollTo({
-                left: todayEl.offsetLeft - area.offsetWidth / 2,
-                behavior: 'smooth'
-            });
-        }
-    }, 300); 
+        const todayEl = document.getElementById('todayCol'), area = document.getElementById('areaAbsen');
+        if (todayEl && area) area.scrollTo({ left: todayEl.offsetLeft - area.offsetWidth / 2, behavior: 'smooth' });
+    }, 300);
 }
-
 
         function cellMod(d,k) { let a=D.absensi?.[d]?.[k], aks=Object.values(D.aktivitas||{}).filter(x=>x.t===d&&x.p?.includes(k)); openMod(`Detail ${k} (${d})`, `<p>Status: ${a?.j||'-'}</p><p>Jam: ${a?.jam||'-'} s/d ${a?.jamOut||'-'}</p><hr><ul>${aks.map(x=>`<li>${x.j} (${x.q}) ${x.isCair?'✅':'⏳'}</li>`).join('')||'Kerja: -'}</ul><br><button class='btn' onclick="removeItem('absensi/${d}','${k}')">HAPUS ABSEN</button>`); }
         function openLiburMod() { let l=Object.entries(D.libur||{}).sort((a,b)=>b[0].localeCompare(a[0])); openMod("Libur Toko", `Mulai: <input type="date" id="lS"> s/d <input type="date" id="lE"><button class="btn" onclick="saveL()">SET</button><hr>${l.map(x=>`<div>${x[0]} <b onclick="removeItem('libur','${x[0]}')" style="color:red; cursor:pointer">×</b></div>`).join('')}`); }
