@@ -505,7 +505,10 @@ document.getElementById('fMStok').value = blnSkrg;
 renderStok();
 
 function cekJenisBarang() {
-    const brg = document.getElementById('stBrg').value.toLowerCase();
+    const stBrg = document.getElementById('stBrg');
+    if (!stBrg) return; // Keamanan jika elemen belum ada
+
+    const brg = stBrg.value.toLowerCase();
     const isCair = brg.includes('cair') || brg.includes('minyak');
     
     const rowQC = document.getElementById('rowQC');
@@ -514,18 +517,20 @@ function cekJenisBarang() {
     const stAksi = document.getElementById('stAksi');
 
     if (isCair) {
-        // Jika Minyak/Cair
-        rowQC.style.display = 'none';      // Sembunyikan Baris QC
-        stSatuan.style.display = 'block'; // Munculkan Liter/Kg
-        optRekon.style.display = 'none';   // Hilangkan pilihan Rekon
-        if(stAksi.value === 'Rekondisi') stAksi.value = 'Masuk';
+        rowQC.style.display = 'none';
+        stSatuan.style.display = 'block';
+        optRekon.style.display = 'none';
+        if (stAksi.value === 'Rekondisi') stAksi.value = 'Masuk';
     } else {
-        // Jika Barang Biasa (IBC, dll)
-        rowQC.style.display = 'flex';     // Munculkan Baris QC
-        stSatuan.style.display = 'none';  // Sembunyikan Liter/Kg
-        optRekon.style.display = 'block'; // Munculkan pilihan Rekon
+        // RESET SEMUA KE POSISI NORMAL
+        rowQC.style.display = 'flex';
+        stSatuan.style.display = 'none';
+        optRekon.style.display = 'block';
+        // Pastikan nilai satuan dikosongkan agar tidak ikut tersimpan secara gaib
+        stSatuan.value = 'Liter'; 
     }
 }
+
 
 
 
