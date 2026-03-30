@@ -256,20 +256,24 @@
     }
 }
 
+
 function renderAll() {
     const elTb = document.getElementById('tbA'), elTh = document.getElementById('thA'), elFM = document.getElementById('fM');
     if (!D || !elTb || !elTh || !elFM) return;
+    
     const fM = elFM.value, [Y, M] = fM.split('-'), lastD = new Date(Y, M, 0).getDate(), K_arr = Object.values(D.master_karyawan || {});
 
+    // --- 1. HEADER TANGGAL ---
     let th = `<tr><th class="sticky-col">NAMA</th>`;
     for(let i=1; i<=lastD; i++) {
         const isT = (new Date().getDate() == i && new Date().getMonth() + 1 == M && new Date().getFullYear() == Y);
         th += `<th ${isT ? 'id="todayCol" style="background:#dcfce7"' : ''}>${i}</th>`;
     }
-    // Header L Navy, I SkyBlue
+    // L = Navy (#1e3a8a), I = Biru Muda (#0ea5e9)
     th += `<th style="color:#22c55e">H</th><th style="color:#1e3a8a">L</th><th style="color:#f97316">T</th><th style="color:#0ea5e9">I</th><th style="color:#ef4444">A</th></tr>`;
     elTh.innerHTML = th;
 
+    // --- 2. ISI TABEL ---
     let tb = "";
     K_arr.forEach(k => {
         let r = `<td class="sticky-col">${k}</td>`, tH=0, tL=0, tT=0, tI=0, tA=0;
@@ -282,12 +286,12 @@ function renderAll() {
 
             if(a) { 
                 txt = a.j[0]; tCol = "white";
-                // --- LOGIKA WARNA KONTRAS ---
-                if (a.j === "Hadir") bCol = "#22c55e";      // Hijau
-                else if (a.j === "Telat") bCol = "#f97316";  // Orange
-                else if (a.j === "Lembur") { bCol = "#1e3a8a"; txt = "L"; } // BIRU NAVY (GELAP)
-                else if (a.j === "Izin") bCol = "#0ea5e9";   // BIRU LANGIT (TERANG)
-                else if (a.j === "Alpa") bCol = "#ef4444";   // Merah
+                // LOGIKA WARNA BADGE
+                if (a.j === "Hadir") bCol = "#22c55e"; 
+                else if (a.j === "Telat") bCol = "#f97316"; 
+                else if (a.j === "Lembur") { bCol = "#1e3a8a"; txt = "L"; } // NAVY
+                else if (a.j === "Izin") bCol = "#0ea5e9"; // BIRU MUDA
+                else if (a.j === "Alpa") bCol = "#ef4444";
 
                 if(a.j==="Hadir") tH++; 
                 else if(a.j==="Telat") tT++; 
@@ -295,33 +299,51 @@ function renderAll() {
                 else if(a.j==="Alpa") tA++;
                 if(a.l) tL += parseFloat(a.l);
             }
-            // DOT (Titik Pulang) diperbesar jadi 6px supaya kelihatan jelas
+
+            // TITIK PULANG (DOT) PUTIH LEBIH BESAR (6px)
             let dot = a?.jamOut ? `<div style="position:absolute; bottom:2px; right:2px; width:6px; height:6px; background:white; border-radius:50%; border:1px solid rgba(0,0,0,0.2)"></div>` : "";
             
-            r += `<td><div class="badge" style="position:relative; background:${bCol} !important; color:${tCol} !important; border-radius:15px; width:24px; height:24px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:10px; ${txt==='OFF'?'font-size:7px':''}" onclick="cellMod('${d}','${k}')">${txt}${dot}</div></td>`;
+            r += `<td><div class="badge" style="position:relative; background:${bCol} !important; color:${tCol} !important; border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:10px; ${txt==='OFF'?'font-size:7px':''}" onclick="cellMod('${d}','${k}')">${txt}${dot}</div></td>`;
         }
+        // Kolom Rekap Paling Kanan
         tb += `<tr style="color:#334155; font-size:12px">${r}<td style="color:#22c55e; font-weight:800">${tH}</td><td style="color:#1e3a8a; font-weight:800">${tL}</td><td style="color:#f97316; font-weight:800">${tT}</td><td style="color:#0ea5e9; font-weight:800">${tI}</td><td style="color:#ef4444; font-weight:800">${tA}</td></tr>`;
     });
     elTb.innerHTML = tb;
+
+    // --- 3. AUTO SCROLL KE HARI INI ---
+    setTimeout(() => {
+        try {
+            const tCol = document.getElementById('todayCol');
+            const area = document.getElementById('areaAbsen'); // Pastikan ID pembungkus tabel kamu ini
+            if (tCol && area) {
+                const scrollPos = tCol.offsetLeft - (area.offsetWidth / 2) + (tCol.offsetWidth / 2);
+                area.scrollTo({ left: scrollPos, behavior: 'smooth' });
+            }
+        } catch (e) { console.error("Scroll error:", e); }
+    }, 500);
 }
 
 
 
         function cellMod(d, k) {
     let a = D.absensi?.[d]?.[k], aks = Object.values(D.aktivitas || {}).filter(x => x.t === d && x.p?.includes(k));
+    
+    // WARNA HARUS SAMA DENGAN RENDER ALL
     let bg = "#94a3b8", s = a?.j || "-";
-
-    // Setel warna pop-up agar sama dengan tabel
-    if (s === "Hadir") bg = "#22c55e";
-    else if (s === "Telat") bg = "#f97316";
-    else if (s === "Lembur" || s === "Izin") bg = "#0ea5e9"; // Lembur & Izin sama-sama Biru
-    else if (s === "Alpa") bg = "#ef4444";
+    if (s === "Hadir") bg = "#22c55e";      // Hijau
+    else if (s === "Telat") bg = "#f97316";  // Orange
+    else if (s === "Lembur") bg = "#1e3a8a"; // NAVY (SAMA DENGAN BADGE L)
+    else if (s === "Izin") bg = "#0ea5e9";   // BIRU MUDA
+    else if (s === "Alpa") bg = "#ef4444";   // Merah
 
     let ket = a?.ket ? `<div style="margin-top:8px; padding:8px; background:#f1f5f9; border-radius:5px; font-size:11px; font-style:italic;">Ket: ${a.ket}</div>` : "";
 
     openMod(`Detail ${k} (${d})`, `
         <div style="font-size:13px">
-            <p style="display:flex; align-items:center; gap:8px"><b>Status:</b> <span style="background:${bg}; color:white; padding:2px 10px; border-radius:10px; font-size:10px; font-weight:bold">${s}</span></p>
+            <p style="display:flex; align-items:center; gap:8px">
+                <b>Status:</b> 
+                <span style="background:${bg} !important; color:white; padding:2px 10px; border-radius:10px; font-size:10px; font-weight:bold; text-transform:uppercase;">${s}</span>
+            </p>
             <p><b>Jam:</b> ${a?.jam || '-'} s/d ${a?.jamOut || '-'}</p>${ket}
             <hr><b>Pekerjaan:</b>
             <ul style="padding-left:15px; margin:5px 0">${aks.map(x => `<li>${x.j} (${x.q}) ${x.isCair ? '✅' : '⏳'}</li>`).join('') || '<li>-</li>'}</ul>
@@ -329,6 +351,7 @@ function renderAll() {
         </div>
     `);
 }
+
 
 function openLiburMod() {
     const L = Object.entries(D.libur || {}).sort((a,b) => b[0].localeCompare(a[0]));
