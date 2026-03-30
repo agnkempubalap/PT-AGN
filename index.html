@@ -164,31 +164,34 @@
         const DEF_TARIF = { "Rekondisi Kempu":100000, "Rekondisi jerigen 18L":2000, "Rekondisi jerigen 5L":1000, "muat barang":600000, "bongkar barang":600000, "kirim minyak":150000, "pasang pangkalan":500000, "pasang agen":700000 };
 
         window.onload = () => {
+    // 1. Set tanggal hari ini ke semua input
     const t = new Date().toISOString().split('T')[0];
-    // Set default tanggal ke input-input yang ada
     const ids = ['absTgl', 'stTgl', 'akTgl', 'blTgl', 'fM', 'fUang'];
     ids.forEach(id => {
         let el = document.getElementById(id);
         if (el) {
-            // Jika input type month (fM & fUang), ambil YYYY-MM saja
             el.value = (id === 'fM' || id === 'fUang') ? t.slice(0, 7) : t;
         }
     });
 
-    // Ambil data dari Firebase
+    // 2. Ambil data dari Firebase dan PAKSA RENDER
     db.ref('/').on('value', s => {
         D = s.val() || {};
+        
+        // Jalankan initUI dulu untuk mengisi dropdown nama
         initUI();
-        // Paksa render semua tab saat data pertama kali masuk
-        renderAll(); 
-        renderStok(); 
-        renderGaji();
-        renderCheckKaryawan();
+        
+        // Berikan jeda sangat singkat (100ms) agar HTML siap, lalu gambar tabel
+        setTimeout(() => {
+            renderAll(); 
+            if(typeof renderStok === 'function') renderStok();
+            if(typeof renderGaji === 'function') renderGaji();
+        }, 100);
     });
 
-    // Tambahkan listener manual jika user ganti bulan
-    document.getElementById('fM').addEventListener('change', renderAll);
-    document.getElementById('fUang').addEventListener('change', renderGaji);
+    // 3. Pastikan jika user ganti bulan, tabel langsung update
+    const fM = document.getElementById('fM');
+    if(fM) fM.onchange = () => renderAll();
 };
 
 
@@ -196,8 +199,27 @@
         // 2. GLOBAL UTILITIES (NAV, MODAL, EXPORT)
         // ==========================================
         function autoRender() { renderAll(); renderStok(); renderGaji(); renderCheckKaryawan(); }
-        function tab(id) { document.querySelectorAll('.tab-content, .nav-btn').forEach(e => e.classList.remove('active')); document.getElementById('tab-'+id).classList.add('active'); document.getElementById('nav-'+id).classList.add('active'); autoRender(); }
-        
+        // GANTI fungsi tab(id) yang lama dengan ini:
+function tab(id) { 
+    // 1. Hilangkan tanda 'active' dari semua tombol dan konten tab
+    document.querySelectorAll('.tab-content, .nav-btn').forEach(e => e.classList.remove('active')); 
+    
+    // 2. Aktifkan tab yang diklik
+    document.getElementById('tab-' + id).classList.add('active'); 
+    document.getElementById('nav-' + id).classList.add('active'); 
+    
+    // 3. PAKSA gambar ulang semua tabel agar data muncul (Penting!)
+    autoRender(); 
+}
+
+// Pastikan fungsi autoRender-nya juga lengkap seperti ini:
+function autoRender() { 
+    renderAll();           // Menggambar Tabel Absen
+    renderStok();          // Menggambar Tabel Stok
+    renderGaji();          // Menggambar Tabel Gaji
+    renderCheckKaryawan(); // Mengupdate list absen di tab Kerja
+}
+      
         function initUI() {
     // Ambil data karyawan dan barang dari Firebase
     const K = Object.entries(D.master_karyawan || {});
