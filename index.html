@@ -164,34 +164,36 @@
         const DEF_TARIF = { "Rekondisi Kempu":100000, "Rekondisi jerigen 18L":2000, "Rekondisi jerigen 5L":1000, "muat barang":600000, "bongkar barang":600000, "kirim minyak":150000, "pasang pangkalan":500000, "pasang agen":700000 };
 
         window.onload = () => {
-    // 1. Set tanggal hari ini ke semua input
+    // 1. Set tanggal otomatis ke semua input (Absen, Stok, Laporan, Gaji)
     const t = new Date().toISOString().split('T')[0];
     const ids = ['absTgl', 'stTgl', 'akTgl', 'blTgl', 'fM', 'fUang'];
     ids.forEach(id => {
         let el = document.getElementById(id);
         if (el) {
+            // Jika input bulan (fM & fUang), isi YYYY-MM. Jika tanggal, isi YYYY-MM-DD
             el.value = (id === 'fM' || id === 'fUang') ? t.slice(0, 7) : t;
         }
     });
 
-    // 2. Ambil data dari Firebase dan PAKSA RENDER
+    // 2. Hubungkan ke Firebase & Langsung Gambar Tabel Otomatis
     db.ref('/').on('value', s => {
         D = s.val() || {};
         
-        // Jalankan initUI dulu untuk mengisi dropdown nama
+        // Isi Dropdown Nama & List Karyawan
         initUI();
         
-        // Berikan jeda sangat singkat (100ms) agar HTML siap, lalu gambar tabel
+        // LANGSUNG GAMBAR SEMUA TABEL (Absen, Stok, Gaji)
+        // Diberi sedikit jeda 100ms agar HTML siap di layar HP
         setTimeout(() => {
-            renderAll(); 
-            if(typeof renderStok === 'function') renderStok();
-            if(typeof renderGaji === 'function') renderGaji();
+            autoRender(); 
         }, 100);
     });
 
-    // 3. Pastikan jika user ganti bulan, tabel langsung update
+    // 3. Listener: Jika kamu ganti bulan di laporan, tabel langsung update otomatis
     const fM = document.getElementById('fM');
-    if(fM) fM.onchange = () => renderAll();
+    if (fM) {
+        fM.onchange = () => renderAll();
+    }
 };
 
 
