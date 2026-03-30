@@ -258,14 +258,11 @@
 
 function renderAll() {
     const elTb = document.getElementById('tbA'), elTh = document.getElementById('thA'), elFM = document.getElementById('fM');
-    // Jika elemen HTML tidak ditemukan, jangan jalankan agar tidak error ke bawah
     if (!D || !elTb || !elTh || !elFM) return;
     
-    const fM = elFM.value; 
-    const [Y, M] = fM.split('-'), lastD = new Date(Y, M, 0).getDate();
-    const K_arr = Object.values(D.master_karyawan || {});
+    const fM = elFM.value, [Y, M] = fM.split('-'), lastD = new Date(Y, M, 0).getDate(), K_arr = Object.values(D.master_karyawan || {});
 
-    // --- HEADER TANGGAL ---
+    // Header (Rekap L warna Biru/var--w)
     let th = `<tr><th class="sticky-col">NAMA</th>`;
     for(let i=1; i<=lastD; i++) {
         const isT = (new Date().getDate() == i && new Date().getMonth() + 1 == M && new Date().getFullYear() == Y);
@@ -274,25 +271,23 @@ function renderAll() {
     th += `<th style="color:var(--s)">H</th><th style="color:var(--w)">L</th><th style="color:#f97316">T</th><th style="color:var(--w)">I</th><th style="color:var(--d)">A</th></tr>`;
     elTh.innerHTML = th;
 
-    // --- ISI TABEL ---
     let tb = "";
     K_arr.forEach(k => {
         let r = `<td class="sticky-col">${k}</td>`, tH=0, tL=0, tT=0, tI=0, tA=0;
         for(let i=1; i<=lastD; i++) {
-            let d = `${fM}-${String(i).padStart(2,'0')}`, 
-                a = D.absensi?.[d]?.[k], 
-                isM = new Date(d).getDay() === 0, 
-                isL = D.libur?.[d];
-            
+            let d = `${fM}-${String(i).padStart(2,'0')}`, a = D.absensi?.[d]?.[k], isM = new Date(d).getDay() === 0, isL = D.libur?.[d];
             let txt = "-", cls = "bg-none";
+
             if (isM) { txt = "M"; cls = "bg-m"; } 
             else if (isL) { txt = "OFF"; cls = "bg-off"; }
 
             if(a) { 
                 txt = a.j[0]; 
-                // LEMBUR JADI BIRU
-                cls = (a.j === "Lembur") ? "bg-w" : "bg-" + a.j.toLowerCase()[0];
-                
+                // KUNCI: Lembur (L) pakai bg-w (Biru), Telat (T) pakai bg-p (Orange)
+                if (a.j === "Lembur") { cls = "bg-w"; txt = "L"; } 
+                else if (a.j === "Telat") { cls = "bg-p"; }
+                else { cls = "bg-" + a.j.toLowerCase()[0]; }
+
                 if(a.j==="Hadir") tH++; 
                 else if(a.j==="Telat") tT++; 
                 else if(a.j==="Izin") tI++; 
@@ -301,40 +296,32 @@ function renderAll() {
             }
             r += `<td><div class="badge ${cls}" style="${txt==='OFF'?'font-size:7px':''}" onclick="cellMod('${d}','${k}')">${txt}${a?.jamOut?'<div class="dot"></div>':''}</div></td>`;
         }
-        tb += `<tr>${r}<td>${tH}</td><td>${tL}</td><td>${tT}</td><td>${tI}</td><td>${tA}</td></tr>`;
+        // Kolom Rekap (L warna biru var--w)
+        tb += `<tr>${r}<td style="color:var(--s)">${tH}</td><td style="color:var(--w); font-weight:800">${tL}</td><td style="color:#f97316">${tT}</td><td style="color:var(--w)">${tI}</td><td style="color:var(--d)">${tA}</td></tr>`;
     });
     elTb.innerHTML = tb;
-
-    // --- AUTO SCROLL ---
-    setTimeout(() => {
-        const t = document.getElementById('todayCol'), a = document.getElementById('areaAbsen');
-        if (t && a) a.scrollTo({ left: t.offsetLeft - a.offsetWidth / 2, behavior: 'smooth' });
-    }, 400);
 }
+
 
         function cellMod(d, k) {
     let a = D.absensi?.[d]?.[k], aks = Object.values(D.aktivitas || {}).filter(x => x.t === d && x.p?.includes(k));
-    let bgCol = "#94a3b8", s = a?.j || "-";
+    let bg = "#94a3b8", s = a?.j || "-";
 
-    if (s === "Hadir") bgCol = "#22c55e";
-    else if (s === "Telat") bgCol = "#f97316";
-    else if (s === "Lembur") bgCol = "#0ea5e9"; // BIRU PASTI
-    else if (s === "Izin") bgCol = "#3b82f6";
-    else if (s === "Alpa") bgCol = "#ef4444";
+    // Setel warna pop-up agar sama dengan tabel
+    if (s === "Hadir") bg = "#22c55e";
+    else if (s === "Telat") bg = "#f97316";
+    else if (s === "Lembur" || s === "Izin") bg = "#0ea5e9"; // Lembur & Izin sama-sama Biru
+    else if (s === "Alpa") bg = "#ef4444";
 
-    let ket = a?.ket ? `<div style="margin-top:8px; padding:8px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:5px; font-size:11px; color:#475569; font-style:italic;"><b>Ket:</b> ${a.ket}</div>` : "";
+    let ket = a?.ket ? `<div style="margin-top:8px; padding:8px; background:#f1f5f9; border-radius:5px; font-size:11px; font-style:italic;">Ket: ${a.ket}</div>` : "";
 
     openMod(`Detail ${k} (${d})`, `
-        <div style="font-size:13px; color:#334155;">
-            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
-                <b>Status:</b> 
-                <span style="background:${bgCol} !important; color:white !important; padding:4px 12px; border-radius:15px; font-size:10px; font-weight:800; text-transform:uppercase;">${s}</span>
-            </div>
+        <div style="font-size:13px">
+            <p style="display:flex; align-items:center; gap:8px"><b>Status:</b> <span style="background:${bg}; color:white; padding:2px 10px; border-radius:10px; font-size:10px; font-weight:bold">${s}</span></p>
             <p><b>Jam:</b> ${a?.jam || '-'} s/d ${a?.jamOut || '-'}</p>${ket}
-            <hr style="margin:15px 0; border:0; border-top:1px solid #eee;">
-            <p style="font-weight:bold; margin-bottom:5px">Pekerjaan:</p>
-            <ul style="padding-left:15px; margin-bottom:15px">${aks.map(x => `<li style="margin-bottom:4px">${x.j} (${x.q}) ${x.isCair ? '✅' : '⏳'}</li>`).join('') || '<li>-</li>'}</ul>
-            <button class="btn" style="background:#ef4444 !important; width:100%; color:white; font-weight:bold;" onclick="if(confirm('Hapus absen ${k}?')){removeItem('absensi/${d}','${k}'); closeMod();}">🗑️ HAPUS DATA ABSEN</button>
+            <hr><b>Pekerjaan:</b>
+            <ul style="padding-left:15px; margin:5px 0">${aks.map(x => `<li>${x.j} (${x.q}) ${x.isCair ? '✅' : '⏳'}</li>`).join('') || '<li>-</li>'}</ul>
+            <button class="btn" style="background:var(--d); width:100%; color:white; font-weight:bold" onclick="if(confirm('Hapus?')){removeItem('absensi/${d}','${k}'); closeMod();}">🗑️ HAPUS ABSEN</button>
         </div>
     `);
 }
