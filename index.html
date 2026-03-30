@@ -99,26 +99,26 @@
         <div id="listB" style="display:flex; flex-wrap:wrap; gap:5px"></div>
     </div>
 
-    <div id="logistik" class="card" style="padding: 15px;">
+    <div id="logistik" class="card">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-        <h3 style="margin: 0; border-left: 4px solid #2563eb; padding-left: 8px; display: flex; align-items: center; font-size: 15px; color: #2563eb; font-weight: 600;">
+        <h3 style="margin: 0; border-left: 4px solid #2563eb; padding-left: 10px; display: flex; align-items: center; color: #2563eb;">
             🚚 Logistik
         </h3>
-        <input type="date" id="stTgl" class="form-control" style="width: auto; height: 30px; padding: 2px 5px; font-size: 12px; border-radius: 6px; border: 1px solid #ddd; background-color: #f9f9f9;">
+        <input type="date" id="stTgl" class="form-control" style="width: auto; height: 30px; font-size: 13px; background-color: #f9f9f9;">
     </div>
 
-    <div class="row" style="display: flex; gap: 8px; margin-bottom: 8px;">
-        <div style="flex: 2;">
-            <select id="stBrg" onchange="cekJenisBarang()" class="form-control" style="width: 100%; height: 34px; font-size: 13px; padding: 0 10px; border-radius: 6px; border: 1px solid #ddd; background-color: #f9f9f9; color: #333;"></select>
+    <div class="row" style="margin-bottom: 8px;">
+        <div class="col" style="flex: 2;">
+            <select id="stBrg" onchange="cekJenisBarang()" class="form-control" style="width: 100%; background-color: #f9f9f9; color: #333;"></select>
         </div>
-        <div style="flex: 1;">
-            <input type="number" id="stQty" placeholder="Jml" class="form-control" style="width: 100%; height: 34px; font-size: 13px; padding: 0 10px; border-radius: 6px; border: 1px solid #ddd; background-color: #f9f9f9;">
+        <div class="col" style="flex: 1;">
+            <input type="number" id="stQty" placeholder="Jml" class="form-control" style="width: 100%; background-color: #f9f9f9;">
         </div>
     </div>
 
     <div class="row" style="margin-bottom: 8px;">
-        <div style="width: 100%;">
-            <select id="stAksi" onchange="cekJenisBarang()" class="form-control" style="width: 100%; height: 34px; font-size: 13px; padding: 0 10px; border-radius: 6px; border: 1px solid #ddd; background-color: #f9f9f9; color: #333;">
+        <div class="col">
+            <select id="stAksi" onchange="cekJenisBarang()" class="form-control" style="width: 100%; background-color: #f9f9f9; color: #333;">
                 <option value="Masuk">Masuk</option>
                 <option value="Keluar">Keluar</option>
                 <option id="optRekon" value="Rekondisi">Rekondisi</option>
@@ -127,22 +127,69 @@
         </div>
     </div>
 
-    <div id="rowQC" class="row" style="display: flex; gap: 8px; margin-bottom: 12px;">
-        <div style="flex: 1;">
-            <select id="stKondisi" class="form-control" style="width: 100%; height: 34px; font-size: 13px; padding: 0 10px; border-radius: 6px; border: 1px solid #ddd; background-color: #f9f9f9;">
+    <div id="rowQC" class="row" style="margin-bottom: 12px;">
+        <div class="col">
+            <select id="stKondisi" class="form-control" style="width: 100%; background-color: #f9f9f9;">
                 <option value="Kotor">Kotor</option>
                 <option value="Ready">Ready</option>
             </select>
         </div>
-        <div style="flex: 1;">
-            <select id="stStatus" class="form-control" style="width: 100%; height: 34px; font-size: 13px; padding: 0 10px; border-radius: 6px; border: 1px solid #ddd; background-color: #f9f9f9;">
+        <div class="col">
+            <select id="stStatus" class="form-control" style="width: 100%; background-color: #f9f9f9;">
                 <option value="Accepted">Accepted</option>
                 <option value="Rejected">Rejected</option>
             </select>
         </div>
     </div>
 
-    <button onclick="prosesStok()" class="btn btn-success" style="width: 100%; padding: 10px; font-weight: bold; font-size: 14px; border-radius: 6px; background-color: #28a745; border: none; color: white;">
+    <button onclick="prosesStok()" class="btn btn-success" style="width: 100%; font-weight: bold; padding: 10px; background-color: #28a745; border: none; color: white;">
+        PROSES STOK
+    </button>
+</div>
+<div id="logistik" class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3 style="margin: 0; border-left: 4px solid #2563eb; padding-left: 10px; display: flex; align-items: center; color: #2563eb;">
+            🚚 Logistik
+        </h3>
+        <input type="date" id="stTgl" class="form-control" style="width: auto; height: 30px; font-size: 13px; background-color: #f9f9f9;">
+    </div>
+
+    <div class="row" style="margin-bottom: 8px;">
+        <div class="col" style="flex: 2;">
+            <select id="stBrg" onchange="cekJenisBarang()" class="form-control" style="width: 100%; background-color: #f9f9f9; color: #333;"></select>
+        </div>
+        <div class="col" style="flex: 1;">
+            <input type="number" id="stQty" placeholder="Jml" class="form-control" style="width: 100%; background-color: #f9f9f9;">
+        </div>
+    </div>
+
+    <div class="row" style="margin-bottom: 8px;">
+        <div class="col">
+            <select id="stAksi" onchange="cekJenisBarang()" class="form-control" style="width: 100%; background-color: #f9f9f9; color: #333;">
+                <option value="Masuk">Masuk</option>
+                <option value="Keluar">Keluar</option>
+                <option id="optRekon" value="Rekondisi">Rekondisi</option>
+                <option value="Jual Mitra">Jual Mitra</option>
+            </select>
+        </div>
+    </div>
+
+    <div id="rowQC" class="row" style="margin-bottom: 12px;">
+        <div class="col">
+            <select id="stKondisi" class="form-control" style="width: 100%; background-color: #f9f9f9;">
+                <option value="Kotor">Kotor</option>
+                <option value="Ready">Ready</option>
+            </select>
+        </div>
+        <div class="col">
+            <select id="stStatus" class="form-control" style="width: 100%; background-color: #f9f9f9;">
+                <option value="Accepted">Accepted</option>
+                <option value="Rejected">Rejected</option>
+            </select>
+        </div>
+    </div>
+
+    <button onclick="prosesStok()" class="btn btn-success" style="width: 100%; font-weight: bold; padding: 10px; background-color: #28a745; border: none; color: white;">
         PROSES STOK
     </button>
 </div>
