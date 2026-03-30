@@ -217,15 +217,45 @@
         // 3. TAB ABSEN LOGIC
         // ==========================================
         function saveAbs() {
-            const n=document.getElementById('selK').value, t=document.getElementById('absTgl').value, j=document.getElementById('absJenis').value;
-            const jamStr = new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}).replace('.',':');
-            const ref = db.ref(`absensi/${t}/${n}`);
-            if(j==="Pulang") ref.update({ jamOut: jamStr }).then(()=>alert("Pulang!")); 
-            else {
-                let stat = (j==="Izin"||j==="Alpa") ? j : (new Date(t).getDay()===0||D.libur?.[t]?"Lembur":(new Date()>new Date(t+"T09:30:00")?"Telat":"Hadir"));
-                ref.set({ j: stat, jam: jamStr, ket: document.getElementById('absKet').value||"" }).then(()=>{ alert(stat + "!"); });
-            }
+    const n = document.getElementById('selK').value;
+    const t = document.getElementById('absTgl').value;
+    const j = document.getElementById('absJenis').value;
+    const jamStr = new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}).replace('.',':');
+    const ref = db.ref(`absensi/${t}/${n}`);
+
+    // --- PROTEKSI BARU ---
+    // 1. Ambil data status hari ini dulu
+    const dataHariIni = D.absensi?.[t]?.[n];
+
+    if (j === "Pulang") {
+        // Cek jika statusnya Alpa, Izin, atau belum absen Masuk
+        if (!dataHariIni) {
+            return alert("Gagal! Karyawan belum absen MASUK hari ini.");
         }
+        if (dataHariIni.j === "Alpa") {
+            return alert("Gagal! Status karyawan ALPA, tidak bisa input PULANG.");
+        }
+        if (dataHariIni.j === "Izin") {
+            return alert("Gagal! Status karyawan IZIN, tidak bisa input PULANG.");
+        }
+
+        // Jika lolos proteksi, baru simpan jam pulang
+        ref.update({ jamOut: jamStr }).then(() => alert("Berhasil Absen Pulang!"));
+    } 
+    else {
+        // Logika untuk simpan status (Hadir, Telat, Izin, Alpa)
+        let stat = (j === "Izin" || j === "Alpa") ? j : (new Date(t).getDay() === 0 || (D.libur && D.libur[t]) ? "Lembur" : (new Date() > new Date(t + "T09:30:00") ? "Telat" : "Hadir"));
+        
+        ref.set({ 
+            j: stat, 
+            jam: jamStr, 
+            ket: document.getElementById('absKet').value || "" 
+        }).then(() => { 
+            alert("Status " + stat + " Berhasil Disimpan!"); 
+        });
+    }
+}
+
 
         function renderAll() {
     const elTb = document.getElementById('tbA'), elTh = document.getElementById('thA'), elFM = document.getElementById('fM');
