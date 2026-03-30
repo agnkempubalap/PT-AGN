@@ -79,27 +79,41 @@
             </div>
         </div>
 
-        <div id="tab-stok" class="tab-content" style="display:none; padding:10px;">
-    <div class="card" style="border-top: 5px solid blue; margin-bottom:15px; padding:10px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <h3 style="margin:0; font-size:14px;">📦 Logistik & Penjualan</h3>
-            <input type="date" id="stTgl" style="width:130px;">
-        </div>
-        <div class="flex-row"><select id="stBrg" class="in"></select></div>
-        <button class="btn" style="background:blue; width:100%; color:white;" onclick="saveSt()">SIMPAN</button>
+        <div id="tab-stok" class="tab-content">
+            <div class="card">
+    <h3>📦 Master Barang</h3>
+    
+    <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+        <input type="text" id="inB" placeholder="Barang..." style="flex: 3; height: 35px;">
+        <button class="btn" style="background:var(--p); flex: 1; margin:0; height: 35px;" onclick="addItem('master_barang', 'inB')">ADD</button>
     </div>
-
-    <div class="card" style="padding:10px;">
-        <h3 style="font-size:14px;">📊 Laporan</h3>
-        <div style="overflow-x:auto;">
-            <table border="1" style="width:100%; border-collapse:collapse;">
-                <thead id="thStok"></thead>
-                <tbody id="tbStok"></tbody>
-            </table>
-        </div>
-    </div>
+    
+    <div id="listB" style="display:flex; flex-wrap:wrap; gap:5px"></div>
 </div>
 
+
+            <div class="card">
+                <h3>📥 Logistik & Penjualan</h3>
+                <div class="flex-row"><input type="date" id="stTgl"><select id="stBrg"></select></div>
+                <div class="flex-row"><input type="number" id="stQty" placeholder="Jumlah"><select id="stKon"><option value="Bekas">Kotor</option><option value="Baru">Rdy</option></select></div>
+                <div class="flex-row">
+                    <select id="stQC"><option value="Accepted">Accepted</option><option value="Reject">Reject</option></select>
+                    <select id="stAksi">
+                        <option value="Masuk">Masuk</option>
+                        <option value="Rekondisi">Rekon</option>
+                        <option value="Jual Mitra">Jual Mitra</option>
+                        <option value="Jual Umum">Jual Umum</option>
+                    </select>
+                </div>
+                <button class="btn" style="background:var(--p)" onclick="saveSt()">PROSES STOK & CAIRKAN UPAH</button>
+            </div>
+            <div class="table-area" id="areaStok"><table><thead><tr><th class="sticky-col">BRG</th><th>AWAL KTR</th><th>AWAL RDY</th><th>IN KTR</th><th>IN RDY</th><th style="color:var(--d)">REJ</th><th>REKON</th><th>MITRA</th><th>UMUM</th><th style="background:#fef3c7">STOK KTR</th><th style="background:#dcfce7">STOK RDY</th><th style="background:var(--p); color:white">TOTAL</th></tr></thead><tbody id="tbStok"></tbody></table></div>
+            <div class="flex-row">
+                <button class="btn" style="background:var(--s)" onclick="expEx('areaStok','Stok')">EXCEL</button>
+                <button class="btn" style="background:var(--d)" onclick="expPdf('areaStok','Laporan_Stok')">PDF</button>
+                <button class="btn" style="background:#64748b" onclick="showLogs('stok_logs')">LOG</button>
+            </div>
+        </div>
 
         <div id="tab-aktivitas" class="tab-content">
             <div class="card" style="border-top: 5px solid var(--d)">
@@ -249,7 +263,7 @@ function renderAll() {
     
     const fM = elFM.value, [Y, M] = fM.split('-'), lastD = new Date(Y, M, 0).getDate(), K_arr = Object.values(D.master_karyawan || {});
 
-    // --- 1. HEADER TANGGAL ---
+// --- 1. HEADER TANGGAL ---
     let th = `<tr><th class="sticky-col">NAMA</th>`;
     for(let i=1; i<=lastD; i++) {
         const isT = (new Date().getDate() == i && new Date().getMonth() + 1 == M && new Date().getFullYear() == Y);
@@ -406,37 +420,28 @@ function saveL() {
         }
 
         function renderStok() {
-    try {
-        const elTb = document.getElementById('tbStok');
-        const elTh = document.getElementById('thStok');
-        
-        if (!elTb || !elTh) return;
-
-        // Header Sederhana dulu
-        elTh.innerHTML = "<tr><th>BARANG</th><th>TOTAL</th></tr>";
-
-        // Cek apakah data Master Stok ada
-        if (!D || !D.master_stok) {
-            elTb.innerHTML = "<tr><td colspan='2'>Data Master Belum Ada</td></tr>";
-            return;
+            const B_arr = Object.values(D.master_barang || {}), fM = document.getElementById('fM').value; let h = "";
+            B_arr.forEach(b => {
+                let s = { ak:0, ab:0, ik:0, ib:0, rej:0, rk:0, jm:0, ju:0 };
+                Object.values(D.stok_logs || {}).forEach(l => {
+                    if(l.b!==b) return; 
+                    if(l.t?.slice(0,7)<fM) { 
+                        if(l.ak==="Masuk") l.kon==="Bekas"?s.ak+=l.q:s.ab+=l.q; 
+                        else if(l.ak==="Rekondisi"){s.ak-=l.q;s.ab+=l.q;} 
+                        else if(l.ak.includes("Jual")) s.ab-=l.q; 
+                    }
+                    else if(l.t?.slice(0,7)===fM) { 
+                        if(l.ak==="Masuk") l.kon==="Bekas"?s.ik+=l.q:s.ib+=l.q; 
+                        else if(l.ak==="Rekondisi") s.rk+=l.q; 
+                        else if(l.ak==="Jual Mitra") s.jm+=l.q; 
+                        else if(l.ak==="Jual Umum") s.ju+=l.q; 
+                        if(l.qc==="Reject") s.rej+=l.q; 
+                    }
+                });
+                let ktr = (s.ak+s.ik)-s.rk, rdy = (s.ab+s.ib+s.rk)-(s.jm+s.ju);
+                h += `<tr><td class="sticky-col">${b}</td><td>${s.ak}</td><td>${s.ab}</td><td>${s.ik}</td><td>${s.ib}</td><td style="color:red; font-weight:bold">${s.rej}</td><td>${s.rk}</td><td>${s.jm}</td><td>${s.ju}</td><td style="background:#fef3c7">${ktr}</td><td style="background:#dcfce7">${rdy}</td><td style="background:var(--p); color:white">${ktr+rdy}</td></tr>`;
+            }); document.getElementById('tbStok').innerHTML = h;
         }
-
-        let html = "";
-        let barangs = Object.values(D.master_stok);
-
-        barangs.forEach(nama => {
-            html += `<tr><td>${nama}</td><td>0</td></tr>`;
-        });
-
-        elTb.innerHTML = html;
-        
-    } catch (err) {
-        console.error("Error di renderStok:", err);
-        alert("Ada masalah di kode Stok: " + err.message);
-    }
-}
-
-
 
         // ==========================================
         // 5. TAB AKTIVITAS LOGIC (CHAIN LOGIC)
