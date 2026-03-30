@@ -94,7 +94,16 @@
 
             <div class="card">
                 <h3>📥 Logistik & Penjualan</h3>
-                <div class="flex-row"><input type="date" id="stTgl"><select id="stBrg"></select></div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px;">
+    <h3 style="margin:0; font-size:16px;">📦 Logistik & Penjualan</h3>
+    
+    <input type="date" id="stTgl" class="in" style="width:130px; margin:0; padding:5px; border:1px solid var(--p);">
+</div>
+
+  
+    <input type="month" id="fM_Stok" class="in" style="width:135px; margin:0; padding:5px;" onchange="renderStok()">
+</div>
+
                 <div class="flex-row"><input type="number" id="stQty" placeholder="Jumlah"><select id="stKon"><option value="Bekas">Kotor</option><option value="Baru">Rdy</option></select></div>
                 <div class="flex-row">
                     <select id="stQC"><option value="Accepted">Accepted</option><option value="Reject">Reject</option></select>
