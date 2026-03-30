@@ -164,36 +164,30 @@
         const DEF_TARIF = { "Rekondisi Kempu":100000, "Rekondisi jerigen 18L":2000, "Rekondisi jerigen 5L":1000, "muat barang":600000, "bongkar barang":600000, "kirim minyak":150000, "pasang pangkalan":500000, "pasang agen":700000 };
 
         window.onload = () => {
-    // 1. Set tanggal otomatis ke semua input (Absen, Stok, Laporan, Gaji)
+    // 1. Set tanggal hari ini (Tetap sama)
     const t = new Date().toISOString().split('T')[0];
     const ids = ['absTgl', 'stTgl', 'akTgl', 'blTgl', 'fM', 'fUang'];
     ids.forEach(id => {
         let el = document.getElementById(id);
-        if (el) {
-            // Jika input bulan (fM & fUang), isi YYYY-MM. Jika tanggal, isi YYYY-MM-DD
-            el.value = (id === 'fM' || id === 'fUang') ? t.slice(0, 7) : t;
-        }
+        if (el) el.value = (id === 'fM' || id === 'fUang') ? t.slice(0, 7) : t;
     });
 
-    // 2. Hubungkan ke Firebase & Langsung Gambar Tabel Otomatis
+    // 2. Ambil data dari Firebase
     db.ref('/').on('value', s => {
         D = s.val() || {};
+        initUI(); // Isi dropdown nama
         
-        // Isi Dropdown Nama & List Karyawan
-        initUI();
-        
-        // LANGSUNG GAMBAR SEMUA TABEL (Absen, Stok, Gaji)
-        // Diberi sedikit jeda 100ms agar HTML siap di layar HP
-        setTimeout(() => {
-            autoRender(); 
-        }, 100);
+        // --- PERBAIKAN UTAMA: Paksa Render Berkala ---
+        // Kita coba gambar 3 kali (langsung, 500ms, dan 1 detik) 
+        // agar pasti muncul meskipun koneksi lambat.
+        autoRender(); 
+        setTimeout(autoRender, 500);
+        setTimeout(autoRender, 1000);
     });
 
-    // 3. Listener: Jika kamu ganti bulan di laporan, tabel langsung update otomatis
+    // 3. Listener tambahan jika ganti bulan
     const fM = document.getElementById('fM');
-    if (fM) {
-        fM.onchange = () => renderAll();
-    }
+    if (fM) fM.onchange = () => renderAll();
 };
 
 
