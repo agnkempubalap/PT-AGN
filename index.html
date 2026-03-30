@@ -328,13 +328,13 @@ function renderAll() {
         function cellMod(d, k) {
     let a = D.absensi?.[d]?.[k], aks = Object.values(D.aktivitas || {}).filter(x => x.t === d && x.p?.includes(k));
     
-    // WARNA HARUS SAMA DENGAN RENDER ALL
+    // Sinkronisasi Warna
     let bg = "#94a3b8", s = a?.j || "-";
-    if (s === "Hadir") bg = "#22c55e";      // Hijau
-    else if (s === "Telat") bg = "#f97316";  // Orange
-    else if (s === "Lembur") bg = "#1e3a8a"; // NAVY (SAMA DENGAN BADGE L)
-    else if (s === "Izin") bg = "#0ea5e9";   // BIRU MUDA
-    else if (s === "Alpa") bg = "#ef4444";   // Merah
+    if (s === "Hadir") bg = "#22c55e";      
+    else if (s === "Telat") bg = "#f97316";  
+    else if (s === "Lembur") bg = "#1e3a8a"; 
+    else if (s === "Izin") bg = "#0ea5e9";   
+    else if (s === "Alpa") bg = "#ef4444";   
 
     let ket = a?.ket ? `<div style="margin-top:8px; padding:8px; background:#f1f5f9; border-radius:5px; font-size:11px; font-style:italic;">Ket: ${a.ket}</div>` : "";
 
@@ -347,10 +347,15 @@ function renderAll() {
             <p><b>Jam:</b> ${a?.jam || '-'} s/d ${a?.jamOut || '-'}</p>${ket}
             <hr><b>Pekerjaan:</b>
             <ul style="padding-left:15px; margin:5px 0">${aks.map(x => `<li>${x.j} (${x.q}) ${x.isCair ? '✅' : '⏳'}</li>`).join('') || '<li>-</li>'}</ul>
-            <button class="btn" style="background:var(--d); width:100%; color:white; font-weight:bold" onclick="if(confirm('Hapus?')){removeItem('absensi/${d}','${k}'); closeMod();}">🗑️ HAPUS ABSEN</button>
+            
+            <button class="btn" style="background:#ef4444; width:100%; color:white; font-weight:bold; margin-top:10px;" 
+                onclick="if(confirm('Hapus absen ${k}?')){ db.ref('absensi/${d}/${k}').remove(); closeMod(); }">
+                🗑️ HAPUS ABSEN
+            </button>
         </div>
     `);
 }
+
 
 
 function openLiburMod() {
