@@ -79,11 +79,11 @@
             </div>
         </div>
 
-        <div id="tab-stok" class="tab-content" style="display:none;">
-    <div class="card" style="border-top: 5px solid var(--p);">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; padding-bottom:8px; border-bottom:1px solid #eee;">
+        <div id="tab-stok" class="tab-content" style="display:none; padding:10px;">
+    <div class="card" style="border-top: 5px solid var(--p); margin-bottom:15px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
             <h3 style="margin:0; font-size:14px;">📦 Logistik & Penjualan</h3>
-            <input type="date" id="stTgl" class="in" style="width:130px; margin:0; padding:4px; height:32px; font-size:12px; border:1px solid #ddd;">
+            <input type="date" id="stTgl" class="in" style="width:130px; height:30px;">
         </div>
         <div class="flex-row"><select id="stBrg" class="in"></select></div>
         <div class="flex-row">
@@ -93,34 +93,20 @@
                 <option value="Baru">Rdy</option>
             </select>
         </div>
-        <div class="flex-row">
-            <select id="stQC" class="in"><option value="Accepted">Accepted</option><option value="Reject">Reject</option></select>
-            <select id="stAksi" class="in">
-                <option value="Masuk">Masuk</option>
-                <option value="Rekondisi">Rekon</option>
-                <option value="Jual Mitra">Jual Mitra</option>
-                <option value="Jual Umum">Jual Umum</option>
-            </select>
-        </div>
-        <button class="btn" style="background:var(--p); width:100%; color:white; font-weight:bold; margin-top:10px;" onclick="saveSt()">PROSES STOK</button>
+        <button class="btn" style="background:var(--p); width:100%; color:white;" onclick="saveSt()">PROSES STOK</button>
     </div>
 
     <div class="card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
             <h3 style="margin:0; font-size:14px;">📊 Laporan Stok</h3>
-            <input type="month" id="fM_Stok" class="in" style="width:130px; margin:0; padding:4px; height:32px;" onchange="renderStok()">
+            <input type="month" id="fM_Stok" class="in" style="width:130px;" onchange="renderStok()">
         </div>
 
-        <div id="areaStok" style="overflow-x:auto; background:white;">
-            <table class="tabel-absen">
-                <thead id="thStok"></thead>
+        <div style="overflow-x:auto; width:100%; background:white; min-height:100px;">
+            <table border="1" style="width:100%; border-collapse:collapse; font-size:12px; text-align:center;">
+                <thead id="thStok" style="background:#f1f5f9;"></thead>
                 <tbody id="tbStok"></tbody>
             </table>
-        </div>
-        
-        <div class="flex-row" style="margin-top:10px;">
-            <button class="btn" style="background:var(--s)" onclick="expEx('areaStok','Stok')">EXCEL</button>
-            <button class="btn" style="background:var(--d)" onclick="expPdf('areaStok','Stok')">PDF</button>
         </div>
     </div>
 </div>
@@ -434,51 +420,49 @@ function saveL() {
     const elTh = document.getElementById('thStok');
     const elFM = document.getElementById('fM_Stok');
     
-    // Cek apakah elemen ada di HTML, kalau tidak ada jangan jalan (biar nggak error)
     if (!elTb || !elTh || !elFM) return;
 
-    // Default bulan ini jika kosong
+    // Default bulan ini
     if (!elFM.value) {
         let n = new Date();
-        elFM.value = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}`;
+        elFM.value = n.getFullYear() + "-" + String(n.getMonth() + 1).padStart(2, '0');
     }
 
     const fM = elFM.value; 
     const [Y, M] = fM.split('-');
     const lastD = new Date(Y, M, 0).getDate();
     
-    // Ambil daftar barang dari Master Stok
-    const S_arr = D.master_stok ? Object.values(D.master_stok) : [];
+    // Pastikan D.master_stok ada datanya
+    const barangKeys = D.master_stok ? Object.keys(D.master_stok) : [];
 
-    // 1. Render Header Tanggal
-    let th = `<tr><th class="sticky-col">BARANG</th>`;
-    for(let i = 1; i <= lastD; i++) {
-        th += `<th>${i}</th>`;
-    }
-    th += `<th style="background:#f1f5f9">TOTAL</th></tr>`;
-    elTh.innerHTML = th;
+    // Header
+    let hStr = "<tr><th>BARANG</th>";
+    for(let i=1; i<=lastD; i++) hStr += "<th>" + i + "</th>";
+    hStr += "<th>TOTAL</th></tr>";
+    elTh.innerHTML = hStr;
 
-    // 2. Render Isi Tabel
-    let tb = "";
-    if (S_arr.length === 0) {
-        tb = `<tr><td colspan="${lastD + 2}" style="text-align:center; padding:20px;">Belum ada Master Barang</td></tr>`;
+    // Body
+    let bStr = "";
+    if (barangKeys.length === 0) {
+        bStr = "<tr><td colspan='" + (lastD + 2) + "'>Data Barang Kosong</td></tr>";
     } else {
-        S_arr.forEach(s => {
-            let r = `<td class="sticky-col"><b>${s}</b></td>`;
-            let tBulan = 0;
-            for(let i = 1; i <= lastD; i++) {
-                let d = `${fM}-${String(i).padStart(2, '0')}`;
-                // Pastikan struktur data D.stok sesuai dengan database kamu
-                let q = D.stok?.[d]?.[s] || 0; 
-                tBulan += parseFloat(q);
-                let col = q > 0 ? "color:#ef4444; font-weight:bold;" : "color:#cbd5e1;";
-                r += `<td style="${col}">${q > 0 ? q : '-'}</td>`;
+        barangKeys.forEach(key => {
+            let s = D.master_stok[key];
+            let row = "<td><b>" + s + "</b></td>";
+            let total = 0;
+            
+            for(let i=1; i<=lastD; i++) {
+                let d = fM + "-" + String(i).padStart(2, '0');
+                let q = (D.stok && D.stok[d] && D.stok[d][s]) ? parseFloat(D.stok[d][s]) : 0;
+                total += q;
+                row += "<td style='color:" + (q > 0 ? "red" : "#ccc") + "'>" + (q > 0 ? q : "-") + "</td>";
             }
-            tb += `<tr>${r}<td style="background:#f8fafc; font-weight:800; color:var(--p)">${tBulan}</td></tr>`;
+            bStr += "<tr>" + row + "<td style='font-weight:bold;'>" + total + "</td></tr>";
         });
     }
-    elTb.innerHTML = tb;
+    elTb.innerHTML = bStr;
 }
+
 
 
         // ==========================================
