@@ -249,20 +249,24 @@
         if (selK) selK.innerHTML = K.map(k => `<option value="${k[1]}">${k[1]}</option>`).join('');
     }
 
-    // Render Barang
+            // 1. Render Barang (Master & Dropdown)
         if (listB && D.master_barang) {
             const B = Object.entries(D.master_barang);
-            listB.innerHTML = B.map(b => 
-            `<span style="background:#fff; border:1px solid #ddd; padding:6px; border-radius:8px; font-size:11px">${b[1]} 
-            <b onclick="removeItem('master_barang','${b[0]}')" style="color:red; cursor:pointer">×</b></span>`).join('');
             
+            // Render Chip (Tombol hapus di Master)
+            listB.innerHTML = B.map(b => `
+                <span style="background:#fff; border:1px solid #ddd; padding:6px; border-radius:8px; font-size:11px; margin-right:5px; display:inline-block;">
+                    ${b[1]} <b onclick="removeItem('master_barang','${b[0]}')" style="color:red; cursor:pointer">×</b>
+                </span>`
+            ).join('');
+            
+            // Update Dropdown di Input Logistik
             if (stBrg) {
                 stBrg.innerHTML = B.map(b => `<option value="${b[1]}">${b[1]}</option>`).join('');
-                
-                // TAMBAHKAN BARIS INI:
+                // Jalankan pengecekan otomatis
                 cekJenisBarang();
             }
-        }
+        } // <-- Tutup blok Render Barang
 
 
         function openMod(t,h) { document.getElementById('modTitle').innerText=t; document.getElementById('modContent').innerHTML=h; document.getElementById('modalUni').style.display='flex'; }
