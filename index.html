@@ -164,13 +164,33 @@
         const DEF_TARIF = { "Rekondisi Kempu":100000, "Rekondisi jerigen 18L":2000, "Rekondisi jerigen 5L":1000, "muat barang":600000, "bongkar barang":600000, "kirim minyak":150000, "pasang pangkalan":500000, "pasang agen":700000 };
 
         window.onload = () => {
-            const t = new Date().toISOString().split('T')[0];
-            ['absTgl','stTgl','akTgl','blTgl'].forEach(i => { if(document.getElementById(i)) document.getElementById(i).value = t });
-            ['fM','fUang'].forEach(i => { if(document.getElementById(i)) document.getElementById(i).value = t.slice(0, 7) });
-            db.ref('/').on('value', s => { D = s.val() || {}; initUI(); autoRender(); });
-            document.getElementById('fM').onchange = autoRender;
-            document.getElementById('fUang').onchange = autoRender;
-        };
+    const t = new Date().toISOString().split('T')[0];
+    // Set default tanggal ke input-input yang ada
+    const ids = ['absTgl', 'stTgl', 'akTgl', 'blTgl', 'fM', 'fUang'];
+    ids.forEach(id => {
+        let el = document.getElementById(id);
+        if (el) {
+            // Jika input type month (fM & fUang), ambil YYYY-MM saja
+            el.value = (id === 'fM' || id === 'fUang') ? t.slice(0, 7) : t;
+        }
+    });
+
+    // Ambil data dari Firebase
+    db.ref('/').on('value', s => {
+        D = s.val() || {};
+        initUI();
+        // Paksa render semua tab saat data pertama kali masuk
+        renderAll(); 
+        renderStok(); 
+        renderGaji();
+        renderCheckKaryawan();
+    });
+
+    // Tambahkan listener manual jika user ganti bulan
+    document.getElementById('fM').addEventListener('change', renderAll);
+    document.getElementById('fUang').addEventListener('change', renderGaji);
+};
+
 
         // ==========================================
         // 2. GLOBAL UTILITIES (NAV, MODAL, EXPORT)
