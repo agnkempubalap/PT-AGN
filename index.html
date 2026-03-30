@@ -99,30 +99,30 @@
         <div id="listB" style="display:flex; flex-wrap:wrap; gap:5px"></div>
     </div>
 
-    <div id="logistik" class="card">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-        <h3 style="margin: 0; border-left: 4px solid #2563eb; padding-left: 10px; display: flex; align-items: center;">
+    <div id="logistik" class="card" style="border-radius: 15px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h3 style="margin: 0; border-left: 4px solid #2563eb; padding-left: 12px; display: flex; align-items: center; font-size: 18px; color: #333;">
             🚚 Logistik
         </h3>
-        <input type="date" id="stTgl" style="width: auto; padding: 5px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px;">
+        <input type="date" id="stTgl" style="width: auto; padding: 6px 10px; border: 1px solid #e0e0e0; border-radius: 10px; font-size: 14px; background: #f8f9fa;">
     </div>
 
-    <div class="row" style="margin-bottom: 10px;">
-        <div class="col" style="flex: 2;">
-            <select id="stBrg" onchange="cekJenisBarang()" class="form-control" style="width: 100%; height: 38px; border: 1px solid #ccc; border-radius: 4px; padding: 0 8px;"></select>
+    <div class="row" style="display: flex; gap: 12px; margin-bottom: 12px;">
+        <div style="flex: 2;">
+            <select id="stBrg" onchange="cekJenisBarang()" style="width: 100%; height: 45px; border: 1px solid #e0e0e0; border-radius: 12px; padding: 0 15px; font-size: 15px; background: white; -webkit-appearance: none;"></select>
         </div>
-        <div class="col" style="flex: 1;">
-            <input type="number" id="stQty" placeholder="Jml" class="form-control" style="width: 100%; height: 38px; border: 1px solid #ccc; border-radius: 4px; padding: 0 8px;">
-            <select id="stSatuan" style="display:none; margin-top:5px; width: 100%; height: 30px; border: 1px solid #ccc; border-radius: 4px;">
+        <div style="flex: 1;">
+            <input type="number" id="stQty" placeholder="Jml" style="width: 100%; height: 45px; border: 1px solid #e0e0e0; border-radius: 12px; padding: 0 15px; font-size: 15px; box-sizing: border-box;">
+            <select id="stSatuan" style="display:none; margin-top:8px; width: 100%; height: 35px; border: 1px solid #e0e0e0; border-radius: 10px;">
                 <option value="Liter">Liter</option>
                 <option value="Kg">Kg</option>
             </select>
         </div>
     </div>
 
-    <div class="row" style="margin-bottom: 10px;">
-        <div class="col">
-            <select id="stAksi" onchange="cekJenisBarang()" class="form-control" style="width: 100%; height: 38px; border: 1px solid #ccc; border-radius: 4px; padding: 0 8px;">
+    <div class="row" style="margin-bottom: 12px;">
+        <div style="width: 100%;">
+            <select id="stAksi" onchange="cekJenisBarang()" style="width: 100%; height: 45px; border: 1px solid #e0e0e0; border-radius: 12px; padding: 0 15px; font-size: 15px; background: white; -webkit-appearance: none;">
                 <option value="Masuk">Masuk</option>
                 <option value="Keluar">Keluar</option>
                 <option id="optRekon" value="Rekondisi">Rekondisi</option>
@@ -131,28 +131,28 @@
         </div>
     </div>
 
-    <div id="rowQC" class="row" style="margin-bottom: 15px;">
-        <div class="col">
-            <select id="stKondisi" class="form-control" style="width: 100%; height: 38px; border: 1px solid #ccc; border-radius: 4px; padding: 0 8px;">
+    <div id="rowQC" class="row" style="display: flex; gap: 12px; margin-bottom: 20px;">
+        <div style="flex: 1;">
+            <select id="stKondisi" style="width: 100%; height: 45px; border: 1px solid #e0e0e0; border-radius: 12px; padding: 0 15px; font-size: 15px; background: white;">
                 <option value="Kotor">Kotor</option>
                 <option value="Ready">Ready</option>
             </select>
         </div>
-        <div class="col">
-            <select id="stStatus" class="form-control" style="width: 100%; height: 38px; border: 1px solid #ccc; border-radius: 4px; padding: 0 8px;">
+        <div style="flex: 1;">
+            <select id="stStatus" style="width: 100%; height: 45px; border: 1px solid #e0e0e0; border-radius: 12px; padding: 0 15px; font-size: 15px; background: white;">
                 <option value="Accepted">Accepted</option>
                 <option value="Rejected">Rejected</option>
             </select>
         </div>
     </div>
 
-    <button onclick="prosesStok()" class="btn-block" style="width: 100%; padding: 12px; background: #28a745; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 15px;">
+    <button onclick="prosesStok()" style="width: 100%; padding: 14px; background: #28a745; color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 15px rgba(40, 167, 69, 0.2);">
         PROSES STOK
     </button>
 </div>
 
 
-            <div class="card">
+           <div class="card">
         <h3 style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
             📊 Laporan Stok 
             <input type="month" id="fMStok" style="width:110px; height:30px" onchange="renderStok()">
