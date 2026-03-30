@@ -257,129 +257,69 @@
 }
 
 
-        function renderAll() {
-    const elTb = document.getElementById('tbA'), elTh = document.getElementById('thA'), elFM = document.getElementById('fM');
-    if (!D || !elTb || !elTh || !elFM) return;
-    
-    const fM = elFM.value; 
-    const [Y, M] = fM.split('-'), lastD = new Date(Y, M, 0).getDate();
-    const K_arr = Object.values(D.master_karyawan || {});
+        function cellMod(d, k) {
+    let a = D.absensi?.[d]?.[k], aks = Object.values(D.aktivitas || {}).filter(x => x.t === d && x.p?.includes(k));
+    let bgCol = "#94a3b8", s = a?.j || "-";
 
-    // --- 1. HEADER TABEL (Satu Baris, Bersih) ---
-    let th = `<tr><th class="sticky-col">NAMA</th>`;
-    for(let i=1; i<=lastD; i++) {
-        const isToday = (new Date().getDate() == i && new Date().getMonth() + 1 == M && new Date().getFullYear() == Y);
-        // Highlight hijau muda untuk tanggal hari ini agar tetap tahu hari apa tanpa baris tambahan
-        th += `<th ${isToday ? 'id="todayCol" style="background:#dcfce7"' : ''}>${i}</th>`;
-    }
-    // Header Rekap (H, L, T, I, A)
-    th += `<th style="color:var(--s)">H</th><th style="color:var(--w)">L</th><th style="color:#f97316">T</th><th style="color:var(--w)">I</th><th style="color:var(--d)">A</th></tr>`;
-    elTh.innerHTML = th;
+    if (s === "Hadir") bgCol = "#22c55e";
+    else if (s === "Telat") bgCol = "#f97316";
+    else if (s === "Lembur") bgCol = "#0ea5e9"; // BIRU PASTI
+    else if (s === "Izin") bgCol = "#3b82f6";
+    else if (s === "Alpa") bgCol = "#ef4444";
 
-    // --- 2. ISI TABEL (BADGE & LOGIKA WARNA) ---
-    let tb = "";
-    K_arr.forEach(k => {
-        let r = `<td class="sticky-col">${k}</td>`, tH=0, tL=0, tT=0, tI=0, tA=0;
-        
-        for(let i=1; i<=lastD; i++) {
-            let d = `${fM}-${String(i).padStart(2,'0')}`, a = D.absensi?.[d]?.[k];
-            let isMinggu = new Date(d).getDay() === 0;
-            let isLiburToko = D.libur && D.libur[d];
-            
-            let txt = "-", cls = "bg-none";
-            
-            // Logika Libur Rutin & Toko
-            if (isMinggu) { txt = "M"; cls = "bg-m"; } 
-            else if (isLiburToko) { txt = "OFF"; cls = "bg-off"; }
+    let ket = a?.ket ? `<div style="margin-top:8px; padding:8px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:5px; font-size:11px; color:#475569; font-style:italic;"><b>Ket:</b> ${a.ket}</div>` : "";
 
-            if(a) { 
-                txt = a.j[0]; // Ambil inisial (H, T, L, I, A)
-                
-                // LOGIKA WARNA KHUSUS: 
-                // Jika status "Lembur", paksa pakai class biru (bg-w) agar sinkron dengan rekap L
-                if (a.j === "Lembur") {
-                    cls = "bg-w"; 
-                    txt = "L"; 
-                } else {
-                    cls = "bg-" + a.j.toLowerCase()[0];
-                }
-
-                // Hitung Rekap per baris
-                if(a.j==="Hadir") tH++; 
-                else if(a.j==="Telat") tT++; 
-                else if(a.j==="Izin") tI++; 
-                else if(a.j==="Alpa") tA++;
-                
-                // Jika ada nilai lembur (jam), tambahkan ke total L
-                if(a.l) tL += parseFloat(a.l);
-            }
-            
-            let styleOff = (txt === "OFF") ? "font-size:7px;" : "";
-            r += `<td><div class="badge ${cls}" style="${styleOff}" onclick="cellMod('${d}','${k}')">${txt}${a?.jamOut?'<div class="dot"></div>':''}</div></td>`;
-        }
-        
-        // Baris Rekap per Karyawan (Paling Kanan)
-        tb += `<tr>${r}
-            <td style="font-weight:800; color:var(--s)">${tH}</td>
-            <td style="font-weight:800; color:var(--w)">${tL}</td>
-            <td style="font-weight:800; color:#f97316">${tT}</td>
-            <td style="font-weight:800; color:var(--w)">${tI}</td>
-            <td style="font-weight:800; color:var(--d)">${tA}</td>
-        </tr>`;
-    });
-    elTb.innerHTML = tb;
-
-    // --- 3. AUTO SCROLL KE HARI INI ---
-    setTimeout(() => {
-        const todayEl = document.getElementById('todayCol');
-        const area = document.getElementById('areaAbsen');
-        if (todayEl && area) {
-            area.scrollTo({
-                left: todayEl.offsetLeft - (area.offsetWidth / 2),
-                behavior: 'smooth'
-            });
-        }
-    }, 400);
+    openMod(`Detail ${k} (${d})`, `
+        <div style="font-size:13px; color:#334155;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                <b>Status:</b> 
+                <span style="background:${bgCol} !important; color:white !important; padding:4px 12px; border-radius:15px; font-size:10px; font-weight:800; text-transform:uppercase;">${s}</span>
+            </div>
+            <p><b>Jam:</b> ${a?.jam || '-'} s/d ${a?.jamOut || '-'}</p>${ket}
+            <hr style="margin:15px 0; border:0; border-top:1px solid #eee;">
+            <p style="font-weight:bold; margin-bottom:5px">Pekerjaan:</p>
+            <ul style="padding-left:15px; margin-bottom:15px">${aks.map(x => `<li style="margin-bottom:4px">${x.j} (${x.q}) ${x.isCair ? '✅' : '⏳'}</li>`).join('') || '<li>-</li>'}</ul>
+            <button class="btn" style="background:#ef4444 !important; width:100%; color:white; font-weight:bold;" onclick="if(confirm('Hapus absen ${k}?')){removeItem('absensi/${d}','${k}'); closeMod();}">🗑️ HAPUS DATA ABSEN</button>
+        </div>
+    `);
 }
 
-
+function openLiburMod() {
+    const L = Object.entries(D.libur || {}).sort((a,b) => b[0].localeCompare(a[0]));
+    openMod("Libur Toko", `
+        <div style="display:flex; flex-direction:column; gap:10px">
+            <label style="font-size:12px">Mulai:</label>
+            <input type="date" id="lS" class="in">
+            <label style="font-size:12px">Sampai (Kosongkan jika 1 hari):</label>
+            <input type="date" id="lE" class="in">
+            <button class="btn" style="background:var(--p); margin-top:5px" onclick="saveL()">SET LIBUR</button>
+        </div>
+        <hr>
+        <div style="max-height:180px; overflow-y:auto">
+            ${L.map(x => `<div style="display:flex; justify-content:space-between; padding:5px; border-bottom:1px solid #eee"><span>${x[0]}</span><b onclick="removeItem('libur','${x[0]}'); openLiburMod();" style="color:red; cursor:pointer">×</b></div>`).join('') || '<p style="text-align:center">Kosong</p>'}
+        </div>
+    `);
+}
 
 function saveL() {
-    const valS = document.getElementById('lS').value;
-    const valE = document.getElementById('lE').value;
-
-    if (!valS) return alert("Pilih tanggal mulai dulu, Bos!");
-
-    // Logika Otomatis: Jika tanggal akhir kosong, samakan dengan tanggal mulai
-    let s = new Date(valS);
-    let e = valE ? new Date(valE) : new Date(valS);
-
-    if (e < s) return alert("Tanggal akhir tidak boleh mundur!");
-
-    const updates = {};
-    let tempS = new Date(s); // Gunakan variabel sementara agar s asli tidak berubah
-    while (tempS <= e) {
-        const tStr = tempS.toISOString().split('T')[0];
-        updates[tStr] = true;
-        tempS.setDate(tempS.getDate() + 1);
+    const vS = document.getElementById('lS').value;
+    const vE = document.getElementById('lE').value;
+    if (!vS) return alert("Pilih tanggal!");
+    let s = new Date(vS), e = vE ? new Date(vE) : new Date(vS);
+    const upd = {};
+    while (s <= e) {
+        upd[s.toISOString().split('T')[0]] = true;
+        s.setDate(s.getDate() + 1);
     }
-
-    // SIMPAN KE FIREBASE
-    db.ref('libur').update(updates).then(() => {
-        alert("✅ Berhasil Simpan Libur!");
-        
-        // --- RAHASIA REAL-TIME DI SINI ---
-        // 1. Update data lokal D supaya history langsung tahu ada data baru
+    db.ref('libur').update(upd).then(() => {
+        alert("✅ Berhasil!");
         if(!D.libur) D.libur = {};
-        Object.assign(D.libur, updates);
-        
-        // 2. Panggil lagi openLiburMod() untuk me-refresh isi daftar di dalam pop-up
+        Object.assign(D.libur, upd);
         openLiburMod(); 
-        
-        // 3. Refresh tabel utama (Kalender) di belakang pop-up
-        renderAll(); 
+        renderAll();    
     });
 }
+
 
 
         function toggleIzin() { const j=document.getElementById('absJenis').value; document.getElementById('boxIzin').style.display=(j==='Izin'?'block':'none'); }
