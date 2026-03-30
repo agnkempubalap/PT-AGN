@@ -104,21 +104,21 @@
         <h3 style="margin: 0; border-left: 4px solid #2563eb; padding-left: 10px; display: flex; align-items: center; font-size: 15px; color: #2563eb;">
             🚚 Logistik
         </h3>
-        <input type="date" id="stTgl" class="form-control" style="width: auto; height: 32px; padding: 2px 8px; font-size: 12px; border-radius: 8px; border: 1px solid #ccc;">
+        <input type="date" id="stTgl" class="form-control" style="width: auto; height: 32px; padding: 2px 8px; font-size: 12px; border-radius: 8px; border: 1px solid #ddd; background-color: #f9f9f9;">
     </div>
 
     <div class="row" style="display: flex; gap: 8px; margin-bottom: 10px;">
         <div style="flex: 2;">
-            <select id="stBrg" onchange="cekJenisBarang()" class="form-control" style="width: 100%; height: 38px; font-size: 13px; padding: 0 10px; border-radius: 8px; border: 1px solid #ccc; background: #fff;"></select>
+            <select id="stBrg" onchange="cekJenisBarang()" class="form-control" style="width: 100%; height: 38px; font-size: 13px; padding: 0 10px; border-radius: 8px; border: 1px solid #ddd; background-color: #f9f9f9; color: #333;"></select>
         </div>
         <div style="flex: 1;">
-            <input type="number" id="stQty" placeholder="Jml" class="form-control" style="width: 100%; height: 38px; font-size: 13px; padding: 0 10px; border-radius: 8px; border: 1px solid #ccc;">
+            <input type="number" id="stQty" placeholder="Jml" class="form-control" style="width: 100%; height: 38px; font-size: 13px; padding: 0 10px; border-radius: 8px; border: 1px solid #ddd; background-color: #f9f9f9;">
         </div>
     </div>
 
     <div class="row" style="margin-bottom: 10px;">
         <div style="width: 100%;">
-            <select id="stAksi" onchange="cekJenisBarang()" class="form-control" style="width: 100%; height: 38px; font-size: 13px; padding: 0 10px; border-radius: 8px; border: 1px solid #ccc; background: #fff;">
+            <select id="stAksi" onchange="cekJenisBarang()" class="form-control" style="width: 100%; height: 38px; font-size: 13px; padding: 0 10px; border-radius: 8px; border: 1px solid #ddd; background-color: #f9f9f9; color: #333;">
                 <option value="Masuk">Masuk</option>
                 <option value="Keluar">Keluar</option>
                 <option id="optRekon" value="Rekondisi">Rekondisi</option>
@@ -129,13 +129,13 @@
 
     <div id="rowQC" class="row" style="display: flex; gap: 8px; margin-bottom: 15px;">
         <div style="flex: 1;">
-            <select id="stKondisi" class="form-control" style="width: 100%; height: 38px; font-size: 13px; padding: 0 10px; border-radius: 8px; border: 1px solid #ccc; background: #fff;">
+            <select id="stKondisi" class="form-control" style="width: 100%; height: 38px; font-size: 13px; padding: 0 10px; border-radius: 8px; border: 1px solid #ddd; background-color: #f9f9f9;">
                 <option value="Kotor">Kotor</option>
                 <option value="Ready">Ready</option>
             </select>
         </div>
         <div style="flex: 1;">
-            <select id="stStatus" class="form-control" style="width: 100%; height: 38px; font-size: 13px; padding: 0 10px; border-radius: 8px; border: 1px solid #ccc; background: #fff;">
+            <select id="stStatus" class="form-control" style="width: 100%; height: 38px; font-size: 13px; padding: 0 10px; border-radius: 8px; border: 1px solid #ddd; background-color: #f9f9f9;">
                 <option value="Accepted">Accepted</option>
                 <option value="Rejected">Rejected</option>
             </select>
