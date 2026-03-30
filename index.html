@@ -238,13 +238,12 @@
     const [Y, M] = fM.split('-'), lastD = new Date(Y, M, 0).getDate();
     const K_arr = Object.values(D.master_karyawan || {});
 
-    // 2. Buat Header Tabel (Tanggal + 6 Kolom Rekap)
+    // 2. Buat Header Tabel (Tanggal + 5 Kolom Rekap: H, L, T, I, A)
     let th = `<tr><th class="sticky-col">NAMA</th>`;
     for(let i=1; i<=lastD; i++) th += `<th>${i}</th>`;
     
-    // Kolom Rekap: H, ., L, T, I, A
+    // Rekap tanpa kolom Pulang (.)
     th += `<th style="color:var(--s)">H</th>
-           <th style="color:var(--p)">.</th>
            <th style="color:var(--p)">L</th>
            <th style="color:#f97316">T</th>
            <th style="color:var(--w)">I</th>
@@ -255,7 +254,7 @@
     let tb = "";
     K_arr.forEach(k => {
         let r = `<td class="sticky-col">${k}</td>`;
-        let tH=0, tP=0, tL=0, tT=0, tI=0, tA=0;
+        let tH=0, tL=0, tT=0, tI=0, tA=0;
 
         for(let i=1; i<=lastD; i++) {
             let d = `${fM}-${String(i).padStart(2,'0')}`, 
@@ -266,7 +265,6 @@
                 cls = isL ? "bg-m" : "bg-none";
             
             if(a) { 
-                // Logika Penentuan Huruf & Warna di Kalender
                 txt = a.j[0]; 
                 cls = "bg-" + a.j.toLowerCase()[0];
                 
@@ -276,22 +274,18 @@
                 else if(a.j === "Izin") tI++; 
                 else if(a.j === "Alpa") tA++;
                 
-                // Hitung Jam Pulang (Titik)
-                if(a.jamOut) tP++; 
-                
-                // Hitung Lembur (L) - Diambil dari data 'l' atau status 'Lembur'
+                // Hitung Lembur (L)
                 if(a.j === "Lembur") tL++; 
                 else if(a.l) tL += parseFloat(a.l);
             }
             
-            // Render Kotak Absen Bulanan
+            // Render Kotak di Kalender (Titik putih tetap muncul jika ada jamOut)
             r += `<td><div class="badge ${cls}" onclick="cellMod('${d}','${k}')">${txt}${a?.jamOut?'<div class="dot"></div>':''}</div></td>`;
         }
         
-        // Tampilkan 6 kolom rekap di ujung kanan baris
+        // Tampilkan 5 kolom rekap di ujung kanan
         tb += `<tr>${r}
             <td style="font-weight:800; color:var(--s)">${tH}</td>
-            <td style="font-weight:800; color:var(--p)">${tP}</td>
             <td style="font-weight:800; color:var(--p)">${tL}</td>
             <td style="font-weight:800; color:#f97316">${tT}</td>
             <td style="font-weight:800; color:var(--w)">${tI}</td>
@@ -301,6 +295,7 @@
 
     elTb.innerHTML = tb;
 }
+
 
 
         function cellMod(d,k) { let a=D.absensi?.[d]?.[k], aks=Object.values(D.aktivitas||{}).filter(x=>x.t===d&&x.p?.includes(k)); openMod(`Detail ${k} (${d})`, `<p>Status: ${a?.j||'-'}</p><p>Jam: ${a?.jam||'-'} s/d ${a?.jamOut||'-'}</p><hr><ul>${aks.map(x=>`<li>${x.j} (${x.q}) ${x.isCair?'✅':'⏳'}</li>`).join('')||'Kerja: -'}</ul><br><button class='btn' onclick="removeItem('absensi/${d}','${k}')">HAPUS ABSEN</button>`); }
