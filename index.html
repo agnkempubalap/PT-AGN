@@ -349,18 +349,30 @@ function saveL() {
     if (e < s) return alert("Tanggal akhir tidak boleh mundur!");
 
     const updates = {};
-    while (s <= e) {
-        const tStr = s.toISOString().split('T')[0];
+    let tempS = new Date(s); // Gunakan variabel sementara agar s asli tidak berubah
+    while (tempS <= e) {
+        const tStr = tempS.toISOString().split('T')[0];
         updates[tStr] = true;
-        s.setDate(s.getDate() + 1);
+        tempS.setDate(tempS.getDate() + 1);
     }
 
+    // SIMPAN KE FIREBASE
     db.ref('libur').update(updates).then(() => {
         alert("✅ Berhasil Simpan Libur!");
-        // Jangan lupa panggil renderAll supaya tabel langsung berubah jadi OFF
+        
+        // --- RAHASIA REAL-TIME DI SINI ---
+        // 1. Update data lokal D supaya history langsung tahu ada data baru
+        if(!D.libur) D.libur = {};
+        Object.assign(D.libur, updates);
+        
+        // 2. Panggil lagi openLiburMod() untuk me-refresh isi daftar di dalam pop-up
+        openLiburMod(); 
+        
+        // 3. Refresh tabel utama (Kalender) di belakang pop-up
         renderAll(); 
     });
 }
+
 
         function toggleIzin() { const j=document.getElementById('absJenis').value; document.getElementById('boxIzin').style.display=(j==='Izin'?'block':'none'); }
 
