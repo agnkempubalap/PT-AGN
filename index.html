@@ -489,6 +489,16 @@ function saveL() {
             }); document.getElementById('tbStok').innerHTML = h;
         }
 
+// Set otomatis input bulan ke bulan berjalan saat ini
+const n = new Date();
+const blnSkrg = n.getFullYear() + '-' + String(n.getMonth() + 1).padStart(2, '0');
+document.getElementById('fMStok').value = blnSkrg;
+
+// Tambahkan ini supaya tabel stok langsung muncul otomatis
+renderStok();
+
+
+
         // ==========================================
         // 5. TAB AKTIVITAS LOGIC (CHAIN LOGIC)
         // ==========================================
