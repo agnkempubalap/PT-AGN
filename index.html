@@ -261,13 +261,13 @@ function renderAll() {
     if (!D || !elTb || !elTh || !elFM) return;
     const fM = elFM.value, [Y, M] = fM.split('-'), lastD = new Date(Y, M, 0).getDate(), K_arr = Object.values(D.master_karyawan || {});
 
-    // Header Single Baris (Tanpa Hari)
     let th = `<tr><th class="sticky-col">NAMA</th>`;
     for(let i=1; i<=lastD; i++) {
-        const isToday = (new Date().getDate() == i && new Date().getMonth() + 1 == M && new Date().getFullYear() == Y);
-        th += `<th ${isToday ? 'id="todayCol" style="background:#dcfce7"' : ''}>${i}</th>`;
+        const isT = (new Date().getDate() == i && new Date().getMonth() + 1 == M && new Date().getFullYear() == Y);
+        th += `<th ${isT ? 'id="todayCol" style="background:#dcfce7"' : ''}>${i}</th>`;
     }
-    th += `<th style="color:#22c55e">H</th><th style="color:#0ea5e9">L</th><th style="color:#f97316">T</th><th style="color:#3b82f6">I</th><th style="color:#ef4444">A</th></tr>`;
+    // Header L Navy, I SkyBlue
+    th += `<th style="color:#22c55e">H</th><th style="color:#1e3a8a">L</th><th style="color:#f97316">T</th><th style="color:#0ea5e9">I</th><th style="color:#ef4444">A</th></tr>`;
     elTh.innerHTML = th;
 
     let tb = "";
@@ -275,43 +275,36 @@ function renderAll() {
         let r = `<td class="sticky-col">${k}</td>`, tH=0, tL=0, tT=0, tI=0, tA=0;
         for(let i=1; i<=lastD; i++) {
             let d = `${fM}-${String(i).padStart(2,'0')}`, a = D.absensi?.[d]?.[k], isM = new Date(d).getDay() === 0, isL = D.libur?.[d];
-            let txt = "-", bCol = "transparent", tCol = "#475569"; // Default Kosong
+            let txt = "-", bCol = "transparent", tCol = "#475569";
 
-            // 1. Prioritas Libur
-            if (isM) { txt = "M"; bCol = "#64748b"; tCol = "white"; } // Abu-abu
-            else if (isL) { txt = "OFF"; bCol = "#475569"; tCol = "white"; } // Abu-abu Tua
+            if (isM) { txt = "M"; bCol = "#64748b"; tCol = "white"; } 
+            else if (isL) { txt = "OFF"; bCol = "#475569"; tCol = "white"; }
 
-            // 2. Data Absen (Timpa Libur)
             if(a) { 
-                txt = a.j[0]; bCol = "#ef4444"; tCol = "white"; // Default Merah (Alpa)
-
-                // LOGIKA WARNA MANUAL YG DISESUAIKAN:
-                if (a.j === "Hadir") bCol = "#22c55e";      // Hijau Pasti
-                else if (a.j === "Telat") bCol = "#f97316";  // Orange Pasti
-                else if (a.j === "Lembur") { bCol = "#0ea5e9"; txt = "L"; } // Biru Pasti
-                else if (a.j === "Izin") bCol = "#3b82f6";   // Biru Izin
+                txt = a.j[0]; tCol = "white";
+                // --- LOGIKA WARNA KONTRAS ---
+                if (a.j === "Hadir") bCol = "#22c55e";      // Hijau
+                else if (a.j === "Telat") bCol = "#f97316";  // Orange
+                else if (a.j === "Lembur") { bCol = "#1e3a8a"; txt = "L"; } // BIRU NAVY (GELAP)
+                else if (a.j === "Izin") bCol = "#0ea5e9";   // BIRU LANGIT (TERANG)
                 else if (a.j === "Alpa") bCol = "#ef4444";   // Merah
 
                 if(a.j==="Hadir") tH++; 
                 else if(a.j==="Telat") tT++; 
                 else if(a.j==="Izin") tI++; 
                 else if(a.j==="Alpa") tA++;
-                if(a.l) tL += parseFloat(a.l); // Jumlah jam lembur
+                if(a.l) tL += parseFloat(a.l);
             }
-            let styOff = (txt === "OFF") ? "font-size:7px;" : "";
-            r += `<td><div class="badge" style="background:${bCol} !important; color:${tCol} !important; border-radius:15px; width:22px; height:22px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:10px; ${styOff}" onclick="cellMod('${d}','${k}')">${txt}${a?.jamOut?'<div class="dot" style="position:absolute; bottom:1px; right:1px; width:4px; height:4px; background:white; border-radius:50%"></div>':''}</div></td>`;
+            // DOT (Titik Pulang) diperbesar jadi 6px supaya kelihatan jelas
+            let dot = a?.jamOut ? `<div style="position:absolute; bottom:2px; right:2px; width:6px; height:6px; background:white; border-radius:50%; border:1px solid rgba(0,0,0,0.2)"></div>` : "";
+            
+            r += `<td><div class="badge" style="position:relative; background:${bCol} !important; color:${tCol} !important; border-radius:15px; width:24px; height:24px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:10px; ${txt==='OFF'?'font-size:7px':''}" onclick="cellMod('${d}','${k}')">${txt}${dot}</div></td>`;
         }
-        // Kolom Rekap (H Green, L Blue, T Orange, I Blue, A Red)
-        tb += `<tr style="color:#334155; font-size:12px">${r}<td style="color:#22c55e; font-weight:800">${tH}</td><td style="color:#0ea5e9; font-weight:800">${tL}</td><td style="color:#f97316; font-weight:800">${tT}</td><td style="color:#3b82f6; font-weight:800">${tI}</td><td style="color:#ef4444; font-weight:800">${tA}</td></tr>`;
+        tb += `<tr style="color:#334155; font-size:12px">${r}<td style="color:#22c55e; font-weight:800">${tH}</td><td style="color:#1e3a8a; font-weight:800">${tL}</td><td style="color:#f97316; font-weight:800">${tT}</td><td style="color:#0ea5e9; font-weight:800">${tI}</td><td style="color:#ef4444; font-weight:800">${tA}</td></tr>`;
     });
     elTb.innerHTML = tb;
-
-    // Auto Scroll ke Hari Ini
-    setTimeout(() => {
-        const t = document.getElementById('todayCol'), a = document.getElementById('areaAbsen');
-        if (t && a) a.scrollTo({ left: t.offsetLeft - a.offsetWidth / 2, behavior: 'smooth' });
-    }, 400);
 }
+
 
 
         function cellMod(d, k) {
