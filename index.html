@@ -51,13 +51,16 @@
     <div class="container">
         <div id="tab-absen" class="tab-content active">
             <div class="card">
-                <h3 style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
-    <span>👥 Master Karyawan</span>
-    <div style="display: flex; flex: 1; gap: 5px;">
-        <input type="text" id="inK" placeholder="Nama..." style="flex: 3; height: 30px;"> 
-        <button class="btn" style="background:var(--p); flex: 1; margin:0; height: 30px; padding: 0;" onclick="addItem('master_karyawan', 'inK')">ADD</button>
+    <h3>👥 Master Karyawan</h3> 
+    
+    <div style="display: flex; gap: 5px; margin-top: 10px;">
+        <input type="text" id="inK" placeholder="Nama..." style="flex: 3; height: 35px;"> 
+        <button class="btn" style="background:var(--p); flex: 1; margin:0; height: 35px;" onclick="addItem('master_karyawan', 'inK')">ADD</button>
     </div>
-</h3>
+    
+    <div id="listK" style="display:flex; flex-wrap:wrap; gap:5px; margin-top:10px"></div>
+</div>
+
 
             <div class="card">
                 <h3>📅 Input Absensi <input type="date" id="absTgl" style="width:115px; height:30px"></h3>
@@ -78,13 +81,16 @@
 
         <div id="tab-stok" class="tab-content">
             <div class="card">
-                <div class="card">
     <h3>📦 Master Barang</h3>
-    <div class="flex-row" style="display: flex; gap: 5px;">
-        <input type="text" id="inB" placeholder="Barang..." style="flex: 3;">
-        <button class="btn" style="background:var(--p); flex: 1;" onclick="addItem('master_barang', 'inB')">ADD</button>
+    
+    <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+        <input type="text" id="inB" placeholder="Barang..." style="flex: 3; height: 35px;">
+        <button class="btn" style="background:var(--p); flex: 1; margin:0; height: 35px;" onclick="addItem('master_barang', 'inB')">ADD</button>
     </div>
+    
+    <div id="listB" style="display:flex; flex-wrap:wrap; gap:5px"></div>
 </div>
+
 
             <div class="card">
                 <h3>📥 Logistik & Penjualan</h3>
@@ -180,12 +186,24 @@
         function tab(id) { document.querySelectorAll('.tab-content, .nav-btn').forEach(e => e.classList.remove('active')); document.getElementById('tab-'+id).classList.add('active'); document.getElementById('nav-'+id).classList.add('active'); autoRender(); }
         
         function initUI() {
-            const K = Object.entries(D.master_karyawan || {}), B = Object.entries(D.master_barang || {});
-            document.getElementById('listK').innerHTML = K.map(k=>`<span style="background:#fff; border:1px solid #ddd; padding:4px; border-radius:5px; font-size:9px">${k[1]} <b onclick="removeItem('master_karyawan','${k[0]}')" style="color:red;cursor:pointer">×</b></span>`).join('');
-            document.getElementById('listB').innerHTML = B.map(b=>`<span style="background:#fff; border:1px solid #ddd; padding:4px; border-radius:5px; font-size:9px">${b[1]} <b onclick="removeItem('master_barang','${b[0]}')" style="color:red;cursor:pointer">×</b></span>`).join('');
-            document.getElementById('selK').innerHTML = K.map(k=>`<option value="${k[1]}">${k[1]}</option>`).join('');
-            document.getElementById('stBrg').innerHTML = B.map(b=>`<option value="${b[1]}">${b[1]}</option>`).join('');
-        }
+    const listK = document.getElementById('listK'), selK = document.getElementById('selK');
+    const listB = document.getElementById('listB'), stBrg = document.getElementById('stBrg');
+    
+    // Render Karyawan
+    if (listK && D.master_karyawan) {
+        const K = Object.entries(D.master_karyawan);
+        listK.innerHTML = K.map(k => `<span style="background:#fff; border:1px solid #ddd; padding:6px; border-radius:8px; font-size:11px">${k[1]} <b onclick="removeItem('master_karyawan','${k[0]}')" style="color:red; cursor:pointer">×</b></span>`).join('');
+        if (selK) selK.innerHTML = K.map(k => `<option value="${k[1]}">${k[1]}</option>`).join('');
+    }
+
+    // Render Barang
+    if (listB && D.master_barang) {
+        const B = Object.entries(D.master_barang);
+        listB.innerHTML = B.map(b => `<span style="background:#fff; border:1px solid #ddd; padding:6px; border-radius:8px; font-size:11px">${b[1]} <b onclick="removeItem('master_barang','${b[0]}')" style="color:red; cursor:pointer">×</b></span>`).join('');
+        if (stBrg) stBrg.innerHTML = B.map(b => `<option value="${b[1]}">${b[1]}</option>`).join('');
+    }
+}
+
 
         function openMod(t,h) { document.getElementById('modTitle').innerText=t; document.getElementById('modContent').innerHTML=h; document.getElementById('modalUni').style.display='flex'; }
         function closeMod() { document.getElementById('modalUni').style.display='none'; }
