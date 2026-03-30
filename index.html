@@ -306,6 +306,22 @@ function tab(id) {
             let char = "";
             let bg = "";
             if (s === 'Hadir') { tH++; char = "H"; bg = "#e8f5e9"; }
+            else if (s === 'Telat') { tT++; char = "T"; bg = "#fff3e0"; }
+            else if (s === 'Izin') { tI++; char = "I"; bg = "#fff9c4"; }
+            else if (s === 'Alpa') { tA++; char = "A"; bg = "#ffeade"; }
+            
+            tL += l;
+            r += `<td style="background:${bg}; font-size:9px;">${char}</td>`;
+        }
+
+        // Total di ujung kanan
+        r += `<td>${tH}</td><td>${tT}</td><td>${tL}</td><td>${tI}</td><td>${tA}</td>`;
+        tb += `<tr>${r}</tr>`;
+    });
+
+    container.innerHTML = tb;
+}
+
 
 
         function cellMod(d,k) { let a=D.absensi?.[d]?.[k], aks=Object.values(D.aktivitas||{}).filter(x=>x.t===d&&x.p?.includes(k)); openMod(`Detail ${k} (${d})`, `<p>Status: ${a?.j||'-'}</p><p>Jam: ${a?.jam||'-'} s/d ${a?.jamOut||'-'}</p><hr><ul>${aks.map(x=>`<li>${x.j} (${x.q}) ${x.isCair?'✅':'⏳'}</li>`).join('')||'Kerja: -'}</ul><br><button class='btn' onclick="removeItem('absensi/${d}','${k}')">HAPUS ABSEN</button>`); }
