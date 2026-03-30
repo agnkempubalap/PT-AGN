@@ -80,40 +80,26 @@
         </div>
 
         <div id="tab-stok" class="tab-content" style="display:none; padding:10px;">
-    <div class="card" style="border-top: 5px solid var(--p); margin-bottom:15px;">
+    <div class="card" style="border-top: 5px solid blue; margin-bottom:15px; padding:10px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
             <h3 style="margin:0; font-size:14px;">📦 Logistik & Penjualan</h3>
-            <input type="date" id="stTgl" class="in" style="width:130px; height:30px; padding:2px;">
+            <input type="date" id="stTgl" style="width:130px;">
         </div>
-        
-        <div class="flex-row">
-            <select id="stBrg" class="in"></select>
-        </div>
-        
-        <div class="flex-row">
-            <input type="number" id="stQty" class="in" placeholder="Jumlah">
-            <select id="stKon" class="in">
-                <option value="Bekas">Kotor</option>
-                <option value="Baru">Rdy</option>
-            </select>
-        </div>
-        
-        <button class="btn" style="background:var(--p); width:100%; color:white;" onclick="saveSt()">PROSES STOK</button>
+        <div class="flex-row"><select id="stBrg" class="in"></select></div>
+        <button class="btn" style="background:blue; width:100%; color:white;" onclick="saveSt()">SIMPAN</button>
     </div>
 
-    <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <h3 style="margin:0; font-size:14px;">📊 Laporan Stok</h3>
-            <input type="month" id="fM_Stok" class="in" style="width:130px;" onchange="renderStok()">
-        </div>
-        <div style="overflow-x:auto; background:white;">
-            <table class="tabel-absen">
+    <div class="card" style="padding:10px;">
+        <h3 style="font-size:14px;">📊 Laporan</h3>
+        <div style="overflow-x:auto;">
+            <table border="1" style="width:100%; border-collapse:collapse;">
                 <thead id="thStok"></thead>
                 <tbody id="tbStok"></tbody>
             </table>
         </div>
     </div>
 </div>
+
 
         <div id="tab-aktivitas" class="tab-content">
             <div class="card" style="border-top: 5px solid var(--d)">
@@ -420,48 +406,36 @@ function saveL() {
         }
 
         function renderStok() {
-    const elTb = document.getElementById('tbStok');
-    const elTh = document.getElementById('thStok');
-    const elFM = document.getElementById('fM_Stok');
-    
-    // Jika elemen tidak ditemukan, hentikan agar tidak error putih
-    if (!elTb || !elTh || !elFM) return;
+    try {
+        const elTb = document.getElementById('tbStok');
+        const elTh = document.getElementById('thStok');
+        
+        if (!elTb || !elTh) return;
 
-    if (!elFM.value) {
-        let n = new Date();
-        elFM.value = n.getFullYear() + "-" + String(n.getMonth() + 1).padStart(2, '0');
-    }
+        // Header Sederhana dulu
+        elTh.innerHTML = "<tr><th>BARANG</th><th>TOTAL</th></tr>";
 
-    const fM = elFM.value; 
-    const [Y, M] = fM.split('-');
-    const lastD = new Date(Y, M, 0).getDate();
-    const S_arr = D.master_stok ? Object.values(D.master_stok) : [];
+        // Cek apakah data Master Stok ada
+        if (!D || !D.master_stok) {
+            elTb.innerHTML = "<tr><td colspan='2'>Data Master Belum Ada</td></tr>";
+            return;
+        }
 
-    // Header Tanggal
-    let th = "<tr><th class='sticky-col'>BARANG</th>";
-    for(let i=1; i<=lastD; i++) th += "<th>" + i + "</th>";
-    th += "<th>TOTAL</th></tr>";
-    elTh.innerHTML = th;
+        let html = "";
+        let barangs = Object.values(D.master_stok);
 
-    // Isi Tabel
-    let tb = "";
-    if (S_arr.length === 0) {
-        tb = "<tr><td colspan='" + (lastD + 2) + "'>Belum ada data barang</td></tr>";
-    } else {
-        S_arr.forEach(s => {
-            let r = "<td class='sticky-col'><b>" + s + "</b></td>";
-            let tBulan = 0;
-            for(let i=1; i<=lastD; i++) {
-                let d = fM + "-" + String(i).padStart(2, '0');
-                let q = (D.stok && D.stok[d] && D.stok[d][s]) ? parseFloat(D.stok[d][s]) : 0;
-                tBulan += q;
-                r += "<td style='color:" + (q > 0 ? "red" : "#ccc") + "'>" + (q > 0 ? q : "-") + "</td>";
-            }
-            tb += "<tr>" + r + "<td style='font-weight:bold; color:var(--p)'>" + tBulan + "</td></tr>";
+        barangs.forEach(nama => {
+            html += `<tr><td>${nama}</td><td>0</td></tr>`;
         });
+
+        elTb.innerHTML = html;
+        
+    } catch (err) {
+        console.error("Error di renderStok:", err);
+        alert("Ada masalah di kode Stok: " + err.message);
     }
-    elTb.innerHTML = tb;
 }
+
 
 
         // ==========================================
