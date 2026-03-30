@@ -313,31 +313,33 @@
     let a = D.absensi?.[d]?.[k],
         aks = Object.values(D.aktivitas || {}).filter(x => x.t === d && x.p?.includes(k));
     
-    // Warna Badge Berdasarkan Inisial Status
-    let bgCol = "var(--d)"; // Default merah
-    if(a?.j === "Hadir") bgCol = "var(--s)";
-    else if(a?.j === "Telat") bgCol = "var(--p)";
-    else if(a?.j === "Izin") bgCol = "var(--w)";
-    else if(a?.j === "Lembur") bgCol = "var(--p)";
+    // LOGIKA WARNA YG DISAMAKAN DENGAN TABEL UTAMA
+    let bgCol = "#94a3b8"; // Default Abu-abu (None)
+    
+    if (a?.j === "Hadir") bgCol = "var(--s)";      // Hijau
+    else if (a?.j === "Telat") bgCol = "var(--p)";  // Kuning/Orange
+    else if (a?.j === "Izin") bgCol = "var(--w)";   // Biru
+    else if (a?.j === "Alpa") bgCol = "var(--d)";   // Merah
+    else if (a?.j === "Lembur") bgCol = "var(--p)"; // Kuning (Sama dengan Telat)
 
     let ket = a?.ket ? `<div style="margin-top:8px; padding:8px; background:#f1f5f9; border-radius:5px; font-size:11px; color:#475569; font-style:italic;"><b>Ket:</b> ${a.ket}</div>` : "";
 
     openMod(`Detail ${k} (${d})`, `
         <div style="font-size:13px">
-            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
                 <b>Status:</b> 
-                <span style="background:${bgCol}; color:white; padding:3px 12px; border-radius:15px; font-size:10px; font-weight:800; text-transform:uppercase;">
+                <span style="background:${bgCol}; color:white; padding:4px 12px; border-radius:15px; font-size:10px; font-weight:800; text-transform:uppercase; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                     ${a?.j || '-'}
                 </span>
             </div>
-            <p><b>Jam:</b> ${a?.jam || '-'} s/d ${a?.jamOut || '-'}</p>
+            <p style="margin-bottom:5px;"><b>Jam:</b> ${a?.jam || '-'} s/d ${a?.jamOut || '-'}</p>
             ${ket}
-            <hr style="margin:15px 0">
-            <p style="font-weight:bold; margin-bottom:5px">Pekerjaan:</p>
-            <ul style="padding-left:15px; margin-bottom:15px">
-                ${aks.map(x => `<li style="margin-bottom:3px">${x.j} (${x.q}) ${x.isCair ? '✅' : '⏳'}</li>`).join('') || '<li>-</li>'}
+            <hr style="margin:15px 0; border:0; border-top:1px solid #eee;">
+            <p style="font-weight:bold; margin-bottom:8px; color:#64748b;">Pekerjaan:</p>
+            <ul style="padding-left:18px; margin-bottom:15px; color:#334155;">
+                ${aks.map(x => `<li style="margin-bottom:4px">${x.j} (${x.q}) ${x.isCair ? '✅' : '⏳'}</li>`).join('') || '<li>- Belum ada data kerja -</li>'}
             </ul>
-            <button class="btn" style="background:var(--d); width:100%; margin:0; font-weight:bold;" onclick="if(confirm('Hapus absen ${k}?')){removeItem('absensi/${d}','${k}'); closeMod();}">
+            <button class="btn" style="background:var(--d); width:100%; margin:0; font-weight:bold; height:45px; display:flex; align-items:center; justify-content:center; gap:8px;" onclick="if(confirm('Hapus absen ${k}?')){removeItem('absensi/${d}','${k}'); closeMod();}">
                 🗑️ HAPUS DATA ABSEN
             </button>
         </div>
