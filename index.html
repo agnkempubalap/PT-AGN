@@ -100,29 +100,29 @@
     </div>
 
     <div id="logistik" class="card">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-        <h3 style="margin: 0; color: #2563eb; font-size: 18px; display: flex; align-items: center;">
-            <i class="fas fa-boxes" style="margin-right: 8px;"></i> Logistik
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3 style="margin: 0; color: #2563eb; font-size: 16px; display: flex; align-items: center;">
+            🚚 Logistik
         </h3>
-        <input type="date" id="stTgl" style="width: auto; max-width: 150px; padding: 5px; border-radius: 5px; border: 1px solid #ddd; font-size: 13px;">
+        <input type="date" id="stTgl" style="width: auto; max-width: 130px; padding: 4px; border-radius: 5px; border: 1px solid #ddd; font-size: 12px;">
     </div>
 
-    <div class="row" style="display: flex; gap: 10px; margin-bottom: 10px;">
+    <div class="row" style="display: flex; gap: 8px; margin-bottom: 8px;">
         <div style="flex: 2;">
-            <select id="stBrg" onchange="cekJenisBarang()" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; background: #fff; height: 45px;"></select>
+            <select id="stBrg" onchange="cekJenisBarang()" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ddd; background: #fff; height: 38px; font-size: 14px;"></select>
         </div>
         <div style="flex: 1;">
-            <input type="number" id="stQty" placeholder="Jml" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; height: 45px;">
-            <select id="stSatuan" style="display:none; margin-top:5px; width: 100%; padding: 5px; border-radius: 5px;">
+            <input type="number" id="stQty" placeholder="Jml" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ddd; height: 38px; font-size: 14px;">
+            <select id="stSatuan" style="display:none; margin-top:4px; width: 100%; padding: 4px; border-radius: 4px; font-size: 12px;">
                 <option value="Liter">Liter</option>
                 <option value="Kg">Kg</option>
             </select>
         </div>
     </div>
 
-    <div class="row" style="margin-bottom: 10px;">
+    <div class="row" style="margin-bottom: 8px;">
         <div class="col">
-            <select id="stAksi" onchange="cekJenisBarang()" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; background: #fff; height: 45px;">
+            <select id="stAksi" onchange="cekJenisBarang()" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ddd; background: #fff; height: 38px; font-size: 14px;">
                 <option value="Masuk">Masuk</option>
                 <option value="Keluar">Keluar</option>
                 <option id="optRekon" value="Rekondisi">Rekondisi</option>
@@ -131,22 +131,22 @@
         </div>
     </div>
 
-    <div id="rowQC" class="row" style="display: flex; gap: 10px; margin-bottom: 15px;">
+    <div id="rowQC" class="row" style="display: flex; gap: 8px; margin-bottom: 12px;">
         <div style="flex: 1;">
-            <select id="stKondisi" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; background: #fff; height: 45px;">
+            <select id="stKondisi" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ddd; background: #fff; height: 38px; font-size: 14px;">
                 <option value="Kotor">Kotor</option>
                 <option value="Ready">Ready</option>
             </select>
         </div>
         <div style="flex: 1;">
-            <select id="stStatus" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; background: #fff; height: 45px;">
+            <select id="stStatus" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ddd; background: #fff; height: 38px; font-size: 14px;">
                 <option value="Accepted">Accepted</option>
                 <option value="Rejected">Rejected</option>
             </select>
         </div>
     </div>
 
-    <button onclick="prosesStok()" class="btn-block" style="width: 100%; padding: 12px; background: #28a745; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer;">
+    <button onclick="prosesStok()" class="btn-block" style="width: 100%; padding: 10px; background: #28a745; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer;">
         PROSES STOK
     </button>
 </div>
