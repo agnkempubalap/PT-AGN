@@ -209,20 +209,45 @@
         }
 
         function renderAll() {
-            const K_arr = Object.values(D.master_karyawan || {}), fM = document.getElementById('fM').value; if(!fM) return;
-            const Y=fM.split('-')[0], M=fM.split('-')[1], lastD = new Date(Y, M, 0).getDate();
-            let th = `<tr><th class="sticky-col">NAMA</th>`; for(let i=1; i<=lastD; i++) th += `<th>${i}</th>`; th += `<th>H/T</th><th>L</th><th>I/A</th></tr>`; document.getElementById('thA').innerHTML = th;
-            let tb = ""; K_arr.forEach(k => {
-                let r = `<td class="sticky-col">${k}</td>`, tH=0, tL=0, tO=0;
-                for(let i=1; i<=lastD; i++) {
-                    let d = `${Y}-${M}-${String(i).padStart(2,'0')}`, a = D.absensi?.[d]?.[k], isL = D.libur?.[d]||new Date(d).getDay()===0;
-                    let txt=isL?"M":"-", cls=isL?"bg-m":"bg-none";
-                    if(a) { txt=a.j[0]; cls="bg-"+a.j[0].toLowerCase(); if(a.j==="Hadir"||a.j==="Telat") tH++; else if(a.j==="Lembur") tL++; else tO++; }
-                    r += `<td><div class="badge ${cls}" onclick="cellMod('${d}','${k}')">${txt}${a?.jamOut?'<div class="dot"></div>':''}</div></td>`;
-                }
-                tb += `<tr>${r}<td>${tH}</td><td>${tL}</td><td>${tO}</td></tr>`;
-            }); document.getElementById('tbA').innerHTML = tb;
+    const K_arr = Object.values(D.master_karyawan || {}), fM = document.getElementById('fM').value; 
+    if(!fM) return;
+    
+    const Y = fM.split('-')[0], M = fM.split('-')[1], lastD = new Date(Y, M, 0).getDate();
+    
+    // Header Tabel: Tambah kolom H, L, I, A secara terpisah
+    let th = `<tr><th class="sticky-col">NAMA</th>`; 
+    for(let i=1; i<=lastD; i++) th += `<th>${i}</th>`; 
+    th += `<th style="color:var(--s)">H</th><th style="color:var(--p)">L</th><th style="color:var(--w)">I</th><th style="color:var(--d)">A</th></tr>`; 
+    document.getElementById('thA').innerHTML = th;
+
+    let tb = ""; 
+    K_arr.forEach(k => {
+        let r = `<td class="sticky-col">${k}</td>`;
+        let tH=0, tL=0, tI=0, tA=0; // Counter masing-masing status
+
+        for(let i=1; i<=lastD; i++) {
+            let d = `${Y}-${M}-${String(i).padStart(2,'0')}`, a = D.absensi?.[d]?.[k];
+            let isL = D.libur?.[d] || new Date(d).getDay()===0;
+            let txt = isL ? "M" : "-"; 
+            let cls = isL ? "bg-m" : "bg-none";
+
+            if(a) { 
+                txt = a.j[0]; 
+                cls = "bg-" + a.j[0].toLowerCase(); 
+                
+                // Logika Hitung Terpisah
+                if(a.j === "Hadir" || a.j === "Telat") tH++; 
+                else if(a.j === "Lembur") tL++; 
+                else if(a.j === "Izin") tI++; 
+                else if(a.j === "Alpa") tA++; 
+            }
+            r += `<td><div class="badge ${cls}" onclick="cellMod('${d}','${k}')">${txt}${a?.jamOut?'<div class="dot"></div>':''}</div></td>`;
         }
+        // Masukkan ke kolom rekap masing-masing
+        tb += `<tr>${r}<td style="font-weight:bold">${tH}</td><td style="font-weight:bold">${tL}</td><td style="font-weight:bold">${tI}</td><td style="font-weight:bold">${tA}</td></tr>`;
+    }); 
+    document.getElementById('tbA').innerHTML = tb;
+}
 
         function cellMod(d,k) { let a=D.absensi?.[d]?.[k], aks=Object.values(D.aktivitas||{}).filter(x=>x.t===d&&x.p?.includes(k)); openMod(`Detail ${k} (${d})`, `<p>Status: ${a?.j||'-'}</p><p>Jam: ${a?.jam||'-'} s/d ${a?.jamOut||'-'}</p><hr><ul>${aks.map(x=>`<li>${x.j} (${x.q}) ${x.isCair?'✅':'⏳'}</li>`).join('')||'Kerja: -'}</ul><br><button class='btn' onclick="removeItem('absensi/${d}','${k}')">HAPUS ABSEN</button>`); }
         function openLiburMod() { let l=Object.entries(D.libur||{}).sort((a,b)=>b[0].localeCompare(a[0])); openMod("Libur Toko", `Mulai: <input type="date" id="lS"> s/d <input type="date" id="lE"><button class="btn" onclick="saveL()">SET</button><hr>${l.map(x=>`<div>${x[0]} <b onclick="removeItem('libur','${x[0]}')" style="color:red; cursor:pointer">×</b></div>`).join('')}`); }
