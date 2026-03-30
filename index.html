@@ -256,6 +256,61 @@
     }
 }
 
+function renderAll() {
+    const elTb = document.getElementById('tbA'), elTh = document.getElementById('thA'), elFM = document.getElementById('fM');
+    // Jika elemen HTML tidak ditemukan, jangan jalankan agar tidak error ke bawah
+    if (!D || !elTb || !elTh || !elFM) return;
+    
+    const fM = elFM.value; 
+    const [Y, M] = fM.split('-'), lastD = new Date(Y, M, 0).getDate();
+    const K_arr = Object.values(D.master_karyawan || {});
+
+    // --- HEADER TANGGAL ---
+    let th = `<tr><th class="sticky-col">NAMA</th>`;
+    for(let i=1; i<=lastD; i++) {
+        const isT = (new Date().getDate() == i && new Date().getMonth() + 1 == M && new Date().getFullYear() == Y);
+        th += `<th ${isT ? 'id="todayCol" style="background:#dcfce7"' : ''}>${i}</th>`;
+    }
+    th += `<th style="color:var(--s)">H</th><th style="color:var(--w)">L</th><th style="color:#f97316">T</th><th style="color:var(--w)">I</th><th style="color:var(--d)">A</th></tr>`;
+    elTh.innerHTML = th;
+
+    // --- ISI TABEL ---
+    let tb = "";
+    K_arr.forEach(k => {
+        let r = `<td class="sticky-col">${k}</td>`, tH=0, tL=0, tT=0, tI=0, tA=0;
+        for(let i=1; i<=lastD; i++) {
+            let d = `${fM}-${String(i).padStart(2,'0')}`, 
+                a = D.absensi?.[d]?.[k], 
+                isM = new Date(d).getDay() === 0, 
+                isL = D.libur?.[d];
+            
+            let txt = "-", cls = "bg-none";
+            if (isM) { txt = "M"; cls = "bg-m"; } 
+            else if (isL) { txt = "OFF"; cls = "bg-off"; }
+
+            if(a) { 
+                txt = a.j[0]; 
+                // LEMBUR JADI BIRU
+                cls = (a.j === "Lembur") ? "bg-w" : "bg-" + a.j.toLowerCase()[0];
+                
+                if(a.j==="Hadir") tH++; 
+                else if(a.j==="Telat") tT++; 
+                else if(a.j==="Izin") tI++; 
+                else if(a.j==="Alpa") tA++;
+                if(a.l) tL += parseFloat(a.l);
+            }
+            r += `<td><div class="badge ${cls}" style="${txt==='OFF'?'font-size:7px':''}" onclick="cellMod('${d}','${k}')">${txt}${a?.jamOut?'<div class="dot"></div>':''}</div></td>`;
+        }
+        tb += `<tr>${r}<td>${tH}</td><td>${tL}</td><td>${tT}</td><td>${tI}</td><td>${tA}</td></tr>`;
+    });
+    elTb.innerHTML = tb;
+
+    // --- AUTO SCROLL ---
+    setTimeout(() => {
+        const t = document.getElementById('todayCol'), a = document.getElementById('areaAbsen');
+        if (t && a) a.scrollTo({ left: t.offsetLeft - a.offsetWidth / 2, behavior: 'smooth' });
+    }, 400);
+}
 
         function cellMod(d, k) {
     let a = D.absensi?.[d]?.[k], aks = Object.values(D.aktivitas || {}).filter(x => x.t === d && x.p?.includes(k));
