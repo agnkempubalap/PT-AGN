@@ -310,8 +310,58 @@
 
 
         function cellMod(d,k) { let a=D.absensi?.[d]?.[k], aks=Object.values(D.aktivitas||{}).filter(x=>x.t===d&&x.p?.includes(k)); openMod(`Detail ${k} (${d})`, `<p>Status: ${a?.j||'-'}</p><p>Jam: ${a?.jam||'-'} s/d ${a?.jamOut||'-'}</p><hr><ul>${aks.map(x=>`<li>${x.j} (${x.q}) ${x.isCair?'✅':'⏳'}</li>`).join('')||'Kerja: -'}</ul><br><button class='btn' onclick="removeItem('absensi/${d}','${k}')">HAPUS ABSEN</button>`); }
-        function openLiburMod() { let l=Object.entries(D.libur||{}).sort((a,b)=>b[0].localeCompare(a[0])); openMod("Libur Toko", `Mulai: <input type="date" id="lS"> s/d <input type="date" id="lE"><button class="btn" onclick="saveL()">SET</button><hr>${l.map(x=>`<div>${x[0]} <b onclick="removeItem('libur','${x[0]}')" style="color:red; cursor:pointer">×</b></div>`).join('')}`); }
-        function saveL() { let s=new Date(document.getElementById('lS').value), e=new Date(document.getElementById('lE').value); while(s<=e){ db.ref('libur').update({[s.toISOString().split('T')[0]]:"OFF"}); s.setDate(s.getDate()+1); } }
+        function openLiburMod() {
+    const L = Object.entries(D.libur || {}).sort((a,b) => b[0].localeCompare(a[0]));
+    
+    // UI Modal Libur yang lebih rapi
+    openMod("Libur Toko", `
+        <div style="display:flex; flex-direction:column; gap:10px">
+            <label style="font-size:12px">Mulai:</label>
+            <input type="date" id="lS" class="in">
+            
+            <label style="font-size:12px">Sampai (Kosongkan jika 1 hari saja):</label>
+            <input type="date" id="lE" class="in">
+            
+            <button class="btn" style="background:var(--p); margin-top:5px" onclick="saveL()">SIMPAN LIBUR</button>
+        </div>
+        <hr>
+        <div style="max-height:200px; overflow-y:auto">
+            ${L.map(x => `
+                <div style="display:flex; justify-content:space-between; padding:5px; border-bottom:1px solid #eee">
+                    <span>${x[0]}</span>
+                    <b onclick="removeItem('libur','${x[0]}')" style="color:red; cursor:pointer">×</b>
+                </div>
+            `).join('') || '<p style="text-align:center; color:#999">Belum ada jadwal libur</p>'}
+        </div>
+    `);
+}
+
+function saveL() {
+    const valS = document.getElementById('lS').value;
+    const valE = document.getElementById('lE').value;
+
+    if (!valS) return alert("Pilih tanggal mulai dulu, Bos!");
+
+    // Logika Otomatis: Jika tanggal akhir kosong, samakan dengan tanggal mulai
+    let s = new Date(valS);
+    let e = valE ? new Date(valE) : new Date(valS);
+
+    if (e < s) return alert("Tanggal akhir tidak boleh mundur!");
+
+    const updates = {};
+    while (s <= e) {
+        const tStr = s.toISOString().split('T')[0];
+        updates[tStr] = true;
+        s.setDate(s.getDate() + 1);
+    }
+
+    db.ref('libur').update(updates).then(() => {
+        alert("✅ Berhasil Simpan Libur!");
+        // Jangan lupa panggil renderAll supaya tabel langsung berubah jadi OFF
+        renderAll(); 
+    });
+}
+
         function toggleIzin() { const j=document.getElementById('absJenis').value; document.getElementById('boxIzin').style.display=(j==='Izin'?'block':'none'); }
 
 // ==========================================
