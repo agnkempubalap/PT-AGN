@@ -313,12 +313,23 @@
     let a = D.absensi?.[d]?.[k],
         aks = Object.values(D.aktivitas || {}).filter(x => x.t === d && x.p?.includes(k));
     
-    // Logika Keterangan (Izin/Telat/Alpa)
+    // Warna Badge Berdasarkan Inisial Status
+    let bgCol = "var(--d)"; // Default merah
+    if(a?.j === "Hadir") bgCol = "var(--s)";
+    else if(a?.j === "Telat") bgCol = "var(--p)";
+    else if(a?.j === "Izin") bgCol = "var(--w)";
+    else if(a?.j === "Lembur") bgCol = "var(--p)";
+
     let ket = a?.ket ? `<div style="margin-top:8px; padding:8px; background:#f1f5f9; border-radius:5px; font-size:11px; color:#475569; font-style:italic;"><b>Ket:</b> ${a.ket}</div>` : "";
 
     openMod(`Detail ${k} (${d})`, `
         <div style="font-size:13px">
-            <p><b>Status:</b> <span class="badge bg-${a?.j?.toLowerCase()[0] || 'none'}" style="float:none; display:inline-block;">${a?.j || '-'}</span></p>
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                <b>Status:</b> 
+                <span style="background:${bgCol}; color:white; padding:3px 12px; border-radius:15px; font-size:10px; font-weight:800; text-transform:uppercase;">
+                    ${a?.j || '-'}
+                </span>
+            </div>
             <p><b>Jam:</b> ${a?.jam || '-'} s/d ${a?.jamOut || '-'}</p>
             ${ket}
             <hr style="margin:15px 0">
@@ -326,10 +337,7 @@
             <ul style="padding-left:15px; margin-bottom:15px">
                 ${aks.map(x => `<li style="margin-bottom:3px">${x.j} (${x.q}) ${x.isCair ? '✅' : '⏳'}</li>`).join('') || '<li>-</li>'}
             </ul>
-            
-            <button class="btn" 
-                style="background:var(--d); width:100%; margin:0; font-weight:bold;" 
-                onclick="if(confirm('Hapus absen ${k} tanggal ${d}?')){removeItem('absensi/${d}','${k}'); closeMod();}">
+            <button class="btn" style="background:var(--d); width:100%; margin:0; font-weight:bold;" onclick="if(confirm('Hapus absen ${k}?')){removeItem('absensi/${d}','${k}'); closeMod();}">
                 🗑️ HAPUS DATA ABSEN
             </button>
         </div>
