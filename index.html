@@ -100,32 +100,29 @@
     </div>
 
     <div id="logistik" class="card">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-        <h3 style="margin: 0; border-left: 4px solid #2563eb; padding-left: 10px; display: flex; align-items: center;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3 style="margin: 0; border-left: 4px solid #2563eb; padding-left: 10px; display: flex; align-items: center; font-size: 16px;">
             🚚 Logistik
         </h3>
-        <input type="date" id="stTgl" class="form-control" style="width: auto; height: 35px; padding: 5px; font-size: 13px;">
+        <input type="date" id="stTgl" class="form-control" style="width: auto; height: 30px; padding: 2px 5px; font-size: 12px; border-radius: 5px;">
     </div>
 
-    <div class="row">
-        <div class="col" style="flex: 2;">
-            <label style="font-size: 12px; color: #666;">Pilih Barang</label>
-            <select id="stBrg" onchange="cekJenisBarang()" class="form-control" style="width: 100%;"></select>
+    <div class="row" style="display: flex; gap: 8px; margin-bottom: 8px;">
+        <div style="flex: 2;">
+            <select id="stBrg" onchange="cekJenisBarang()" class="form-control" style="width: 100%; height: 35px; font-size: 13px; padding: 0 8px; border-radius: 6px;"></select>
         </div>
-        <div class="col" style="flex: 1;">
-            <label style="font-size: 12px; color: #666;">Jumlah</label>
-            <input type="number" id="stQty" placeholder="Jml" class="form-control" style="width: 100%;">
-            <select id="stSatuan" class="form-control" style="display:none; margin-top:5px; height: 30px; font-size: 12px;">
+        <div style="flex: 1;">
+            <input type="number" id="stQty" placeholder="Jml" class="form-control" style="width: 100%; height: 35px; font-size: 13px; padding: 0 8px; border-radius: 6px;">
+            <select id="stSatuan" class="form-control" style="display:none; margin-top:4px; height: 28px; font-size: 11px;">
                 <option value="Liter">Liter</option>
                 <option value="Kg">Kg</option>
             </select>
         </div>
     </div>
 
-    <div class="row" style="margin-top: 10px;">
-        <div class="col">
-            <label style="font-size: 12px; color: #666;">Aksi</label>
-            <select id="stAksi" onchange="cekJenisBarang()" class="form-control" style="width: 100%;">
+    <div class="row" style="margin-bottom: 8px;">
+        <div style="width: 100%;">
+            <select id="stAksi" onchange="cekJenisBarang()" class="form-control" style="width: 100%; height: 35px; font-size: 13px; padding: 0 8px; border-radius: 6px;">
                 <option value="Masuk">Masuk</option>
                 <option value="Keluar">Keluar</option>
                 <option id="optRekon" value="Rekondisi">Rekondisi</option>
@@ -134,27 +131,26 @@
         </div>
     </div>
 
-    <div id="rowQC" class="row" style="margin-top: 10px; margin-bottom: 15px;">
-        <div class="col">
-            <label style="font-size: 12px; color: #666;">Kondisi</label>
-            <select id="stKondisi" class="form-control" style="width: 100%;">
+    <div id="rowQC" class="row" style="display: flex; gap: 8px; margin-bottom: 12px;">
+        <div style="flex: 1;">
+            <select id="stKondisi" class="form-control" style="width: 100%; height: 35px; font-size: 13px; padding: 0 8px; border-radius: 6px;">
                 <option value="Kotor">Kotor</option>
                 <option value="Ready">Ready</option>
             </select>
         </div>
-        <div class="col">
-            <label style="font-size: 12px; color: #666;">Status</label>
-            <select id="stStatus" class="form-control" style="width: 100%;">
+        <div style="flex: 1;">
+            <select id="stStatus" class="form-control" style="width: 100%; height: 35px; font-size: 13px; padding: 0 8px; border-radius: 6px;">
                 <option value="Accepted">Accepted</option>
                 <option value="Rejected">Rejected</option>
             </select>
         </div>
     </div>
 
-    <button onclick="prosesStok()" class="btn btn-success btn-block" style="width: 100%; padding: 12px; font-weight: bold;">
+    <button onclick="prosesStok()" class="btn btn-success btn-block" style="width: 100%; padding: 10px; font-weight: bold; font-size: 14px; border-radius: 8px;">
         PROSES STOK
     </button>
 </div>
+
 
            <div class="card">
         <h3 style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
