@@ -51,17 +51,9 @@
     <div class="container">
         <div id="tab-absen" class="tab-content active">
             <div class="card">
-    <h3>👥 Master Karyawan</h3>
-    <div style="display: flex; align-items: center; gap: 5px; margin-bottom: 12px;">
-        
-        <input type="text" id="inK" placeholder="Nama..." style="flex: 1; margin: 0;">
-        
-        <button class="btn" style="background:var(--p); width: 60px; min-width: 60px; margin: 0; padding: 10px 0; font-size: 10px;" onclick="addItem('master_karyawan', 'inK')">ADD</button>
-        
-    </div>
-    <div id="listK" style="display:flex; flex-wrap:wrap; gap:5px"></div>
-</div>
-
+                <h3>👥 Master Karyawan <input type="text" id="inK" placeholder="Nama..." style="width:100px; height:30px"> <button class="btn" style="background:var(--p); width:50px; margin:0" onclick="addItem('master_karyawan', 'inK')">ADD</button></h3>
+                <div id="listK" style="display:flex; flex-wrap:wrap; gap:5px"></div>
+            </div>
             <div class="card">
                 <h3>📅 Input Absensi <input type="date" id="absTgl" style="width:115px; height:30px"></h3>
                 <div class="flex-row"><select id="selK"></select><select id="absJenis" onchange="toggleIzin()"><option value="Hadir">Masuk</option><option value="Pulang">Pulang</option><option value="Izin">Izin</option><option value="Alpa">Alpa</option></select></div>
@@ -80,11 +72,11 @@
         </div>
 
         <div id="tab-stok" class="tab-content">
-            <div style="display: flex; align-items: center; gap: 5px; margin-bottom: 12px;">
-    <input type="text" id="inB" placeholder="Nama Barang..." style="flex: 1; margin: 0;">
-    <button class="btn" style="background:var(--p); width: 60px; min-width: 60px; margin: 0; padding: 10px 0; font-size: 10px;" onclick="addItem('master_barang', 'inB')">ADD</button>
-</div>
-
+            <div class="card">
+                <h3>📦 Master Barang</h3>
+                <div class="flex-row"><input type="text" id="inB" placeholder="Barang..."><button class="btn" style="background:var(--p); width:80px" onclick="addItem('master_barang', 'inB')">ADD</button></div>
+                <div id="listB" style="display:flex; flex-wrap:wrap; gap:5px"></div>
+            </div>
             <div class="card">
                 <h3>📥 Logistik & Penjualan</h3>
                 <div class="flex-row"><input type="date" id="stTgl"><select id="stBrg"></select></div>
@@ -164,81 +156,27 @@
         const DEF_TARIF = { "Rekondisi Kempu":100000, "Rekondisi jerigen 18L":2000, "Rekondisi jerigen 5L":1000, "muat barang":600000, "bongkar barang":600000, "kirim minyak":150000, "pasang pangkalan":500000, "pasang agen":700000 };
 
         window.onload = () => {
-    // 1. Set tanggal hari ini (Tetap sama)
-    const t = new Date().toISOString().split('T')[0];
-    const ids = ['absTgl', 'stTgl', 'akTgl', 'blTgl', 'fM', 'fUang'];
-    ids.forEach(id => {
-        let el = document.getElementById(id);
-        if (el) el.value = (id === 'fM' || id === 'fUang') ? t.slice(0, 7) : t;
-    });
-
-    // 2. Ambil data dari Firebase
-    db.ref('/').on('value', s => {
-        D = s.val() || {};
-        initUI(); // Isi dropdown nama
-        
-        // --- PERBAIKAN UTAMA: Paksa Render Berkala ---
-        // Kita coba gambar 3 kali (langsung, 500ms, dan 1 detik) 
-        // agar pasti muncul meskipun koneksi lambat.
-        autoRender(); 
-        setTimeout(autoRender, 500);
-        setTimeout(autoRender, 1000);
-    });
-
-    // 3. Listener tambahan jika ganti bulan
-    const fM = document.getElementById('fM');
-    if (fM) fM.onchange = () => renderAll();
-};
-
+            const t = new Date().toISOString().split('T')[0];
+            ['absTgl','stTgl','akTgl','blTgl'].forEach(i => { if(document.getElementById(i)) document.getElementById(i).value = t });
+            ['fM','fUang'].forEach(i => { if(document.getElementById(i)) document.getElementById(i).value = t.slice(0, 7) });
+            db.ref('/').on('value', s => { D = s.val() || {}; initUI(); autoRender(); });
+            document.getElementById('fM').onchange = autoRender;
+            document.getElementById('fUang').onchange = autoRender;
+        };
 
         // ==========================================
-// 2. GLOBAL UTILITIES (NAV, MODAL, EXPORT)
-// ==========================================
-
-function autoRender() {
-    renderAll();
-    if(typeof renderStok === 'function') renderStok();
-    if(typeof renderGaji === 'function') renderGaji();
-    if(typeof renderCheckKaryawan === 'function') renderCheckKaryawan();
-}
-
-function tab(id) {
-    // 1. Hilangkan tanda 'active' dari semua tombol dan konten tab
-    document.querySelectorAll('.tab-content, .nav-btn').forEach(e => 
-        e.classList.remove('active')
-    );
-
-    // 2. Aktifkan tab yang diklik
-    document.getElementById('tab-' + id).classList.add('active');
-    document.getElementById('nav-' + id).classList.add('active');
-
-    // 3. PAKSA gambar ulang semua tabel agar data muncul (Penting!)
-    autoRender();
-}
-      
+        // 2. GLOBAL UTILITIES (NAV, MODAL, EXPORT)
+        // ==========================================
+        function autoRender() { renderAll(); renderStok(); renderGaji(); renderCheckKaryawan(); }
+        function tab(id) { document.querySelectorAll('.tab-content, .nav-btn').forEach(e => e.classList.remove('active')); document.getElementById('tab-'+id).classList.add('active'); document.getElementById('nav-'+id).classList.add('active'); autoRender(); }
+        
         function initUI() {
-    // Ambil data karyawan dan barang dari Firebase
-    const K = Object.entries(D.master_karyawan || {});
-    const B = Object.entries(D.master_barang || {});
-
-    // 1. Tampilkan List Karyawan (yang ada tombol hapusnya)
-    document.getElementById('listK').innerHTML = K.map(k=>`<span style="background:#fff; border:1px solid #ddd; padding:4px; border-radius:5px; font-size:9px">${k[1]} <b onclick="removeItem('master_karyawan','${k[0]}')" style="color:red;cursor:pointer">×</b></span>`).join('');
-    
-    // 2. ISI DROPDOWN NAMA (Ini yang sempat hilang)
-    const selK = document.getElementById('selK');
-    if (selK) {
-        selK.innerHTML = K.map(k => `<option value="${k[1]}">${k[1]}</option>`).join('');
-    }
-
-    // 3. Tampilkan List Barang & Dropdown Barang
-    document.getElementById('listB').innerHTML = B.map(b=>`<span style="background:#fff; border:1px solid #ddd; padding:4px; border-radius:5px; font-size:9px">${b[1]} <b onclick="removeItem('master_barang','${b[0]}')" style="color:red;cursor:pointer">×</b></span>`).join('');
-    
-    const stBrg = document.getElementById('stBrg');
-    if (stBrg) {
-        stBrg.innerHTML = B.map(b => `<option value="${b[1]}">${b[1]}</option>`).join('');
-    }
-}
-
+            const K = Object.entries(D.master_karyawan || {}), B = Object.entries(D.master_barang || {});
+            document.getElementById('listK').innerHTML = K.map(k=>`<span style="background:#fff; border:1px solid #ddd; padding:4px; border-radius:5px; font-size:9px">${k[1]} <b onclick="removeItem('master_karyawan','${k[0]}')" style="color:red;cursor:pointer">×</b></span>`).join('');
+            document.getElementById('listB').innerHTML = B.map(b=>`<span style="background:#fff; border:1px solid #ddd; padding:4px; border-radius:5px; font-size:9px">${b[1]} <b onclick="removeItem('master_barang','${b[0]}')" style="color:red;cursor:pointer">×</b></span>`).join('');
+            document.getElementById('selK').innerHTML = K.map(k=>`<option value="${k[1]}">${k[1]}</option>`).join('');
+            document.getElementById('stBrg').innerHTML = B.map(b=>`<option value="${b[1]}">${b[1]}</option>`).join('');
+        }
 
         function openMod(t,h) { document.getElementById('modTitle').innerText=t; document.getElementById('modContent').innerHTML=h; document.getElementById('modalUni').style.display='flex'; }
         function closeMod() { document.getElementById('modalUni').style.display='none'; }
@@ -263,66 +201,20 @@ function tab(id) {
         }
 
         function renderAll() {
-    // 1. Ambil data dari Firebase (D) dan input bulan (fM)
-    const container = document.getElementById('tbA');
-    const header = document.getElementById('thA');
-    const inputBulan = document.getElementById('fM');
-
-    // Cek apakah data dan elemen ada, kalau tidak ada kita "diam" (biar gak crash)
-    if (!D || !container || !header || !inputBulan) return;
-
-    const fM = inputBulan.value;
-    if (!fM) return;
-
-    // 2. Ambil daftar nama karyawan
-    const K_arr = D.master_karyawan ? Object.values(D.master_karyawan) : [];
-    if (K_arr.length === 0) return;
-
-    // 3. Hitung jumlah hari dalam bulan itu
-    const Y = fM.split('-')[0], M = fM.split('-')[1];
-    const lastD = new Date(Y, M, 0).getDate();
-
-    // 4. Gambar Kepala Tabel (H T L I A)
-    let th = `<tr><th class="sticky-col">NAMA</th>`;
-    for (let i = 1; i <= lastD; i++) th += `<th>${i}</th>`;
-    th += `<th>H</th><th>T</th><th>L</th><th>I</th><th>A</th></tr>`;
-    header.innerHTML = th;
-
-    // 5. Gambar Isi Tabel
-    let tb = "";
-    K_arr.forEach(k => {
-        // Jika k adalah objek, ambil k.nama. Jika k adalah string, pakai k langsung.
-        let nama = (typeof k === 'object') ? (k.nama || k[1]) : k;
-        let r = `<td class="sticky-col">${nama}</td>`;
-        let tH=0, tT=0, tL=0, tI=0, tA=0;
-
-        for (let i = 1; i <= lastD; i++) {
-            const tgl = `${fM}-${String(i).padStart(2, '0')}`;
-            const absen = (D.absensi && D.absensi[tgl] && D.absensi[tgl][nama]) ? D.absensi[tgl][nama] : null;
-            
-            const s = absen ? absen.s : ''; // Status
-            const l = absen ? parseFloat(absen.l || 0) : 0; // Lembur
-
-            let char = "";
-            let bg = "";
-            if (s === 'Hadir') { tH++; char = "H"; bg = "#e8f5e9"; }
-            else if (s === 'Telat') { tT++; char = "T"; bg = "#fff3e0"; }
-            else if (s === 'Izin') { tI++; char = "I"; bg = "#fff9c4"; }
-            else if (s === 'Alpa') { tA++; char = "A"; bg = "#ffeade"; }
-            
-            tL += l;
-            r += `<td style="background:${bg}; font-size:9px;">${char}</td>`;
+            const K_arr = Object.values(D.master_karyawan || {}), fM = document.getElementById('fM').value; if(!fM) return;
+            const Y=fM.split('-')[0], M=fM.split('-')[1], lastD = new Date(Y, M, 0).getDate();
+            let th = `<tr><th class="sticky-col">NAMA</th>`; for(let i=1; i<=lastD; i++) th += `<th>${i}</th>`; th += `<th>H/T</th><th>L</th><th>I/A</th></tr>`; document.getElementById('thA').innerHTML = th;
+            let tb = ""; K_arr.forEach(k => {
+                let r = `<td class="sticky-col">${k}</td>`, tH=0, tL=0, tO=0;
+                for(let i=1; i<=lastD; i++) {
+                    let d = `${Y}-${M}-${String(i).padStart(2,'0')}`, a = D.absensi?.[d]?.[k], isL = D.libur?.[d]||new Date(d).getDay()===0;
+                    let txt=isL?"M":"-", cls=isL?"bg-m":"bg-none";
+                    if(a) { txt=a.j[0]; cls="bg-"+a.j[0].toLowerCase(); if(a.j==="Hadir"||a.j==="Telat") tH++; else if(a.j==="Lembur") tL++; else tO++; }
+                    r += `<td><div class="badge ${cls}" onclick="cellMod('${d}','${k}')">${txt}${a?.jamOut?'<div class="dot"></div>':''}</div></td>`;
+                }
+                tb += `<tr>${r}<td>${tH}</td><td>${tL}</td><td>${tO}</td></tr>`;
+            }); document.getElementById('tbA').innerHTML = tb;
         }
-
-        // Total di ujung kanan
-        r += `<td>${tH}</td><td>${tT}</td><td>${tL}</td><td>${tI}</td><td>${tA}</td>`;
-        tb += `<tr>${r}</tr>`;
-    });
-
-    container.innerHTML = tb;
-}
-
-
 
         function cellMod(d,k) { let a=D.absensi?.[d]?.[k], aks=Object.values(D.aktivitas||{}).filter(x=>x.t===d&&x.p?.includes(k)); openMod(`Detail ${k} (${d})`, `<p>Status: ${a?.j||'-'}</p><p>Jam: ${a?.jam||'-'} s/d ${a?.jamOut||'-'}</p><hr><ul>${aks.map(x=>`<li>${x.j} (${x.q}) ${x.isCair?'✅':'⏳'}</li>`).join('')||'Kerja: -'}</ul><br><button class='btn' onclick="removeItem('absensi/${d}','${k}')">HAPUS ABSEN</button>`); }
         function openLiburMod() { let l=Object.entries(D.libur||{}).sort((a,b)=>b[0].localeCompare(a[0])); openMod("Libur Toko", `Mulai: <input type="date" id="lS"> s/d <input type="date" id="lE"><button class="btn" onclick="saveL()">SET</button><hr>${l.map(x=>`<div>${x[0]} <b onclick="removeItem('libur','${x[0]}')" style="color:red; cursor:pointer">×</b></div>`).join('')}`); }
