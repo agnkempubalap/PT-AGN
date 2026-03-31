@@ -511,10 +511,10 @@ function saveL() {
         }
 
 // ==========================================
-// 1. FUNGSI RENDER TABEL STOK (LENGKAP)
+// 1. FUNGSI UTAMA: RENDER STOK & KONVERSI
 // ==========================================
 function renderStok() {
-    // Cek ID mana yang Mas pakai di HTML (fM atau fMStok)
+    // Cek semua kemungkinan ID input bulan (fM atau fMStok)
     const inputBulan = document.getElementById('fM') || document.getElementById('fMStok');
     if (!inputBulan) return;
     
@@ -570,37 +570,41 @@ function renderStok() {
 
         h += `<tr>
             <td class="sticky-col" style="font-weight:bold; vertical-align:middle;">${b}</td>
-            <td class="text-center">${fmt(s.ak)}</td>
-            <td class="text-center">${fmt(s.ab)}</td>
-            <td class="text-center">${fmt(s.ik)}</td>
-            <td class="text-center">${fmt(s.ib)}</td>
+            <td class="text-center">${fmt(s.ak)}</td><td class="text-center">${fmt(s.ab)}</td>
+            <td class="text-center">${fmt(s.ik)}</td><td class="text-center">${fmt(s.ib)}</td>
             <td class="text-center">${fmt(s.rej, true)}</td>
-            <td class="text-center">${fmt(s.rk)}</td>
-            <td class="text-center">${fmt(s.jm)}</td>
+            <td class="text-center">${fmt(s.rk)}</td><td class="text-center">${fmt(s.jm)}</td>
             <td class="text-center">${fmt(s.ju)}</td>
             <td class="text-center" style="background:#fef3c7">${fmt(ktr)}</td>
             <td class="text-center" style="background:#dcfce7">${fmt(rdy)}</td>
             <td class="text-center" style="background:var(--p); color:white">${fmt(ktr+rdy)}</td>
         </tr>`;
     }); 
-    document.getElementById('tbStok').innerHTML = h;
+    
+    const tableBody = document.getElementById('tbStok');
+    if (tableBody) tableBody.innerHTML = h;
 }
 
 // ==========================================
-// 2. OTOMATISASI (TARUH DI PALING BAWAH)
+// 2. FUNGSI OTOMATIS: JALAN SAAT STARTUP
 // ==========================================
-const n = new Date();
-const blnSkrg = n.getFullYear() + '-' + String(n.getMonth() + 1).padStart(2, '0');
+document.addEventListener("DOMContentLoaded", function() {
+    const n = new Date();
+    const blnSkrg = n.getFullYear() + '-' + String(n.getMonth() + 1).padStart(2, '0');
 
-// Cari input bulan di HTML dan isi otomatis
-const inputFm = document.getElementById('fM') || document.getElementById('fMStok');
-if (inputFm) {
-    inputFm.value = blnSkrg;
-}
+    // Paksa isi ke ID fM dan fMStok sekaligus biar aman
+    ['fM', 'fMStok'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.value = blnSkrg;
+            console.log("Berhasil set tanggal otomatis untuk ID: " + id);
+        }
+    });
 
-// Panggil render supaya tabel langsung muncul saat aplikasi dibuka
-renderStok();
-
+    // Panggil renderStok agar data langsung tampil
+    // Beri sedikit delay (100ms) agar data Master & Stok sudah terload dari DB
+    setTimeout(renderStok, 100);
+});
 
 
 
