@@ -146,50 +146,47 @@
 </div>
 
 
-           <div class="card" style="padding: 10px; overflow: hidden;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-    <h3 style="color:#2563eb; margin: 0; font-size: 14px; font-weight: 800; display: flex; align-items: center;">
-        <span style="border-left: 3px solid #2563eb; height: 14px; margin-right: 8px; border-radius: 2px;"></span>
-        📊 Laporan Stok
-    </h3>
-    <input type="month" id="fMStok" 
-           style="width: 130px; padding: 0 8px; border-radius: 8px; border: 1px solid #ddd; font-size: 12px; height: 32px; color: #333; background: #f9fafb;">
-</div>
-
-
-    <div style="width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 10px; border: 1px solid #f1f5f9; border-radius: 8px;">
+           <div class="card" style="padding: 15px; border-radius: 12px; margin-bottom: 20px; background: #fff; border: 1px solid #eee; overflow: hidden;">
     
-    <table style="width: 100%; border-collapse: collapse; min-width: 700px; table-layout: fixed;">
-        
-        <thead style="background: #f8fafc;">
-            <tr style="border-bottom: 2px solid #f1f5f9;">
-                <th style="width: 120px; white-space: nowrap; text-align: left; padding: 12px 15px; font-size: 11px; color: #64748b; text-transform: uppercase; position: sticky; left: 0; background: #f8fafc; z-index: 3; border-right: 1px solid #f1f5f9;">
-                    BRG
-                </th>
-                <th style="padding: 12px 5px; font-size: 10px; color: #64748b; text-align: center; width: 75px;">AWAL KTR</th>
-                <th style="padding: 12px 5px; font-size: 10px; color: #64748b; text-align: center; width: 75px;">AWAL RDY</th>
-                <th style="padding: 12px 5px; font-size: 10px; color: #64748b; text-align: center; width: 75px;">IN KTR</th>
-                <th style="padding: 12px 5px; font-size: 10px; color: #64748b; text-align: center; width: 75px;">IN RDY</th>
-                <th style="padding: 12px 5px; font-size: 10px; color: #64748b; text-align: center; width: 75px;">RKDN</th>
-                <th style="padding: 12px 5px; font-size: 10px; color: #64748b; text-align: center; width: 75px;">J-MIT</th>
-                <th style="padding: 12px 5px; font-size: 10px; color: #64748b; text-align: center; width: 75px;">J-UMM</th>
-                <th style="padding: 12px 5px; font-size: 10px; color: #64748b; text-align: center; width: 75px;">TOT KTR</th>
-                <th style="padding: 12px 5px; font-size: 10px; color: #64748b; text-align: center; width: 75px;">TOT RDY</th>
-                <th style="padding: 12px 5px; font-size: 10px; color: #64748b; text-align: center; width: 75px;">TOTAL</th>
-            </tr>
-        </thead>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h3 style="color:#2563eb; margin: 0; font-size: 14px; font-weight: 800; display: flex; align-items: center;">
+            <span style="border-left: 3px solid #2563eb; height: 14px; margin-right: 8px; border-radius: 2px;"></span>
+            📊 Laporan Stok
+        </h3>
+        <input type="month" id="fMStok" 
+               style="width: 130px; padding: 0 8px; border-radius: 8px; border: 1px solid #ddd; font-size: 12px; height: 32px; color: #333; background: #f9fafb;">
+    </div>
 
-        <tbody id="bodyStok">
-            </tbody>
-    </table>
-</div>
-</div>
- <div class="flex-row">
-        <button class="btn" style="background:var(--s)" onclick="expEx('areaStok','Stok')">EXCEL</button>
-        <button class="btn" style="background:var(--d)" onclick="expPdf('areaStok','Laporan_Stok')">PDF</button>
-        <button class="btn" style="background:#64748b" onclick="showLogs('stok_logs')">LOG</button>
+    <div style="width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid #f1f5f9; border-radius: 8px;">
+        <table style="width: 100%; border-collapse: collapse; min-width: 950px; table-layout: fixed;">
+            <thead style="background: #f8fafc;">
+                <tr style="border-bottom: 2px solid #f1f5f9;">
+                    <th style="width: 120px; text-align: left; padding: 12px 10px; font-size: 10px; color: #64748b; position: sticky; left: 0; background: #f8fafc; z-index: 3; border-right: 1px solid #f1f5f9;">BRG</th>
+                    <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #64748b; text-align: center;">AWAL KTR</th>
+                    <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #64748b; text-align: center;">AWAL RDY</th>
+                    <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #64748b; text-align: center;">IN KTR</th>
+                    <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #64748b; text-align: center;">IN RDY</th>
+                    <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #ef4444; text-align: center;">REJECT</th>
+                    <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #64748b; text-align: center;">RKDN</th>
+                    <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #64748b; text-align: center;">J-MIT</th>
+                    <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #64748b; text-align: center;">J-UMM</th>
+                    <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #64748b; text-align: center; background:#fef3c7">TOT KTR</th>
+                    <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #64748b; text-align: center; background:#dcfce7">TOT RDY</th>
+                    <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #fff; text-align: center; background:#2563eb;">TOTAL</th>
+                </tr>
+            </thead>
+            <tbody id="bodyStok">
+                </tbody>
+        </table>
+    </div>
+
+    <div style="display: flex; gap: 8px; margin-top: 15px;">
+        <button onclick="eksExcel()" style="flex: 1; height: 38px; background: #22c55e; color: #fff; border: none; border-radius: 8px; font-size: 12px; font-weight: 700;">EXCEL</button>
+        <button onclick="eksPDF()" style="flex: 1; height: 38px; background: #ef4444; color: #fff; border: none; border-radius: 8px; font-size: 12px; font-weight: 700;">PDF</button>
+        <button onclick="showLog()" style="flex: 1; height: 38px; background: #64748b; color: #fff; border: none; border-radius: 8px; font-size: 12px; font-weight: 700;">LOG</button>
     </div>
 </div>
+
         <div id="tab-aktivitas" class="tab-content">
             <div class="card" style="border-top: 5px solid var(--d)">
                 <h3>🛠️ Input Borongan (Chain Logic)</h3>
@@ -569,7 +566,7 @@ function renderStok() {
     let h = "";
 
     B_arr.forEach(b => {
-        // --- 1. LOGIKA HITUNGAN ASLI MAS (TIDAK DIUBAH) ---
+        // --- 1. LOGIKA HITUNGAN ASLI (100% UTUH) ---
         let s = { ak:0, ab:0, ik:0, ib:0, rej:0, rk:0, jm:0, ju:0 };
         let satuanBarang = "Unit"; 
 
@@ -593,42 +590,32 @@ function renderStok() {
         let rdy = (s.ab + s.ib + s.rk) - (s.jm + s.ju);
         const isM = b.toLowerCase().includes("minyak") || b.toLowerCase().includes("cair");
         
-        // --- 2. FITUR KONVERSI KG/LT ASLI MAS (TIDAK DIUBAH) ---
-        const fmt = (v, rej = false) => {
+        // --- 2. FORMAT TAMPILAN + FITUR STRIP BARANG CAIR ---
+        const fmt = (v, rej = false, isKotorCol = false) => {
+            if (isM && isKotorCol) return `<div style="color:#94a3b8; font-weight:bold;">-</div>`;
+            
             let n = parseFloat(v) || 0;
             let st = rej ? 'color:red; font-weight:bold;' : 'color:#333; font-weight:600;';
             if (!isM) return `<div style="${st}">${n}</div><div style="font-size:9px; color:#888;">Unit</div>`;
+            
             let uA = (satuanBarang === "Kg") ? "Kg" : "Lt";
             let uT = (satuanBarang === "Kg") ? "Lt" : "Kg";
             let kv = (uA === "Lt") ? (n * 0.9) : (n / 0.9);
             return `<div style="${st}">${n} ${uA}</div><div style="font-size:9px; color:#2563eb; border-top:1px dotted #ccc;">${kv.toFixed(2)} ${uT}</div>`;
         };
 
-        // --- 3. TAMPILAN BARIS (STICKY & SCROLLABLE - FIX UNTUK HP) ---
+        // --- 3. SUSUNAN 12 KOLOM (Sesuai Header) ---
         h += `
             <tr style="border-bottom: 1px solid #f1f5f9;">
-                <td style="width: 1%; white-space: nowrap; padding: 12px 10px; font-size: 12px; font-weight: 800; color: #1e293b; position: sticky; left: 0; background: #fff; z-index: 1; border-right: 1px solid #f1f5f9;">
+                <td style="position: sticky; left: 0; background: #fff; z-index: 1; padding: 12px 10px; font-size: 12px; font-weight: 800; color: #1e293b; border-right: 1px solid #f1f5f9; white-space: nowrap;">
                     ${b}
                 </td>
-                <td style="text-align: center; padding: 8px 4px; min-width: 75px;">${fmt(s.ak)}</td>
-                <td style="text-align: center; padding: 8px 4px; min-width: 75px;">${fmt(s.ab)}</td>
-                <td style="text-align: center; padding: 8px 4px; min-width: 75px;">${fmt(s.ik)}</td>
-                <td style="text-align: center; padding: 8px 4px; min-width: 75px;">${fmt(s.ib)}</td>
-                <td style="text-align: center; padding: 8px 4px; min-width: 75px;">${fmt(s.rej,true)}</td>
-                <td style="text-align: center; padding: 8px 4px; min-width: 75px;">${fmt(s.rk)}</td>
-                <td style="text-align: center; padding: 8px 4px; min-width: 75px;">${fmt(s.jm)}</td>
-                <td style="text-align: center; padding: 8px 4px; min-width: 75px;">${fmt(s.ju)}</td>
-                <td style="text-align: center; padding: 8px 4px; min-width: 75px; background:#fef3c7">${fmt(ktr)}</td>
-                <td style="text-align: center; padding: 8px 4px; min-width: 75px; background:#dcfce7">${fmt(rdy)}</td>
-                <td style="text-align: center; padding: 8px 4px; min-width: 75px; background:#2563eb; color:white">${fmt(ktr+rdy)}</td>
-            </tr>`;
+                <td style="text-align: center; padding: 8px 4px; min-width: 75px;">${fmt(s.ak, false, true)}</td> <td style="text-align: center; padding: 8px 4px; min-width: 75px;">${fmt(s.ab)}</td>             <td style="text-align: center; padding: 8px 4px; min-width: 75px;">${fmt(s.ik, false, true)}</td> <td style="text-align: center; padding: 8px 4px; min-width: 75px;">${fmt(s.ib)}</td>             <td style="text-align: center; padding: 8px 4px; min-width: 75px;">${fmt(s.rej, true)}</td>       <td style="text-align: center; padding: 8px 4px; min-width: 75px;">${fmt(s.rk, false, true)}</td> <td style="text-align: center; padding: 8px 4px; min-width: 75px;">${fmt(s.jm)}</td>             <td style="text-align: center; padding: 8px 4px; min-width: 75px;">${fmt(s.ju)}</td>             <td style="text-align: center; padding: 8px 4px; min-width: 75px; background:#fef3c7">${fmt(ktr, false, true)}</td> <td style="text-align: center; padding: 8px 4px; min-width: 75px; background:#dcfce7">${fmt(rdy)}</td>             <td style="text-align: center; padding: 8px 4px; min-width: 75px; background:#2563eb; color:white">${fmt(ktr+rdy)}</td> </tr>`;
     }); 
     
-    // Support dua kemungkinan ID container Mas
-    const target = document.getElementById('tbStok') || document.getElementById('bodyStok');
+    const target = document.getElementById('bodyStok') || document.getElementById('tbStok');
     if (target) target.innerHTML = h;
 }
-
 
 
 // --- 3. AUTO JALAN (STARTUP) - FIX REAL TIME ---
