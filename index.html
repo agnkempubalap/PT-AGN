@@ -510,11 +510,10 @@ function saveL() {
             });
         }
 
-// ==========================================
-// 1. FUNGSI UTAMA: RENDER STOK & KONVERSI
-// ==========================================
+// ---------------------------------------
+// 1. FUNGSI RENDER TABEL (LAPORAN STOK)
+// ---------------------------------------
 function renderStok() {
-    // Cek semua kemungkinan ID input bulan (fM atau fMStok)
     const inputBulan = document.getElementById('fM') || document.getElementById('fMStok');
     if (!inputBulan) return;
     
@@ -551,10 +550,10 @@ function renderStok() {
         
         const fmt = (val, isReject = false) => {
             let angka = parseFloat(val) || 0;
-            let styleTxt = isReject ? 'color:red; font-weight:bold;' : 'color:#333; font-weight:600;';
+            let style = isReject ? 'color:red; font-weight:bold;' : 'color:#333; font-weight:600;';
 
             if (!isMinyak) {
-                return `<div style="${styleTxt} line-height:1.1;">${angka}</div>
+                return `<div style="${style} line-height:1.1;">${angka}</div>
                         <div style="font-size:9px; color:#888; font-weight:normal;">Unit</div>`;
             }
 
@@ -562,7 +561,7 @@ function renderStok() {
             let uTuj = (satuanBarang === "Kg") ? "Lt" : "Kg";
             let konv = (uAsal === "Lt") ? (angka * 0.9) : (angka / 0.9);
 
-            return `<div style="${styleTxt} line-height:1.1;">${angka} ${uAsal}</div>
+            return `<div style="${style} line-height:1.1;">${angka} ${uAsal}</div>
                     <div style="font-size:10px; color:#2563eb; border-top:1px dotted #ccc; margin-top:2px; padding-top:1px; font-weight:normal;">
                         ${konv.toFixed(2)} ${uTuj}
                     </div>`;
@@ -580,31 +579,47 @@ function renderStok() {
             <td class="text-center" style="background:var(--p); color:white">${fmt(ktr+rdy)}</td>
         </tr>`;
     }); 
-    
-    const tableBody = document.getElementById('tbStok');
-    if (tableBody) tableBody.innerHTML = h;
+    if (document.getElementById('tbStok')) document.getElementById('tbStok').innerHTML = h;
 }
 
-// ==========================================
-// 2. FUNGSI OTOMATIS: JALAN SAAT STARTUP
-// ==========================================
-document.addEventListener("DOMContentLoaded", function() {
-    const n = new Date();
-    const blnSkrg = n.getFullYear() + '-' + String(n.getMonth() + 1).padStart(2, '0');
+// ---------------------------------------
+// 2. FUNGSI LOGIKA BARANG (INPUT LOGISTIK)
+// ---------------------------------------
+function cekJenisBarang() {
+    const sel = document.getElementById('stBrg');
+    if (!sel) return;
 
-    // Paksa isi ke ID fM dan fMStok sekaligus biar aman
-    ['fM', 'fMStok'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.value = blnSkrg;
-            console.log("Berhasil set tanggal otomatis untuk ID: " + id);
-        }
-    });
+    const val = sel.value ? sel.value.toLowerCase() : "";
+    const isCair = val.includes('cair') || val.includes('minyak');
 
-    // Panggil renderStok agar data langsung tampil
-    // Beri sedikit delay (100ms) agar data Master & Stok sudah terload dari DB
-    setTimeout(renderStok, 100);
-});
+    const rowQC = document.getElementById('rowQC');
+    const stSatuan = document.getElementById('stSatuan');
+    const optRekon = document.getElementById('optRekon');
+    const stAksi = document.getElementById('stAksi');
+
+    if (isCair) {
+        if (rowQC) rowQC.style.display = 'none';
+        if (stSatuan) stSatuan.style.display = 'block';
+        if (optRekon) optRekon.style.display = 'none';
+        if (stAksi && stAksi.value === 'Rekondisi') stAksi.value = 'Masuk';
+    } else {
+        if (rowQC) rowQC.style.display = 'flex';
+        if (stSatuan) stSatuan.style.display = 'none';
+        if (optRekon) optRekon.style.display = 'block';
+    }
+}
+
+// ---------------------------------------
+// 3. AUTO JALAN SAAT BUKA APLIKASI
+// ---------------------------------------
+const n = new Date();
+const blnSkrg = n.getFullYear() + '-' + String(n.getMonth() + 1).padStart(2, '0');
+const inFm = document.getElementById('fM') || document.getElementById('fMStok');
+if (inFm) inFm.value = blnSkrg;
+
+renderStok();
+cekJenisBarang();
+
 
 
 
