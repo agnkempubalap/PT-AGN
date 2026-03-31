@@ -602,12 +602,22 @@ function renderStok() {
 
 // --- 3. AUTO JALAN (STARTUP) ---
 const n = new Date();
-const bln = n.getFullYear() + '-' + String(n.getMonth() + 1).padStart(2, '0');
+const yyyy = n.getFullYear();
+const mm = String(n.getMonth() + 1).padStart(2, '0');
+const dd = String(n.getDate()).padStart(2, '0');
+
+// 1. Set Bulan Laporan (YYYY-MM)
+const bln = yyyy + '-' + mm;
 const inF = document.getElementById('fM') || document.getElementById('fMStok');
 if (inF) inF.value = bln;
 
+// 2. Set Tanggal Logistik (YYYY-MM-DD) - REAL TIME
+const tglLog = document.getElementById('tglLogistik');
+if (tglLog) tglLog.value = yyyy + '-' + mm + '-' + dd;
+
 renderStok();
 cekJenisBarang();
+
 
 
         // ==========================================
