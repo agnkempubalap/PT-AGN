@@ -510,12 +510,12 @@ function saveL() {
             });
         }
 
-        // ==========================================
-// 1. FUNGSI RENDER TABEL STOK (LAPORAN)
+// ==========================================
+// 1. FUNGSI RENDER TABEL STOK (LENGKAP)
 // ==========================================
 function renderStok() {
-    // Pastikan ID input bulan adalah 'fM' sesuai HTML Mas
-    const inputBulan = document.getElementById('fM');
+    // Cek ID mana yang Mas pakai di HTML (fM atau fMStok)
+    const inputBulan = document.getElementById('fM') || document.getElementById('fMStok');
     if (!inputBulan) return;
     
     const fM = inputBulan.value;
@@ -523,24 +523,18 @@ function renderStok() {
     let h = "";
 
     B_arr.forEach(b => {
-        // Inisialisasi hitungan (Fitur Asli)
         let s = { ak:0, ab:0, ik:0, ib:0, rej:0, rk:0, jm:0, ju:0 };
         let satuanBarang = "Unit"; 
 
-        // Hitung Logistik dari database (D.stok_logs)
         Object.values(D.stok_logs || {}).forEach(l => {
             if(l.b !== b) return;
-            
-            // Ambil satuan terakhir (Lt/Kg)
             if(l.satuan) satuanBarang = l.satuan;
 
-            // Logika Stok Awal (Bulan sebelumnya)
             if(l.t?.slice(0,7) < fM) { 
                 if(l.ak === "Masuk") l.kon === "Bekas" ? s.ak += l.q : s.ab += l.q; 
                 else if(l.ak === "Rekondisi") { s.ak -= l.q; s.ab += l.q; } 
                 else if(l.ak.includes("Jual")) s.ab -= l.q; 
             }
-            // Logika Stok Masuk/Keluar (Bulan ini)
             else if(l.t?.slice(0,7) === fM) { 
                 if(l.ak === "Masuk") l.kon === "Bekas" ? s.ik += l.q : s.ib += l.q; 
                 else if(l.ak === "Rekondisi") s.rk += l.q; 
@@ -550,11 +544,9 @@ function renderStok() {
             }
         });
 
-        // Rumus Total Kotor & Ready
         let ktr = (s.ak + s.ik) - s.rk;
         let rdy = (s.ab + s.ib + s.rk) - (s.jm + s.ju);
 
-        // HELPER TAMPILAN: Konversi Otomatis & Satuan Unit
         const isMinyak = b.toLowerCase().includes("minyak") || b.toLowerCase().includes("cair");
         
         const fmt = (val, isReject = false) => {
@@ -562,12 +554,10 @@ function renderStok() {
             let styleTxt = isReject ? 'color:red; font-weight:bold;' : 'color:#333; font-weight:600;';
 
             if (!isMinyak) {
-                // Tampilan Barang Umum (Unit)
                 return `<div style="${styleTxt} line-height:1.1;">${angka}</div>
                         <div style="font-size:9px; color:#888; font-weight:normal;">Unit</div>`;
             }
 
-            // Tampilan Minyak (Konversi Lt <-> Kg)
             let uAsal = (satuanBarang === "Kg") ? "Kg" : "Lt";
             let uTuj = (satuanBarang === "Kg") ? "Lt" : "Kg";
             let konv = (uAsal === "Lt") ? (angka * 0.9) : (angka / 0.9);
@@ -578,7 +568,6 @@ function renderStok() {
                     </div>`;
         };
 
-        // Susun Baris Tabel
         h += `<tr>
             <td class="sticky-col" style="font-weight:bold; vertical-align:middle;">${b}</td>
             <td class="text-center">${fmt(s.ak)}</td>
@@ -594,51 +583,24 @@ function renderStok() {
             <td class="text-center" style="background:var(--p); color:white">${fmt(ktr+rdy)}</td>
         </tr>`;
     }); 
-    
     document.getElementById('tbStok').innerHTML = h;
 }
 
 // ==========================================
-// 2. FUNGSI KONTROL FORM INPUT (LOGISTIK)
-// ==========================================
-function cekJenisBarang() {
-    const sel = document.getElementById('stBrg');
-    if (!sel) return;
-
-    const val = sel.value ? sel.value.toLowerCase() : "";
-    const isCair = val.includes('cair') || val.includes('minyak');
-
-    const rowQC = document.getElementById('rowQC');
-    const stSatuan = document.getElementById('stSatuan');
-    const optRekon = document.getElementById('optRekon');
-    const stAksi = document.getElementById('stAksi');
-
-    if (isCair) {
-        if (rowQC) rowQC.style.display = 'none';
-        if (stSatuan) stSatuan.style.display = 'block';
-        if (optRekon) optRekon.style.display = 'none';
-        if (stAksi && stAksi.value === 'Rekondisi') stAksi.value = 'Masuk';
-    } else {
-        if (rowQC) rowQC.style.display = 'flex';
-        if (stSatuan) stSatuan.style.display = 'none';
-        if (optRekon) optRekon.style.display = 'block';
-    }
-}
-
-// ==========================================
-// 3. PENGATURAN OTOMATIS SAAT BUKA APLIKASI
+// 2. OTOMATISASI (TARUH DI PALING BAWAH)
 // ==========================================
 const n = new Date();
 const blnSkrg = n.getFullYear() + '-' + String(n.getMonth() + 1).padStart(2, '0');
 
-// Set Tanggal Laporan Otomatis
-const fMInput = document.getElementById('fM');
-if (fMInput) {
-    fMInput.value = blnSkrg;
+// Cari input bulan di HTML dan isi otomatis
+const inputFm = document.getElementById('fM') || document.getElementById('fMStok');
+if (inputFm) {
+    inputFm.value = blnSkrg;
 }
 
-// Jalankan Render Pertama Kali
+// Panggil render supaya tabel langsung muncul saat aplikasi dibuka
 renderStok();
+
 
 
 
