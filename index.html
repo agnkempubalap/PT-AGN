@@ -148,13 +148,13 @@
 
            <div class="card" style="padding: 15px; border-radius: 12px; margin-bottom: 20px; background: #fff; border: 1px solid #eee; overflow: hidden;">
     
+    <div class="card" style="padding: 15px; border-radius: 12px; margin-bottom: 20px; background: #fff; border: 1px solid #eee; overflow: hidden;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
         <h3 style="color:#2563eb; margin: 0; font-size: 14px; font-weight: 800; display: flex; align-items: center;">
             <span style="border-left: 3px solid #2563eb; height: 14px; margin-right: 8px; border-radius: 2px;"></span>
             📊 Laporan Stok
         </h3>
-        <input type="month" id="fMStok" 
-               style="width: 130px; padding: 0 8px; border-radius: 8px; border: 1px solid #ddd; font-size: 12px; height: 32px; color: #333; background: #f9fafb;">
+        <input type="month" id="fMStok" style="width: 130px; padding: 0 8px; border-radius: 8px; border: 1px solid #ddd; font-size: 12px; height: 32px; color: #333; background: #f9fafb;">
     </div>
 
     <div style="width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid #f1f5f9; border-radius: 8px;">
@@ -172,11 +172,10 @@
                     <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #64748b; text-align: center;">J-UMM</th>
                     <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #64748b; text-align: center; background:#fef3c7">TOT KTR</th>
                     <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #64748b; text-align: center; background:#dcfce7">TOT RDY</th>
-                    <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #fff; text-align: center; background:#2563eb;">TOTAL</th>
+                    <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #fff; text-align: center; background:#475569;">TOTAL</th>
                 </tr>
             </thead>
-            <tbody id="bodyStok">
-                </tbody>
+            <tbody id="bodyStok"></tbody>
         </table>
     </div>
 
@@ -566,7 +565,6 @@ function renderStok() {
     let h = "";
 
     B_arr.forEach(b => {
-        // --- 1. LOGIKA HITUNGAN ASLI (100% UTUH) ---
         let s = { ak:0, ab:0, ik:0, ib:0, rej:0, rk:0, jm:0, ju:0 };
         let satuanBarang = "Unit"; 
 
@@ -590,32 +588,43 @@ function renderStok() {
         let rdy = (s.ab + s.ib + s.rk) - (s.jm + s.ju);
         const isM = b.toLowerCase().includes("minyak") || b.toLowerCase().includes("cair");
         
-        // --- 2. FORMAT TAMPILAN + FITUR STRIP BARANG CAIR ---
-        const fmt = (v, rej = false, isKotorCol = false) => {
+        const fmt = (v, rej = false, isKotorCol = false, isTotalCol = false) => {
+            // FITUR STRIP UNTUK CAIRAN
             if (isM && isKotorCol) return `<div style="color:#94a3b8; font-weight:bold;">-</div>`;
             
             let n = parseFloat(v) || 0;
-            let st = rej ? 'color:red; font-weight:bold;' : 'color:#333; font-weight:600;';
-            if (!isM) return `<div style="${st}">${n}</div><div style="font-size:9px; color:#888;">Unit</div>`;
+            // Warna text: Merah untuk reject, Putih untuk kolom Total, Hitam untuk lainnya
+            let st = rej ? 'color:red; font-weight:bold;' : (isTotalCol ? 'color:white; font-weight:600;' : 'color:#333; font-weight:600;');
+            
+            if (!isM) return `<div style="${st}">${n}</div><div style="font-size:9px; color:${isTotalCol ? '#cbd5e1' : '#888'};">Unit</div>`;
             
             let uA = (satuanBarang === "Kg") ? "Kg" : "Lt";
             let uT = (satuanBarang === "Kg") ? "Lt" : "Kg";
             let kv = (uA === "Lt") ? (n * 0.9) : (n / 0.9);
-            return `<div style="${st}">${n} ${uA}</div><div style="font-size:9px; color:#2563eb; border-top:1px dotted #ccc;">${kv.toFixed(2)} ${uT}</div>`;
+            return `<div style="${st}">${n} ${uA}</div><div style="font-size:9px; color:${isTotalCol ? '#cbd5e1' : '#2563eb'}; border-top:1px dotted #ccc;">${kv.toFixed(2)} ${uT}</div>`;
         };
 
-        // --- 3. SUSUNAN 12 KOLOM (Sesuai Header) ---
         h += `
             <tr style="border-bottom: 1px solid #f1f5f9;">
-                <td style="position: sticky; left: 0; background: #fff; z-index: 1; padding: 12px 10px; font-size: 12px; font-weight: 800; color: #1e293b; border-right: 1px solid #f1f5f9; white-space: nowrap;">
-                    ${b}
-                </td>
-                <td style="text-align: center; padding: 8px 4px; min-width: 75px;">${fmt(s.ak, false, true)}</td> <td style="text-align: center; padding: 8px 4px; min-width: 75px;">${fmt(s.ab)}</td>             <td style="text-align: center; padding: 8px 4px; min-width: 75px;">${fmt(s.ik, false, true)}</td> <td style="text-align: center; padding: 8px 4px; min-width: 75px;">${fmt(s.ib)}</td>             <td style="text-align: center; padding: 8px 4px; min-width: 75px;">${fmt(s.rej, true)}</td>       <td style="text-align: center; padding: 8px 4px; min-width: 75px;">${fmt(s.rk, false, true)}</td> <td style="text-align: center; padding: 8px 4px; min-width: 75px;">${fmt(s.jm)}</td>             <td style="text-align: center; padding: 8px 4px; min-width: 75px;">${fmt(s.ju)}</td>             <td style="text-align: center; padding: 8px 4px; min-width: 75px; background:#fef3c7">${fmt(ktr, false, true)}</td> <td style="text-align: center; padding: 8px 4px; min-width: 75px; background:#dcfce7">${fmt(rdy)}</td>             <td style="text-align: center; padding: 8px 4px; min-width: 75px; background:#2563eb; color:white">${fmt(ktr+rdy)}</td> </tr>`;
+                <td style="position: sticky; left: 0; background: #fff; z-index: 1; padding: 12px 10px; font-size: 11px; font-weight: 800; color: #1e293b; border-right: 1px solid #f1f5f9; white-space: nowrap;">${b}</td>
+                <td style="text-align: center; padding: 8px 4px;">${fmt(s.ak, false, true)}</td>
+                <td style="text-align: center; padding: 8px 4px;">${fmt(s.ab)}</td>
+                <td style="text-align: center; padding: 8px 4px;">${fmt(s.ik, false, true)}</td>
+                <td style="text-align: center; padding: 8px 4px;">${fmt(s.ib)}</td>
+                <td style="text-align: center; padding: 8px 4px;">${fmt(s.rej, true)}</td>
+                <td style="text-align: center; padding: 8px 4px;">${fmt(s.rk, false, true)}</td>
+                <td style="text-align: center; padding: 8px 4px;">${fmt(s.jm)}</td>
+                <td style="text-align: center; padding: 8px 4px;">${fmt(s.ju)}</td>
+                <td style="text-align: center; padding: 8px 4px; background:#fef3c7">${fmt(ktr, false, true)}</td>
+                <td style="text-align: center; padding: 8px 4px; background:#dcfce7">${fmt(rdy)}</td>
+                <td style="text-align: center; padding: 8px 4px; background:#475569;">${fmt(ktr+rdy, false, false, true)}</td>
+            </tr>`;
     }); 
     
-    const target = document.getElementById('bodyStok') || document.getElementById('tbStok');
+    const target = document.getElementById('bodyStok');
     if (target) target.innerHTML = h;
 }
+
 
 
 // --- 3. AUTO JALAN (STARTUP) - FIX REAL TIME ---
