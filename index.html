@@ -510,28 +510,37 @@ function saveL() {
             });
         }
 
-        function renderStok() {
-    const B_arr = Object.values(D.master_barang || {}), 
-          fM = document.getElementById('fM').value; 
+        // ==========================================
+// 1. FUNGSI RENDER TABEL STOK (LAPORAN)
+// ==========================================
+function renderStok() {
+    // Pastikan ID input bulan adalah 'fM' sesuai HTML Mas
+    const inputBulan = document.getElementById('fM');
+    if (!inputBulan) return;
+    
+    const fM = inputBulan.value;
+    const B_arr = Object.values(D.master_barang || {});
     let h = "";
 
     B_arr.forEach(b => {
-        // --- FITUR ASLI: Inisialisasi Counter ---
+        // Inisialisasi hitungan (Fitur Asli)
         let s = { ak:0, ab:0, ik:0, ib:0, rej:0, rk:0, jm:0, ju:0 };
-        let satuanBarang = "Unit"; // Default jika bukan minyak
+        let satuanBarang = "Unit"; 
 
-        // --- FITUR ASLI: Perhitungan Logika Stok (Jangan Diubah) ---
+        // Hitung Logistik dari database (D.stok_logs)
         Object.values(D.stok_logs || {}).forEach(l => {
             if(l.b !== b) return;
             
-            // Simpan satuan terakhir untuk barang ini (Lt/Kg)
+            // Ambil satuan terakhir (Lt/Kg)
             if(l.satuan) satuanBarang = l.satuan;
 
+            // Logika Stok Awal (Bulan sebelumnya)
             if(l.t?.slice(0,7) < fM) { 
                 if(l.ak === "Masuk") l.kon === "Bekas" ? s.ak += l.q : s.ab += l.q; 
                 else if(l.ak === "Rekondisi") { s.ak -= l.q; s.ab += l.q; } 
                 else if(l.ak.includes("Jual")) s.ab -= l.q; 
             }
+            // Logika Stok Masuk/Keluar (Bulan ini)
             else if(l.t?.slice(0,7) === fM) { 
                 if(l.ak === "Masuk") l.kon === "Bekas" ? s.ik += l.q : s.ib += l.q; 
                 else if(l.ak === "Rekondisi") s.rk += l.q; 
@@ -541,49 +550,96 @@ function saveL() {
             }
         });
 
-        // --- FITUR ASLI: Rumus Kotor & Ready ---
-        let ktr = (s.ak + s.ik) - s.rk, 
-            rdy = (s.ab + s.ib + s.rk) - (s.jm + s.ju);
+        // Rumus Total Kotor & Ready
+        let ktr = (s.ak + s.ik) - s.rk;
+        let rdy = (s.ab + s.ib + s.rk) - (s.jm + s.ju);
 
-        // --- FITUR BARU: Helper Tampilan (Unit & Konversi) ---
-        const isMinyak = b.toLowerCase().includes("minyak");
+        // HELPER TAMPILAN: Konversi Otomatis & Satuan Unit
+        const isMinyak = b.toLowerCase().includes("minyak") || b.toLowerCase().includes("cair");
+        
         const fmt = (val, isReject = false) => {
             let angka = parseFloat(val) || 0;
-            let styleReject = isReject ? 'color:red; font-weight:bold;' : '';
+            let styleTxt = isReject ? 'color:red; font-weight:bold;' : 'color:#333; font-weight:600;';
 
             if (!isMinyak) {
-                return `<div style="line-height:1.1; ${styleReject}">${angka}</div><div style="font-size:9px; color:#888;">Unit</div>`;
+                // Tampilan Barang Umum (Unit)
+                return `<div style="${styleTxt} line-height:1.1;">${angka}</div>
+                        <div style="font-size:9px; color:#888; font-weight:normal;">Unit</div>`;
             }
 
-            let unitAsal = (satuanBarang === "Kg") ? "Kg" : "Lt";
-            let unitTujuan = (satuanBarang === "Kg") ? "Lt" : "Kg";
-            let hasilKonv = (unitAsal === "Lt") ? (angka * 0.9) : (angka / 0.9);
+            // Tampilan Minyak (Konversi Lt <-> Kg)
+            let uAsal = (satuanBarang === "Kg") ? "Kg" : "Lt";
+            let uTuj = (satuanBarang === "Kg") ? "Lt" : "Kg";
+            let konv = (uAsal === "Lt") ? (angka * 0.9) : (angka / 0.9);
 
-            return `
-                <div style="line-height:1.1; ${styleReject}">${angka} ${unitAsal}</div>
-                <div style="font-size:10px; color:#2563eb; border-top:1px dotted #ccc; margin-top:2px; padding-top:1px; font-weight:normal;">
-                    ${hasilKonv.toFixed(2)} ${unitTujuan}
-                </div>`;
+            return `<div style="${styleTxt} line-height:1.1;">${angka} ${uAsal}</div>
+                    <div style="font-size:10px; color:#2563eb; border-top:1px dotted #ccc; margin-top:2px; padding-top:1px; font-weight:normal;">
+                        ${konv.toFixed(2)} ${uTuj}
+                    </div>`;
         };
 
-        // --- FITUR ASLI: Susun Baris Tabel (TR) ---
+        // Susun Baris Tabel
         h += `<tr>
             <td class="sticky-col" style="font-weight:bold; vertical-align:middle;">${b}</td>
-            <td>${fmt(s.ak)}</td>
-            <td>${fmt(s.ab)}</td>
-            <td>${fmt(s.ik)}</td>
-            <td>${fmt(s.ib)}</td>
-            <td>${fmt(s.rej, true)}</td> <td>${fmt(s.rk)}</td>
-            <td>${fmt(s.jm)}</td>
-            <td>${fmt(s.ju)}</td>
-            <td style="background:#fef3c7">${fmt(ktr)}</td>
-            <td style="background:#dcfce7">${fmt(rdy)}</td>
-            <td style="background:var(--p); color:white">${fmt(ktr+rdy)}</td>
+            <td class="text-center">${fmt(s.ak)}</td>
+            <td class="text-center">${fmt(s.ab)}</td>
+            <td class="text-center">${fmt(s.ik)}</td>
+            <td class="text-center">${fmt(s.ib)}</td>
+            <td class="text-center">${fmt(s.rej, true)}</td>
+            <td class="text-center">${fmt(s.rk)}</td>
+            <td class="text-center">${fmt(s.jm)}</td>
+            <td class="text-center">${fmt(s.ju)}</td>
+            <td class="text-center" style="background:#fef3c7">${fmt(ktr)}</td>
+            <td class="text-center" style="background:#dcfce7">${fmt(rdy)}</td>
+            <td class="text-center" style="background:var(--p); color:white">${fmt(ktr+rdy)}</td>
         </tr>`;
     }); 
     
     document.getElementById('tbStok').innerHTML = h;
 }
+
+// ==========================================
+// 2. FUNGSI KONTROL FORM INPUT (LOGISTIK)
+// ==========================================
+function cekJenisBarang() {
+    const sel = document.getElementById('stBrg');
+    if (!sel) return;
+
+    const val = sel.value ? sel.value.toLowerCase() : "";
+    const isCair = val.includes('cair') || val.includes('minyak');
+
+    const rowQC = document.getElementById('rowQC');
+    const stSatuan = document.getElementById('stSatuan');
+    const optRekon = document.getElementById('optRekon');
+    const stAksi = document.getElementById('stAksi');
+
+    if (isCair) {
+        if (rowQC) rowQC.style.display = 'none';
+        if (stSatuan) stSatuan.style.display = 'block';
+        if (optRekon) optRekon.style.display = 'none';
+        if (stAksi && stAksi.value === 'Rekondisi') stAksi.value = 'Masuk';
+    } else {
+        if (rowQC) rowQC.style.display = 'flex';
+        if (stSatuan) stSatuan.style.display = 'none';
+        if (optRekon) optRekon.style.display = 'block';
+    }
+}
+
+// ==========================================
+// 3. PENGATURAN OTOMATIS SAAT BUKA APLIKASI
+// ==========================================
+const n = new Date();
+const blnSkrg = n.getFullYear() + '-' + String(n.getMonth() + 1).padStart(2, '0');
+
+// Set Tanggal Laporan Otomatis
+const fMInput = document.getElementById('fM');
+if (fMInput) {
+    fMInput.value = blnSkrg;
+}
+
+// Jalankan Render Pertama Kali
+renderStok();
+
 
 
         // ==========================================
