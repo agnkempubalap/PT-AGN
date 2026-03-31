@@ -109,38 +109,37 @@
 
     <div style="display: flex; gap: 8px; margin-bottom: 8px; align-items: flex-start;">
         <div style="flex: 2;">
-            <select id="stBrg" onchange="cekJenisBarang()" class="form-control" style="width: 100%; height: 35px; background-color: #f9f9f9; border-radius: 8px; color: #333; font-size: 13px; border: 1px solid #ccc;"></select>
-        </div>
-        <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
-            <input type="number" id="stQty" placeholder="Jml" class="form-control" style="width: 100%; height: 35px; background-color: #f9f9f9; border-radius: 8px; font-size: 13px; border: 1px solid #ccc;">
-            <select id="stSatuan" class="form-control" style="display:none; height: 30px; font-size: 11px; background-color: #fff; border-radius: 6px; border: 1px solid #ccc;">
-                <option value="Liter">Lt</option>
-                <option value="Kg">Kg</option>
-            </select>
-        </div>
-    </div>
+            <label>Pilih Barang</label>
+<select id="stBrg" onchange="cekJenisBarang()">
+    </select>
 
-    <div style="margin-bottom: 8px;">
-        <select id="stAksi" onchange="cekJenisBarang()">
+<div id="stSatuan" style="display:none; margin-top:10px;">
+    <label>Satuan Cairan</label>
+    <select id="selSatuan">
+        <option value="Lt">Liter (Lt)</option>
+        <option value="Kg">Kilogram (Kg)</option>
+    </select>
+</div>
+
+<label>Aksi</label>
+<select id="stAksi" onchange="cekJenisBarang()">
     <option value="Masuk">Masuk</option>
-    <option value="Keluar">Keluar</option>
     <option value="Rekondisi">Rekondisi</option>
+    <option value="Jual">Jual</option>
 </select>
-    </div>
 
-    <div id="rowQC" style="display: flex; gap: 8px; margin-bottom: 12px;">
-        <div style="flex: 1;">
-            <select id="stKondisi" class="form-control" style="width: 100%; height: 35px; background-color: #f9f9f9; border-radius: 8px; font-size: 13px; border: 1px solid #ccc;">
-                <option value="Kotor">Kotor</option>
-                <option value="Ready">Ready</option>
-            </select>
-        </div>
-        <div style="flex: 1;">
-            <select id="stStatus" class="form-control" style="width: 100%; height: 35px; background-color: #f9f9f9; border-radius: 8px; font-size: 13px; border: 1px solid #ccc;">
-                <option value="Accepted">Accepted</option>
-                <option value="Rejected">Rejected</option>
-            </select>
-        </div>
+<div id="rowQC" style="display:none; gap:10px; margin-top:10px;">
+    <select id="stKon"><option value="Kotor">Kotor</option><option value="Bekas">Bekas</option></select>
+    <select id="stStat"><option value="Accepted">Accepted</option><option value="Reject">Reject</option></select>
+</div>
+
+<div id="rowJual" style="display:none; margin-top:10px;">
+    <label>Tipe Penjualan</label>
+    <select id="stTipeJual">
+        <option value="Jual Mitra">Jual Mitra</option>
+        <option value="Jual Umum">Jual Umum</option>
+    </select>
+</div>
     </div>
 
     <button onclick="prosesStok()" class="btn btn-success" style="width: 100%; font-weight: bold; padding: 10px; background-color: #28a745; border: none; color: white; border-radius: 8px; font-size: 13px;">
@@ -518,21 +517,37 @@ function cekJenisBarang() {
 
     const valBrg = selBrg.value ? selBrg.value.toLowerCase() : "";
     const isCair = valBrg.includes('cair') || valBrg.includes('minyak');
-    const isRekon = (selAksi.value === 'Rekondisi');
+    const aksi = selAksi.value;
 
     const rowQC = document.getElementById('rowQC');
     const stSatuan = document.getElementById('stSatuan');
+    const rowJual = document.getElementById('rowJual');
+    const optRekon = selAksi.querySelector('option[value="Rekondisi"]');
 
-    // Sembunyikan QC jika: Barangnya Cair ATAU Aksinya Rekondisi
-    if (isCair || isRekon) {
-        if (rowQC) rowQC.style.display = 'none';
-    } else {
+    // --- RESET SEMUA KE SEMBUNYI ---
+    if (rowQC) rowQC.style.display = 'none';
+    if (stSatuan) stSatuan.style.display = 'none';
+    if (rowJual) rowJual.style.display = 'none';
+    if (optRekon) optRekon.style.display = 'block';
+
+    // --- LOGIKA BENDA CAIR ---
+    if (isCair) {
+        if (stSatuan) stSatuan.style.display = 'block'; // LT/KG MUNCUL
+        if (optRekon) optRekon.style.display = 'none';   // REKON SEMBUNYI
+        if (aksi === 'Rekondisi') selAksi.value = 'Masuk';
+    } 
+    
+    // --- LOGIKA QC (Hanya Muncul saat Masuk & Bukan Cair) ---
+    if (aksi === 'Masuk' && !isCair) {
         if (rowQC) rowQC.style.display = 'flex';
     }
 
-    // Munculkan satuan Lt/Kg hanya jika barang Cair
-    if (stSatuan) stSatuan.style.display = isCair ? 'block' : 'none';
+    // --- LOGIKA JUAL (Muncul Dropdown Mitra/Umum) ---
+    if (aksi === 'Jual') {
+        if (rowJual) rowJual.style.display = 'block';
+    }
 }
+
 
 // --- 2. RENDER TABEL STOK ---
 function renderStok() {
