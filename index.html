@@ -147,10 +147,15 @@
 
 
            <div class="card" style="padding: 10px; overflow: hidden;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-        <h3 style="color:#2563eb; margin: 0;">📊 Laporan Stok</h3>
-        <input type="month" id="fMStok" onchange="renderStok()" style="width: 120px !important; padding: 5px; margin: 0;">
-    </div>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+    <h3 style="color:#2563eb; margin: 0; font-size: 14px; font-weight: 800; display: flex; align-items: center;">
+        <span style="border-left: 3px solid #2563eb; height: 14px; margin-right: 8px; border-radius: 2px;"></span>
+        📊 Laporan Stok
+    </h3>
+    <input type="month" id="fMStok" 
+           style="width: 130px; padding: 0 8px; border-radius: 8px; border: 1px solid #ddd; font-size: 12px; height: 32px; color: #333; background: #f9fafb;">
+</div>
+
 
     <div style="width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid #eee; border-radius: 8px;">
         <table id="tbStokHeader" style="width: 100%; min-width: 850px; border-collapse: collapse; font-size: 11px; table-layout: auto;">
@@ -598,24 +603,26 @@ function renderStok() {
     if (document.getElementById('tbStok')) document.getElementById('tbStok').innerHTML = h;
 }
 
-// --- 3. AUTO JALAN (STARTUP) ---
+// --- 3. AUTO JALAN (STARTUP) - FIX REAL TIME ---
 const n = new Date();
-const yyyy = n.getFullYear();
-const mm = String(n.getMonth() + 1).padStart(2, '0');
-const dd = String(n.getDate()).padStart(2, '0');
+// Format YYYY-MM untuk input type="month"
+const bln = n.getFullYear() + '-' + String(n.getMonth() + 1).padStart(2, '0');
 
-// 1. Set Bulan Laporan (YYYY-MM)
-const bln = yyyy + '-' + mm;
-const inF = document.getElementById('fM') || document.getElementById('fMStok');
-if (inF) inF.value = bln;
+// Set otomatis ke input filter laporan
+const inF = document.getElementById('fMStok');
+if (inF) {
+    inF.value = bln;
+}
 
-// 2. Set Tanggal Logistik (YYYY-MM-DD) - REAL TIME
-const tglLog = document.getElementById('tglLogistik');
-if (tglLog) tglLog.value = yyyy + '-' + mm + '-' + dd;
+// Set otomatis ke input tanggal logistik (Hari Ini)
+const inTglLog = document.getElementById('tglLogistik');
+if (inTglLog) {
+    inTglLog.value = n.toISOString().split('T')[0];
+}
 
+// Jalankan render awal
 renderStok();
 cekJenisBarang();
-
 
 
         // ==========================================
