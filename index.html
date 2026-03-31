@@ -563,7 +563,7 @@ function cekJenisBarang() {
 }
 
 
-// --- 2. RENDER TABEL STOK (FULL LOGIC + NEW UI) ---
+// --- 2. RENDER TABEL STOK (FULL LOGIC - NO CUTS) ---
 function renderStok() {
     const inFm = document.getElementById('fM') || document.getElementById('fMStok');
     if (!inFm) return;
@@ -572,7 +572,7 @@ function renderStok() {
     let h = "";
 
     B_arr.forEach(b => {
-        // --- TETAP PAKAI LOGIKA ASLI MAS ---
+        // --- 1. LOGIKA HITUNGAN ASLI MAS (TIDAK DIUBAH) ---
         let s = { ak:0, ab:0, ik:0, ib:0, rej:0, rk:0, jm:0, ju:0 };
         let satuanBarang = "Unit"; 
 
@@ -596,7 +596,7 @@ function renderStok() {
         let rdy = (s.ab + s.ib + s.rk) - (s.jm + s.ju);
         const isM = b.toLowerCase().includes("minyak") || b.toLowerCase().includes("cair");
         
-        // --- FORMAT TAMPILAN (TETAP ADA FITUR KONVERSI KG/LT) ---
+        // --- 2. FITUR KONVERSI KG/LT ASLI MAS (TIDAK DIUBAH) ---
         const fmt = (v, rej = false) => {
             let n = parseFloat(v) || 0;
             let st = rej ? 'color:red; font-weight:bold;' : 'color:#333; font-weight:600;';
@@ -607,7 +607,7 @@ function renderStok() {
             return `<div style="${st}">${n} ${uA}</div><div style="font-size:9px; color:#2563eb; border-top:1px dotted #ccc;">${kv.toFixed(2)} ${uT}</div>`;
         };
 
-        // --- TAMPILAN BARIS (STICKY & SCROLLABLE) ---
+        // --- 3. TAMPILAN BARIS (STICKY & SCROLLABLE - FIX UNTUK HP) ---
         h += `
             <tr style="border-bottom: 1px solid #f1f5f9;">
                 <td style="width: 1%; white-space: nowrap; padding: 12px 10px; font-size: 12px; font-weight: 800; color: #1e293b; position: sticky; left: 0; background: #fff; z-index: 1; border-right: 1px solid #f1f5f9;">
@@ -627,9 +627,11 @@ function renderStok() {
             </tr>`;
     }); 
     
+    // Support dua kemungkinan ID container Mas
     const target = document.getElementById('tbStok') || document.getElementById('bodyStok');
     if (target) target.innerHTML = h;
 }
+
 
 
 // --- 3. AUTO JALAN (STARTUP) - FIX REAL TIME ---
