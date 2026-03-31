@@ -99,81 +99,82 @@
         <div id="listB" style="display:flex; flex-wrap:wrap; gap:5px"></div>
     </div>
 
-    <div id="logistik" class="card">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-        <h3 style="margin: 0; border-left: 4px solid #2563eb; padding-left: 10px; display: flex; align-items: center; color: #2563eb; font-size: 15px;">
-            🚚 Logistik
-        </h3>
-        <input type="date" id="stTgl" class="form-control" style="width: auto; height: 30px; font-size: 13px; background-color: #f9f9f9; border-radius: 8px; border: 1px solid #ccc;">
+    <div class="card">
+    <h3 style="color:#2563eb;">🚚 Logistik</h3>
+    
+    <div style="margin-bottom: 15px;">
+        <input type="date" id="tglLogistik" style="width:100%;">
     </div>
 
-    <div style="display: flex; gap: 8px; margin-bottom: 8px; align-items: flex-start;">
-        <div style="flex: 2;">
-            <label>Pilih Barang</label>
-<select id="stBrg" onchange="cekJenisBarang()">
-    </select>
-
-<div id="stSatuan" style="display:none; margin-top:10px;">
-    <label>Satuan Cairan</label>
-    <select id="selSatuan">
-        <option value="Lt">Liter (Lt)</option>
-        <option value="Kg">Kilogram (Kg)</option>
-    </select>
-</div>
-
-<label>Aksi</label>
-<select id="stAksi" onchange="cekJenisBarang()">
-    <option value="Masuk">Masuk</option>
-    <option value="Rekondisi">Rekondisi</option>
-    <option value="Jual">Jual</option>
-</select>
-
-<div id="rowQC" style="display:none; gap:10px; margin-top:10px;">
-    <select id="stKon"><option value="Kotor">Kotor</option><option value="Bekas">Bekas</option></select>
-    <select id="stStat"><option value="Accepted">Accepted</option><option value="Reject">Reject</option></select>
-</div>
-
-<div id="rowJual" style="display:none; margin-top:10px;">
-    <label>Tipe Penjualan</label>
-    <select id="stTipeJual">
-        <option value="Jual Mitra">Jual Mitra</option>
-        <option value="Jual Umum">Jual Umum</option>
-    </select>
-</div>
+    <div style="margin-bottom: 15px;">
+        <label>Pilih Barang</label>
+        <select id="stBrg" onchange="cekJenisBarang()">
+            </select>
     </div>
 
-    <button onclick="prosesStok()" class="btn btn-success" style="width: 100%; font-weight: bold; padding: 10px; background-color: #28a745; border: none; color: white; border-radius: 8px; font-size: 13px;">
-        PROSES STOK
-    </button>
+    <div id="stSatuan" style="display:none; margin-bottom: 15px;">
+        <label>Satuan Cairan</label>
+        <select id="selSatuan">
+            <option value="Lt">Liter (Lt)</option>
+            <option value="Kg">Kilogram (Kg)</option>
+        </select>
+    </div>
+
+    <div style="margin-bottom: 15px;">
+        <label>Aksi</label>
+        <select id="stAksi" onchange="cekJenisBarang()">
+            <option value="Masuk">Masuk</option>
+            <option value="Rekondisi">Rekondisi</option>
+            <option value="Jual">Jual</option>
+        </select>
+    </div>
+
+    <div id="rowJual" style="display:none; margin-bottom: 15px;">
+        <label>Tipe Penjualan</label>
+        <select id="stTipeJual">
+            <option value="Jual Mitra">Jual Mitra</option>
+            <option value="Jual Umum">Jual Umum</option>
+        </select>
+    </div>
+
+    <div id="rowQC" style="display:none; gap:10px; margin-bottom: 15px;">
+        <select id="stKon" style="flex:1;"><option value="Kotor">Kotor</option><option value="Bekas">Bekas</option></select>
+        <select id="stStat" style="flex:1;"><option value="Accepted">Accepted</option><option value="Reject">Reject</option></select>
+    </div>
+
+    <button onclick="prosesStok()" class="btn-proses">PROSES STOK</button>
 </div>
 
-           <div class="card">
-        <h3 style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            📊 Laporan Stok 
-            <input type="month" id="fMStok" style="width:110px; height:30px" onchange="renderStok()">
-        </h3>
-        <div class="table-area" id="areaStok">
-            <table>
-                <thead>
-                    <tr>
-                        <th class="sticky-col">BRG</th>
-                        <th>AWAL KTR</th>
-                        <th>AWAL RDY</th>
-                        <th>IN KTR</th>
-                        <th>IN RDY</th>
-                        <th style="color:var(--d)">REJ</th>
-                        <th>REKON</th>
-                        <th>MITRA</th>
-                        <th>UMUM</th>
-                        <th style="background:#fef3c7">STOK KTR</th>
-                        <th style="background:#dcfce7">STOK RDY</th>
-                        <th style="background:var(--p); color:white">TOTAL</th>
-                    </tr>
-                </thead>
-                <tbody id="tbStok"></tbody>
-            </table>
-        </div>
-    </div> <div class="flex-row">
+           <div class="card" style="padding: 10px; overflow: hidden;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <h3 style="color:#2563eb; margin: 0;">📊 Laporan Stok</h3>
+        <input type="month" id="fMStok" onchange="renderStok()" style="width: 120px !important; padding: 5px; margin: 0;">
+    </div>
+
+    <div style="width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid #eee; border-radius: 8px;">
+        <table id="tbStokHeader" style="width: 100%; min-width: 850px; border-collapse: collapse; font-size: 11px; table-layout: auto;">
+            <thead style="background: #f8fafc; color: #64748b;">
+                <tr>
+                    <th style="position: sticky; left: 0; background: #f8fafc; padding: 12px 8px; border-bottom: 2px solid #f1f5f9; z-index: 2;">BRG</th>
+                    <th style="padding: 10px 5px; border-bottom: 2px solid #f1f5f9;">AWAL KTR</th>
+                    <th style="padding: 10px 5px; border-bottom: 2px solid #f1f5f9;">AWAL RDY</th>
+                    <th style="padding: 10px 5px; border-bottom: 2px solid #f1f5f9;">IN KTR</th>
+                    <th style="padding: 10px 5px; border-bottom: 2px solid #f1f5f9;">IN RDY</th>
+                    <th style="padding: 10px 5px; border-bottom: 2px solid #f1f5f9; color: red;">REJ</th>
+                    <th style="padding: 10px 5px; border-bottom: 2px solid #f1f5f9;">RKDN</th>
+                    <th style="padding: 10px 5px; border-bottom: 2px solid #f1f5f9;">J-MIT</th>
+                    <th style="padding: 10px 5px; border-bottom: 2px solid #f1f5f9;">J-UMM</th>
+                    <th style="padding: 10px 5px; border-bottom: 2px solid #f1f5f9; background: #fef3c7;">S-KTR</th>
+                    <th style="padding: 10px 5px; border-bottom: 2px solid #f1f5f9; background: #dcfce7;">S-RDY</th>
+                    <th style="padding: 10px 5px; border-bottom: 2px solid #f1f5f9; background: var(--p); color: white;">TOTAL</th>
+                </tr>
+            </thead>
+            <tbody id="tbStok">
+                </tbody>
+        </table>
+    </div>
+</div>
+ <div class="flex-row">
         <button class="btn" style="background:var(--s)" onclick="expEx('areaStok','Stok')">EXCEL</button>
         <button class="btn" style="background:var(--d)" onclick="expPdf('areaStok','Laporan_Stok')">PDF</button>
         <button class="btn" style="background:#64748b" onclick="showLogs('stok_logs')">LOG</button>
