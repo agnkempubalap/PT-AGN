@@ -99,18 +99,18 @@
         <div id="listB" style="display:flex; flex-wrap:wrap; gap:5px"></div>
     </div>
 
-    <div class="card">
-    <h3 style="color:#2563eb;">🚚 Logistik</h3>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+    <h3 style="color:#2563eb; margin: 0;">🚚 Logistik</h3>
     
-    <div style="margin-bottom: 15px;">
-        <input type="date" id="tglLogistik" style="width:100%;">
-    </div>
+    <input type="date" id="tglLogistik" 
+           style="width: 150px !important; padding: 8px; border-radius: 8px; border: 1px solid #ddd; font-size: 14px; margin: 0;">
+</div>
 
-    <div style="margin-bottom: 15px;">
-        <label>Pilih Barang</label>
-        <select id="stBrg" onchange="cekJenisBarang()">
-            </select>
-    </div>
+<div style="margin-bottom: 10px;">
+    <label style="display:block; font-size:12px; color:#666; margin-bottom:5px;">Pilih Barang</label>
+    <select id="stBrg" onchange="cekJenisBarang()" style="width: 100% !important; padding: 12px; border-radius: 8px; border: 1px solid #ddd;">
+        </select>
+</div>
 
     <div id="stSatuan" style="display:none; margin-bottom: 15px;">
         <label>Satuan Cairan</label>
