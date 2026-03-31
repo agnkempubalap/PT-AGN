@@ -510,15 +510,34 @@ function saveL() {
         }
 
 // ---------------------------------------
-// 1. FUNGSI RENDER TABEL (LAPORAN STOK)
-// ---------------------------------------
-// ==========================================
-// 2. FUNGSI RENDER TABEL STOK
-// ==========================================
+// --- 1. LOGIKA SEMBUNYI QC & SATUAN ---
+function cekJenisBarang() {
+    const selBrg = document.getElementById('stBrg');
+    const selAksi = document.getElementById('stAksi');
+    if (!selBrg || !selAksi) return;
+
+    const valBrg = selBrg.value ? selBrg.value.toLowerCase() : "";
+    const isCair = valBrg.includes('cair') || valBrg.includes('minyak');
+    const isRekon = (selAksi.value === 'Rekondisi');
+
+    const rowQC = document.getElementById('rowQC');
+    const stSatuan = document.getElementById('stSatuan');
+
+    // Sembunyikan QC jika: Barangnya Cair ATAU Aksinya Rekondisi
+    if (isCair || isRekon) {
+        if (rowQC) rowQC.style.display = 'none';
+    } else {
+        if (rowQC) rowQC.style.display = 'flex';
+    }
+
+    // Munculkan satuan Lt/Kg hanya jika barang Cair
+    if (stSatuan) stSatuan.style.display = isCair ? 'block' : 'none';
+}
+
+// --- 2. RENDER TABEL STOK ---
 function renderStok() {
     const inFm = document.getElementById('fM') || document.getElementById('fMStok');
     if (!inFm) return;
-    
     const fM = inFm.value;
     const B_arr = Object.values(D.master_barang || {});
     let h = "";
@@ -534,8 +553,7 @@ function renderStok() {
                 if(l.ak === "Masuk") l.kon === "Bekas" ? s.ak += l.q : s.ab += l.q; 
                 else if(l.ak === "Rekondisi") { s.ak -= l.q; s.ab += l.q; } 
                 else if(l.ak.includes("Jual")) s.ab -= l.q; 
-            }
-            else if(l.t?.slice(0,7) === fM) { 
+            } else if(l.t?.slice(0,7) === fM) { 
                 if(l.ak === "Masuk") l.kon === "Bekas" ? s.ik += l.q : s.ib += l.q; 
                 else if(l.ak === "Rekondisi") s.rk += l.q; 
                 else if(l.ak === "Jual Mitra") s.jm += l.q; 
@@ -546,86 +564,32 @@ function renderStok() {
 
         let ktr = (s.ak + s.ik) - s.rk;
         let rdy = (s.ab + s.ib + s.rk) - (s.jm + s.ju);
-        const isMinyak = b.toLowerCase().includes("minyak") || b.toLowerCase().includes("cair");
+        const isM = b.toLowerCase().includes("minyak") || b.toLowerCase().includes("cair");
         
-        const fmt = (val, isReject = false) => {
-            let angka = parseFloat(val) || 0;
-            let style = isReject ? 'color:red; font-weight:bold;' : 'color:#333; font-weight:600;';
-            if (!isMinyak) return `<div style="${style}">${angka}</div><div style="font-size:9px; color:#888;">Unit</div>`;
+        const fmt = (v, rej = false) => {
+            let n = parseFloat(v) || 0;
+            let st = rej ? 'color:red; font-weight:bold;' : 'color:#333; font-weight:600;';
+            if (!isM) return `<div style="${st}">${n}</div><div style="font-size:9px; color:#888;">Unit</div>`;
             let uA = (satuanBarang === "Kg") ? "Kg" : "Lt";
             let uT = (satuanBarang === "Kg") ? "Lt" : "Kg";
-            let konv = (uA === "Lt") ? (angka * 0.9) : (angka / 0.9);
-            return `<div style="${style}">${angka} ${uA}</div><div style="font-size:10px; color:#2563eb; border-top:1px dotted #ccc;">${konv.toFixed(2)} ${uT}</div>`;
+            let kv = (uA === "Lt") ? (n * 0.9) : (n / 0.9);
+            return `<div style="${st}">${n} ${uA}</div><div style="font-size:9px; color:#2563eb; border-top:1px dotted #ccc;">${kv.toFixed(2)} ${uT}</div>`;
         };
 
-        h += `<tr><td class="sticky-col">${b}</td><td>${fmt(s.ak)}</td><td>${fmt(s.ab)}</td><td>${fmt(s.ik)}</td><td>${fmt(s.ib)}</td><td>${fmt(s.rej, true)}</td><td>${fmt(s.rk)}</td><td>${fmt(s.jm)}</td><td>${fmt(s.ju)}</td><td style="background:#fef3c7">${fmt(ktr)}</td><td style="background:#dcfce7">${fmt(rdy)}</td><td style="background:var(--p); color:white">${fmt(ktr+rdy)}</td></tr>`;
+        h += `<tr><td class="sticky-col">${b}</td><td>${fmt(s.ak)}</td><td>${fmt(s.ab)}</td><td>${fmt(s.ik)}</td><td>${fmt(s.ib)}</td><td>${fmt(s.rej,true)}</td><td>${fmt(s.rk)}</td><td>${fmt(s.jm)}</td><td>${fmt(s.ju)}</td><td style="background:#fef3c7">${fmt(ktr)}</td><td style="background:#dcfce7">${fmt(rdy)}</td><td style="background:var(--p); color:white">${fmt(ktr+rdy)}</td></tr>`;
     }); 
     if (document.getElementById('tbStok')) document.getElementById('tbStok').innerHTML = h;
 }
 
-// ---------------------------------------
-// 2. STARTUP SISTEM (ANTI-ILANG TANGGAL)
-// ---------------------------------------
-function jalankanStartup() {
-    const n = new Date();
-    const bln = n.getFullYear() + '-' + String(n.getMonth() + 1).padStart(2, '0');
+// --- 3. AUTO JALAN (STARTUP) ---
+const n = new Date();
+const bln = n.getFullYear() + '-' + String(n.getMonth() + 1).padStart(2, '0');
+const inF = document.getElementById('fM') || document.getElementById('fMStok');
+if (inF) inF.value = bln;
 
-    // Paksa isi tanggal ke semua ID yang mungkin
-    ['fM', 'fMStok'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.value = bln;
-    });
+renderStok();
+cekJenisBarang();
 
-    renderStok();
-    cekJenisBarang();
-}
-
-// Pasang di dua tempat agar benar-benar kuat
-window.onload = jalankanStartup;
-document.addEventListener('DOMContentLoaded', jalankanStartup);
-
-// ---------------------------------------
-// 3. FUNGSI LOGIKA BARANG (INPUT LOGISTIK)
-// ---------------------------------------
-function cekJenisBarang() {
-    const selBrg = document.getElementById('stBrg');
-    const selAksi = document.getElementById('stAksi');
-    if (!selBrg || !selAksi) return;
-
-    // A. Cek apakah barang adalah cairan/minyak
-    const valBrg = selBrg.value ? selBrg.value.toLowerCase() : "";
-    const isCair = valBrg.includes('cair') || valBrg.includes('minyak');
-
-    // B. Cek apakah aksi yang dipilih adalah Rekondisi
-    const isRekon = (selAksi.value === 'Rekondisi');
-
-    // Ambil elemen UI yang mau disembunyikan
-    const rowQC = document.getElementById('rowQC');       // Baris Kondisi & Status
-    const stSatuan = document.getElementById('stSatuan'); // Dropdown Lt/Kg
-    const optRekon = document.getElementById('optRekon'); // Pilihan Rekondisi di Aksi
-
-    // LOGIKA PERTAMA: Jika Benda Cair
-    if (isCair) {
-        if (rowQC) rowQC.style.display = 'none';
-        if (stSatuan) stSatuan.style.display = 'block';
-        if (optRekon) optRekon.style.display = 'none';
-        
-        // Paksa pindah ke 'Masuk' jika user tadinya pilih Rekon tapi barangnya Cair
-        if (selAksi.value === 'Rekondisi') selAksi.value = 'Masuk';
-    } 
-    // LOGIKA KEDUA: Jika Barang Biasa tapi pilih Rekondisi
-    else if (isRekon) {
-        if (rowQC) rowQC.style.display = 'none';      // SEMBUNYIKAN QC SAAT REKON
-        if (stSatuan) stSatuan.style.display = 'none';
-        if (optRekon) optRekon.style.display = 'block';
-    }
-    // LOGIKA KETIGA: Barang Biasa (Kempu/IBC) & Aksi Biasa (Masuk/Keluar)
-    else {
-        if (rowQC) rowQC.style.display = 'flex';     // MUNCULKAN QC KEMBALI
-        if (stSatuan) stSatuan.style.display = 'none';
-        if (optRekon) optRekon.style.display = 'block';
-    }
-}
 
         // ==========================================
         // 5. TAB AKTIVITAS LOGIC (CHAIN LOGIC)
