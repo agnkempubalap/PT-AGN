@@ -151,45 +151,56 @@
 </div>
            <div class="card" style="padding: 15px; border-radius: 12px; margin-bottom: 20px; background: #fff; border: 1px solid #eee; overflow: hidden;">
     
-    <div class="card" style="padding: 15px; border-radius: 12px; margin-bottom: 20px; background: #fff; border: 1px solid #eee; overflow: hidden;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-        <h3 style="color:#2563eb; margin: 0; font-size: 14px; font-weight: 800; display: flex; align-items: center;">
+    <div id="tab-stok" class="tab-content">
+    
+    <div class="card" style="padding: 15px; border-radius: 12px; margin-bottom: 20px; background: #fff; border: 1px solid #eee;">
+        <h3 style="color:#2563eb; margin: 0 0 15px 0; font-size: 14px; font-weight: 800; display: flex; align-items: center;">
             <span style="border-left: 3px solid #2563eb; height: 14px; margin-right: 8px; border-radius: 2px;"></span>
-            📊 Laporan Stok
+            🚚 Logistik
         </h3>
-        <input type="month" id="fMStok" style="width: 130px; padding: 0 8px; border-radius: 8px; border: 1px solid #ddd; font-size: 12px; height: 32px; color: #333; background: #f9fafb;">
+        <div id="formLogistik">
+            <button onclick="simpanLog()" style="width:100%; padding:12px; background:#22c55e; color:#fff; border:none; border-radius:8px; font-weight:700;">SIMPAN LOGISTIK</button>
+        </div>
     </div>
 
-    <div style="width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;">
-    <table style="width: 100%; border-collapse: collapse; min-width: 950px; table-layout: fixed;">
-        <thead style="background: #f8fafc;">
-            <tr style="border-bottom: 2px solid #f1f5f9;">
-                <th style="width: 110px; text-align: left; padding: 12px 10px; font-size: 10px; color: #64748b; position: sticky; left: 0; background: #f8fafc; z-index: 3; border-right: 1px solid #f1f5f9;">BRG</th>
-                
-                <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #64748b; text-align: center;">AWAL KTR</th>
-                <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #64748b; text-align: center;">AWAL RDY</th>
-                <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #64748b; text-align: center;">IN KTR</th>
-                <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #64748b; text-align: center;">IN RDY</th>
-                <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #ef4444; text-align: center;">REJECT</th>
-                <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #64748b; text-align: center;">RKDN</th>
-                <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #64748b; text-align: center;">J-MIT</th>
-                <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #64748b; text-align: center;">J-UMM</th>
-                <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #64748b; text-align: center; background:#fef3c7">TOT KTR</th>
-                <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #64748b; text-align: center; background:#dcfce7">TOT RDY</th>
-                <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #fff; text-align: center; background:#475569;">TOTAL</th>
-            </tr>
-        </thead>
-        <tbody id="bodyStok"></tbody>
-    </table>
-</div>
+    <div class="card" style="padding: 15px; border-radius: 12px; margin-bottom: 20px; background: #fff; border: 1px solid #eee; overflow: hidden;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3 style="color:#2563eb; margin: 0; font-size: 14px; font-weight: 800; display: flex; align-items: center;">
+                <span style="border-left: 3px solid #2563eb; height: 14px; margin-right: 8px; border-radius: 2px;"></span>
+                📊 Laporan Stok
+            </h3>
+            <input type="month" id="fMStok" onchange="renderStok()" style="width: 130px; padding: 0 8px; border-radius: 8px; border: 1px solid #ddd; font-size: 12px; height: 32px; color: #333; background: #f9fafb;">
+        </div>
 
-    <div style="display: flex; gap: 8px; margin-top: 15px;">
-        <button onclick="eksExcel()" style="flex: 1; height: 38px; background: #22c55e; color: #fff; border: none; border-radius: 8px; font-size: 12px; font-weight: 700;">EXCEL</button>
-        <button onclick="eksPDF()" style="flex: 1; height: 38px; background: #ef4444; color: #fff; border: none; border-radius: 8px; font-size: 12px; font-weight: 700;">PDF</button>
-        <button onclick="showLog()" style="flex: 1; height: 38px; background: #64748b; color: #fff; border: none; border-radius: 8px; font-size: 12px; font-weight: 700;">LOG</button>
-    </div>
-</div>
-</div>
+        <div style="width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;">
+            <table style="width: 100%; border-collapse: collapse; min-width: 950px; table-layout: fixed;">
+                <thead style="background: #f8fafc;">
+                    <tr style="border-bottom: 2px solid #f1f5f9;">
+                        <th style="width: 110px; text-align: left; padding: 12px 10px; font-size: 10px; color: #64748b; position: sticky; left: 0; background: #f8fafc; z-index: 3; border-right: 1px solid #f1f5f9;">BRG</th>
+                        <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #64748b; text-align: center;">AWAL KTR</th>
+                        <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #64748b; text-align: center;">AWAL RDY</th>
+                        <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #64748b; text-align: center;">IN KTR</th>
+                        <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #64748b; text-align: center;">IN RDY</th>
+                        <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #ef4444; text-align: center;">REJECT</th>
+                        <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #64748b; text-align: center;">RKDN</th>
+                        <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #64748b; text-align: center;">J-MIT</th>
+                        <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #64748b; text-align: center;">J-UMM</th>
+                        <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #64748b; text-align: center; background:#fef3c7">TOT KTR</th>
+                        <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #64748b; text-align: center; background:#dcfce7">TOT RDY</th>
+                        <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #fff; text-align: center; background:#475569;">TOTAL</th>
+                    </tr>
+                </thead>
+                <tbody id="bodyStok"></tbody>
+            </table>
+        </div>
+
+        <div style="display: flex; gap: 8px; margin-top: 15px;">
+            <button onclick="eksExcel()" style="flex: 1; height: 38px; background: #22c55e; color: #fff; border: none; border-radius: 8px; font-size: 12px; font-weight: 700;">EXCEL</button>
+            <button onclick="eksPDF()" style="flex: 1; height: 38px; background: #ef4444; color: #fff; border: none; border-radius: 8px; font-size: 12px; font-weight: 700;">PDF</button>
+            <button onclick="showLog()" style="flex: 1; height: 38px; background: #64748b; color: #fff; border: none; border-radius: 8px; font-size: 12px; font-weight: 700;">LOG</button>
+        </div>
+    </div> </div>
+
         <div id="tab-aktivitas" class="tab-content">
             <div class="card" style="border-top: 5px solid var(--d)">
                 <h3>🛠️ Input Borongan (Chain Logic)</h3>
