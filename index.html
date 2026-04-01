@@ -99,80 +99,29 @@
         <div id="listB" style="display:flex; flex-wrap:wrap; gap:5px"></div>
     </div>
 
-    <div class="card" style="padding: 12px; border-radius: 12px; margin-bottom: 20px; background: #fff; border: 1px solid #eee;">
-    
-    <div class="card" style="padding: 15px; border-radius: 12px; margin-bottom: 20px; background: #fff; border: 1px solid #eee;">
-    <h3 style="color:#2563eb; margin: 0 0 15px 0; font-size: 14px; font-weight: 800; display: flex; align-items: center;">
-        <span style="border-left: 3px solid #2563eb; height: 14px; margin-right: 8px; border-radius: 2px;"></span>
-        🚚 Logistik
-    </h3>
-    <div id="formLogistik">
-        <button onclick="simpanLog()" style="width:100%; padding:12px; background:#22c55e; color:#fff; border:none; border-radius:8px; font-weight:700;">SIMPAN LOGISTIK</button>
-    </div>
-</div>
-
-<div class="card" style="padding: 15px; border-radius: 12px; margin-bottom: 20px; background: #fff; border: 1px solid #eee; overflow: hidden;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-        <h3 style="color:#2563eb; margin: 0; font-size: 14px; font-weight: 800; display: flex; align-items: center;">
-            <span style="border-left: 3px solid #2563eb; height: 14px; margin-right: 8px; border-radius: 2px;"></span>
-            📊 Laporan Stok
-        </h3>
-        <input type="month" id="fMStok" onchange="renderStok()" style="width: 130px; padding: 0 8px; border-radius: 8px; border: 1px solid #ddd; font-size: 12px; height: 32px; color: #333; background: #f9fafb;">
-    </div>
-
-    <div style="width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;">
-        <table style="width: 100%; border-collapse: collapse; min-width: 950px; table-layout: fixed;">
-            <thead style="background: #f8fafc;">
-                <tr style="border-bottom: 2px solid #f1f5f9;">
-                    <th style="width: 110px; text-align: left; padding: 12px 10px; font-size: 10px; color: #64748b; position: sticky; left: 0; background: #f8fafc; z-index: 3; border-right: 1px solid #f1f5f9;">BRG</th>
-                    <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #64748b; text-align: center;">AWAL KTR</th>
-                    <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #64748b; text-align: center;">AWAL RDY</th>
-                    <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #64748b; text-align: center;">IN KTR</th>
-                    <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #64748b; text-align: center;">IN RDY</th>
-                    <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #ef4444; text-align: center;">REJECT</th>
-                    <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #64748b; text-align: center;">RKDN</th>
-                    <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #64748b; text-align: center;">J-MIT</th>
-                    <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #64748b; text-align: center;">J-UMM</th>
-                    <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #64748b; text-align: center; background:#fef3c7">TOT KTR</th>
-                    <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #64748b; text-align: center; background:#dcfce7">TOT RDY</th>
-                    <th style="width: 75px; padding: 10px 5px; font-size: 9px; color: #fff; text-align: center; background:#475569;">TOTAL</th>
-                </tr>
-            </thead>
-            <tbody id="bodyStok">
-                </tbody>
-        </table>
-    </div>
-
-    <div style="display: flex; gap: 8px; margin-top: 15px;">
-        <button onclick="eksExcel()" style="flex: 1; height: 38px; background: #22c55e; color: #fff; border: none; border-radius: 8px; font-size: 12px; font-weight: 700;">EXCEL</button>
-        <button onclick="eksPDF()" style="flex: 1; height: 38px; background: #ef4444; color: #fff; border: none; border-radius: 8px; font-size: 12px; font-weight: 700;">PDF</button>
-        <button onclick="showLog()" style="flex: 1; height: 38px; background: #64748b; color: #fff; border: none; border-radius: 8px; font-size: 12px; font-weight: 700;">LOG</button>
-    </div>
-</div>
-           <div class="card" style="padding: 15px; border-radius: 12px; margin-bottom: 20px; background: #fff; border: 1px solid #eee; overflow: hidden;">
-    
     <div id="tab-stok" class="tab-content" style="padding: 10px;">
-    
     <div class="card" style="padding: 15px; border-radius: 12px; margin-bottom: 20px; background: #fff; border: 1px solid #eee;">
         <h3 style="color:#2563eb; margin: 0 0 15px 0; font-size: 14px; font-weight: 800; display: flex; align-items: center;">
             <span style="border-left: 3px solid #2563eb; height: 14px; margin-right: 8px; border-radius: 2px;"></span>
             🚚 Logistik
         </h3>
         
-        <input type="date" id="tglLog" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd; height: 40px;">
-        
-        <select id="selBarang" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd; height: 40px; background: #fff;"></select>
-        
-        <select id="selAksi" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd; height: 40px; background: #fff;">
-            <option value="Masuk">Masuk</option>
-            <option value="Jual Umum">Jual Umum</option>
-            <option value="Jual Mitra">Jual Mitra</option>
-            <option value="Rekondisi">Rekondisi</option>
-        </select>
+        <div id="formLogistik">
+            <input type="date" id="tglLog" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd; height: 40px;">
+            
+            <select id="selBarang" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd; height: 40px; background: #fff;"></select>
+            
+            <select id="selAksi" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd; height: 40px; background: #fff;">
+                <option value="Masuk">Masuk</option>
+                <option value="Jual Umum">Jual Umum</option>
+                <option value="Jual Mitra">Jual Mitra</option>
+                <option value="Rekondisi">Rekondisi</option>
+            </select>
 
-        <input type="number" id="qLog" placeholder="Jumlah" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd; height: 40px;">
-        
-        <button onclick="simpanLog()" style="width:100%; padding:12px; background:#22c55e; color:#fff; border:none; border-radius:8px; font-weight:700;">SIMPAN LOGISTIK</button>
+            <input type="number" id="qLog" placeholder="Jumlah" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd; height: 40px;">
+            
+            <button onclick="simpanLog()" style="width:100%; padding:12px; background:#22c55e; color:#fff; border:none; border-radius:8px; font-weight:700;">SIMPAN LOGISTIK</button>
+        </div>
     </div>
 
     <div class="card" style="padding: 15px; border-radius: 12px; background: #fff; border: 1px solid #eee; overflow: hidden;">
@@ -210,6 +159,7 @@
         </div>
     </div>
 </div>
+
         <div id="tab-aktivitas" class="tab-content">
             <div class="card" style="border-top: 5px solid var(--d)">
                 <h3>🛠️ Input Borongan (Chain Logic)</h3>
@@ -581,8 +531,19 @@ function cekJenisBarang() {
 
 
 // --- 2. RENDER TABEL STOK (FULL LOGIC - NO CUTS) ---
+// 1. Fungsi Mengisi Dropdown Barang
+function renderBarang() {
+    const s = document.getElementById('selBarang');
+    if (!s) return;
+    const B_arr = Object.values(D.master_barang || {});
+    let h = "<option value=''>- Pilih Barang -</option>";
+    B_arr.forEach(b => { h += `<option value="${b}">${b}</option>`; });
+    s.innerHTML = h;
+}
+
+// 2. Fungsi Utama Laporan Stok
 function renderStok() {
-    const inFm = document.getElementById('fM') || document.getElementById('fMStok');
+    const inFm = document.getElementById('fMStok');
     if (!inFm) return;
     const fM = inFm.value;
     const B_arr = Object.values(D.master_barang || {});
@@ -612,12 +573,10 @@ function renderStok() {
         let rdy = (s.ab + s.ib + s.rk) - (s.jm + s.ju);
         const isM = b.toLowerCase().includes("minyak") || b.toLowerCase().includes("cair");
         
-        // Helper untuk format angka & satuan
         const fmt = (v, rej = false, isKotorCol = false, isTotalCol = false) => {
             if (isM && isKotorCol) return `<div style="color:#94a3b8; font-weight:bold;">-</div>`;
             let n = parseFloat(v) || 0;
             let st = rej ? 'color:red; font-weight:bold;' : (isTotalCol ? 'color:white; font-weight:600;' : 'color:#333; font-weight:600;');
-            
             if (!isM) return `<div style="${st}">${n}</div><div style="font-size:9px; color:${isTotalCol ? '#cbd5e1' : '#888'};">Unit</div>`;
             
             let uA = (satuanBarang === "Kg") ? "Kg" : "Lt";
@@ -643,8 +602,7 @@ function renderStok() {
             </tr>`;
     }); 
     
-    const target = document.getElementById('bodyStok');
-    if (target) target.innerHTML = h;
+    document.getElementById('bodyStok').innerHTML = h;
 }
 
 
