@@ -151,24 +151,26 @@
 </div>
            <div class="card" style="padding: 15px; border-radius: 12px; margin-bottom: 20px; background: #fff; border: 1px solid #eee; overflow: hidden;">
     
-    <div id="tab-stok" class="tab-content">
+    <div id="tab-stok" class="tab-content" style="padding: 10px;">
+    
     <div class="card" style="padding: 15px; border-radius: 12px; margin-bottom: 20px; background: #fff; border: 1px solid #eee;">
         <h3 style="color:#2563eb; margin: 0 0 15px 0; font-size: 14px; font-weight: 800; display: flex; align-items: center;">
             <span style="border-left: 3px solid #2563eb; height: 14px; margin-right: 8px; border-radius: 2px;"></span>
             🚚 Logistik
         </h3>
-        <input type="date" id="tglLog" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd;">
         
-        <select id="selBarang" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd;"></select>
+        <input type="date" id="tglLog" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd; height: 40px;">
         
-        <select id="selAksi" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd;">
+        <select id="selBarang" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd; height: 40px; background: #fff;"></select>
+        
+        <select id="selAksi" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd; height: 40px; background: #fff;">
             <option value="Masuk">Masuk</option>
             <option value="Jual Umum">Jual Umum</option>
             <option value="Jual Mitra">Jual Mitra</option>
             <option value="Rekondisi">Rekondisi</option>
         </select>
 
-        <input type="number" id="qLog" placeholder="Jumlah" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd;">
+        <input type="number" id="qLog" placeholder="Jumlah" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd; height: 40px;">
         
         <button onclick="simpanLog()" style="width:100%; padding:12px; background:#22c55e; color:#fff; border:none; border-radius:8px; font-weight:700;">SIMPAN LOGISTIK</button>
     </div>
@@ -176,7 +178,7 @@
     <div class="card" style="padding: 15px; border-radius: 12px; background: #fff; border: 1px solid #eee; overflow: hidden;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
             <h3 style="color:#2563eb; margin: 0; font-size: 14px; font-weight: 800;">📊 Laporan Stok</h3>
-            <input type="month" id="fMStok" onchange="renderStok()" style="width: 130px; padding: 0 8px; border-radius: 8px; border: 1px solid #ddd; font-size: 12px; height: 32px;">
+            <input type="month" id="fMStok" onchange="renderStok()" style="width: 130px; padding: 0 8px; border-radius: 8px; border: 1px solid #ddd; font-size: 12px; height: 32px; background: #f9fafb;">
         </div>
 
         <div style="width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;">
@@ -208,7 +210,6 @@
         </div>
     </div>
 </div>
-
         <div id="tab-aktivitas" class="tab-content">
             <div class="card" style="border-top: 5px solid var(--d)">
                 <h3>🛠️ Input Borongan (Chain Logic)</h3>
