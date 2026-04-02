@@ -89,17 +89,20 @@
             </div>
         </div>
 
-        <div id="tab-stok" class="tab-content" style="padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; box-sizing: border-box;">
+        <div id="tab-stok" class="tab-content" style="padding: 0 !important; margin: 0 !important; width: 100vw !important; max-width: 100% !important; left: 0 !important; position: relative; box-sizing: border-box;">
     
     <div style="padding: 10px; width: 100%; box-sizing: border-box;"> 
 
         <div class="card" style="padding: 15px; border-radius: 12px; margin-bottom: 15px; background: #fff; border: 1px solid #eee; width: 100%; box-sizing: border-box;">
-            <h3 style="color:#2563eb; margin: 0 0 15px 0; font-size: 14px; font-weight: 800;">📦 Master Barang</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="color:#2563eb; margin: 0; font-size: 14px; font-weight: 800;">📦 Master Barang</h3>
+                <button onclick="renderMasterBarang()" style="font-size: 10px; padding: 4px 8px; border-radius: 4px; border: 1px solid #ddd; background: #f8fafc;">Refresh Nama</button>
+            </div>
             <div style="display: flex; gap: 8px; margin-bottom: 15px;">
                 <input type="text" id="namaBarangBaru" placeholder="Nama Barang..." style="flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #ddd; font-size: 14px;">
                 <button onclick="tambahMasterBarang()" style="padding: 0 15px; background: #2563eb; color: #fff; border: none; border-radius: 8px; font-weight: 700;">ADD</button>
             </div>
-            <div id="listMasterBarang" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+            <div id="listMasterBarang" style="display: flex; flex-wrap: wrap; gap: 8px; min-height: 20px;"></div>
         </div>
 
         <div class="card" style="padding: 15px; border-radius: 12px; margin-bottom: 15px; background: #fff; border: 1px solid #eee; width: 100%; box-sizing: border-box;">
@@ -152,6 +155,7 @@
         </div>
     </div>
 </div>
+
 
         <div id="tab-aktivitas" class="tab-content">
             <div class="card" style="border-top: 5px solid var(--d)">
