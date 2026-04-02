@@ -92,13 +92,13 @@
         <div id="tab-stok" class="tab-content" style="padding: 10px;">
     
     <div class="card" style="padding: 15px; border-radius: 12px; margin-bottom: 20px; background: #fff; border: 1px solid #eee;">
-        <h3 style="color:#2563eb; margin: 0 0 15px 0; font-size: 14px; font-weight: 800;">📦 Master Barang</h3>
-        <div style="display: flex; gap: 8px; margin-bottom: 15px;">
-            <input type="text" id="namaBarangBaru" placeholder="Barang..." style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
-            <button onclick="tambahMasterBarang()" style="padding: 10px 20px; background: #2563eb; color: #fff; border: none; border-radius: 8px; font-weight: 700;">ADD</button>
-        </div>
-        <div id="listMasterBarang" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+    <h3 style="color:#2563eb; margin: 0 0 15px 0; font-size: 14px; font-weight: 800;">📦 Master Barang</h3>
+    <div style="display: flex; gap: 8px; margin-bottom: 15px;">
+        <input type="text" id="namaBarangBaru" placeholder="Nama Barang..." style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
+        <button onclick="tambahMasterBarang()" style="padding: 10px 20px; background: #2563eb; color: #fff; border: none; border-radius: 8px; font-weight: 700;">ADD</button>
     </div>
+    <div id="listMasterBarang" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+</div>
 
     <div class="card" style="padding: 15px; border-radius: 12px; margin-bottom: 20px; background: #fff; border: 1px solid #eee;">
         <h3 style="color:#2563eb; margin: 0 0 15px 0; font-size: 14px; font-weight: 800;">🚚 Logistik</h3>
@@ -479,11 +479,10 @@ function saveL() {
             });
         }
 
-// ---------------------------------------
 // --- 1. LOGIKA SEMBUNYI QC & SATUAN ---
 function cekJenisBarang() {
-    const selBrg = document.getElementById('stBrg');
-    const selAksi = document.getElementById('stAksi');
+    const selBrg = document.getElementById('selBarang'); // Samakan ID dengan HTML
+    const selAksi = document.getElementById('selAksi');
     if (!selBrg || !selAksi) return;
 
     const valBrg = selBrg.value ? selBrg.value.toLowerCase() : "";
@@ -495,63 +494,57 @@ function cekJenisBarang() {
     const rowJual = document.getElementById('rowJual');
     const optRekon = selAksi.querySelector('option[value="Rekondisi"]');
 
-    // --- RESET SEMUA KE SEMBUNYI ---
     if (rowQC) rowQC.style.display = 'none';
     if (stSatuan) stSatuan.style.display = 'none';
     if (rowJual) rowJual.style.display = 'none';
     if (optRekon) optRekon.style.display = 'block';
 
-    // --- LOGIKA BENDA CAIR ---
     if (isCair) {
-        if (stSatuan) stSatuan.style.display = 'block'; // LT/KG MUNCUL
-        if (optRekon) optRekon.style.display = 'none';   // REKON SEMBUNYI
+        if (stSatuan) stSatuan.style.display = 'block';
+        if (optRekon) optRekon.style.display = 'none';
         if (aksi === 'Rekondisi') selAksi.value = 'Masuk';
     } 
     
-    // --- LOGIKA QC (Hanya Muncul saat Masuk & Bukan Cair) ---
     if (aksi === 'Masuk' && !isCair) {
         if (rowQC) rowQC.style.display = 'flex';
     }
-
-    // --- LOGIKA JUAL (Muncul Dropdown Mitra/Umum) ---
-    if (aksi === 'Jual') {
-        if (rowJual) rowJual.style.display = 'block';
-    }
 }
 
+// --- 2. RENDER MASTER BARANG & DROPDOWN ---
+function renderMasterBarang() {
+    const list = document.getElementById('listMasterBarang');
+    const sel = document.getElementById('selBarang');
+    if (!list || !sel) return;
 
-// --- 2. RENDER TABEL STOK (FULL LOGIC - NO CUTS) ---
-// 1. Fungsi Mengisi Dropdown Barang
-function renderBarang() {
-    const s = document.getElementById('selBarang');
-    if (!s) return;
-    const B_arr = Object.values(D.master_barang || {});
-    let h = "<option value=''>- Pilih Barang -</option>";
-    B_arr.forEach(b => { h += `<option value="${b}">${b}</option>`; });
-    s.innerHTML = h;
+    const B_entries = Object.entries(D.master_barang || {});
+    
+    list.innerHTML = B_entries.map(([id, nama]) => `
+        <div style="padding: 5px 10px; background: #fff; border: 1px solid #ddd; border-radius: 8px; font-size: 12px; display: flex; align-items: center; gap: 5px;">
+            ${nama} <span onclick="hapusMasterBarang('${id}')" style="color: red; cursor: pointer; font-weight: bold;">×</span>
+        </div>
+    `).join('');
+
+    sel.innerHTML = "<option value=''>- Pilih Barang -</option>" + 
+        B_entries.map(([id, nama]) => `<option value="${nama}">${nama}</option>`).join('');
 }
 
-// 2. Fungsi Utama Laporan Stok
+// --- 3. RENDER TABEL STOK (WITH UNIT/LITER/KG LOGIC) ---
 function renderStok() {
     const inFm = document.getElementById('fMStok');
     if (!inFm) return;
     const fM = inFm.value;
-
-    // PENGAMAN: Pastikan data Master Barang ada, jika tidak ada jangan hapus data lain
-    if (!D.master_barang) {
-        console.log("Data Master Barang belum siap.");
-        return;
-    }
+    if (!D.master_barang) return;
 
     const B_arr = Object.values(D.master_barang);
     let h = "";
 
     B_arr.forEach(b => {
         let s = { ak:0, ab:0, ik:0, ib:0, rej:0, rk:0, jm:0, ju:0 };
-        
-        // Hitung Logistik tanpa merusak struktur data karyawan (D.karyawan)
+        let satuanBarang = "Unit";
+
         Object.values(D.stok_logs || {}).forEach(l => {
             if(l.b !== b) return;
+            if(l.satuan) satuanBarang = l.satuan;
             if(l.t?.slice(0,7) < fM) { 
                 if(l.ak === "Masuk") l.kon === "Bekas" ? s.ak += l.q : s.ab += l.q; 
                 else if(l.ak === "Rekondisi") { s.ak -= l.q; s.ab += l.q; } 
@@ -567,52 +560,64 @@ function renderStok() {
 
         let ktr = (s.ak + s.ik) - s.rk;
         let rdy = (s.ab + s.ib + s.rk) - (s.jm + s.ju);
+        const isCair = b.toLowerCase().includes("minyak") || b.toLowerCase().includes("cair");
         
+        // FUNGSI FORMATTER (UNIT / LITER / KG)
+        const fmt = (v, isRej = false, isKtrCol = false, isTotalCol = false) => {
+            if (isCair && isKtrCol) return `<div style="color:#ccc;">-</div>`;
+            let n = parseFloat(v) || 0;
+            let st = isRej ? 'color:red; font-weight:800;' : (isTotalCol ? 'color:white;' : 'color:#1e293b;');
+            
+            if (!isCair) {
+                return `<div style="${st} font-weight:bold;">${n}</div><div style="font-size:9px; color:#94a3b8;">Unit</div>`;
+            }
+            
+            let uA = (satuanBarang === "Kg") ? "Kg" : "Lt";
+            let uT = (satuanBarang === "Kg") ? "Lt" : "Kg";
+            let kv = (uA === "Lt") ? (n * 0.9) : (n / 0.9);
+            return `<div style="${st} font-weight:bold;">${n}${uA}</div><div style="font-size:8px; color:#2563eb; border-top:1px dotted #ccc;">${kv.toFixed(1)}${uT}</div>`;
+        };
+
         h += `
             <tr style="border-bottom: 1px solid #f1f5f9;">
                 <td style="position: sticky; left: 0; background: #fff; padding: 12px 10px; font-weight: 800; border-right: 1px solid #eee; font-size: 11px;">${b}</td>
-                <td style="text-align: center; font-size: 11px;">${s.ak}</td>
-                <td style="text-align: center; font-size: 11px;">${s.ab}</td>
-                <td style="text-align: center; font-size: 11px;">${s.ik}</td>
-                <td style="text-align: center; font-size: 11px;">${s.ib}</td>
-                <td style="text-align: center; font-size: 11px; color: red;">${s.rej}</td>
-                <td style="text-align: center; font-size: 11px;">${s.rk}</td>
-                <td style="text-align: center; font-size: 11px;">${s.jm}</td>
-                <td style="text-align: center; font-size: 11px;">${s.ju}</td>
-                <td style="text-align: center; background:#fef3c7; font-weight: bold;">${ktr}</td>
-                <td style="text-align: center; background:#dcfce7; font-weight: bold;">${rdy}</td>
-                <td style="text-align: center; background:#475569; color: white; font-weight: bold;">${ktr + rdy}</td>
+                <td style="text-align: center;">${fmt(s.ak, false, true)}</td>
+                <td style="text-align: center;">${fmt(s.ab)}</td>
+                <td style="text-align: center;">${fmt(s.ik, false, true)}</td>
+                <td style="text-align: center;">${fmt(s.ib)}</td>
+                <td style="text-align: center;">${fmt(s.rej, true)}</td>
+                <td style="text-align: center;">${fmt(s.rk)}</td>
+                <td style="text-align: center;">${fmt(s.jm)}</td>
+                <td style="text-align: center;">${fmt(s.ju)}</td>
+                <td style="text-align: center; background:#fef3c7;">${fmt(ktr)}</td>
+                <td style="text-align: center; background:#dcfce7;">${fmt(rdy)}</td>
+                <td style="text-align: center; background:#475569;">${fmt(ktr+rdy, false, false, true)}</td>
             </tr>`;
     }); 
     
-    // Hanya mengisi tabel stok, tidak mengganggu tabel karyawan
     const target = document.getElementById('bodyStok');
     if(target) target.innerHTML = h;
 }
 
+// --- 4. STARTUP (REAL TIME & RENDER AWAL) ---
+function startup() {
+    const n = new Date();
+    const bln = n.getFullYear() + '-' + String(n.getMonth() + 1).padStart(2, '0');
+    const tglSkg = n.toISOString().split('T')[0];
 
+    const inF = document.getElementById('fMStok');
+    if (inF) inF.value = bln;
 
-// --- 3. AUTO JALAN (STARTUP) - FIX REAL TIME ---
-const n = new Date();
-// Format YYYY-MM untuk input type="month"
-const bln = n.getFullYear() + '-' + String(n.getMonth() + 1).padStart(2, '0');
+    const inTglLog = document.getElementById('tglLog'); // Sesuaikan ID
+    if (inTglLog) inTglLog.value = tglSkg;
 
-// Set otomatis ke input filter laporan
-const inF = document.getElementById('fMStok');
-if (inF) {
-    inF.value = bln;
+    renderMasterBarang();
+    renderStok();
+    cekJenisBarang();
 }
 
-// Set otomatis ke input tanggal logistik (Hari Ini)
-const inTglLog = document.getElementById('tglLogistik');
-if (inTglLog) {
-    inTglLog.value = n.toISOString().split('T')[0];
-}
-
-// Jalankan render awal
-renderStok();
-cekJenisBarang();
-
+// Jalankan saat file diload
+startup();
 
         // ==========================================
         // 5. TAB AKTIVITAS LOGIC (CHAIN LOGIC)
