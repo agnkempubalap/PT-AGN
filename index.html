@@ -91,19 +91,19 @@
 
         <div id="tab-stok" class="tab-content" style="padding: 0; width: 100%; max-width: 100%; margin: 0 auto; box-sizing: border-box;">
     
-    <div style="padding: 15px;"> <div class="card" style="padding: 15px; border-radius: 12px; margin-bottom: 20px; background: #fff; border: 1px solid #eee; width: 100%; box-sizing: border-box;">
+    <div style="padding: 10px;"> <div class="card" style="padding: 15px; border-radius: 12px; margin-bottom: 15px; background: #fff; border: 1px solid #eee; width: 100%; box-sizing: border-box;">
             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 15px;">
                 <div style="width: 4px; height: 16px; background: #2563eb; border-radius: 2px;"></div>
                 <h3 style="color:#2563eb; margin: 0; font-size: 14px; font-weight: 800;">📦 Master Barang</h3>
             </div>
             <div style="display: flex; gap: 8px; margin-bottom: 15px;">
                 <input type="text" id="namaBarangBaru" placeholder="Nama Barang..." style="flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #ddd; font-size: 14px;">
-                <button onclick="tambahMasterBarang()" style="padding: 0 20px; background: #2563eb; color: #fff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;">ADD</button>
+                <button onclick="tambahMasterBarang()" style="padding: 0 15px; background: #2563eb; color: #fff; border: none; border-radius: 8px; font-weight: 700;">ADD</button>
             </div>
             <div id="listMasterBarang" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
         </div>
 
-        <div class="card" style="padding: 15px; border-radius: 12px; margin-bottom: 20px; background: #fff; border: 1px solid #eee; width: 100%; box-sizing: border-box;">
+        <div class="card" style="padding: 15px; border-radius: 12px; margin-bottom: 15px; background: #fff; border: 1px solid #eee; width: 100%; box-sizing: border-box;">
             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 15px;">
                 <div style="width: 4px; height: 16px; background: #2563eb; border-radius: 2px;"></div>
                 <h3 style="color:#2563eb; margin: 0; font-size: 14px; font-weight: 800;">🚚 Logistik</h3>
@@ -120,19 +120,15 @@
             </select>
             
             <input type="number" id="qLog" placeholder="Jumlah" style="width:100%; padding:12px; margin-bottom:15px; border-radius:8px; border: 1px solid #ddd; box-sizing: border-box;">
-            <button onclick="simpanLog()" style="width:100%; padding:14px; background:#22c55e; color:#fff; border:none; border-radius:8px; font-weight:800; cursor: pointer;">SIMPAN LOGISTIK</button>
+            <button onclick="simpanLog()" style="width:100%; padding:14px; background:#22c55e; color:#fff; border:none; border-radius:8px; font-weight:800;">SIMPAN LOGISTIK</button>
         </div>
 
         <div class="card" style="padding: 15px; border-radius: 12px; background: #fff; border: 1px solid #eee; width: 100%; box-sizing: border-box; overflow: hidden;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <div style="width: 4px; height: 16px; background: #2563eb; border-radius: 2px;"></div>
-                    <h3 style="color:#2563eb; margin: 0; font-size: 14px; font-weight: 800;">📊 Laporan Stok</h3>
-                </div>
+                <h3 style="color:#2563eb; margin: 0; font-size: 14px; font-weight: 800;">📊 Laporan Stok</h3>
                 <input type="month" id="fMStok" onchange="renderStok()" style="width: 130px; padding: 8px; border-radius: 8px; border: 1px solid #ddd;">
             </div>
-
-            <div style="width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 8px; border: 1px solid #f1f5f9;">
+            <div style="width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;">
                 <table style="width: 100%; border-collapse: collapse; min-width: 950px;">
                     <thead style="background: #f8fafc;">
                         <tr style="border-bottom: 2px solid #f1f5f9;">
@@ -153,13 +149,8 @@
                     <tbody id="bodyStok"></tbody>
                 </table>
             </div>
-
-            <div style="display: flex; gap: 8px; margin-top: 15px;">
-                <button onclick="eksExcel()" style="flex: 1; height: 40px; background: #22c55e; color: #fff; border: none; border-radius: 8px; font-size: 12px; font-weight: 700;">EXCEL</button>
-                <button onclick="eksPDF()" style="flex: 1; height: 40px; background: #ef4444; color: #fff; border: none; border-radius: 8px; font-size: 12px; font-weight: 700;">PDF</button>
-                <button onclick="showLog()" style="flex: 1; height: 40px; background: #64748b; border: none; border-radius: 8px; font-size: 12px; font-weight: 700;">LOG</button>
-            </div>
         </div>
+
     </div>
 </div>
 
@@ -524,6 +515,7 @@ function cekJenisBarang() {
 }
 
 // --- 2. RENDER MASTER BARANG & DROPDOWN ---
+// 1. PERBAIKAN: Gunakan huruf kecil 'function' agar tidak error
 function renderMasterBarang() {
     const list = document.getElementById('listMasterBarang');
     const sel = document.getElementById('selBarang');
@@ -531,41 +523,54 @@ function renderMasterBarang() {
 
     const B_entries = Object.entries(D.master_barang || {});
     
+    // Render Badge Nama Barang di Master Barang
     list.innerHTML = B_entries.map(([id, nama]) => `
-        <div style="padding: 5px 10px; background: #fff; border: 1px solid #ddd; border-radius: 8px; font-size: 12px; display: flex; align-items: center; gap: 5px;">
-            ${nama} <span onclick="hapusMasterBarang('${id}')" style="color: red; cursor: pointer; font-weight: bold;">×</span>
+        <div style="padding: 6px 12px; background: #fff; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; display: flex; align-items: center; gap: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+            <span style="font-weight: 600; color: #333;">${nama}</span>
+            <span onclick="hapusMasterBarang('${id}')" style="color: #ef4444; cursor: pointer; font-weight: 800; font-size: 16px; padding: 0 2px;">×</span>
         </div>
     `).join('');
 
+    // Render Pilihan Barang di Dropdown Logistik
     sel.innerHTML = "<option value=''>- Pilih Barang -</option>" + 
         B_entries.map(([id, nama]) => `<option value="${nama}">${nama}</option>`).join('');
 }
 
-// --- FUNGSI TAMBAH BARANG KE MASTER ---
+// 2. FUNGSI TAMBAH BARANG (Sudah Oke, tinggal pastikan ID input benar)
 function tambahMasterBarang() {
     const inp = document.getElementById('namaBarangBaru');
+    if (!inp) return;
+    
     const nama = inp.value.trim();
-    if (!nama) return;
+    if (!nama) {
+        alert("Isi dulu nama barangnya Mas!");
+        return;
+    }
 
     if (!D.master_barang) D.master_barang = {};
     
-    // Simpan data dengan ID unik
-    const id = Date.now();
+    // Simpan data dengan ID unik berdasarkan waktu
+    const id = Date.now().toString(); 
     D.master_barang[id] = nama;
 
-    inp.value = "";
-    saveData();           // Simpan ke database/localstorage
-    renderMasterBarang(); // Refresh tampilan nama barang
-    renderStok();         // Refresh tabel stok
+    inp.value = ""; // Kosongkan input setelah tambah
+    saveData();           
+    renderMasterBarang(); 
+    renderStok();         
 }
 
+// 3. FUNGSI HAPUS BARANG
 function hapusMasterBarang(id) {
-    if(!confirm("Hapus barang ini?")) return;
-    delete D.master_barang[id];
-    saveData();
-    renderMasterBarang();
-    renderStok();
+    if(!confirm("Hapus barang ini dari daftar?")) return;
+    
+    if (D.master_barang && D.master_barang[id]) {
+        delete D.master_barang[id];
+        saveData();
+        renderMasterBarang();
+        renderStok();
+    }
 }
+
 
 
 // --- 3. RENDER TABEL STOK (WITH UNIT/LITER/KG LOGIC) ---
