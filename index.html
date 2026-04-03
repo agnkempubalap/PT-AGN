@@ -80,7 +80,7 @@
         </div>
 
         <div id="tab-stok" class="tab-content">
-    <div class="container" style="margin-top: 0; padding: 15px 12px;">
+    <div class="container" style="margin-top: 65px; width: 100%; max-width: 950px; padding: 0 12px; box-sizing: border-box;">
 
         <div class="card">
             <h3 style="border-left: 4px solid var(--p); padding-left: 10px; margin-bottom: 12px;">📦 Master Barang</h3>
@@ -97,14 +97,12 @@
                 <input type="date" id="stTgl" style="width:125px; height:30px; font-size: 11px; border-radius: 8px; border: 1px solid var(--b);">
             </div>
             
-            <div class="flex-row">
-                <select id="stBrg"></select>
-            </div>
-            <div class="flex-row">
+            <div class="flex-row" style="margin-bottom: 8px;"><select id="stBrg"></select></div>
+            <div class="flex-row" style="margin-bottom: 8px;">
                 <input type="number" id="stQty" placeholder="Jumlah">
                 <select id="stKon"><option value="Bekas">Kotor</option><option value="Baru">Rdy</option></select>
             </div>
-            <div class="flex-row">
+            <div class="flex-row" style="margin-bottom: 8px;">
                 <select id="stQC"><option value="Accepted">Accepted</option><option value="Reject">Reject</option></select>
                 <select id="stAksi">
                     <option value="Masuk">Masuk</option>
@@ -113,7 +111,7 @@
                     <option value="Jual Umum">Jual Umum</option>
                 </select>
             </div>
-            <button class="btn" style="background:var(--p); margin-top: 5px;" onclick="saveSt()">PROSES STOK & CAIRKAN UPAH</button>
+            <button class="btn" style="background:var(--p); margin-top: 10px;" onclick="saveSt()">PROSES STOK & CAIRKAN UPAH</button>
         </div>
 
         <div class="card">
@@ -122,7 +120,7 @@
                 <input type="month" id="fM" style="width:125px; height:30px; font-size: 11px; border-radius: 8px; border: 1px solid var(--b);">
             </div>
             
-            <div class="table-area" id="areaStok" style="margin-bottom: 15px;">
+            <div class="table-area" id="areaStok" style="margin-bottom: 12px;">
                 <table>
                     <thead>
                         <tr>
@@ -140,15 +138,14 @@
                 </table>
             </div>
             
-            <div style="display: flex; gap: 8px;">
-                <button class="btn" style="background:var(--s); flex:1;" onclick="expEx('areaStok','Stok')">EXCEL</button>
-                <button class="btn" style="background:var(--d); flex:1;" onclick="expPdf('areaStok','Laporan_Stok')">PDF</button>
-                <button class="btn" style="background:#64748b; flex:1;" onclick="showLogs('stok_logs')">LOG</button>
+            <div style="display: flex; gap: 5px;">
+                <button class="btn" style="background:var(--s); flex: 1; margin:0;" onclick="expEx('areaStok','Stok')">EXCEL</button>
+                <button class="btn" style="background:var(--d); flex: 1; margin:0;" onclick="expPdf('areaStok','Laporan_Stok')">PDF</button>
+                <button class="btn" style="background:#64748b; flex: 1; margin:0;" onclick="showLogs('stok_logs')">LOG</button>
             </div>
         </div>
 
-    </div>
-</div>
+    </div> </div>
 
 
         <div id="tab-aktivitas" class="tab-content">
