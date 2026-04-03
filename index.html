@@ -49,114 +49,71 @@
     </div>
 
     <div class="container">
-                <div id="tab-absen" class="tab-content active">
+        <div id="tab-absen" class="tab-content active">
             <div class="card">
-                <h3>👥 Master Karyawan</h3> 
-                <div style="display: flex; gap: 5px; margin-top: 10px;">
-                    <input type="text" id="inK" placeholder="Nama..." style="flex: 3; height: 35px;"> 
-                    <button class="btn" style="background:var(--p); flex: 1; margin:0; height: 35px;" onclick="addItem('master_karyawan', 'inK')">ADD</button>
-                </div>
-                <div id="listK" style="display:flex; flex-wrap:wrap; gap:5px; margin-top:10px"></div>
-            </div>
+    <h3>👥 Master Karyawan</h3> 
+    
+    <div style="display: flex; gap: 5px; margin-top: 10px;">
+        <input type="text" id="inK" placeholder="Nama..." style="flex: 3; height: 35px;"> 
+        <button class="btn" style="background:var(--p); flex: 1; margin:0; height: 35px;" onclick="addItem('master_karyawan', 'inK')">ADD</button>
+    </div>
+    
+    <div id="listK" style="display:flex; flex-wrap:wrap; gap:5px; margin-top:10px"></div>
+</div>
+
 
             <div class="card">
                 <h3>📅 Input Absensi <input type="date" id="absTgl" style="width:115px; height:30px"></h3>
-                <div class="flex-row">
-                    <select id="selK"></select>
-                    <select id="absJenis" onchange="toggleIzin()">
-                        <option value="Hadir">Masuk</option>
-                        <option value="Pulang">Pulang</option>
-                        <option value="Izin">Izin</option>
-                        <option value="Alpa">Alpa</option>
-                    </select>
-                </div>
-                <div id="boxIzin" style="display:none; margin-bottom:10px">
-                    <input type="text" id="absKet" placeholder="Keterangan Izin...">
-                </div>
+                <div class="flex-row"><select id="selK"></select><select id="absJenis" onchange="toggleIzin()"><option value="Hadir">Masuk</option><option value="Pulang">Pulang</option><option value="Izin">Izin</option><option value="Alpa">Alpa</option></select></div>
+                <div id="boxIzin" style="display:none; margin-bottom:10px"><input type="text" id="absKet" placeholder="Keterangan Izin..."></div>
                 <button class="btn" style="background:var(--s)" onclick="saveAbs()">SIMPAN ABSEN</button>
             </div>
-
             <div class="card">
                 <h3>📊 Laporan <input type="month" id="fM" style="width:110px; height:30px"></h3>
-                <div class="table-area" id="areaAbsen">
-                    <table><thead id="thA"></thead><tbody id="tbA"></tbody></table>
-                </div>
+                <div class="table-area" id="areaAbsen"><table><thead id="thA"></thead><tbody id="tbA"></tbody></table></div>
                 <div style="display: flex; flex-direction: row; gap: 5px; margin: 10px 0; width: 100%;">
-                    <button class="btn" style="background:var(--w); color:black; flex: 1; margin:0; padding: 10px 2px; min-width: 0;" onclick="openLiburMod()">⚙️ LIBUR</button>
-                    <button class="btn" style="background:var(--s); flex: 1; margin:0; padding: 10px 2px; min-width: 0;" onclick="expEx('areaAbsen','Absen')">EXCEL</button>
-                    <button class="btn" style="background:var(--d); flex: 1; margin:0; padding: 10px 2px; min-width: 0;" onclick="expPdf('areaAbsen','Absensi_Bulanan')">PDF</button>
-                </div>
-            </div>
-        </div>
-
-        <style>
-    #tab-stok { padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; }
-    .card-stok { padding: 15px; border-radius: 12px; margin-bottom: 15px; background: #fff; border: 1px solid #eee; width: 100%; box-sizing: border-box; }
-</style>
-
-<div id="tab-stok" class="tab-content">
-    
-    <div style="padding: 12px; width: 100%; box-sizing: border-box;"> 
-
-        <div class="card-stok">
-            <h3 style="color:#2563eb; margin: 0 0 15px 0; font-size: 14px; font-weight: 800;">📦 Master Barang</h3>
-            <div style="display: flex; gap: 8px; margin-bottom: 15px;">
-                <input type="text" id="namaBarangBaru" placeholder="Nama Barang..." style="flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #ddd; font-size: 14px;">
-                <button onclick="tambahMasterBarang()" style="padding: 0 15px; background: #2563eb; color: #fff; border: none; border-radius: 8px; font-weight: 700;">ADD</button>
-            </div>
-            <div id="listMasterBarang" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
-        </div>
-
-        <div class="card-stok">
-            <h3 style="color:#2563eb; margin: 0 0 15px 0; font-size: 14px; font-weight: 800;">🚚 Logistik</h3>
-            <input type="date" id="tglLog" style="width:100%; padding:12px; margin-bottom:10px; border-radius:8px; border: 1px solid #ddd; box-sizing: border-box;">
-            <select id="selBarang" onchange="cekJenisBarang()" style="width:100%; padding:12px; margin-bottom:10px; border-radius:8px; border: 1px solid #ddd; background:#fff; font-weight: 600; box-sizing: border-box;"></select>
-            <select id="selAksi" onchange="cekJenisBarang()" style="width:100%; padding:12px; margin-bottom:10px; border-radius:8px; border: 1px solid #ddd; background:#fff; box-sizing: border-box;">
-                <option value="Masuk">Masuk</option>
-                <option value="Jual Umum">Jual Umum</option>
-                <option value="Jual Mitra">Jual Mitra</option>
-                <option value="Rekondisi">Rekondisi</option>
-            </select>
-            <input type="number" id="qLog" placeholder="Jumlah" style="width:100%; padding:12px; margin-bottom:15px; border-radius:8px; border: 1px solid #ddd; box-sizing: border-box;">
-            <button onclick="simpanLog()" style="width:100%; padding:14px; background:#22c55e; color:#fff; border:none; border-radius:8px; font-weight:800;">SIMPAN LOGISTIK</button>
-        </div>
-
-        <div class="card-stok" style="overflow: hidden;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h3 style="color:#2563eb; margin: 0; font-size: 14px; font-weight: 800;">📊 Laporan Stok</h3>
-                <input type="month" id="fMStok" onchange="renderStok()" style="width: 130px; padding: 8px; border-radius: 8px; border: 1px solid #ddd;">
-            </div>
-            
-            <div style="width: 100%; overflow-x: auto; margin-bottom: 15px; border: 1px solid #f1f5f9; border-radius: 8px;">
-                <table style="width: 100%; border-collapse: collapse; min-width: 950px;">
-                    <thead style="background: #f8fafc;">
-                        <tr style="border-bottom: 2px solid #f1f5f9;">
-                            <th style="width: 110px; text-align: left; padding: 12px 10px; font-size: 10px; position: sticky; left: 0; background: #f8fafc; z-index: 3;">BRG</th>
-                            <th style="text-align: center; font-size: 9px;">AWAL KTR</th>
-                            <th style="text-align: center; font-size: 9px;">AWAL RDY</th>
-                            <th style="text-align: center; font-size: 9px;">IN KTR</th>
-                            <th style="text-align: center; font-size: 9px;">IN RDY</th>
-                            <th style="text-align: center; font-size: 9px; color: red;">REJECT</th>
-                            <th style="text-align: center; font-size: 9px;">RKDN</th>
-                            <th style="text-align: center; font-size: 9px;">J-MIT</th>
-                            <th style="text-align: center; font-size: 9px;">J-UMM</th>
-                            <th style="text-align: center; font-size: 9px; background:#fef3c7">TOT KTR</th>
-                            <th style="text-align: center; font-size: 9px; background:#dcfce7">TOT RDY</th>
-                            <th style="text-align: center; font-size: 9px; background:#475569; color: white;">TOTAL</th>
-                        </tr>
-                    </thead>
-                    <tbody id="bodyStok"></tbody>
-                </table>
-            </div>
-
-            <div style="display: flex; gap: 8px;">
-                <button onclick="eksExcel()" style="flex: 1; height: 40px; background: #22c55e; color: #fff; border: none; border-radius: 8px; font-size: 11px; font-weight: 700;">EXCEL</button>
-                <button onclick="eksPDF()" style="flex: 1; height: 40px; background: #ef4444; color: #fff; border: none; border-radius: 8px; font-size: 11px; font-weight: 700;">PDF</button>
-                <button onclick="showLog()" style="flex: 1; height: 40px; background: #64748b; color: #fff; border: none; border-radius: 8px; font-size: 11px; font-weight: 700;">LOG</button>
-            </div>
-        </div>
-    </div>
+    <button class="btn" style="background:var(--w); color:black; flex: 1; margin:0; padding: 10px 2px; min-width: 0;" onclick="openLiburMod()">⚙️ LIBUR</button>
+    <button class="btn" style="background:var(--s); flex: 1; margin:0; padding: 10px 2px; min-width: 0;" onclick="expEx('areaAbsen','Absen')">EXCEL</button>
+    <button class="btn" style="background:var(--d); flex: 1; margin:0; padding: 10px 2px; min-width: 0;" onclick="expPdf('areaAbsen','Absensi_Bulanan')">PDF</button>
 </div>
+            </div>
+        </div>
+
+        <div id="tab-stok" class="tab-content">
+            <div class="card">
+    <h3>📦 Master Barang</h3>
+    
+    <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+        <input type="text" id="inB" placeholder="Barang..." style="flex: 3; height: 35px;">
+        <button class="btn" style="background:var(--p); flex: 1; margin:0; height: 35px;" onclick="addItem('master_barang', 'inB')">ADD</button>
+    </div>
+    
+    <div id="listB" style="display:flex; flex-wrap:wrap; gap:5px"></div>
+</div>
+
+
+            <div class="card">
+                <h3>📥 Logistik & Penjualan</h3>
+                <div class="flex-row"><input type="date" id="stTgl"><select id="stBrg"></select></div>
+                <div class="flex-row"><input type="number" id="stQty" placeholder="Jumlah"><select id="stKon"><option value="Bekas">Kotor</option><option value="Baru">Rdy</option></select></div>
+                <div class="flex-row">
+                    <select id="stQC"><option value="Accepted">Accepted</option><option value="Reject">Reject</option></select>
+                    <select id="stAksi">
+                        <option value="Masuk">Masuk</option>
+                        <option value="Rekondisi">Rekon</option>
+                        <option value="Jual Mitra">Jual Mitra</option>
+                        <option value="Jual Umum">Jual Umum</option>
+                    </select>
+                </div>
+                <button class="btn" style="background:var(--p)" onclick="saveSt()">PROSES STOK & CAIRKAN UPAH</button>
+            </div>
+            <div class="table-area" id="areaStok"><table><thead><tr><th class="sticky-col">BRG</th><th>AWAL KTR</th><th>AWAL RDY</th><th>IN KTR</th><th>IN RDY</th><th style="color:var(--d)">REJ</th><th>REKON</th><th>MITRA</th><th>UMUM</th><th style="background:#fef3c7">STOK KTR</th><th style="background:#dcfce7">STOK RDY</th><th style="background:var(--p); color:white">TOTAL</th></tr></thead><tbody id="tbStok"></tbody></table></div>
+            <div class="flex-row">
+                <button class="btn" style="background:var(--s)" onclick="expEx('areaStok','Stok')">EXCEL</button>
+                <button class="btn" style="background:var(--d)" onclick="expPdf('areaStok','Laporan_Stok')">PDF</button>
+                <button class="btn" style="background:#64748b" onclick="showLogs('stok_logs')">LOG</button>
+            </div>
+        </div>
 
         <div id="tab-aktivitas" class="tab-content">
             <div class="card" style="border-top: 5px solid var(--d)">
@@ -239,44 +196,19 @@
         if (selK) selK.innerHTML = K.map(k => `<option value="${k[1]}">${k[1]}</option>`).join('');
     }
 
-                    // 1. Render Daftar Barang di Master & Dropdown
-        if (listB && D.master_barang) {
-            const B = Object.entries(D.master_barang);
-            let htmlB = '';
-            let optB = '';
-
-            B.forEach(b => {
-                htmlB += `<span style="background:#fff; border:1px solid #ddd; padding:6px; border-radius:8px; font-size:11px; margin-right:5px; display:inline-block;">
-                            ${b[1]} <b onclick="removeItem('master_barang','${b[0]}')" style="color:red; cursor:pointer">×</b>
-                         </span>`;
-                optB += `<option value="${b[1]}">${b[1]}</option>`;
-            });
-
-            listB.innerHTML = htmlB;
-            if (stBrg) {
-                stBrg.innerHTML = optB;
-                // Cek otomatis apakah barang pertama itu cairan
-                if (typeof cekJenisBarang === 'function') cekJenisBarang();
-            }
-        }
-    } // <-- INI PENUTUP BLOK UTAMA (onValue/renderAll), PASTIKAN HANYA SATU
+    // Render Barang
+    if (listB && D.master_barang) {
+        const B = Object.entries(D.master_barang);
+        listB.innerHTML = B.map(b => `<span style="background:#fff; border:1px solid #ddd; padding:6px; border-radius:8px; font-size:11px">${b[1]} <b onclick="removeItem('master_barang','${b[0]}')" style="color:red; cursor:pointer">×</b></span>`).join('');
+        if (stBrg) stBrg.innerHTML = B.map(b => `<option value="${b[1]}">${b[1]}</option>`).join('');
+    }
+}
 
 
         function openMod(t,h) { document.getElementById('modTitle').innerText=t; document.getElementById('modContent').innerHTML=h; document.getElementById('modalUni').style.display='flex'; }
         function closeMod() { document.getElementById('modalUni').style.display='none'; }
         function addItem(p,id) { const v=document.getElementById(id).value; if(v) db.ref(p).push(v).then(()=>document.getElementById(id).value=""); }
-        function removeItem(p, k) {
-    if (confirm("Hapus?")) {
-        db.ref(`${p}/${k}`).remove().then(() => {
-            closeMod();
-            // TAMBAHKAN INI: Jika yang dihapus adalah barang, cek ulang tampilan UI
-            if (p.includes('barang')) {
-                cekJenisBarang();
-            }
-        });
-    }
-}
-
+        function removeItem(p,k) { if(confirm("Hapus?")) db.ref(`${p}/${k}`).remove().then(()=>closeMod()); }
         function expEx(id,n) { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById(id)), n+'.xlsx'); }
         function expPdf(id,n) { html2pdf().set({margin:5, filename:n+'.pdf', jsPDF:{orientation:'landscape'}}).from(document.getElementById(id)).save(); }
         function showLogs(t) { let l=Object.entries(D[t]||{}).reverse().slice(0,30); openMod("Log", l.map(x=>`<div style="font-size:10px;padding:5px;border-bottom:1px solid #eee"><span>[${x[1].t}] ${x[1].b||x[1].j} (${x[1].q})</span> <b onclick="removeItem('${t}','${x[0]}')" style="color:red; cursor:pointer">×</b></div>`).join('')); }
@@ -466,86 +398,50 @@ function saveL() {
 
         function toggleIzin() { const j=document.getElementById('absJenis').value; document.getElementById('boxIzin').style.display=(j==='Izin'?'block':'none'); }
 
-// FUNGSI INI AKAN MENUNGGU DATA 'D' SIAP SEBELUM MERENDER
-function autoRender() {
-    // Jika data D belum ada, tunggu 500ms lalu cek lagi
-    if (!window.D || Object.keys(window.D).length === 0) {
-        setTimeout(autoRender, 500); 
-        return;
-    }
-    // Jika data sudah ada, langsung gambar ke layar
-    renderMasterBarang();
-    renderStok();
-}
+// ==========================================
+        // 4. TAB STOK LOGIC
+        // ==========================================
+        function saveSt() {
+            const t=document.getElementById('stTgl').value, b=document.getElementById('stBrg').value, q=parseInt(document.getElementById('stQty').value), ak=document.getElementById('stAksi').value;
+            if(!q) return alert("Qty Kosong!");
+            const qcFinal = (ak === "Masuk") ? document.getElementById('stQC').value : "Accepted";
+            db.ref('stok_logs').push({ t, b, q, kon:document.getElementById('stKon').value, qc:qcFinal, ak:ak }).then(() => {
+                if(ak.includes("Jual") && b.toLowerCase().includes("jerigen")) {
+                    let sisaJual = q;
+                    let logs = Object.entries(D.aktivitas || {}).filter(x => x[1].j.toLowerCase().includes(b.toLowerCase()) && !x[1].isCair).sort((a,b) => a[1].t.localeCompare(b[1].t));
+                    logs.forEach(log => {
+                        if(sisaJual <= 0) return;
+                        let qtyReady = log[1].q;
+                        if(qtyReady <= sisaJual) { db.ref(`aktivitas/${log[0]}`).update({ isCair: true, tglCair: t }); sisaJual -= qtyReady; }
+                    });
+                }
+                document.getElementById('stQty').value=""; alert("Stok Terupdate!");
+            });
+        }
 
-// Jalankan fungsi tunggu ini saat browser selesai loading
-window.onload = autoRender;
-
-
-function renderStok() {
-    const inFm = document.getElementById('fMStok');
-    const target = document.getElementById('bodyStok');
-    
-    // PENGAMAN 1: Cek apakah elemen HTML ada
-    if (!inFm || !target) return;
-    
-    // PENGAMAN 2: Cek apakah data Master Barang sudah ada
-    if (!D || !D.master_barang) {
-        target.innerHTML = `<tr><td colspan="12" style="text-align:center; padding:20px; color:#999;">Data Barang Belum Ada. Klik ADD di Master Barang.</td></tr>`;
-        return;
-    }
-
-    const fM = inFm.value;
-    const B_arr = Object.values(D.master_barang);
-    let h = "";
-
-    B_arr.forEach(b => {
-        let s = { ak:0, ab:0, ik:0, ib:0, rej:0, rk:0, jm:0, ju:0 };
-        
-        // PENGAMAN 3: Pastikan stok_logs tidak null
-        const logs = D.stok_logs ? Object.values(D.stok_logs) : [];
-        
-        logs.forEach(l => {
-            if(l.b !== b) return;
-            const tgl = l.t || "";
-            if(tgl.slice(0,7) < fM) { 
-                if(l.ak === "Masuk") s.ak += (l.q || 0); 
-                else if(l.ak === "Rekondisi") { s.ak -= (l.q || 0); s.ab += (l.q || 0); } 
-                else if(l.ak.includes("Jual")) s.ab -= (l.q || 0); 
-            } else if(tgl.slice(0,7) === fM) { 
-                if(l.ak === "Masuk") s.ik += (l.q || 0); 
-                else if(l.ak === "Rekondisi") s.rk += (l.q || 0); 
-                else if(l.ak === "Jual Mitra") s.jm += (l.q || 0); 
-                else if(l.ak === "Jual Umum") s.ju += (l.q || 0);
-                if(l.qc === "Reject") s.rej += (l.q || 0);
-            }
-        });
-
-        let ktr = (s.ak + s.ik) - s.rk;
-        let rdy = (s.ab + s.ib + s.rk) - (s.jm + s.ju);
-        
-        h += `
-            <tr style="border-bottom: 1px solid #f1f5f9;">
-                <td style="position: sticky; left: 0; background: #fff; padding: 12px 10px; font-weight: 800; border-right: 1px solid #eee; font-size: 11px;">${b}</td>
-                <td style="text-align: center; font-size: 11px;">${s.ak}</td>
-                <td style="text-align: center; font-size: 11px;">${s.ab}</td>
-                <td style="text-align: center; font-size: 11px;">${s.ik}</td>
-                <td style="text-align: center; font-size: 11px;">${s.ib}</td>
-                <td style="text-align: center; font-size: 11px; color:red;">${s.rej}</td>
-                <td style="text-align: center; font-size: 11px;">${s.rk}</td>
-                <td style="text-align: center; font-size: 11px;">${s.jm}</td>
-                <td style="text-align: center; font-size: 11px;">${s.ju}</td>
-                <td style="text-align: center; background:#fef3c7; font-weight: bold;">${ktr}</td>
-                <td style="text-align: center; background:#dcfce7; font-weight: bold;">${rdy}</td>
-                <td style="text-align: center; background:#475569; color: white; font-weight: bold;">${ktr + rdy}</td>
-            </tr>`;
-    }); 
-    
-    target.innerHTML = h || `<tr><td colspan="12" style="text-align:center; padding:20px;">Belum ada data bulan ini.</td></tr>`;
-}
-
-
-
+        function renderStok() {
+            const B_arr = Object.values(D.master_barang || {}), fM = document.getElementById('fM').value; let h = "";
+            B_arr.forEach(b => {
+                let s = { ak:0, ab:0, ik:0, ib:0, rej:0, rk:0, jm:0, ju:0 };
+                Object.values(D.stok_logs || {}).forEach(l => {
+                    if(l.b!==b) return; 
+                    if(l.t?.slice(0,7)<fM) { 
+                        if(l.ak==="Masuk") l.kon==="Bekas"?s.ak+=l.q:s.ab+=l.q; 
+                        else if(l.ak==="Rekondisi"){s.ak-=l.q;s.ab+=l.q;} 
+                        else if(l.ak.includes("Jual")) s.ab-=l.q; 
+                    }
+                    else if(l.t?.slice(0,7)===fM) { 
+                        if(l.ak==="Masuk") l.kon==="Bekas"?s.ik+=l.q:s.ib+=l.q; 
+                        else if(l.ak==="Rekondisi") s.rk+=l.q; 
+                        else if(l.ak==="Jual Mitra") s.jm+=l.q; 
+                        else if(l.ak==="Jual Umum") s.ju+=l.q; 
+                        if(l.qc==="Reject") s.rej+=l.q; 
+                    }
+                });
+                let ktr = (s.ak+s.ik)-s.rk, rdy = (s.ab+s.ib+s.rk)-(s.jm+s.ju);
+                h += `<tr><td class="sticky-col">${b}</td><td>${s.ak}</td><td>${s.ab}</td><td>${s.ik}</td><td>${s.ib}</td><td style="color:red; font-weight:bold">${s.rej}</td><td>${s.rk}</td><td>${s.jm}</td><td>${s.ju}</td><td style="background:#fef3c7">${ktr}</td><td style="background:#dcfce7">${rdy}</td><td style="background:var(--p); color:white">${ktr+rdy}</td></tr>`;
+            }); document.getElementById('tbStok').innerHTML = h;
+        }
 
         // ==========================================
         // 5. TAB AKTIVITAS LOGIC (CHAIN LOGIC)
