@@ -89,23 +89,25 @@
             </div>
         </div>
 
-        <div id="tab-stok" class="tab-content" style="padding: 0 !important; margin: 0 !important; width: 100vw !important; max-width: 100% !important; left: 0 !important; position: relative; box-sizing: border-box;">
-    
-    <div style="padding: 10px; width: 100%; box-sizing: border-box;"> 
+        <style>
+    #tab-stok { padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; }
+    .card-stok { padding: 15px; border-radius: 12px; margin-bottom: 15px; background: #fff; border: 1px solid #eee; width: 100%; box-sizing: border-box; }
+</style>
 
-        <div class="card" style="padding: 15px; border-radius: 12px; margin-bottom: 15px; background: #fff; border: 1px solid #eee; width: 100%; box-sizing: border-box;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h3 style="color:#2563eb; margin: 0; font-size: 14px; font-weight: 800;">📦 Master Barang</h3>
-                <button onclick="renderMasterBarang()" style="font-size: 10px; padding: 4px 8px; border-radius: 4px; border: 1px solid #ddd; background: #f8fafc;">Refresh Nama</button>
-            </div>
+<div id="tab-stok" class="tab-content">
+    
+    <div style="padding: 12px; width: 100%; box-sizing: border-box;"> 
+
+        <div class="card-stok">
+            <h3 style="color:#2563eb; margin: 0 0 15px 0; font-size: 14px; font-weight: 800;">📦 Master Barang</h3>
             <div style="display: flex; gap: 8px; margin-bottom: 15px;">
                 <input type="text" id="namaBarangBaru" placeholder="Nama Barang..." style="flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #ddd; font-size: 14px;">
                 <button onclick="tambahMasterBarang()" style="padding: 0 15px; background: #2563eb; color: #fff; border: none; border-radius: 8px; font-weight: 700;">ADD</button>
             </div>
-            <div id="listMasterBarang" style="display: flex; flex-wrap: wrap; gap: 8px; min-height: 20px;"></div>
+            <div id="listMasterBarang" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
         </div>
 
-        <div class="card" style="padding: 15px; border-radius: 12px; margin-bottom: 15px; background: #fff; border: 1px solid #eee; width: 100%; box-sizing: border-box;">
+        <div class="card-stok">
             <h3 style="color:#2563eb; margin: 0 0 15px 0; font-size: 14px; font-weight: 800;">🚚 Logistik</h3>
             <input type="date" id="tglLog" style="width:100%; padding:12px; margin-bottom:10px; border-radius:8px; border: 1px solid #ddd; box-sizing: border-box;">
             <select id="selBarang" onchange="cekJenisBarang()" style="width:100%; padding:12px; margin-bottom:10px; border-radius:8px; border: 1px solid #ddd; background:#fff; font-weight: 600; box-sizing: border-box;"></select>
@@ -119,7 +121,7 @@
             <button onclick="simpanLog()" style="width:100%; padding:14px; background:#22c55e; color:#fff; border:none; border-radius:8px; font-weight:800;">SIMPAN LOGISTIK</button>
         </div>
 
-        <div class="card" style="padding: 15px; border-radius: 12px; background: #fff; border: 1px solid #eee; width: 100%; box-sizing: border-box; overflow: hidden;">
+        <div class="card-stok" style="overflow: hidden;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                 <h3 style="color:#2563eb; margin: 0; font-size: 14px; font-weight: 800;">📊 Laporan Stok</h3>
                 <input type="month" id="fMStok" onchange="renderStok()" style="width: 130px; padding: 8px; border-radius: 8px; border: 1px solid #ddd;">
@@ -155,7 +157,6 @@
         </div>
     </div>
 </div>
-
 
         <div id="tab-aktivitas" class="tab-content">
             <div class="card" style="border-top: 5px solid var(--d)">
@@ -465,128 +466,46 @@ function saveL() {
 
         function toggleIzin() { const j=document.getElementById('absJenis').value; document.getElementById('boxIzin').style.display=(j==='Izin'?'block':'none'); }
 
-// ==========================================
-        // 4. TAB STOK LOGIC
-        // ==========================================
-        function simpanLog() {
-    const t = document.getElementById('tglLog').value;
-    const b = document.getElementById('selBarang').value;
-    const q = parseInt(document.getElementById('qLog').value);
-    const ak = document.getElementById('selAksi').value;
-
-    if(!b || !q) return alert("Barang atau Jumlah belum diisi!");
-
-    // Logika QC otomatis: Jika masuk dan bukan cairan, dianggap Accepted (atau ambil dari input QC jika ada)
-    const qcFinal = "Accepted"; 
-
-    db.ref('stok_logs').push({ t, b, q, ak, kon: "Bekas", qc: qcFinal }).then(() => {
-        // --- LOGIKA OTOMATIS JERIGEN (DARI KODE LAMA MAS) ---
-        if(ak.includes("Jual") && b.toLowerCase().includes("jerigen")) {
-            let sisaJual = q;
-            let logs = Object.entries(D.aktivitas || {}).filter(x => x[1].j.toLowerCase().includes(b.toLowerCase()) && !x[1].isCair).sort((a,b) => a[1].t.localeCompare(b[1].t));
-            logs.forEach(log => {
-                if(sisaJual <= 0) return;
-                let qtyReady = log[1].q;
-                if(qtyReady <= sisaJual) { 
-                    db.ref(`aktivitas/${log[0]}`).update({ isCair: true, tglCair: t }); 
-                    sisaJual -= qtyReady; 
-                }
-            });
-        }
-        
-        document.getElementById('qLog').value = "";
-        alert("Stok Terupdate!");
-        renderStok();
-    });
-}
-// --- 1. LOGIKA INTERAKSI UI ---
-function cekJenisBarang() {
-    const selBrg = document.getElementById('selBarang'); 
-    const selAksi = document.getElementById('selAksi');
-    if (!selBrg || !selAksi) return;
-
-    const valBrg = selBrg.value ? selBrg.value.toLowerCase() : "";
-    const isCair = valBrg.includes('cair') || valBrg.includes('minyak');
-    const aksi = selAksi.value;
-
-    // Pastikan elemen-elemen ini ada di HTML atau biarkan jika tidak pakai
-    const rowQC = document.getElementById('rowQC');
-    const stSatuan = document.getElementById('stSatuan');
-    const optRekon = selAksi.querySelector('option[value="Rekondisi"]');
-
-    if (stSatuan) stSatuan.style.display = isCair ? 'block' : 'none';
-    if (optRekon) optRekon.style.display = isCair ? 'none' : 'block';
-    
-    if (isCair && aksi === 'Rekondisi') selAksi.value = 'Masuk';
+// FUNGSI INI AKAN MENUNGGU DATA 'D' SIAP SEBELUM MERENDER
+function autoRender() {
+    // Jika data D belum ada, tunggu 500ms lalu cek lagi
+    if (!window.D || Object.keys(window.D).length === 0) {
+        setTimeout(autoRender, 500); 
+        return;
+    }
+    // Jika data sudah ada, langsung gambar ke layar
+    renderMasterBarang();
+    renderStok();
 }
 
-// --- 2. KONTROL MASTER BARANG ---
+// Jalankan fungsi tunggu ini saat browser selesai loading
+window.onload = autoRender;
+
+
+// 1. RENDER MASTER BARANG (Nama Barang)
 function renderMasterBarang() {
     const list = document.getElementById('listMasterBarang');
     const sel = document.getElementById('selBarang');
     if (!list || !sel) return;
 
-    // Mengambil data dari variabel global D
-    const dataBarang = D.master_barang || {};
-    const B_entries = Object.entries(dataBarang);
+    // Ambil data dari variabel global D
+    const data = (D && D.master_barang) ? D.master_barang : {};
+    const B_entries = Object.entries(data);
     
-    // Render Badge di Master Barang
+    // Tampilan Badge Nama Barang
     list.innerHTML = B_entries.map(([id, nama]) => `
-        <div style="padding: 6px 12px; background: #fff; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; display: flex; align-items: center; gap: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+        <div style="padding: 6px 12px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; display: flex; align-items: center; gap: 8px;">
             <span style="font-weight: 600; color: #333;">${nama}</span>
             <span onclick="hapusMasterBarang('${id}')" style="color: #ef4444; cursor: pointer; font-weight: 800; font-size: 16px;">×</span>
         </div>
     `).join('');
 
-    // Render Pilihan di Dropdown Logistik
+    // Dropdown Pilihan Barang
     sel.innerHTML = "<option value=''>- Pilih Barang -</option>" + 
         B_entries.map(([id, nama]) => `<option value="${nama}">${nama}</option>`).join('');
 }
 
-function tambahMasterBarang() {
-    const inp = document.getElementById('namaBarangBaru');
-    if (!inp) return;
-    const nama = inp.value.trim();
-    
-    if (!nama) return alert("Isi nama barang!");
-
-    if (!D.master_barang) D.master_barang = {};
-    const id = Date.now().toString();
-    D.master_barang[id] = nama;
-
-    inp.value = "";
-    saveData(); // Pastikan fungsi saveData() Mas sudah benar untuk update Firebase/Local
-    renderMasterBarang();
-    renderStok();
-}
-
-function hapusMasterBarang(id) {
-    if(!confirm("Hapus barang?")) return;
-    delete D.master_barang[id];
-    saveData();
-    renderMasterBarang();
-    renderStok();
-}
-
-// --- 3. LOGIKA SIMPAN LOGISTIK (PENTING: ID Harus Sesuai HTML) ---
-function simpanLog() {
-    const t = document.getElementById('tglLog').value;
-    const b = document.getElementById('selBarang').value;
-    const q = parseInt(document.getElementById('qLog').value);
-    const ak = document.getElementById('selAksi').value;
-
-    if(!b) return alert("Pilih Barang!");
-    if(!q) return alert("Isi Jumlah!");
-
-    // Simpan ke Firebase (Gunakan struktur database Mas)
-    db.ref('stok_logs').push({ t, b, q, ak, kon: "Bekas" }).then(() => {
-        document.getElementById('qLog').value = "";
-        alert("Logistik Berhasil Disimpan!");
-        renderStok();
-    });
-}
-
-// --- 4. RENDER TABEL STOK ---
+// 2. RENDER TABEL STOK
 function renderStok() {
     const inFm = document.getElementById('fMStok');
     const target = document.getElementById('bodyStok');
@@ -602,11 +521,14 @@ function renderStok() {
         Object.values(D.stok_logs || {}).forEach(l => {
             if(l.b !== b) return;
             const tgl = l.t || "";
+            // Hitung Stok Awal (Bulan sebelumnya)
             if(tgl.slice(0,7) < fM) { 
                 if(l.ak === "Masuk") s.ak += l.q; 
                 else if(l.ak === "Rekondisi") { s.ak -= l.q; s.ab += l.q; } 
                 else if(l.ak.includes("Jual")) s.ab -= l.q; 
-            } else if(tgl.slice(0,7) === fM) { 
+            } 
+            // Hitung Stok Bulan Ini
+            else if(tgl.slice(0,7) === fM) { 
                 if(l.ak === "Masuk") s.ik += l.q; 
                 else if(l.ak === "Rekondisi") s.rk += l.q; 
                 else if(l.ak === "Jual Mitra") s.jm += l.q; 
@@ -636,20 +558,28 @@ function renderStok() {
     target.innerHTML = h;
 }
 
-// --- 5. STARTUP ---
-function startup() {
-    const n = new Date();
-    const bln = n.getFullYear() + '-' + String(n.getMonth() + 1).padStart(2, '0');
-    
-    if (document.getElementById('fMStok')) document.getElementById('fMStok').value = bln;
-    if (document.getElementById('tglLog')) document.getElementById('tglLog').value = n.toISOString().split('T')[0];
-
+// 3. LOGIKA OTOMATIS SAAT REFRESH BROWSER (SANGAT PENTING)
+function autoRender() {
+    // Jika data D (database) belum siap, tunggu 500ms
+    if (!window.D || Object.keys(window.D).length === 0) {
+        setTimeout(autoRender, 500);
+        return;
+    }
+    // Jika sudah siap, baru render
     renderMasterBarang();
     renderStok();
 }
 
-// Jalankan otomatis
-startup();
+// Jalankan otomatis saat buka browser
+window.onload = () => {
+    const n = new Date();
+    const bln = n.getFullYear() + '-' + String(n.getMonth() + 1).padStart(2, '0');
+    if (document.getElementById('fMStok')) document.getElementById('fMStok').value = bln;
+    if (document.getElementById('tglLog')) document.getElementById('tglLog').value = n.toISOString().split('T')[0];
+    
+    autoRender();
+};
+
 
 
         // ==========================================
