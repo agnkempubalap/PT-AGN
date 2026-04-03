@@ -79,7 +79,7 @@
             </div>
         </div>
 
-        <div id="tab-stok" class="tab-content" style="padding: 0 !important; margin: 0 !important; width: 100% !important;">
+        <div id="tab-stok" class="tab-content">
     <div style="padding: 12px; width: 100%; box-sizing: border-box;">
 
         <div class="card">
@@ -94,18 +94,18 @@
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                 <h3 style="border-left: 4px solid var(--p); padding-left: 10px; margin-bottom: 0;">📥 Logistik & Penjualan</h3>
-                <input type="date" id="stTgl" style="width:125px; height:30px; font-size: 11px; border-radius: 8px; border: 1px solid var(--b);">
+                <input type="date" id="stTgl" style="width:120px; height:30px; font-size: 11px; border-radius: 8px; border: 1px solid var(--b); margin-right: 2px;">
             </div>
             
             <div class="flex-row">
-                <select id="stBrg" style="flex: 2;"></select>
-                <input type="number" id="stQty" placeholder="Jumlah" style="flex: 1;">
+                <select id="stBrg"></select>
+                <input type="number" id="stQty" placeholder="Jumlah">
             </div>
             
             <div class="flex-row">
-                <select id="stKon" style="flex: 1;"><option value="Bekas">Kotor</option><option value="Baru">Rdy</option></select>
-                <select id="stQC" style="flex: 1;"><option value="Accepted">Accepted</option><option value="Reject">Reject</option></select>
-                <select id="stAksi" style="flex: 1.5;">
+                <select id="stKon"><option value="Bekas">Kotor</option><option value="Baru">Rdy</option></select>
+                <select id="stQC"><option value="Accepted">Accepted</option><option value="Reject">Reject</option></select>
+                <select id="stAksi">
                     <option value="Masuk">Masuk</option>
                     <option value="Rekondisi">Rekon</option>
                     <option value="Jual Mitra">Jual Mitra</option>
@@ -115,14 +115,14 @@
             <button class="btn" style="background:var(--p); margin-top: 5px;" onclick="saveSt()">PROSES STOK & CAIRKAN UPAH</button>
         </div>
 
-        <div class="card" style="padding: 10px; overflow: hidden;">
+        <div class="card" style="padding-bottom: 10px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                 <h3 style="border-left: 4px solid var(--p); padding-left: 10px; margin-bottom: 0;">📊 Laporan Stok</h3>
-                <input type="month" id="fM" style="width:125px; height:30px; font-size: 11px; border-radius: 8px; border: 1px solid var(--b);">
+                <input type="month" id="fM" style="width:120px; height:30px; font-size: 11px; border-radius: 8px; border: 1px solid var(--b); margin-right: 2px;">
             </div>
             
-            <div class="table-area" id="areaStok" style="width: 100%; margin-bottom: 10px;">
-                <table style="width: 100%; min-width: 950px;">
+            <div class="table-area" id="areaStok" style="margin-bottom: 10px;">
+                <table>
                     <thead>
                         <tr>
                             <th class="sticky-col">BRG</th>
@@ -130,8 +130,8 @@
                             <th>IN KTR</th><th>IN RDY</th>
                             <th style="color:var(--d)">REJ</th><th>REKON</th>
                             <th>MITRA</th><th>UMUM</th>
-                            <th style="background:#fef3c7">STOK KTR</th>
-                            <th style="background:#dcfce7">STOK RDY</th>
+                            <th style="background:#fef3c7">KTR</th>
+                            <th style="background:#dcfce7">RDY</th>
                             <th style="background:var(--p); color:white">TOTAL</th>
                         </tr>
                     </thead>
@@ -139,10 +139,10 @@
                 </table>
             </div>
             
-            <div style="display: flex; gap: 5px;">
-                <button class="btn" style="background:var(--s); margin:0;" onclick="expEx('areaStok','Stok')">EXCEL</button>
-                <button class="btn" style="background:var(--d); margin:0;" onclick="expPdf('areaStok','Laporan_Stok')">PDF</button>
-                <button class="btn" style="background:#64748b; margin:0;" onclick="showLogs('stok_logs')">LOG</button>
+            <div class="flex-row">
+                <button class="btn" style="background:var(--s)" onclick="expEx('areaStok','Stok')">EXCEL</button>
+                <button class="btn" style="background:var(--d)" onclick="expPdf('areaStok','Laporan_Stok')">PDF</button>
+                <button class="btn" style="background:#64748b" onclick="showLogs('stok_logs')">LOG</button>
             </div>
         </div>
     </div>
