@@ -482,34 +482,18 @@ function autoRender() {
 window.onload = autoRender;
 
 
-// 1. RENDER MASTER BARANG (Nama Barang)
-function renderMasterBarang() {
-    const list = document.getElementById('listMasterBarang');
-    const sel = document.getElementById('selBarang');
-    if (!list || !sel) return;
-
-    // Ambil data dari variabel global D
-    const data = (D && D.master_barang) ? D.master_barang : {};
-    const B_entries = Object.entries(data);
-    
-    // Tampilan Badge Nama Barang
-    list.innerHTML = B_entries.map(([id, nama]) => `
-        <div style="padding: 6px 12px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; display: flex; align-items: center; gap: 8px;">
-            <span style="font-weight: 600; color: #333;">${nama}</span>
-            <span onclick="hapusMasterBarang('${id}')" style="color: #ef4444; cursor: pointer; font-weight: 800; font-size: 16px;">×</span>
-        </div>
-    `).join('');
-
-    // Dropdown Pilihan Barang
-    sel.innerHTML = "<option value=''>- Pilih Barang -</option>" + 
-        B_entries.map(([id, nama]) => `<option value="${nama}">${nama}</option>`).join('');
-}
-
-// 2. RENDER TABEL STOK
 function renderStok() {
     const inFm = document.getElementById('fMStok');
     const target = document.getElementById('bodyStok');
-    if (!inFm || !target || !D.master_barang) return;
+    
+    // PENGAMAN 1: Cek apakah elemen HTML ada
+    if (!inFm || !target) return;
+    
+    // PENGAMAN 2: Cek apakah data Master Barang sudah ada
+    if (!D || !D.master_barang) {
+        target.innerHTML = `<tr><td colspan="12" style="text-align:center; padding:20px; color:#999;">Data Barang Belum Ada. Klik ADD di Master Barang.</td></tr>`;
+        return;
+    }
 
     const fM = inFm.value;
     const B_arr = Object.values(D.master_barang);
@@ -518,21 +502,22 @@ function renderStok() {
     B_arr.forEach(b => {
         let s = { ak:0, ab:0, ik:0, ib:0, rej:0, rk:0, jm:0, ju:0 };
         
-        Object.values(D.stok_logs || {}).forEach(l => {
+        // PENGAMAN 3: Pastikan stok_logs tidak null
+        const logs = D.stok_logs ? Object.values(D.stok_logs) : [];
+        
+        logs.forEach(l => {
             if(l.b !== b) return;
             const tgl = l.t || "";
-            // Hitung Stok Awal (Bulan sebelumnya)
             if(tgl.slice(0,7) < fM) { 
-                if(l.ak === "Masuk") s.ak += l.q; 
-                else if(l.ak === "Rekondisi") { s.ak -= l.q; s.ab += l.q; } 
-                else if(l.ak.includes("Jual")) s.ab -= l.q; 
-            } 
-            // Hitung Stok Bulan Ini
-            else if(tgl.slice(0,7) === fM) { 
-                if(l.ak === "Masuk") s.ik += l.q; 
-                else if(l.ak === "Rekondisi") s.rk += l.q; 
-                else if(l.ak === "Jual Mitra") s.jm += l.q; 
-                else if(l.ak === "Jual Umum") s.ju += l.q;
+                if(l.ak === "Masuk") s.ak += (l.q || 0); 
+                else if(l.ak === "Rekondisi") { s.ak -= (l.q || 0); s.ab += (l.q || 0); } 
+                else if(l.ak.includes("Jual")) s.ab -= (l.q || 0); 
+            } else if(tgl.slice(0,7) === fM) { 
+                if(l.ak === "Masuk") s.ik += (l.q || 0); 
+                else if(l.ak === "Rekondisi") s.rk += (l.q || 0); 
+                else if(l.ak === "Jual Mitra") s.jm += (l.q || 0); 
+                else if(l.ak === "Jual Umum") s.ju += (l.q || 0);
+                if(l.qc === "Reject") s.rej += (l.q || 0);
             }
         });
 
@@ -555,30 +540,10 @@ function renderStok() {
                 <td style="text-align: center; background:#475569; color: white; font-weight: bold;">${ktr + rdy}</td>
             </tr>`;
     }); 
-    target.innerHTML = h;
-}
-
-// 3. LOGIKA OTOMATIS SAAT REFRESH BROWSER (SANGAT PENTING)
-function autoRender() {
-    // Jika data D (database) belum siap, tunggu 500ms
-    if (!window.D || Object.keys(window.D).length === 0) {
-        setTimeout(autoRender, 500);
-        return;
-    }
-    // Jika sudah siap, baru render
-    renderMasterBarang();
-    renderStok();
-}
-
-// Jalankan otomatis saat buka browser
-window.onload = () => {
-    const n = new Date();
-    const bln = n.getFullYear() + '-' + String(n.getMonth() + 1).padStart(2, '0');
-    if (document.getElementById('fMStok')) document.getElementById('fMStok').value = bln;
-    if (document.getElementById('tglLog')) document.getElementById('tglLog').value = n.toISOString().split('T')[0];
     
-    autoRender();
-};
+    target.innerHTML = h || `<tr><td colspan="12" style="text-align:center; padding:20px;">Belum ada data bulan ini.</td></tr>`;
+}
+
 
 
 
