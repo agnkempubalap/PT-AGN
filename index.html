@@ -79,41 +79,74 @@
             </div>
         </div>
 
-        <div id="tab-stok" class="tab-content">
-            <div class="card">
-    <h3>📦 Master Barang</h3>
-    
-    <div style="display: flex; gap: 5px; margin-bottom: 10px;">
-        <input type="text" id="inB" placeholder="Barang..." style="flex: 3; height: 35px;">
-        <button class="btn" style="background:var(--p); flex: 1; margin:0; height: 35px;" onclick="addItem('master_barang', 'inB')">ADD</button>
-    </div>
-    
-    <div id="listB" style="display:flex; flex-wrap:wrap; gap:5px"></div>
-</div>
+        <div id="tab-stok" class="tab-content" style="padding: 0 !important; margin: 0 !important; width: 100% !important;">
+    <div style="padding: 12px; width: 100%; box-sizing: border-box;">
 
-
-            <div class="card">
-                <h3>📥 Logistik & Penjualan</h3>
-                <div class="flex-row"><input type="date" id="stTgl"><select id="stBrg"></select></div>
-                <div class="flex-row"><input type="number" id="stQty" placeholder="Jumlah"><select id="stKon"><option value="Bekas">Kotor</option><option value="Baru">Rdy</option></select></div>
-                <div class="flex-row">
-                    <select id="stQC"><option value="Accepted">Accepted</option><option value="Reject">Reject</option></select>
-                    <select id="stAksi">
-                        <option value="Masuk">Masuk</option>
-                        <option value="Rekondisi">Rekon</option>
-                        <option value="Jual Mitra">Jual Mitra</option>
-                        <option value="Jual Umum">Jual Umum</option>
-                    </select>
-                </div>
-                <button class="btn" style="background:var(--p)" onclick="saveSt()">PROSES STOK & CAIRKAN UPAH</button>
+        <div class="card">
+            <h3 style="border-left: 4px solid var(--p); padding-left: 10px; margin-bottom: 12px;">📦 Master Barang</h3>
+            <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+                <input type="text" id="inB" placeholder="Barang..." style="flex: 3; height: 35px;">
+                <button class="btn" style="background:var(--p); flex: 1; margin:0; height: 35px;" onclick="addItem('master_barang', 'inB')">ADD</button>
             </div>
-            <div class="table-area" id="areaStok"><table><thead><tr><th class="sticky-col">BRG</th><th>AWAL KTR</th><th>AWAL RDY</th><th>IN KTR</th><th>IN RDY</th><th style="color:var(--d)">REJ</th><th>REKON</th><th>MITRA</th><th>UMUM</th><th style="background:#fef3c7">STOK KTR</th><th style="background:#dcfce7">STOK RDY</th><th style="background:var(--p); color:white">TOTAL</th></tr></thead><tbody id="tbStok"></tbody></table></div>
+            <div id="listB" style="display:flex; flex-wrap:wrap; gap:5px"></div>
+        </div>
+
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h3 style="border-left: 4px solid var(--p); padding-left: 10px; margin-bottom: 0;">📥 Logistik & Penjualan</h3>
+                <input type="date" id="stTgl" style="width:125px; height:30px; font-size: 11px; border-radius: 8px; border: 1px solid var(--b);">
+            </div>
+            
             <div class="flex-row">
-                <button class="btn" style="background:var(--s)" onclick="expEx('areaStok','Stok')">EXCEL</button>
-                <button class="btn" style="background:var(--d)" onclick="expPdf('areaStok','Laporan_Stok')">PDF</button>
-                <button class="btn" style="background:#64748b" onclick="showLogs('stok_logs')">LOG</button>
+                <select id="stBrg" style="flex: 2;"></select>
+                <input type="number" id="stQty" placeholder="Jumlah" style="flex: 1;">
+            </div>
+            
+            <div class="flex-row">
+                <select id="stKon" style="flex: 1;"><option value="Bekas">Kotor</option><option value="Baru">Rdy</option></select>
+                <select id="stQC" style="flex: 1;"><option value="Accepted">Accepted</option><option value="Reject">Reject</option></select>
+                <select id="stAksi" style="flex: 1.5;">
+                    <option value="Masuk">Masuk</option>
+                    <option value="Rekondisi">Rekon</option>
+                    <option value="Jual Mitra">Jual Mitra</option>
+                    <option value="Jual Umum">Jual Umum</option>
+                </select>
+            </div>
+            <button class="btn" style="background:var(--p); margin-top: 5px;" onclick="saveSt()">PROSES STOK & CAIRKAN UPAH</button>
+        </div>
+
+        <div class="card" style="padding: 10px; overflow: hidden;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h3 style="border-left: 4px solid var(--p); padding-left: 10px; margin-bottom: 0;">📊 Laporan Stok</h3>
+                <input type="month" id="fM" style="width:125px; height:30px; font-size: 11px; border-radius: 8px; border: 1px solid var(--b);">
+            </div>
+            
+            <div class="table-area" id="areaStok" style="width: 100%; margin-bottom: 10px;">
+                <table style="width: 100%; min-width: 950px;">
+                    <thead>
+                        <tr>
+                            <th class="sticky-col">BRG</th>
+                            <th>AWAL KTR</th><th>AWAL RDY</th>
+                            <th>IN KTR</th><th>IN RDY</th>
+                            <th style="color:var(--d)">REJ</th><th>REKON</th>
+                            <th>MITRA</th><th>UMUM</th>
+                            <th style="background:#fef3c7">STOK KTR</th>
+                            <th style="background:#dcfce7">STOK RDY</th>
+                            <th style="background:var(--p); color:white">TOTAL</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbStok"></tbody>
+                </table>
+            </div>
+            
+            <div style="display: flex; gap: 5px;">
+                <button class="btn" style="background:var(--s); margin:0;" onclick="expEx('areaStok','Stok')">EXCEL</button>
+                <button class="btn" style="background:var(--d); margin:0;" onclick="expPdf('areaStok','Laporan_Stok')">PDF</button>
+                <button class="btn" style="background:#64748b; margin:0;" onclick="showLogs('stok_logs')">LOG</button>
             </div>
         </div>
+    </div>
+</div>
 
         <div id="tab-aktivitas" class="tab-content">
             <div class="card" style="border-top: 5px solid var(--d)">
@@ -399,49 +432,110 @@ function saveL() {
         function toggleIzin() { const j=document.getElementById('absJenis').value; document.getElementById('boxIzin').style.display=(j==='Izin'?'block':'none'); }
 
 // ==========================================
-        // 4. TAB STOK LOGIC
-        // ==========================================
-        function saveSt() {
-            const t=document.getElementById('stTgl').value, b=document.getElementById('stBrg').value, q=parseInt(document.getElementById('stQty').value), ak=document.getElementById('stAksi').value;
-            if(!q) return alert("Qty Kosong!");
-            const qcFinal = (ak === "Masuk") ? document.getElementById('stQC').value : "Accepted";
-            db.ref('stok_logs').push({ t, b, q, kon:document.getElementById('stKon').value, qc:qcFinal, ak:ak }).then(() => {
-                if(ak.includes("Jual") && b.toLowerCase().includes("jerigen")) {
-                    let sisaJual = q;
-                    let logs = Object.entries(D.aktivitas || {}).filter(x => x[1].j.toLowerCase().includes(b.toLowerCase()) && !x[1].isCair).sort((a,b) => a[1].t.localeCompare(b[1].t));
-                    logs.forEach(log => {
-                        if(sisaJual <= 0) return;
-                        let qtyReady = log[1].q;
-                        if(qtyReady <= sisaJual) { db.ref(`aktivitas/${log[0]}`).update({ isCair: true, tglCair: t }); sisaJual -= qtyReady; }
-                    });
+// 4. TAB STOK LOGIC (OPTIMIZED)
+// ==========================================
+function saveSt() {
+    const t = document.getElementById('stTgl').value;
+    const b = document.getElementById('stBrg').value;
+    const q = parseInt(document.getElementById('stQty').value);
+    const ak = document.getElementById('stAksi').value;
+    const kon = document.getElementById('stKon').value;
+    const qc = document.getElementById('stQC').value;
+
+    if (!q || !b) return alert("Barang atau Jumlah masih kosong!");
+
+    // QC hanya dicatat jika barang "Masuk", selain itu dianggap "Accepted"
+    const qcFinal = (ak === "Masuk") ? qc : "Accepted";
+
+    db.ref('stok_logs').push({ 
+        t, b, q, kon, qc: qcFinal, ak 
+    }).then(() => {
+        // --- CHAIN LOGIC: CAIRKAN UPAH JERIGEN ---
+        if (ak.includes("Jual") && b.toLowerCase().includes("jerigen")) {
+            let sisaJual = q;
+            // Ambil aktivitas rekondisi yang belum cair untuk barang ini
+            let logs = Object.entries(D.aktivitas || {})
+                .filter(x => x[1].j.toLowerCase().includes(b.toLowerCase()) && !x[1].isCair)
+                .sort((a, b) => a[1].t.localeCompare(b[1].t));
+
+            logs.forEach(log => {
+                if (sisaJual <= 0) return;
+                let qtyReady = log[1].q || 0;
+                if (qtyReady <= sisaJual) {
+                    db.ref(`aktivitas/${log[0]}`).update({ isCair: true, tglCair: t });
+                    sisaJual -= qtyReady;
                 }
-                document.getElementById('stQty').value=""; alert("Stok Terupdate!");
             });
         }
+        document.getElementById('stQty').value = ""; 
+        alert("Stok & Data Upah Terupdate!");
+    });
+}
 
-        function renderStok() {
-            const B_arr = Object.values(D.master_barang || {}), fM = document.getElementById('fM').value; let h = "";
-            B_arr.forEach(b => {
-                let s = { ak:0, ab:0, ik:0, ib:0, rej:0, rk:0, jm:0, ju:0 };
-                Object.values(D.stok_logs || {}).forEach(l => {
-                    if(l.b!==b) return; 
-                    if(l.t?.slice(0,7)<fM) { 
-                        if(l.ak==="Masuk") l.kon==="Bekas"?s.ak+=l.q:s.ab+=l.q; 
-                        else if(l.ak==="Rekondisi"){s.ak-=l.q;s.ab+=l.q;} 
-                        else if(l.ak.includes("Jual")) s.ab-=l.q; 
-                    }
-                    else if(l.t?.slice(0,7)===fM) { 
-                        if(l.ak==="Masuk") l.kon==="Bekas"?s.ik+=l.q:s.ib+=l.q; 
-                        else if(l.ak==="Rekondisi") s.rk+=l.q; 
-                        else if(l.ak==="Jual Mitra") s.jm+=l.q; 
-                        else if(l.ak==="Jual Umum") s.ju+=l.q; 
-                        if(l.qc==="Reject") s.rej+=l.q; 
-                    }
-                });
-                let ktr = (s.ak+s.ik)-s.rk, rdy = (s.ab+s.ib+s.rk)-(s.jm+s.ju);
-                h += `<tr><td class="sticky-col">${b}</td><td>${s.ak}</td><td>${s.ab}</td><td>${s.ik}</td><td>${s.ib}</td><td style="color:red; font-weight:bold">${s.rej}</td><td>${s.rk}</td><td>${s.jm}</td><td>${s.ju}</td><td style="background:#fef3c7">${ktr}</td><td style="background:#dcfce7">${rdy}</td><td style="background:var(--p); color:white">${ktr+rdy}</td></tr>`;
-            }); document.getElementById('tbStok').innerHTML = h;
-        }
+function renderStok() {
+    const elFM = document.getElementById('fM');
+    const elTb = document.getElementById('tbStok');
+    
+    // Cegah error jika elemen belum ada di layar
+    if (!elFM || !elTb || !D.master_barang) return;
+
+    const B_arr = Object.values(D.master_barang);
+    const fM = elFM.value; 
+    let h = "";
+
+    B_arr.forEach(b => {
+        let s = { ak: 0, ab: 0, ik: 0, ib: 0, rej: 0, rk: 0, jm: 0, ju: 0 };
+        
+        // Ambil logs, jika kosong buat array kosong
+        const logs = D.stok_logs ? Object.values(D.stok_logs) : [];
+
+        logs.forEach(l => {
+            if (l.b !== b) return;
+            const qty = parseInt(l.q) || 0;
+            const tgl = l.t || "";
+
+            // 1. HITUNG STOK AWAL (Bulan-bulan sebelum filter)
+            if (tgl.slice(0, 7) < fM) {
+                if (l.ak === "Masuk") {
+                    l.kon === "Bekas" ? s.ak += qty : s.ab += qty;
+                } 
+                else if (l.ak === "Rekondisi") {
+                    s.ak -= qty; s.ab += qty;
+                } 
+                else if (l.ak.includes("Jual")) {
+                    s.ab -= qty;
+                }
+            }
+            // 2. HITUNG MUTASI BULAN INI (Sesuai filter)
+            else if (tgl.slice(0, 7) === fM) {
+                if (l.ak === "Masuk") {
+                    l.kon === "Bekas" ? s.ik += qty : s.ib += qty;
+                    if (l.qc === "Reject") s.rej += qty; // Catat reject jika ada
+                } 
+                else if (l.ak === "Rekondisi") s.rk += qty;
+                else if (l.ak === "Jual Mitra") s.jm += qty;
+                else if (l.ak === "Jual Umum") s.ju += qty;
+            }
+        });
+
+        // RUMUS AKHIR
+        let ktr = (s.ak + s.ik) - s.rk;
+        let rdy = (s.ab + s.ib + s.rk) - (s.jm + s.ju);
+
+        h += `<tr>
+                <td class="sticky-col">${b}</td>
+                <td>${s.ak}</td><td>${s.ab}</td>
+                <td>${s.ik}</td><td>${s.ib}</td>
+                <td style="color:var(--d); font-weight:bold">${s.rej}</td>
+                <td>${s.rk}</td><td>${s.jm}</td><td>${s.ju}</td>
+                <td style="background:#fef3c7; font-weight:700">${ktr}</td>
+                <td style="background:#dcfce7; font-weight:700">${rdy}</td>
+                <td style="background:var(--p); color:white; font-weight:800">${ktr + rdy}</td>
+            </tr>`;
+    });
+    elTb.innerHTML = h;
+}
+
 
         // ==========================================
         // 5. TAB AKTIVITAS LOGIC (CHAIN LOGIC)
