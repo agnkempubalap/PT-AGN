@@ -79,31 +79,32 @@
             </div>
         </div>
 
-        <div id="tab-stok" class="tab-content" style="padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: 100% !important;">
-    
-    <div style="padding: 12px; width: 100%; box-sizing: border-box; display: block;">
+        <div id="tab-stok" class="tab-content">
+    <div class="container" style="padding-top: 20px; padding-bottom: 20px;">
 
-        <div class="card" style="width: 100%; box-sizing: border-box;">
-            <h3 style="border-left: 4px solid var(--p); padding-left: 10px; margin-bottom: 12px;">📦 Master Barang</h3>
-            <div style="display: flex; gap: 5px; margin-bottom: 10px;">
-                <input type="text" id="inB" placeholder="Barang..." style="flex: 3; height: 35px;">
-                <button class="btn" style="background:var(--p); flex: 1; margin:0; height: 35px;" onclick="addItem('master_barang', 'inB')">ADD</button>
+        <div class="card">
+            <h3 style="border-left: 4px solid var(--p); padding-left: 10px; margin-bottom: 15px;">📦 Master Barang</h3>
+            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                <input type="text" id="inB" placeholder="Barang..." style="flex: 3; height: 38px;">
+                <button class="btn" style="background:var(--p); flex: 1; margin:0; height: 38px;" onclick="addItem('master_barang', 'inB')">ADD</button>
             </div>
-            <div id="listB" style="display:flex; flex-wrap:wrap; gap:5px"></div>
+            <div id="listB" style="display:flex; flex-wrap:wrap; gap:8px"></div>
         </div>
 
-        <div class="card" style="width: 100%; box-sizing: border-box;">
+        <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                 <h3 style="border-left: 4px solid var(--p); padding-left: 10px; margin-bottom: 0;">📥 Logistik & Penjualan</h3>
-                <input type="date" id="stTgl" style="width:130px; height:32px; font-size: 12px; border-radius: 8px; border: 1px solid #ddd;">
+                <input type="date" id="stTgl" style="width:135px; height:35px; font-size: 13px; border-radius: 8px; border: 1px solid #ddd; padding: 0 5px;">
             </div>
             
-            <div class="flex-row" style="margin-bottom: 10px;"><select id="stBrg" style="width: 100%;"></select></div>
-            <div class="flex-row" style="margin-bottom: 10px;">
-                <input type="number" id="stQty" placeholder="Jumlah" style="flex: 1.2;">
+            <div class="flex-row" style="margin-bottom: 12px;"><select id="stBrg" style="width: 100%;"></select></div>
+            
+            <div class="flex-row" style="margin-bottom: 12px; display: flex; gap: 8px;">
+                <input type="number" id="stQty" placeholder="Jumlah" style="flex: 1.5;">
                 <select id="stKon" style="flex: 1;"><option value="Bekas">Kotor</option><option value="Baru">Rdy</option></select>
             </div>
-            <div class="flex-row" style="margin-bottom: 10px;">
+            
+            <div class="flex-row" style="margin-bottom: 12px; display: flex; gap: 8px;">
                 <select id="stQC" style="flex: 1;"><option value="Accepted">Accepted</option><option value="Reject">Reject</option></select>
                 <select id="stAksi" style="flex: 1.5;">
                     <option value="Masuk">Masuk</option>
@@ -112,17 +113,17 @@
                     <option value="Jual Umum">Jual Umum</option>
                 </select>
             </div>
-            <button class="btn" style="background:var(--p); width: 100%; margin-top: 5px;" onclick="saveSt()">PROSES STOK & CAIRKAN UPAH</button>
+            <button class="btn" style="background:var(--p); width: 100%; margin-top: 10px; height: 45px; font-weight: bold;" onclick="saveSt()">PROSES STOK & CAIRKAN UPAH</button>
         </div>
 
-        <div class="card" style="width: 100%; box-sizing: border-box; padding: 10px;">
+        <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                 <h3 style="border-left: 4px solid var(--p); padding-left: 10px; margin-bottom: 0;">📊 Laporan Stok</h3>
-                <input type="month" id="fM" style="width:130px; height:32px; font-size: 12px; border-radius: 8px; border: 1px solid #ddd;">
+                <input type="month" id="fM" style="width:135px; height:35px; font-size: 13px; border-radius: 8px; border: 1px solid #ddd; padding: 0 5px;">
             </div>
             
-            <div class="table-area" id="areaStok" style="margin-bottom: 15px; width: 100%; overflow-x: auto;">
-                <table style="width: 100%; min-width: 900px; border-collapse: collapse;">
+            <div class="table-area" id="areaStok" style="margin-bottom: 20px; overflow-x: auto;">
+                <table style="width: 100%; min-width: 950px; border-collapse: collapse;">
                     <thead>
                         <tr>
                             <th class="sticky-col">BRG</th>
@@ -139,15 +140,14 @@
                 </table>
             </div>
             
-            <div style="display: flex; gap: 8px; width: 100%;">
+            <div style="display: flex; gap: 10px;">
                 <button class="btn" style="background:var(--s); flex: 1; margin:0;" onclick="expEx('areaStok','Stok')">EXCEL</button>
                 <button class="btn" style="background:var(--d); flex: 1; margin:0;" onclick="expPdf('areaStok','Laporan_Stok')">PDF</button>
                 <button class="btn" style="background:#64748b; flex: 1; margin:0;" onclick="showLogs('stok_logs')">LOG</button>
             </div>
         </div>
 
-    </div>
-</div>
+    </div> </div>
 
         <div id="tab-aktivitas" class="tab-content">
             <div class="card" style="border-top: 5px solid var(--d)">
