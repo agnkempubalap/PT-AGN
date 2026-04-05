@@ -318,7 +318,7 @@
    </div>
        </div>
 
-        <div id="tab-stok" class="tab-content">
+                <div id="tab-stok" class="tab-content">
             <div class="card">
                 <h3>📦 Master Barang</h3>
                 <div style="display: flex; gap: 5px; margin-bottom: 10px;">
@@ -328,134 +328,100 @@
                 <div id="listB" style="display:flex; flex-wrap:wrap; gap:5px"></div>
             </div>
 
-    <div class="card">
-    <h3>📥 Logistik & Penjualan <input type="date" id="stTgl"></h3>
-    
-    <div class="flex-row">
-        <select id="stBrg" onchange="toggleSatuan()" style="flex: 2;"></select>
-        <input type="number" id="stQty" placeholder="Jumlah" style="flex: 1;">
-    </div>
-
-    <div class="flex-row" style="gap: 8px;">
-        <div id="boxSatuan" style="display:none; flex: 1;">
-            <select id="stSatuan" style="width: 100%;">
-                <option value="Liter">Liter (Lt)</option>
-                <option value="Kilogram">Kilogram (Kg)</option>
-            </select>
-        </div>
-
-        <select id="stAksi" onchange="toggleAksi()" style="flex: 1.5; font-weight: bold;">
-            <option value="Masuk">Masuk</option>
-            <option value="Rekondisi">Rekon</option>
-            <option value="Jual">Jual</option>
-        </select>
-
-        <div id="boxSubAksi" style="display:none; flex: 1;">
-            <select id="stSubAksi" style="width: 100%;">
-                <option value="Jual Mitra">Mitra</option>
-                <option value="Jual Umum">Umum</option>
-            </select>
-        </div>
-    </div>
-
-    <div id="boxDetail" class="flex-row" style="display: none; margin-top: 8px; gap: 8px;">
-        <select id="stKon" style="flex: 1;">
-            <option value="Bekas">Kotor</option>
-            <option value="Baru">Ready</option>
-        </select>
-        <select id="stQC" style="flex: 1;">
-            <option value="Accepted">Accepted</option>
-            <option value="Reject">Reject</option>
-        </select>
-    </div>
-
-    <div style="margin-top: 15px;">
-    <button class="btn" style="background:var(--s)" onclick="saveSt()">
-        PROSES STOK & UPDATE
-    </button>
-</div>
-</div>
+            <div class="card">
+                <h3>📥 Logistik & Penjualan <input type="date" id="stTgl"></h3>
+                <div class="flex-row">
+                    <select id="stBrg" onchange="toggleSatuan()" style="flex: 2;"></select>
+                    <input type="number" id="stQty" placeholder="Jumlah" style="flex: 1;">
+                </div>
+                <div class="flex-row" style="gap: 8px;">
+                    <div id="boxSatuan" style="display:none; flex: 1;">
+                        <select id="stSatuan" style="width: 100%;">
+                            <option value="Liter">Liter (Lt)</option>
+                            <option value="Kilogram">Kilogram (Kg)</option>
+                        </select>
+                    </div>
+                    <select id="stAksi" onchange="toggleAksi()" style="flex: 1.5; font-weight: bold;">
+                        <option value="Masuk">Masuk</option>
+                        <option value="Rekondisi">Rekon</option>
+                        <option value="Jual">Jual</option>
+                    </select>
+                    <div id="boxSubAksi" style="display:none; flex: 1;">
+                        <select id="stSubAksi" style="width: 100%;">
+                            <option value="Jual Mitra">Mitra</option>
+                            <option value="Jual Umum">Umum</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="boxDetail" class="flex-row" style="display: none; margin-top: 8px; gap: 8px;">
+                    <select id="stKon" style="flex: 1;"><option value="Bekas">Kotor</option><option value="Baru">Ready</option></select>
+                    <select id="stQC" style="flex: 1;"><option value="Accepted">Accepted</option><option value="Reject">Reject</option></select>
+                </div>
+                <div style="margin-top: 15px;">
+                    <button class="btn" style="background:var(--s)" onclick="saveSt()">PROSES STOK & UPDATE</button>
+                </div>
+            </div>
 
             <div class="card">
-    <h3>📊 Laporan Stok <input type="month" id="fStok" onchange="autoRender()"></h3>
-    
-    <div class="table-area" id="areaStok">
-        <table>
-            <thead>
-                <tr>
-                    <th class="sticky-col">BRG</th>
-                    <th>AWAL KTR</th><th>AWAL RDY</th><th>IN KTR</th><th>IN RDY</th>
-                    <th style="color:var(--d)">REJ</th><th>REKON</th><th>MITRA</th><th>UMUM</th>
-                    <th style="background:#fef3c7">STOK KTR</th><th style="background:#dcfce7">STOK RDY</th>
-                    <th style="background:var(--p); color:white">TOTAL</th>
-                </tr>
-            </thead>
-            <tbody id="tbStok"></tbody>
-        </table>
-    </div>
-    
-    <div class="flex-row" style="display: flex; flex-direction: row; gap: 8px; margin: 15px 0; justify-content: flex-start;">
-    
-    <div class="flex-row" style="display: flex; flex-direction: row; gap: 8px; margin: 15px 0; justify-content: flex-start;">
-    
-    <button class="btn" 
-            style="background:var(--w); color:black; flex: 1; max-width: 120px; padding: 10px 5px; min-width: 80px;" 
-            onclick="showLogs('stok_logs')">
-        ⚙️ LOG
-    </button>
-    
-    <button class="btn" 
-            style="background:var(--s); flex: 1; max-width: 120px; padding: 10px 5px; min-width: 80px;" 
-            onclick="expEx('tbStok','Laporan_Stok')">
-        EXCEL
-    </button>
-    
-    <button class="btn" 
-            style="background:var(--d); flex: 1; max-width: 120px; padding: 10px 5px; min-width: 80px;" 
-            onclick="expPdf('tbStok','Laporan_Stok_Bulanan')">
-        PDF
-    </button>
-</div>
-   </div>
-     </div>
+                <h3>📊 Laporan Stok <input type="month" id="fStok" onchange="autoRender()"></h3>
+                <div class="table-area" id="areaStok">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="sticky-col">BRG</th>
+                                <th>AWAL KTR</th><th>AWAL RDY</th><th>IN KTR</th><th>IN RDY</th>
+                                <th style="color:var(--d)">REJ</th><th>REKON</th><th>MITRA</th><th>UMUM</th>
+                                <th style="background:#fef3c7">STOK KTR</th><th style="background:#dcfce7">STOK RDY</th>
+                                <th style="background:var(--p); color:white">TOTAL</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbStok"></tbody>
+                    </table>
+                </div>
+                <div class="flex-row" style="display: flex; gap: 8px; margin: 15px 0;">
+                    <button class="btn" style="background:var(--w); color:black; flex: 1; max-width: 120px;" onclick="showLogs('stok_logs')">⚙️ LOG</button>
+                    <button class="btn" style="background:var(--s); flex: 1; max-width: 120px;" onclick="expEx('tbStok','Stok')">EXCEL</button>
+                    <button class="btn" style="background:var(--d); flex: 1; max-width: 120px;" onclick="expPdf('tbStok','Stok')">PDF</button>
+                </div>
+            </div>
+        </div> <div id="tab-aktivitas" class="tab-content">
+            <div class="card" style="border-top: 5px solid var(--d)">
+                <h3>🛠️ Input Borongan <input type="date" id="akTgl" onchange="renderCheckKaryawan()"></h3>
+                <div id="akKaryawan" class="check-grid"></div>
+                <input type="number" id="akQty" placeholder="Jumlah Output" style="margin-bottom:10px">
+                <button class="btn" style="background:var(--p)" onclick="saveAk()">SIMPAN KERJA</button>
+            </div>
+            
+            <div class="card">
+                <h3>🛒 Input Belanja / Nota <input type="date" id="blTgl"></h3>
+                <div class="flex-row"><input type="text" id="blNama" placeholder="Item"><input type="number" id="blRp" placeholder="Rp"></div>
+                <button class="btn" style="background:var(--d)" onclick="saveBl()">SIMPAN NOTA</button>
+            </div>
 
-        <div class="flex-row" style="display: flex; gap: 8px; margin: 15px 0; justify-content: flex-start;">
-    <button class="btn" 
-            style="background:var(--w); color:black; flex: 1; max-width: 120px; padding: 10px 5px; min-width: 80px;" 
-            onclick="showLogs('aktivitas')">
-        ⚙️ LOG
-    </button>
-    <button class="btn" 
-            style="background:#64748b; color:white; flex: 1; max-width: 120px; padding: 10px 5px; min-width: 80px;" 
-            onclick="showNotaLogs()">
-        NOTA
-    </button>
-    <button class="btn" 
-            style="background:#0ea5e9; color:white; flex: 1; max-width: 120px; padding: 10px 5px; min-width: 80px;" 
-            onclick="genRekapKerja()">
-        PDF
-    </button>
-</div>
-</div>
-
-        <div class="flex-row" style="display: flex; gap: 8px; margin: 15px 0; justify-content: flex-start;">
-    <button class="btn" style="background:var(--w); color:black; flex: 1; max-width: 150px;" onclick="editTarif()">⚙️ TARIF</button>
-    <button class="btn" style="background:var(--s); flex: 1; max-width: 150px;" onclick="openModKB()">💰 KASBON</button>
-</div>
-
-<div id="areaGaji" class="table-area"></div>
-
-<div style="margin-top: 15px;">
-    <button class="btn" 
-            style="background:var(--d); width: auto; min-width: 200px; padding: 10px 24px;" 
-            onclick="expPdf('areaGaji','Rekap_Gaji_Karyawan')">
-        📥 DOWNLOAD PDF GAJI
-    </button>
-</div>
-    </div>
-
-
-    <script>
+            <div class="flex-row" style="display: flex; gap: 8px; margin: 15px 0;">
+                <button class="btn" style="background:var(--w); color:black; flex: 1; max-width: 120px;" onclick="showLogs('aktivitas')">⚙️ LOG</button>
+                <button class="btn" style="background:#64748b; color:white; flex: 1; max-width: 120px;" onclick="showNotaLogs()">NOTA</button>
+                <button class="btn" style="background:#0ea5e9; color:white; flex: 1; max-width: 120px;" onclick="genRekapKerja()">PDF</button>
+            </div>
+        </div> <div id="tab-gaji" class="tab-content">
+            <div class="card" style="background:var(--p); color:white">
+                <h3>💰 Ringkasan Gaji <input type="month" id="fUang"></h3>
+                <div class="flex-row">
+                    <div>GAJI: <b id="gTotal">0</b></div>
+                    <div>NOTA: <b id="nTotal">0</b></div>
+                </div>
+            </div>
+            <div class="flex-row" style="display: flex; gap: 8px; margin: 15px 0;">
+                <button class="btn" style="background:var(--w); color:black; flex: 1; max-width: 150px;" onclick="editTarif()">⚙️ TARIF</button>
+                <button class="btn" style="background:var(--s); flex: 1; max-width: 150px;" onclick="openModKB()">💰 KASBON</button>
+            </div>
+            <div id="areaGaji" class="table-area"></div>
+            <div style="margin-top: 15px;">
+                <button class="btn" style="background:var(--d); width: 100%;" onclick="expPdf('areaGaji','Gaji')">📥 DOWNLOAD PDF GAJI</button>
+            </div>
+        </div> </div>
+  
+  <script>
         // ==========================================
         // 1. KONEKTIVITAS (FIREBASE INIT)
         // ==========================================
@@ -550,32 +516,17 @@
         function removeItem(p,k) { if(confirm("Hapus?")) db.ref(`${p}/${k}`).remove().then(()=>closeMod()); }
         function expEx(id,n) { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById(id)), n+'.xlsx'); }
         function expPdf(id,n) { html2pdf().set({margin:5, filename:n+'.pdf', jsPDF:{orientation:'landscape'}}).from(document.getElementById(id)).save(); }
-        function showLogs(t) { 
-    // Proteksi: Jika data D belum dimuat, jangan jalankan fungsi agar tidak blank
-    if (!D || !D[t]) {
-        return openMod("Riwayat", "<div style='padding:20px; text-align:center;'>Belum ada data riwayat.</div>");
-    }
-    
-    // Mengambil 30 data terbaru
-    let l = Object.entries(D[t]).reverse().slice(0, 30); 
-    
-    let htmlContent = l.map(x => {
-        const item = x[1];
-        // Deskripsi: Jika ada item.b (barang) = Stok, Jika tidak = Aktivitas
-        const deskripsi = item.b 
-            ? `${item.b} (${item.q} ${item.sat || ''}) - ${item.ak || ''}` 
-            : `${item.j} (${item.q})`;
-        
-        // Gunakan backtick (`) untuk membungkus HTML di dalam map
-        return `
-        <div style="font-size:11px; padding:8px 5px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center; color:black;">
-            <span><b style="color:#64748b;">[${item.t || '-'}]</b> ${deskripsi}</span> 
-            <b onclick="removeItem('${t}','${x[0]}')" style="color:red; cursor:pointer; font-size:16px; padding:0 10px;">×</b>
-        </div>`;
+        function showLogs(t) {
+    if (!D || !D[t]) return openMod("Riwayat", "<div style='padding:20px;text-align:center;'>Belum ada data.</div>");
+    let l = Object.entries(D[t]).reverse().slice(0, 30);
+    let h = l.map(x => {
+        const i = x[1];
+        const d = i.b ? i.b + " (" + i.q + " " + (i.sat||'') + ") - " + (i.ak||'') : (i.j||'Kerja') + " (" + i.q + ")";
+        return "<div style='font-size:11px;padding:8px 5px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;color:black;'><span><b>["+(i.t||'-')+"]</b> "+d+"</span><b onclick=\"removeItem('"+t+"','"+x[0]+"')\" style='color:red;cursor:pointer;padding:0 10px;'>×</b></div>";
     }).join('');
-
-    openMod("Riwayat Aktivitas", htmlContent); 
+    openMod("Riwayat Aktivitas", h);
 }
+
 
 
         // ==========================================
