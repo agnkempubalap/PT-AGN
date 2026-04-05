@@ -426,11 +426,32 @@
         <button class="btn" style="background:var(--p); width:100%; padding:12px; font-weight:bold;" onclick="saveAk()">SIMPAN KERJA</button>
     </div>
 
-    <div class="flex-row" style="display: flex; gap: 8px; margin: 15px 0;">
-        <button class="btn" style="background:var(--w); color:black; flex: 1;" onclick="showLogs('aktivitas')">⚙️ LOG KERJA</button>
-        <button class="btn" style="background:#0ea5e9; color:white; flex: 1;" onclick="genRekapKerja()">PDF REKAP</button>
+<div class="card" style="margin-top: 15px; border: 1px solid #e2e8f0; background: white; padding: 10px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <h3 style="margin:0; font-size: 14px; color: #475569;">📋 Laporan Aktivitas</h3>
+        <span style="font-size: 9px; color: #94a3b8; font-weight: bold;">LIVE UPDATE</span>
     </div>
-</div> 
+    
+    <div style="max-height: 250px; overflow-y: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+            <thead style="position: sticky; top: 0; background: white; z-index: 1;">
+                <tr style="text-align: left; border-bottom: 2px solid #f1f5f9; color: #64748b;">
+                    <th style="padding: 5px;">JAM</th>
+                    <th style="padding: 5px;">KARYAWAN</th>
+                    <th style="padding: 5px;">PEKERJAAN</th>
+                    <th style="padding: 5px; text-align: center;">QTY</th>
+                </tr>
+            </thead>
+            <tbody id="listLogAktivitas">
+                </tbody>
+        </table>
+    </div>
+</div>
+
+<div style="margin-top: 15px;">
+    <button class="btn" style="background: var(--d); width: 100%; font-weight: bold; padding: 12px;" onclick="genRekapKerja()">(PDF)</button>
+</div>
+
 
        <div id="tab-gaji" class="tab-content">
     <div class="card" style="border-top: 5px solid #64748b; background: #f8fafc;">
