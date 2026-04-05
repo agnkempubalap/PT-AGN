@@ -1051,7 +1051,6 @@ function updateSubAktivitas() {
     const kat = document.getElementById('akKat').value;
     const sub = document.getElementById('akJenis');
     
-    // Kelompok 9 Aktivitas sesuai instruksi Anda
     const pilihan = {
         "Rekondisi": ["Rekondisi Kempu", "Rekondisi Jerigen 18L", "Rekondisi Jerigen 5L"],
         "Minyak": ["Ambil Minyak", "Kirim Minyak"],
@@ -1059,14 +1058,12 @@ function updateSubAktivitas() {
         "Pemasangan": ["Pasang Pangkalan", "Pasang Agen"]
     };
 
-    // Kosongkan detail dulu
-    sub.innerHTML = '';
+    // Kembalikan ke warna abu-abu saat reset
+    sub.style.color = '#94a3b8'; 
+    sub.innerHTML = '<option value="" disabled selected hidden>Pilih Detail...</option>';
 
     if (kat && pilihan[kat]) {
-        // Isi detail berdasarkan kategori
-        sub.innerHTML = pilihan[kat].map(p => `<option value="${p}">${p}</option>`).join('');
-    } else {
-        sub.innerHTML = '<option value="">-- Kategori Dulu --</option>';
+        sub.innerHTML += pilihan[kat].map(p => `<option value="${p}" style="color:#1e293b">${p}</option>`).join('');
     }
 }
 
