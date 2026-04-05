@@ -567,29 +567,40 @@
     const listK = document.getElementById('listK'), selK = document.getElementById('selK');
     const listB = document.getElementById('listB'), stBrg = document.getElementById('stBrg');
     
-    // 1. RENDER MASTER KARYAWAN (Versi Super Kuat - Anti Kosong)
+    // 1. RENDER MASTER KARYAWAN (Versi Anti-Gagal)
 function updateSemuaDropdownKaryawan() {
-    // Pastikan data D dan master_karyawan sudah ada
-    if (!window.D || !D.master_karyawan) return;
+    // 1. Pastikan data dari Firebase sudah masuk ke variabel D
+    if (!window.D || !D.master_karyawan) {
+        console.warn("Data master_karyawan belum tersedia di variabel D.");
+        return;
+    }
 
     const K = Object.entries(D.master_karyawan);
+    // Sortir A-Z supaya rapi
     const sortedK = [...K].sort((a, b) => a[1].localeCompare(b[1]));
 
-    // --- A. Dropdown Filter Rekap Aktivitas ---
+    // --- A. REKAP AKTIVITAS (ID: filterNamaAk) ---
     const filterNama = document.getElementById('filterNamaAk');
     if (filterNama) {
-        const simpanPilihan = filterNama.value; // Biar tidak reset
+        const simpanPilihan = filterNama.value;
+        let htmlRekap = '<option value="" style="color:#94a3b8">Global (Semua)</option>';
+        htmlRekap += sortedK.map(k => `<option value="${k[1]}" style="color:#1e293b">${k[1]}</option>`).join('');
         
-        let html = '<option value="" style="color:#94a3b8">Global (Semua)</option>';
-        html += sortedK.map(k => `<option value="${k[1]}" style="color:#1e293b">${k[1]}</option>`).join('');
-        
-        filterNama.innerHTML = html;
-        filterNama.value = simpanPilihan; // Kembalikan pilihan user
+        filterNama.innerHTML = htmlRekap;
+        filterNama.value = simpanPilihan; // Kembalikan ke pilihan user semula
         filterNama.style.color = filterNama.value === "" ? "#94a3b8" : "#1e293b";
     }
 
-    // --- B. Daftar di Menu Setting ---
-    const elListK = document.getElementById('listKaryawan'); 
+    // --- B. ABSENSI & GAJI (ID: selKaryawan atau selK) ---
+    // Kita cek dua ID sekaligus buat jaga-jaga kalau Bos ganti nama ID
+    const elAbsen = document.getElementById('selKaryawan') || document.getElementById('selK');
+    if (elAbsen) {
+        elAbsen.innerHTML = '<option value="" disabled selected>Pilih Karyawan...</option>' + 
+            sortedK.map(k => `<option value="${k[1]}">${k[1]}</option>`).join('');
+    }
+
+    // --- C. DAFTAR DI MENU SETTING (ID: listKaryawan) ---
+    const elListK = document.getElementById('listKaryawan') || document.getElementById('listK');
     if (elListK) {
         elListK.innerHTML = sortedK.map(k => `
             <span style="background:#fff; border:1px solid #ddd; padding:6px; border-radius:8px; font-size:11px; display:inline-block; margin:2px;">
@@ -597,24 +608,30 @@ function updateSemuaDropdownKaryawan() {
             </span>`).join('');
     }
 
-    // --- C. Dropdown Absensi / Gaji ---
-    const elSelK = document.getElementById('selKaryawan');
-    if (elSelK) {
-        elSelK.innerHTML = sortedK.map(k => `<option value="${k[1]}">${k[1]}</option>`).join('');
+    // --- D. CHECKBOX INPUT AKTIVITAS (ID: akKaryawan) ---
+    // Penting: Agar saat Bos tambah karyawan baru, daftar checkbox langsung muncul
+    if (typeof renderCheckKaryawan === 'function') {
+        renderCheckKaryawan();
     }
 }
 
-// PANGGIL FUNGSI INI DI DALAM LISTENER FIREBASE ANDA
+// --- LISTENER FIREBASE (Pastikan ditaruh di bagian awal/global script) ---
 db.ref('master_karyawan').on('value', snapshot => {
-    // Pastikan data disimpan ke variabel D dulu
-    if (!window.D) window.D = {};
-    D.master_karyawan = snapshot.val();
-    
-    // Jalankan fungsi pengisi dropdown
-    updateSemuaDropdownKaryawan();
-    
-    // Jalankan juga render log agar sinkron
-    if (typeof renderLogHarian === 'function') renderLogHarian();
+    try {
+        if (!window.D) window.D = {};
+        const data = snapshot.val();
+        
+        if (data) {
+            D.master_karyawan = data;
+            // Jalankan update semua tampilan
+            updateSemuaDropdownKaryawan();
+            
+            // Jalankan render tabel jika ada
+            if (typeof renderLogHarian === 'function') renderLogHarian();
+        }
+    } catch (err) {
+        console.error("Error saat update master karyawan:", err);
+    }
 });
 
 
