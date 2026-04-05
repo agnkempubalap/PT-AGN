@@ -993,42 +993,61 @@ function toggleAksi() {
         // ==========================================
  function saveAk() {
     const tgl = document.getElementById('akTgl').value;
-    const kat = document.getElementById('akKat').value;
     const j = document.getElementById('akJenis').value; 
-    const q = parseInt(document.getElementById('akQty').value) || 0;
+    const qRaw = document.getElementById('akQty').value;
+    const q = parseInt(qRaw) || 0;
     const p = Array.from(document.querySelectorAll('.chk-k:checked')).map(c => c.value);
 
     // 1. Validasi Dasar
-    if (!tgl) return alert("Pilih Tanggal terlebih dahulu!");
-    if (!kat || !j) return alert("Pilih Kategori dan Detail Aktivitas!");
-    if (p.length === 0) return alert("Pilih minimal 1 Karyawan!");
-    if (q <= 0) return alert("Jumlah (Qty) harus diisi!");
+    if (!tgl || !j || p.length === 0) return alert("Lengkapi Tanggal, Aktivitas, dan Karyawan!");
 
-    // 2. Proteksi Absensi
-    let belumAbsen = p.filter(k => {
-        const dataAbsen = D.absensi?.[tgl]?.[k];
-        return !dataAbsen || !['Hadir', 'Telat', 'Lembur'].includes(dataAbsen.j);
-    });
-
-    if (belumAbsen.length > 0) {
-        return alert("Gagal! Karyawan berikut belum absen masuk hari ini:\n" + belumAbsen.join(", "));
+    // 2. LOGIKA STOK (Mencegah input jika barang kurang)
+    // Kita asumsikan data stok ada di D.stok (misal: D.stok.kempu_mentah)
+    if (j === "Rekondisi Kempu") {
+        const stokSekarang = D.stok?.kempu_mentah || 0;
+        if (q > stokSekarang) return alert("Gagal! Stok Kempu Mentah tidak cukup (Sisa: " + stokSekarang + ")");
+    } else if (j === "Rekondisi Jerigen 18L") {
+        const stokSekarang = D.stok?.jeri18_mentah || 0;
+        if (q > stokSekarang) return alert("Gagal! Stok Jerigen 18L Mentah tidak cukup");
     }
 
-    // 3. Logika Cair Otomatis
+    // 3. LOGIKA QTY 0
+    // Aktivitas yang WAJIB ada jumlahnya (Produksi)
+    const wajibIsi = ["Rekondisi Kempu", "Rekondisi Jerigen 18L", "Rekondisi Jerigen 5L"];
+    if (wajibIsi.includes(j) && q <= 0) {
+        return alert("Untuk Rekondisi, jumlah (Qty) tidak boleh 0!");
+    }
+
+    // 4. Proteksi Absensi
+    let belumAbsen = p.filter(k => !D.absensi?.[tgl]?.[k] || !['Hadir','Telat','Lembur'].includes(D.absensi[tgl][k].j));
+    if (belumAbsen.length > 0) return alert("Karyawan belum absen: " + belumAbsen.join(", "));
+
     const cairAwal = !j.toLowerCase().includes("jerigen"); 
 
-    // 4. Simpan ke Firebase
-    db.ref('aktivitas').push({ t: tgl, j: j, q: q, p: p, isCair: cairAwal }).then(() => {
+    // 5. Simpan ke Firebase
+    db.ref('aktivitas').push({ 
+        t: tgl, 
+        j: j, 
+        q: q, // Angka 0 akan tetap tersimpan di sini
+        p: p, 
+        isCair: cairAwal 
+    }).then(() => {
+        // Update Stok di Firebase (Jika itu rekondisi, potong stok mentahnya)
+        if (j === "Rekondisi Kempu") {
+            db.ref('stok/kempu_mentah').transaction(s => (s || 0) - q);
+        }
+
         // RESET FORM
         document.getElementById('akQty').value = ""; 
         document.getElementById('akKat').value = ""; 
-        document.getElementById('akJenis').innerHTML = '<option value="">-- Kategori Dulu --</option>';
+        document.getElementById('akJenis').innerHTML = '<option value="" disabled selected hidden>Pilih Detail...</option>';
+        document.getElementById('akJenis').style.color = '#94a3b8';
         document.querySelectorAll('.chk-k').forEach(c => c.checked = false); 
         
-        alert("✅ Kerja '" + j + "' Berhasil Disimpan!");
-        if(typeof renderLaporanAktivitas === 'function') renderLaporanAktivitas();
+        alert("✅ Berhasil menyimpan: " + j + (q === 0 ? " (Tanpa Qty)" : " Qty: " + q));
     });
 }
+
       
 // 2. RENDER AKTIVITAS 
 function renderCheckKaryawan() {
