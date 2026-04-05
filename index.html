@@ -799,8 +799,10 @@ function renderStok() {
 
     B_arr.forEach(b => {
         let s = { ak:0, ab:0, ik:0, ib:0, rej:0, rk:0, jm:0, ju:0 };
+        // Deteksi Barang Cair
         const isCair = b.toLowerCase().includes('minyak') || b.toLowerCase().includes('cair');
 
+        // ... [Logika Looping stok_logs tetap sama seperti sebelumnya] ...
         if (D.stok_logs) {
             Object.values(D.stok_logs).forEach(l => {
                 if(l.b !== b) return;
@@ -824,26 +826,27 @@ function renderStok() {
         let ktr = (s.ak + s.ik) - s.rk;
         let rdy = (s.ab + s.ib + s.rk) - (s.jm + s.ju);
 
-        // --- FUNGSI TAMPIL BARU (ATAS BAWAH & NO DASH) ---
+        // --- FUNGSI TAMPIL YANG SUDAH DIPERBAIKI ---
         const tampil = (val) => {
-            // Jika nilai kosong atau undefined, anggap 0
+            // Gunakan angka 0 jika data kosong
             const v = val || 0;
             
             if (!isCair) {
-                // Tampilan Benda Padat (Unit)
+                // Tampilan Benda Padat (Sama seperti baris Kempu)
                 return `<div style="text-align:center;">${v} Unit</div>`;
             } else {
-                // Tampilan Benda Cair (Lt di atas, Kg di bawah)
+                // Tampilan Benda Cair (Ramping & Seiras)
                 let kg = (v * BJ).toFixed(1);
-                return `<div style="line-height:1.1; text-align:center; font-size:12px;">` + 
-                       `<span style="color:#666;">${v} Lt</span><br>` + 
-                       `<b>${kg} Kg</b>` + 
+                // Aturline-height dan margin agar rapi
+                return `<div style="line-height:1.2; text-align:center; font-size:13px; padding: 2px 0;">` + 
+                       `<span style="color:#777;">${v} Lt</span><br>` + 
+                       `<span style="font-weight:bold; color:#333;">${kg} Kg</span>` + 
                        `</div>`;
             }
         };
 
         h += `<tr>
-            <td class="sticky-col" style="font-weight:bold;">${b}</td>
+            <td class="sticky-col" style="font-weight:bold; font-size:13px;">${b}</td>
             <td>${tampil(s.ak)}</td><td>${tampil(s.ab)}</td>
             <td>${tampil(s.ik)}</td><td>${tampil(s.ib)}</td>
             <td style="color:var(--d); font-weight:bold">${tampil(s.rej)}</td>
@@ -856,7 +859,6 @@ function renderStok() {
     
     target.innerHTML = h;
 }
-
 
 // 3. LOGIKA INTERAKSI (Toggle Satuan & Aksi)
 function toggleSatuan() {
