@@ -397,23 +397,26 @@
             </div>
 
         <div class="flex-row" style="gap:8px; margin-bottom:10px;">
-            <div style="flex:1">
-                <label style="font-size:11px; color:#64748b;">Kategori:</label>
-                <select id="akKat" onchange="updateSubAktivitas()" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; background:white; font-size:13px;">
-                    <option value="">Aktivitas</option>
-                    <option value="Rekondisi">Rekondisi</option>
-                    <option value="Minyak">Logistik Minyak</option>
-                    <option value="Barang">Logistik Barang</option>
-                    <option value="Pemasangan">Pemasangan</option>
-                </select>
-            </div>
-            <div style="flex:1">
-                <label style="font-size:11px; color:#64748b;">Detail:</label>
-                <select id="akJenis" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; background:white; font-size:13px;">
-                    <option value="">Pilih</option>
-                </select>
-            </div>
-        </div>
+    <div style="flex:1">
+        <label style="font-size:11px; color:#64748b;">Kategori:</label>
+        <select id="akKat" onchange="updateSubAktivitas(); this.style.color='#1e293b'" 
+            style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; background:white; font-size:13px; color:#94a3b8; outline:none;">
+            <option value="" disabled selected hidden>Pilih Kategori...</option>
+            <option value="Rekondisi">Rekondisi</option>
+            <option value="Minyak">Logistik Minyak</option>
+            <option value="Barang">Logistik Barang</option>
+            <option value="Pemasangan">Pemasangan</option>
+        </select>
+    </div>
+
+    <div style="flex:1">
+        <label style="font-size:11px; color:#64748b;">Detail:</label>
+        <select id="akJenis" onchange="this.style.color='#1e293b'"
+            style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; background:white; font-size:13px; color:#94a3b8; outline:none;">
+            <option value="" disabled selected hidden>Pilih Detail...</option>
+        </select>
+    </div>
+</div>
 
         <div style="margin-bottom:15px;">
             <label style="font-size:11px; color:#64748b;">Jumlah (Qty):</label>
