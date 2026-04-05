@@ -384,18 +384,23 @@
                     <button class="btn" style="background:var(--d); flex: 1; max-width: 120px;" onclick="expPdf('tbStok','Stok')">PDF</button>
                 </div>
             </div>
-        </div> <div id="tab-aktivitas" class="tab-content">
+        </div> 
+        
+                 <div id="tab-aktivitas" class="tab-content">
             <div class="card" style="border-top: 5px solid var(--d)">
                 <h3>🛠️ Input Borongan <input type="date" id="akTgl" onchange="renderCheckKaryawan()"></h3>
                 <div id="akKaryawan" class="check-grid"></div>
                 <input type="number" id="akQty" placeholder="Jumlah Output" style="margin-bottom:10px">
-                <button class="btn" style="background:var(--p)" onclick="saveAk()">SIMPAN KERJA</button>
+                <button class="btn" style="background:var(--p); width:100%" onclick="saveAk()">SIMPAN KERJA</button>
             </div>
             
             <div class="card">
                 <h3>🛒 Input Belanja / Nota <input type="date" id="blTgl"></h3>
-                <div class="flex-row"><input type="text" id="blNama" placeholder="Item"><input type="number" id="blRp" placeholder="Rp"></div>
-                <button class="btn" style="background:var(--d)" onclick="saveBl()">SIMPAN NOTA</button>
+                <div class="flex-row">
+                    <input type="text" id="blNama" placeholder="Item">
+                    <input type="number" id="blRp" placeholder="Rp">
+                </div>
+                <button class="btn" style="background:var(--d); width:100%" onclick="saveBl()">SIMPAN NOTA</button>
             </div>
 
             <div class="flex-row" style="display: flex; gap: 8px; margin: 15px 0;">
@@ -403,7 +408,9 @@
                 <button class="btn" style="background:#64748b; color:white; flex: 1; max-width: 120px;" onclick="showNotaLogs()">NOTA</button>
                 <button class="btn" style="background:#0ea5e9; color:white; flex: 1; max-width: 120px;" onclick="genRekapKerja()">PDF</button>
             </div>
-        </div> <div id="tab-gaji" class="tab-content">
+        </div> 
+
+        <div id="tab-gaji" class="tab-content">
             <div class="card" style="background:var(--p); color:white">
                 <h3>💰 Ringkasan Gaji <input type="month" id="fUang"></h3>
                 <div class="flex-row">
@@ -419,7 +426,19 @@
             <div style="margin-top: 15px;">
                 <button class="btn" style="background:var(--d); width: 100%;" onclick="expPdf('areaGaji','Gaji')">📥 DOWNLOAD PDF GAJI</button>
             </div>
-        </div> </div>
+        </div> 
+    </div>
+        function showLogs(t) {
+            if (!D || !D[t]) return openMod("Riwayat", "<div style='padding:20px;text-align:center;'>Belum ada data.</div>");
+            let l = Object.entries(D[t]).reverse().slice(0, 30);
+            let h = l.map(x => {
+                const i = x[1];
+                const d = i.b ? i.b + " (" + i.q + " " + (i.sat||'') + ") - " + (i.ak||'') : (i.j||'Kerja') + " (" + i.q + ")";
+                return "<div style='font-size:11px;padding:8px 5px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;color:black;'><span><b>["+(i.t||'-')+"]</b> "+d+"</span><b onclick=\"removeItem('"+t+"','"+x[0]+"')\" style='color:red;cursor:pointer;padding:0 10px;'>×</b></div>";
+            }).join('');
+            openMod("Riwayat Aktivitas", h);
+        }
+
   
   <script>
         // ==========================================
@@ -517,29 +536,15 @@
         function expEx(id,n) { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById(id)), n+'.xlsx'); }
         function expPdf(id,n) { html2pdf().set({margin:5, filename:n+'.pdf', jsPDF:{orientation:'landscape'}}).from(document.getElementById(id)).save(); }
         function showLogs(t) {
-    // 1. Cek apakah data D ada, jika tidak ada jangan teruskan (agar tidak blank)
-    if (!D || !D[t]) {
-        return openMod("Riwayat", "<div style='padding:20px;text-align:center;color:black;'>Belum ada data riwayat.</div>");
-    }
-
-    // 2. Ambil data dan balik urutannya (terbaru di atas)
-    let l = Object.entries(D[t]).reverse().slice(0, 30);
-
-    // 3. Susun HTML tanpa menggunakan backtick (agar aman dari error baris baru)
-    let h = l.map(function(x) {
-        const i = x[1];
-        // Jika ada i.b berarti Stok, jika tidak berarti Aktivitas/Absen
-        const d = i.b ? i.b + " (" + i.q + " " + (i.sat||'') + ") - " + (i.ak||'') : (i.j||'Kerja') + " (" + i.q + ")";
-        
-        return "<div style='font-size:11px;padding:8px 5px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;color:black;'>" +
-               "<span><b style='color:#64748b;'>[" + (i.t||'-') + "]</b> " + d + "</span>" +
-               "<b onclick=\"removeItem('" + t + "','" + x[0] + "')\" style='color:red;cursor:pointer;padding:0 10px;font-size:16px;'>×</b>" +
-               "</div>";
-    }).join('');
-
-    // 4. Tampilkan ke modal
-    openMod("Riwayat Aktivitas", h);
-}
+            if (!D || !D[t]) return openMod("Riwayat", "<div style='padding:20px;text-align:center;'>Belum ada data.</div>");
+            let l = Object.entries(D[t]).reverse().slice(0, 30);
+            let h = l.map(x => {
+                const i = x[1];
+                const d = i.b ? i.b + " (" + i.q + " " + (i.sat||'') + ") - " + (i.ak||'') : (i.j||'Kerja') + " (" + i.q + ")";
+                return "<div style='font-size:11px;padding:8px 5px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;color:black;'><span><b>["+(i.t||'-')+"]</b> "+d+"</span><b onclick=\"removeItem('"+t+"','"+x[0]+"')\" style='color:red;cursor:pointer;padding:0 10px;'>×</b></div>";
+            }).join('');
+            openMod("Riwayat Aktivitas", h);
+        }
 
 
         // ==========================================
