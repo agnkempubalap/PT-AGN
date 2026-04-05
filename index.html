@@ -564,26 +564,28 @@
         function expEx(id,n) { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById(id)), n+'.xlsx'); }
         function expPdf(id,n) { html2pdf().set({margin:5, filename:n+'.pdf', jsPDF:{orientation:'landscape'}}).from(document.getElementById(id)).save(); }
         function showLogs(t) { 
+    // Pastikan D ada dan t adalah key yang valid
+    if (!D) return;
+    
     // Mengambil 30 data terbaru
     let l = Object.entries(D[t] || {}).reverse().slice(0, 30); 
     
     let htmlContent = l.map(x => {
         const item = x[1];
-        // Logika untuk menampilkan deskripsi yang lebih jelas
-        // Jika stok: Tampilkan Barang + Jumlah + Aksi (Masuk/Jual)
-        // Jika absen: Tampilkan Nama + Jam
-        const deskripsi = item.b ? `${item.b} (${item.q} ${item.sat||''}) - ${item.ak||''}` : `${item.j} (${item.q})`;
+        // Deskripsi otomatis: Jika ada item.b (barang) berarti stok, jika tidak berarti aktivitas/absen
+        const deskripsi = item.b 
+            ? `${item.b} (${item.q} ${item.sat||''}) - ${item.ak||''}` 
+            : `${item.j} (${item.q})`;
         
         return `
         <div style="font-size:11px; padding:8px 5px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
-            <span><b style="color:#64748b;">[${item.t}]</b> ${deskripsi}</span> 
+            <span><b style="color:#64748b;">[${item.t || '-'}]</b> ${deskripsi}</span> 
             <b onclick="removeItem('${t}','${x[0]}')" style="color:red; cursor:pointer; font-size:16px; padding:0 5px;">×</b>
         </div>`;
     }).join('');
 
     openMod("Riwayat Aktivitas", htmlContent || "<div style='padding:20px; color:#94a3b8; text-align:center;'>Belum ada riwayat</div>"); 
 }
-
 
         // ==========================================
         // 3. TAB ABSEN LOGIC
