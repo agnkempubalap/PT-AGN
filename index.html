@@ -430,13 +430,14 @@
         <div style="max-height: 300px; overflow-y: auto; margin-top: 10px;">
             <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
                 <thead style="position: sticky; top: 0; background: white; z-index: 1;">
-                    <tr style="text-align: left; border-bottom: 2px solid #f1f5f9; color: #64748b;">
-                        <th style="padding: 8px 5px;">JAM</th>
-                        <th style="padding: 8px 5px;">KARYAWAN</th>
-                        <th style="padding: 8px 5px;">PEKERJAAN</th>
-                        <th style="padding: 8px 5px; text-align: center;">QTY</th>
-                    </tr>
-                </thead>
+                    <thead style="position: sticky; top: 0; background: white; z-index: 1;">
+    <tr style="text-align: left; border-bottom: 2px solid #f1f5f9; color: #64748b;">
+        <th style="padding: 8px 5px;">JAM</th>
+        <th style="padding: 8px 5px;">KARYAWAN</th>
+        <th style="padding: 8px 5px;">PEKERJAAN</th>
+        <th style="padding: 8px 5px; text-align: center;">QTY</th>
+        <th style="padding: 8px 5px; width: 30px;"></th> </tr>
+</thead>
                 <tbody id="listLogAktivitas">
                     </tbody>
             </table>
@@ -1096,7 +1097,6 @@ function saveAk() {
       
 // 2. RENDER AKTIVITAS 
 function renderLogHarian() {
-    // Ambil tanggal dari input h3 di bagian Laporan Kerja
     const tglFilter = document.getElementById('filterTglAk')?.value;
     const tbody = document.getElementById('listLogAktivitas');
     
@@ -1105,27 +1105,40 @@ function renderLogHarian() {
     db.ref('aktivitas').on('value', snapshot => {
         const data = snapshot.val();
         if (!data) {
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">Data Kosong</td></tr>';
+            // Ubah colspan ke 5 karena kita tambah kolom silang
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#94a3b8;">Data Kosong</td></tr>';
             return;
         }
 
-        let items = Object.values(data).reverse();
+        // Ambil ID unik (Key) dan datanya
+        let items = Object.keys(data).map(key => ({ id: key, ...data[key] })).reverse();
 
-        // Filter berdasarkan tanggal yang dipilih di h3
         if (tglFilter) {
             items = items.filter(item => item.t === tglFilter);
         } else {
-            items = items.slice(0, 15); // Jika tgl kosong, tampilkan 15 terbaru
+            items = items.slice(0, 15);
+        }
+
+        if (items.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:15px; color:#94a3b8;">Tidak ada aktivitas.</td></tr>';
+            return;
         }
 
         tbody.innerHTML = items.map(item => {
-            const qtyTampil = item.q === 0 ? '<b style="color:#f59e0b">PROSES</b>' : `<b>${item.q}</b>`;
+            const qtyTampil = item.q === 0 ? '<b style="color:#f59e0b">PROS</b>' : `<b>${item.q}</b>`;
+            
             return `
                 <tr style="border-bottom: 1px solid #f8fafc;">
                     <td style="padding: 10px 5px; color: #94a3b8; font-family: monospace;">${item.waktu || '--:--'}</td>
-                    <td style="padding: 10px 5px; font-weight: 600;">${item.p.join(", ")}</td>
-                    <td style="padding: 10px 5px;">${item.j}</td>
+                    <td style="padding: 10px 5px; font-weight: 600; color: #1e293b;">${item.p.join(", ")}</td>
+                    <td style="padding: 10px 5px; color: #475569;">${item.j}</td>
                     <td style="padding: 10px 5px; text-align: center;">${qtyTampil}</td>
+                    <td style="padding: 10px 5px; text-align: center;">
+                        <span onclick="hapusAk('${item.id}', '${item.j}')" 
+                              style="color:#ef4444; font-size:20px; cursor:pointer; font-weight:bold; display:block; line-height:1;">
+                              ×
+                        </span>
+                    </td>
                 </tr>
             `;
         }).join('');
@@ -1166,6 +1179,16 @@ function updateSubAktivitas() {
 
     if (kat && pilihan[kat]) {
         sub.innerHTML += pilihan[kat].map(p => `<option value="${p}" style="color:#1e293b">${p}</option>`).join('');
+    }
+}
+
+function hapusAk(id, nama) {
+    if (confirm(`Hapus aktivitas: ${nama}?`)) {
+        db.ref('aktivitas/' + id).remove()
+            .then(() => {
+                // Berhasil. Tabel otomatis update karena pakai .on('value')
+            })
+            .catch(e => alert("Gagal hapus: " + e.message));
     }
 }
 
