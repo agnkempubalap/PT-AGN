@@ -19,69 +19,9 @@
         .container { width: 100%; max-width: 950px; margin: 65px auto 0; padding: 0 12px; }
         .tab-content { display: none; } .tab-content.active { display: block; }
         .card { background: var(--c); padding: 15px; border-radius: 16px; margin-bottom: 12px; border: 1px solid var(--b); }
-        .card h3 { 
-    display: flex !important; 
-    justify-content: space-between !important; 
-    align-items: center; 
-    margin-bottom: 15px; 
-    border-left: 4px solid var(--p); 
-    padding-left: 10px; 
-}
-
-.card h3 span { 
-    font-size: 13px; 
-    font-weight: 800; 
-    color: var(--p); 
-}
-
-.card h3 input { 
-    width: 115px !important; 
-    height: 30px !important; 
-    font-size: 11px !important; 
-    margin: 0; 
-    padding: 0 5px; 
-    border: 1px solid var(--b); 
-    border-radius: 8px; 
-    background: #fff;
-}
-
-.flex-row { 
-    display: flex; 
-    gap: 12px; 
-    margin-bottom: 12px; 
-    width: 100%; 
-    align-items: center; 
-}
-
-.flex-row select, .flex-row input { 
-    flex: 1; 
-    min-width: 0; 
-    height: 42px; 
-    border-radius: 10px; 
-    border: 1px solid var(--b); 
-    padding: 0 10px; 
-    font-size: 13px; 
-    background: #f8fafc;
-}
-
-.flex-row .flex-2 { 
-    flex: 2; 
-}
-
-.flex-row .btn { 
-    flex: 1; 
-    margin: 0; 
-    height: 42px;
-}
-
-input, select { 
-    height: 42px; 
-    background: #f8fafc; 
-    border: 1px solid var(--b); 
-    border-radius: 10px; 
-    padding: 0 10px; 
-}
-
+        h3 { margin-bottom: 12px; font-size: 13px; color: var(--p); border-left: 4px solid var(--p); padding-left: 10px; font-weight: 800; }
+        .flex-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+        input, select { width: 100%; height: 40px; background: #f8fafc; border: 1px solid var(--b); border-radius: 10px; padding: 0 10px; font-size: 13px; outline: none; }
         .btn { border: none; border-radius: 10px; padding: 12px; font-weight: 800; cursor: pointer; color: white; font-size: 11px; text-align: center; width: 100%; margin-bottom: 5px; flex: 1; min-width: 100px; }
         .table-area { width: 100%; overflow-x: auto; border: 1px solid var(--b); border-radius: 12px; background: white; margin-bottom: 10px; }
         table { width: 100%; border-collapse: collapse; white-space: nowrap; }
@@ -96,29 +36,6 @@ input, select {
         .modal-box { background: white; width: 100%; max-width: 600px; border-radius: 15px; padding: 15px; max-height: 85vh; overflow-y: auto; }
         .check-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
         .check-item { display: flex; align-items: center; gap: 8px; background: #f8fafc; padding: 10px; border-radius: 10px; border: 1px solid #eee; cursor: pointer; }
-
-.card h3 {
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center;
-    border-left: 4px solid var(--p);
-    padding-left: 10px;
-}
-
-.card h3 span {
-    font-size: 13px;
-    font-weight: 800;
-}
-
-/* Memperkecil kotak tanggal agar pas di samping judul */
-.card h3 input {
-    margin: 0;
-    font-size: 11px;
-    border-radius: 8px;
-    padding: 0 5px;
-    border: 1px solid var(--b);
-}
-
     </style>
 </head>
 <body>
@@ -163,128 +80,72 @@ input, select {
         </div>
 
         <div id="tab-stok" class="tab-content">
-    <div class="card">
-        <h3>📦 Master Barang</h3>
-        <div style="display: flex; gap: 5px;">
-            <input type="text" id="inB" placeholder="Barang..." style="flex: 3; height: 35px;">
-            <button class="btn" style="background:var(--p); flex: 1; margin:0; height: 35px;" onclick="addItem('master_barang', 'inB')">ADD</button>
-        </div>
-        <div id="listB" style="display:flex; flex-wrap:wrap; gap:5px; margin-top:10px"></div>
+            <div class="card">
+    <h3>📦 Master Barang</h3>
+    
+    <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+        <input type="text" id="inB" placeholder="Barang..." style="flex: 3; height: 35px;">
+        <button class="btn" style="background:var(--p); flex: 1; margin:0; height: 35px;" onclick="addItem('master_barang', 'inB')">ADD</button>
     </div>
-
-    <div class="card">
-        <h3>
-            <span>📥 Logistik & Penjualan</span>
-            <input type="date" id="stTgl">
-        </h3>
-        
-        <div class="flex-row">
-            <select id="stBrg" style="flex: 2;"></select>
-            <input type="number" id="stQty" placeholder="Jumlah" style="flex: 1;">
-        </div>
-        
-        <div class="flex-row">
-            <select id="stKon">
-                <option value="Bekas">Kotor</option>
-                <option value="Baru">Rdy</option>
-            </select>
-            <select id="stQC">
-                <option value="Accepted">Accepted</option>
-                <option value="Reject">Reject</option>
-            </select>
-        </div>
-        
-        <div class="flex-row">
-            <select id="stAksi">
-                <option value="Masuk">Masuk</option>
-                <option value="Rekondisi">Rekon</option>
-                <option value="Jual Mitra">Jual Mitra</option>
-                <option value="Jual Umum">Jual Umum</option>
-            </select>
-        </div>
-        
-        <button class="btn" style="background:var(--p); margin-top: 5px;" onclick="saveSt()">PROSES STOK & CAIRKAN UPAH</button>
-    </div>
-<div class="card">
-    <h3>
-        <span>📊 Laporan Stok Barang</span>
-        <input type="month" id="fMStok" style="width:110px; height:30px">
-    </h3>
-    <div class="table-area" id="areaStok">
-        <table>
-            <thead>
-                <tr>
-                    <th class="sticky-col">BRG</th>
-                    <th>AWAL KTR</th>
-                    <th>AWAL RDY</th>
-                    <th>IN KTR</th>
-                    <th>IN RDY</th>
-                    <th style="color:var(--d)">REJ</th>
-                    <th>REKON</th>
-                    <th>MITRA</th>
-                    <th>UMUM</th>
-                    <th style="background:#fef3c7">STOK KTR</th>
-                    <th style="background:#dcfce7">STOK RDY</th>
-                    <th style="background:var(--p); color:white">TOTAL</th>
-                </tr>
-            </thead>
-            <tbody id="tbStok"></tbody>
-        </table>
-    </div>
-
-    <div class="flex-row" style="margin-top: 10px; gap: 5px;">
-    <button class="btn" style="background:var(--s); flex: 1; margin:0;" onclick="expEx('areaStok','Stok')">EXCEL</button>
-    <button class="btn" style="background:var(--d); flex: 1; margin:0;" onclick="expPdf('areaStok','Laporan_Stok')">PDF</button>
-    <button class="btn" style="background:#64748b; flex: 1; margin:0;" onclick="showLogs('stok_logs')">LOG</button>
+    
+    <div id="listB" style="display:flex; flex-wrap:wrap; gap:5px"></div>
 </div>
-</div>
+
+
+            <div class="card">
+                <h3>📥 Logistik & Penjualan</h3>
+                <div class="flex-row"><input type="date" id="stTgl"><select id="stBrg"></select></div>
+                <div class="flex-row"><input type="number" id="stQty" placeholder="Jumlah"><select id="stKon"><option value="Bekas">Kotor</option><option value="Baru">Rdy</option></select></div>
+                <div class="flex-row">
+                    <select id="stQC"><option value="Accepted">Accepted</option><option value="Reject">Reject</option></select>
+                    <select id="stAksi">
+                        <option value="Masuk">Masuk</option>
+                        <option value="Rekondisi">Rekon</option>
+                        <option value="Jual Mitra">Jual Mitra</option>
+                        <option value="Jual Umum">Jual Umum</option>
+                    </select>
+                </div>
+                <button class="btn" style="background:var(--p)" onclick="saveSt()">PROSES STOK & CAIRKAN UPAH</button>
+            </div>
+            <div class="table-area" id="areaStok"><table><thead><tr><th class="sticky-col">BRG</th><th>AWAL KTR</th><th>AWAL RDY</th><th>IN KTR</th><th>IN RDY</th><th style="color:var(--d)">REJ</th><th>REKON</th><th>MITRA</th><th>UMUM</th><th style="background:#fef3c7">STOK KTR</th><th style="background:#dcfce7">STOK RDY</th><th style="background:var(--p); color:white">TOTAL</th></tr></thead><tbody id="tbStok"></tbody></table></div>
+            <div class="flex-row">
+                <button class="btn" style="background:var(--s)" onclick="expEx('areaStok','Stok')">EXCEL</button>
+                <button class="btn" style="background:var(--d)" onclick="expPdf('areaStok','Laporan_Stok')">PDF</button>
+                <button class="btn" style="background:#64748b" onclick="showLogs('stok_logs')">LOG</button>
+            </div>
+        </div>
+
         <div id="tab-aktivitas" class="tab-content">
-    <div class="card" style="border-top: 5px solid var(--d)">
-        <h3>
-            <span>🛠️ Input Borongan</span>
-            <input type="date" id="akTgl" onchange="renderCheckKaryawan()" style="width:115px; height:30px">
-        </h3>
-        <p style="font-size: 10px; margin-bottom: 10px; color: var(--d)">*Hanya karyawan yang sudah absen masuk yang muncul.</p>
-        
-        <div class="flex-row">
-            <select id="akJenis">
-                <option value="Rekondisi Kempu">Rekon Kempu</option>
-                <option value="Rekondisi jerigen 18L">Rekon 18L (Cair Pas Jual)</option>
-                <option value="Rekondisi jerigen 5L">Rekon 5L (Cair Pas Jual)</option>
-                <option value="muat barang">Muat</option>
-                <option value="bongkar barang">Bongkar</option>
-                <option value="kirim minyak">Kirim Minyak</option>
-                <option value="pasang pangkalan">Pasang Pangkalan</option>
-                <option value="pasang agen">Pasang Agen</option>
-            </select>
+            <div class="card" style="border-top: 5px solid var(--d)">
+                <h3>🛠️ Input Borongan (Chain Logic)</h3>
+                <p style="font-size: 10px; margin-bottom: 10px; color: var(--d)">*Hanya karyawan yang sudah absen masuk yang muncul di daftar.</p>
+                <div class="flex-row"><input type="date" id="akTgl" onchange="renderCheckKaryawan()"><select id="akJenis">
+                    <option value="Rekondisi Kempu">Rekon Kempu</option>
+                    <option value="Rekondisi jerigen 18L">Rekon 18L (Cair Pas Jual)</option>
+                    <option value="Rekondisi jerigen 5L">Rekon 5L (Cair Pas Jual)</option>
+                    <option value="muat barang">Muat</option>
+                    <option value="bongkar barang">Bongkar</option>
+                    <option value="kirim minyak">Kirim Minyak</option>
+                    <option value="pasang pangkalan">Pasang Pangkalan</option>
+                    <option value="pasang agen">Pasang Agen</option>
+                </select></div>
+                <div id="akKaryawan" class="check-grid"></div>
+                <input type="number" id="akQty" placeholder="Jumlah Output" style="margin-bottom:10px">
+                <button class="btn" style="background:var(--p)" onclick="saveAk()">SIMPAN KERJA</button>
+            </div>
+            <div class="card">
+                <h3>🛒 Input Belanja / Nota</h3>
+                <div class="flex-row"><input type="date" id="blTgl"><input type="text" id="blNama" placeholder="Nama Item"></div>
+                <div class="flex-row"><input type="number" id="blRp" placeholder="Rp"><input type="file" id="blImg" accept="image/*"></div>
+                <button class="btn" style="background:var(--d)" onclick="saveBl()">SIMPAN NOTA</button>
+            </div>
+            <div class="flex-row">
+                <button class="btn" style="background:#64748b" onclick="showLogs('aktivitas')">LOG KERJA</button>
+                <button class="btn" style="background:var(--w); color:black" onclick="showNotaLogs()">REKAP NOTA</button>
+                <button class="btn" style="background:#0ea5e9" onclick="genRekapKerja()">REKAP KERJA PDF</button>
+            </div>
         </div>
 
-        <div id="akKaryawan" class="check-grid"></div>
-        <input type="number" id="akQty" placeholder="Jumlah Output" style="margin-bottom:10px">
-        <button class="btn" style="background:var(--p)" onclick="saveAk()">SIMPAN KERJA</button>
-    </div>
-
-    <div class="card">
-        <h3>
-            <span>🛒 Input Belanja / Nota</span>
-            <input type="date" id="blTgl" style="width:115px; height:30px">
-        </h3>
-        <div class="flex-row">
-            <input type="text" id="blNama" placeholder="Nama Item">
-        </div>
-        <div class="flex-row">
-            <input type="number" id="blRp" placeholder="Rp">
-            <input type="file" id="blImg" accept="image/*" style="padding-top: 8px;">
-        </div>
-        <button class="btn" style="background:var(--d)" onclick="saveBl()">SIMPAN NOTA</button>
-    </div>
-
-    <div class="flex-row">
-        <button class="btn" style="background:#64748b" onclick="showLogs('aktivitas')">LOG</button>
-        <button class="btn" style="background:var(--w); color:black" onclick="showNotaLogs()">NOTA</button>
-        <button class="btn" style="background:#0ea5e9" onclick="genRekapKerja()">PDF</button>
-    </div>
-</div>
         <div id="tab-gaji" class="tab-content">
             <div class="card" style="background:var(--p); color:white">
                 <h3>💰 Ringkasan Keuangan <input type="month" id="fUang" style="width:110px; height:30px"></h3>
@@ -310,34 +171,13 @@ input, select {
         const DEF_TARIF = { "Rekondisi Kempu":100000, "Rekondisi jerigen 18L":2000, "Rekondisi jerigen 5L":1000, "muat barang":600000, "bongkar barang":600000, "kirim minyak":150000, "pasang pangkalan":500000, "pasang agen":700000 };
 
         window.onload = () => {
-    // 1. Ambil Tanggal & Bulan Hari Ini (WIB)
-    const t = new Date().toISOString().split('T')[0];
-    const bulan = t.slice(0, 7);
-    
-    // 2. Set Nilai Input Tanggal Otomatis (YYYY-MM-DD)
-    const dateInputs = ['absTgl', 'stTgl', 'akTgl', 'blTgl'];
-    dateInputs.forEach(id => {
-        if(document.getElementById(id)) document.getElementById(id).value = t;
-    });
-
-    // 3. Set Nilai Input Bulan Otomatis (YYYY-MM)
-    const monthInputs = ['fM', 'fUang', 'fMStok'];
-    monthInputs.forEach(id => {
-        if(document.getElementById(id)) document.getElementById(id).value = bulan;
-    });
-
-    // 4. Sinkronisasi Data Firebase
-    db.ref('/').on('value', s => { 
-        D = s.val() || {}; 
-        initUI(); 
-        autoRender(); // Ini akan menjalankan renderAll, renderStok, dan renderGaji
-    });
-
-    // 5. Listener Tambahan agar Laporan Stok Update saat Bulan diganti
-    if(document.getElementById('fMStok')) {
-        document.getElementById('fMStok').onchange = renderStok;
-    }
-};
+            const t = new Date().toISOString().split('T')[0];
+            ['absTgl','stTgl','akTgl','blTgl'].forEach(i => { if(document.getElementById(i)) document.getElementById(i).value = t });
+            ['fM','fUang'].forEach(i => { if(document.getElementById(i)) document.getElementById(i).value = t.slice(0, 7) });
+            db.ref('/').on('value', s => { D = s.val() || {}; initUI(); autoRender(); });
+            document.getElementById('fM').onchange = autoRender;
+            document.getElementById('fUang').onchange = autoRender;
+        };
 
         // ==========================================
         // 2. GLOBAL UTILITIES (NAV, MODAL, EXPORT)
