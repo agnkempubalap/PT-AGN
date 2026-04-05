@@ -37,36 +37,26 @@
         .check-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
         .check-item { display: flex; align-items: center; gap: 8px; background: #f8fafc; padding: 10px; border-radius: 10px; border: 1px solid #eee; cursor: pointer; }
 
-/* CSS KHUSUS UNTUK HEADER KARTU SEJAJAR */
-.card h3 { 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-    margin-bottom: 12px; 
-    font-size: 13px; 
-    color: var(--p); 
-    border-left: 4px solid var(--p); 
-    padding-left: 10px; 
-    font-weight: 800; 
+.card h3 {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center;
+    border-left: 4px solid var(--p);
+    padding-left: 10px;
 }
 
-/* Memastikan input di dalam h3 tampil rapi */
+.card h3 span {
+    font-size: 13px;
+    font-weight: 800;
+}
+
+/* Memperkecil kotak tanggal agar pas di samping judul */
 .card h3 input {
-    width: 115px !important;
-    height: 30px !important;
-    font-size: 11px;
     margin: 0;
-    padding: 0 5px;
-    background: #fff;
-    border: 1px solid var(--b);
+    font-size: 11px;
     border-radius: 8px;
-}
-
-/* Perbaikan flex untuk input agar padat */
-.flex-row { 
-    display: flex; 
-    gap: 8px; 
-    margin-bottom: 8px; 
+    padding: 0 5px;
+    border: 1px solid var(--b);
 }
 
     </style>
@@ -261,21 +251,33 @@
         const DEF_TARIF = { "Rekondisi Kempu":100000, "Rekondisi jerigen 18L":2000, "Rekondisi jerigen 5L":1000, "muat barang":600000, "bongkar barang":600000, "kirim minyak":150000, "pasang pangkalan":500000, "pasang agen":700000 };
 
         window.onload = () => {
-    // 1. Ambil Tanggal Hari Ini (Real-time)
+    // 1. Ambil Tanggal & Bulan Hari Ini (WIB)
     const t = new Date().toISOString().split('T')[0];
+    const bulan = t.slice(0, 7);
     
-    // 2. Set Nilai Input Otomatis
-    if(document.getElementById('stTgl')) document.getElementById('stTgl').value = t;
-    if(document.getElementById('absTgl')) document.getElementById('absTgl').value = t;
-    if(document.getElementById('fM')) document.getElementById('fM').value = t.slice(0, 7);
-    if(document.getElementById('fUang')) document.getElementById('fUang').value = t.slice(0, 7);
+    // 2. Set Nilai Input Tanggal Otomatis (YYYY-MM-DD)
+    const dateInputs = ['absTgl', 'stTgl', 'akTgl', 'blTgl'];
+    dateInputs.forEach(id => {
+        if(document.getElementById(id)) document.getElementById(id).value = t;
+    });
 
-    // 3. Sisanya adalah fungsi Firebase & Render yang sudah ada
+    // 3. Set Nilai Input Bulan Otomatis (YYYY-MM)
+    const monthInputs = ['fM', 'fUang', 'fMStok'];
+    monthInputs.forEach(id => {
+        if(document.getElementById(id)) document.getElementById(id).value = bulan;
+    });
+
+    // 4. Sinkronisasi Data Firebase
     db.ref('/').on('value', s => { 
         D = s.val() || {}; 
         initUI(); 
-        autoRender(); 
+        autoRender(); // Ini akan menjalankan renderAll, renderStok, dan renderGaji
     });
+
+    // 5. Listener Tambahan agar Laporan Stok Update saat Bulan diganti
+    if(document.getElementById('fMStok')) {
+        document.getElementById('fMStok').onchange = renderStok;
+    }
 };
 
         // ==========================================
