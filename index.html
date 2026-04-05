@@ -155,7 +155,11 @@
         
         <button class="btn" style="background:var(--p); margin-top: 5px;" onclick="saveSt()">PROSES STOK & CAIRKAN UPAH</button>
     </div>
-
+<div class="card">
+    <h3>
+        <span>📊 Laporan Stok Barang</span>
+        <input type="month" id="fMStok" style="width:110px; height:30px">
+    </h3>
     <div class="table-area" id="areaStok">
         <table>
             <thead>
@@ -186,36 +190,52 @@
 </div>
 
         <div id="tab-aktivitas" class="tab-content">
-            <div class="card" style="border-top: 5px solid var(--d)">
-                <h3>🛠️ Input Borongan (Chain Logic)</h3>
-                <p style="font-size: 10px; margin-bottom: 10px; color: var(--d)">*Hanya karyawan yang sudah absen masuk yang muncul di daftar.</p>
-                <div class="flex-row"><input type="date" id="akTgl" onchange="renderCheckKaryawan()"><select id="akJenis">
-                    <option value="Rekondisi Kempu">Rekon Kempu</option>
-                    <option value="Rekondisi jerigen 18L">Rekon 18L (Cair Pas Jual)</option>
-                    <option value="Rekondisi jerigen 5L">Rekon 5L (Cair Pas Jual)</option>
-                    <option value="muat barang">Muat</option>
-                    <option value="bongkar barang">Bongkar</option>
-                    <option value="kirim minyak">Kirim Minyak</option>
-                    <option value="pasang pangkalan">Pasang Pangkalan</option>
-                    <option value="pasang agen">Pasang Agen</option>
-                </select></div>
-                <div id="akKaryawan" class="check-grid"></div>
-                <input type="number" id="akQty" placeholder="Jumlah Output" style="margin-bottom:10px">
-                <button class="btn" style="background:var(--p)" onclick="saveAk()">SIMPAN KERJA</button>
-            </div>
-            <div class="card">
-                <h3>🛒 Input Belanja / Nota</h3>
-                <div class="flex-row"><input type="date" id="blTgl"><input type="text" id="blNama" placeholder="Nama Item"></div>
-                <div class="flex-row"><input type="number" id="blRp" placeholder="Rp"><input type="file" id="blImg" accept="image/*"></div>
-                <button class="btn" style="background:var(--d)" onclick="saveBl()">SIMPAN NOTA</button>
-            </div>
-            <div class="flex-row">
-                <button class="btn" style="background:#64748b" onclick="showLogs('aktivitas')">LOG KERJA</button>
-                <button class="btn" style="background:var(--w); color:black" onclick="showNotaLogs()">REKAP NOTA</button>
-                <button class="btn" style="background:#0ea5e9" onclick="genRekapKerja()">REKAP KERJA PDF</button>
-            </div>
+    <div class="card" style="border-top: 5px solid var(--d)">
+        <h3>
+            <span>🛠️ Input Borongan</span>
+            <input type="date" id="akTgl" onchange="renderCheckKaryawan()" style="width:115px; height:30px">
+        </h3>
+        <p style="font-size: 10px; margin-bottom: 10px; color: var(--d)">*Hanya karyawan yang sudah absen masuk yang muncul.</p>
+        
+        <div class="flex-row">
+            <select id="akJenis">
+                <option value="Rekondisi Kempu">Rekon Kempu</option>
+                <option value="Rekondisi jerigen 18L">Rekon 18L (Cair Pas Jual)</option>
+                <option value="Rekondisi jerigen 5L">Rekon 5L (Cair Pas Jual)</option>
+                <option value="muat barang">Muat</option>
+                <option value="bongkar barang">Bongkar</option>
+                <option value="kirim minyak">Kirim Minyak</option>
+                <option value="pasang pangkalan">Pasang Pangkalan</option>
+                <option value="pasang agen">Pasang Agen</option>
+            </select>
         </div>
 
+        <div id="akKaryawan" class="check-grid"></div>
+        <input type="number" id="akQty" placeholder="Jumlah Output" style="margin-bottom:10px">
+        <button class="btn" style="background:var(--p)" onclick="saveAk()">SIMPAN KERJA</button>
+    </div>
+
+    <div class="card">
+        <h3>
+            <span>🛒 Input Belanja / Nota</span>
+            <input type="date" id="blTgl" style="width:115px; height:30px">
+        </h3>
+        <div class="flex-row">
+            <input type="text" id="blNama" placeholder="Nama Item">
+        </div>
+        <div class="flex-row">
+            <input type="number" id="blRp" placeholder="Rp">
+            <input type="file" id="blImg" accept="image/*" style="padding-top: 8px;">
+        </div>
+        <button class="btn" style="background:var(--d)" onclick="saveBl()">SIMPAN NOTA</button>
+    </div>
+
+    <div class="flex-row">
+        <button class="btn" style="background:#64748b" onclick="showLogs('aktivitas')">LOG</button>
+        <button class="btn" style="background:var(--w); color:black" onclick="showNotaLogs()">NOTA</button>
+        <button class="btn" style="background:#0ea5e9" onclick="genRekapKerja()">PDF</button>
+    </div>
+</div>
         <div id="tab-gaji" class="tab-content">
             <div class="card" style="background:var(--p); color:white">
                 <h3>💰 Ringkasan Keuangan <input type="month" id="fUang" style="width:110px; height:30px"></h3>
