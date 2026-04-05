@@ -429,8 +429,8 @@
 <div class="card" style="margin-top: 15px; border: 1px solid #e2e8f0; background: white; padding: 10px;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
         <h3 style="margin:0; font-size: 14px; color: #475569;">📋 Laporan Kerja</h3>
-        <input type="month" id="filterBulanAk" onchange="renderLogHarian()" 
-               style="font-size: 11px; padding: 4px; border-radius: 5px; border: 1px solid #ddd;">
+<input type="date" id="filterTglAk" onchange="renderLogHarian()" 
+       style="font-size: 11px; padding: 4px; border-radius: 5px; border: 1px solid #ddd;">
     </div>
     
     <div style="max-height: 300px; overflow-y: auto;">
@@ -496,31 +496,62 @@
         const DEF_TARIF = { "Rekondisi Kempu":100000, "Rekondisi jerigen 18L":2000, "Rekondisi jerigen 5L":1000, "muat barang":600000, "bongkar barang":600000, "kirim minyak":150000, "pasang pangkalan":500000, "pasang agen":700000 };
 
         window.onload = () => {
-    // Ambil tanggal hari ini (YYYY-MM-DD)
+    // Ambil tanggal hari ini (Format: YYYY-MM-DD)
     const t = new Date().toISOString().split('T')[0];
     
-    // 1. Isi semua input TANGGAL (Harian)
-    ['absTgl', 'stTgl', 'akTgl', 'blTgl'].forEach(id => { 
-        if(document.getElementById(id)) document.getElementById(id).value = t; 
+    // 1. SET TANGGAL HARIAN & PASANG LISTENER SINKRONISASI
+    const idsHarian = ['absTgl', 'stTgl', 'akTgl', 'blTgl', 'filterTglAk'];
+    idsHarian.forEach(id => { 
+        const el = document.getElementById(id);
+        if(el) {
+            el.value = t; // Set ke hari ini
+
+            // KHUSUS: Jika akTgl (Input) diganti, filterTglAk (Laporan) harus ikut
+            if(id === 'akTgl') {
+                el.addEventListener('change', () => {
+                    const tglBaru = el.value;
+                    const fLog = document.getElementById('filterTglAk');
+                    if(fLog) {
+                        fLog.value = tglBaru;
+                        renderLogHarian(); // Langsung update tabel laporan
+                    }
+                    // Jika Anda punya fungsi render karyawan, panggil juga di sini
+                    if(typeof renderCheckKaryawan === 'function') renderCheckKaryawan();
+                });
+            }
+        }
     });
 
-    // 2. Isi semua input BULAN (Laporan) - Termasuk fStok yang baru
+    // 2. SET INPUT BULANAN (Laporan Gaji / Stok)
     ['fM', 'fUang', 'fStok'].forEach(id => { 
-        if(document.getElementById(id)) document.getElementById(id).value = t.slice(0, 7); 
+        const el = document.getElementById(id);
+        if(el) el.value = t.slice(0, 7); // Format: YYYY-MM
     });
 
-    // 3. Listener Real-time Firebase
+    // 3. LISTENER REAL-TIME FIREBASE (UTAMA)
     db.ref('/').on('value', s => { 
         D = s.val() || {}; 
-        initUI(); 
-        autoRender(); 
+        
+        // Jalankan fungsi-fungsi render utama
+        if(typeof initUI === 'function') initUI(); 
+        if(typeof autoRender === 'function') autoRender(); 
+        
+        // Pastikan tabel laporan aktivitas terbaru muncul saat aplikasi dibuka
+        renderLogHarian(); 
     });
 
-    // 4. Pasang Event Listener agar tabel otomatis update saat bulan diganti
-    if(document.getElementById('fM')) document.getElementById('fM').onchange = autoRender;
-    if(document.getElementById('fUang')) document.getElementById('fUang').onchange = autoRender;
-    if(document.getElementById('fStok')) document.getElementById('fStok').onchange = autoRender;
+    // 4. PASANG EVENT LISTENER UNTUK FILTER BULANAN LAINNYA
+    const idsBulan = ['fM', 'fUang', 'fStok'];
+    idsBulan.forEach(id => {
+        const el = document.getElementById(id);
+        if(el) {
+            el.onchange = () => {
+                if(typeof autoRender === 'function') autoRender();
+            };
+        }
+    });
 };
+
 
         // ==========================================
         // 2. GLOBAL UTILITIES (NAV, MODAL, EXPORT)
@@ -1009,8 +1040,7 @@ function toggleAksi() {
         // ==========================================
         // 5. TAB AKTIVITAS LOGIC (CHAIN LOGIC)
         // ==========================================
-// 1. SAVE AKTIVITAS 
- function saveAk() {
+function saveAk() {
     const tgl = document.getElementById('akTgl').value;
     const kat = document.getElementById('akKat').value;
     const j = document.getElementById('akJenis').value; 
@@ -1018,73 +1048,58 @@ function toggleAksi() {
     const q = parseInt(qRaw) || 0; 
     const p = Array.from(document.querySelectorAll('.chk-k:checked')).map(c => c.value);
 
-    // 1. Validasi Input Wajib
     if (!tgl) return alert("Pilih Tanggal!");
     if (!kat || !j) return alert("Pilih Kategori & Detail Aktivitas!");
     if (p.length === 0) return alert("Pilih minimal 1 Karyawan!");
 
-    // 2. LOGIKA PENGECEKAN STOK (Hanya untuk Barang Fisik)
-    // Kita buat daftar aktivitas yang butuh cek stok
     const butuhStok = ["Rekondisi Kempu", "Rekondisi Jerigen 18L", "Rekondisi Jerigen 5L"];
-
     if (butuhStok.includes(j)) {
         let stokMentah = 0;
-        let namaBarang = "";
+        if (j === "Rekondisi Kempu") stokMentah = D.stok?.kempu_mentah || 0;
+        else if (j === "Rekondisi Jerigen 18L") stokMentah = D.stok?.jeri18_mentah || 0;
+        else if (j === "Rekondisi Jerigen 5L") stokMentah = D.stok?.jeri5_mentah || 0;
 
-        if (j === "Rekondisi Kempu") {
-            stokMentah = D.stok?.kempu_mentah || 0;
-            namaBarang = "Kempu Mentah";
-        } else if (j === "Rekondisi Jerigen 18L") {
-            stokMentah = D.stok?.jeri18_mentah || 0;
-            namaBarang = "Jerigen 18L Mentah";
-        } else if (j === "Rekondisi Jerigen 5L") {
-            stokMentah = D.stok?.jeri5_mentah || 0;
-            namaBarang = "Jerigen 5L Mentah";
-        }
+        if (stokMentah <= 0) return alert(`Gagal! Stok Kosong (0).`);
+        if (q > stokMentah) return alert(`Gagal! Stok tidak cukup (Sisa: ${stokMentah})`);
+    }
 
-        // Jalankan Validasi
-        if (stokMentah <= 0) {
-            return alert(`Gagal! Stok ${namaBarang} Kosong (0). Tidak bisa melakukan aktivitas ini.`);
-        }
-        if (q > stokMentah) {
-            return alert(`Gagal! Stok ${namaBarang} tidak cukup (Sisa: ${stokMentah})`);
-        }
-    } 
-    // Jika tidak termasuk dalam 'butuhStok' (seperti Pasang Pangkalan), 
-    // sistem akan melewati pengecekan ini dan langsung lanjut ke simpan.
-
-    // 3. Proteksi Absensi
     let belumAbsen = p.filter(k => !D.absensi?.[tgl]?.[k] || !['Hadir','Telat','Lembur'].includes(D.absensi[tgl][k].j));
     if (belumAbsen.length > 0) return alert("Karyawan belum absen: " + belumAbsen.join(", "));
 
-    // 4. Simpan ke Firebase
+    // SIMPAN KE FIREBASE
     db.ref('aktivitas').push({ 
         t: tgl, 
         j: j, 
         q: q, 
         p: p, 
-        isCair: !j.toLowerCase().includes("jerigen") 
+        isCair: !j.toLowerCase().includes("jerigen"),
+        // TAMBAHKAN WAKTU DI SINI
+        waktu: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
     }).then(() => {
-        // RESET FORM & WARNA PLACEHOLDER
         document.getElementById('akQty').value = ""; 
         document.getElementById('akKat').value = ""; 
         const detail = document.getElementById('akJenis');
         detail.innerHTML = '<option value="" disabled selected hidden>Pilih Detail...</option>';
         detail.style.color = '#94a3b8'; 
-        
         document.querySelectorAll('.chk-k').forEach(c => c.checked = false); 
-        alert(`✅ Berhasil! Aktivitas '${j}' telah tersimpan.`);
+        alert(`✅ Berhasil Tersimpan!`);
+        
+        // PANGGIL RENDER AGAR TABEL UPDATE
+        renderLogHarian();
     });
 }
+
 
       
 // 2. RENDER AKTIVITAS 
 function renderLogHarian() {
-    const filter = document.getElementById('filterBulanAk').value; // format: 2026-04
+    // GANTI: Ambil dari filterTglAk (yang sudah sinkron dengan akTgl)
+    const tglFilter = document.getElementById('filterTglAk')?.value;
     
     db.ref('aktivitas').on('value', snapshot => {
         const data = snapshot.val();
         const tbody = document.getElementById('listLogAktivitas');
+        if (!tbody) return;
         if (!data) {
             tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">Data Kosong</td></tr>';
             return;
@@ -1092,21 +1107,26 @@ function renderLogHarian() {
 
         let items = Object.values(data).reverse();
 
-        // LOGIKA FILTER: Jika user pilih bulan, saring datanya
-        if (filter) {
-            items = items.filter(item => item.t && item.t.startsWith(filter));
+        // FILTER: Gunakan filter tanggal harian, bukan bulan lagi
+        if (tglFilter) {
+            items = items.filter(item => item.t === tglFilter);
         } else {
-            // Jika tidak filter, batasi cuma 15 data terbaru agar HP tidak lemot
             items = items.slice(0, 15);
         }
 
+        if (items.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:15px; color:#94a3b8;">Tidak ada aktivitas di tanggal ini.</td></tr>';
+            return;
+        }
+
         tbody.innerHTML = items.map(item => {
-            const tglShort = item.t ? item.t.split('-').reverse().slice(0,2).join('/') : '--/--';
+            // Kita pakai Jam saja karena kolom Tanggal sudah ada di filter atas
+            const jamTampil = item.waktu || '--:--';
             const qtyTampil = item.q === 0 ? '<b style="color:#f59e0b">PROSES</b>' : `<b>${item.q}</b>`;
 
             return `
                 <tr style="border-bottom: 1px solid #f8fafc;">
-                    <td style="padding: 8px 5px; color: #64748b; font-weight: bold;">${tglShort}</td>
+                    <td style="padding: 8px 5px; color: #94a3b8; font-family: monospace;">${jamTampil}</td>
                     <td style="padding: 8px 5px; font-weight: 600; color: #1e293b;">${item.p.join(", ")}</td>
                     <td style="padding: 8px 5px; color: #475569;">${item.j}</td>
                     <td style="padding: 8px 5px; text-align: center;">${qtyTampil}</td>
@@ -1115,6 +1135,7 @@ function renderLogHarian() {
         }).join('');
     });
 }
+
 
 
 function renderCheckKaryawan() {
