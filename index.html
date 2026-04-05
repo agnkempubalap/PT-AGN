@@ -550,20 +550,33 @@
         function removeItem(p,k) { if(confirm("Hapus?")) db.ref(`${p}/${k}`).remove().then(()=>closeMod()); }
         function expEx(id,n) { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById(id)), n+'.xlsx'); }
         function expPdf(id,n) { html2pdf().set({margin:5, filename:n+'.pdf', jsPDF:{orientation:'landscape'}}).from(document.getElementById(id)).save(); }
-        // 1. Letakkan showLogs di sini (Pastikan huruf 'f' kecil)
-function showLogs(t) { 
-    if (!D) return;
-    let l = Object.entries(D[t] || {}).reverse().slice(0, 30); 
+        function showLogs(t) { 
+    // Proteksi: Jika data D belum dimuat, jangan jalankan fungsi agar tidak blank
+    if (!D || !D[t]) {
+        return openMod("Riwayat", "<div style='padding:20px; text-align:center;'>Belum ada data riwayat.</div>");
+    }
+    
+    // Mengambil 30 data terbaru
+    let l = Object.entries(D[t]).reverse().slice(0, 30); 
+    
     let htmlContent = l.map(x => {
         const item = x[1];
-        const deskripsi = item.b ? `${item.b} (${item.q} ${item.sat||''}) - ${item.ak||''}` : `${item.j} (${item.q})`;
-        return `<div style="font-size:11px; padding:8px 5px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
+        // Deskripsi: Jika ada item.b (barang) = Stok, Jika tidak = Aktivitas
+        const deskripsi = item.b 
+            ? `${item.b} (${item.q} ${item.sat || ''}) - ${item.ak || ''}` 
+            : `${item.j} (${item.q})`;
+        
+        // Gunakan backtick (`) untuk membungkus HTML di dalam map
+        return `
+        <div style="font-size:11px; padding:8px 5px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center; color:black;">
             <span><b style="color:#64748b;">[${item.t || '-'}]</b> ${deskripsi}</span> 
-            <b onclick="removeItem('${t}','${x[0]}')" style="color:red; cursor:pointer; font-size:16px; padding:0 5px;">×</b>
+            <b onclick="removeItem('${t}','${x[0]}')" style="color:red; cursor:pointer; font-size:16px; padding:0 10px;">×</b>
         </div>`;
     }).join('');
-    openMod("Riwayat Aktivitas", htmlContent || "<div style='padding:20px; color:#94a3b8; text-align:center;'>Belum ada riwayat</div>"); 
+
+    openMod("Riwayat Aktivitas", htmlContent); 
 }
+
 
         // ==========================================
         // 3. TAB ABSEN LOGIC
