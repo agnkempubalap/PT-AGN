@@ -823,43 +823,57 @@ function renderStok() {
         let ktr = (s.ak + s.ik) - s.rk;
         let rdy = (s.ab + s.ib + s.rk) - (s.jm + s.ju);
 
-        // --- FUNGSI TAMPIL PREMIUM ---
-        const tampil = (val, type = 'normal', forceStrip = false) => {
-            if (forceStrip) return `<span style="color:#e2e8f0;">-</span>`;
+        // --- FUNGSI TAMPIL PREMIUM REVISI (SATUAN ANTI-HILANG) ---
+        const tampil = (val, forceStrip = false) => {
+            if (forceStrip) return `<span style="color:#e2e8f0; font-weight:normal;">-</span>`;
             const v = val || 0;
             
             if (!isCair) {
-                // Style Unit (Kapsul)
-                let color = v > 0 ? '#475569' : '#cbd5e1';
-                return `<span style="font-size:11px; color:${color}; font-weight:600;">${v}<small style="font-size:8px; margin-left:1px; font-weight:normal;">U</small></span>`;
+                // Style Unit (Tegas & Jelas)
+                let color = v > 0 ? '#334155' : '#cbd5e1';
+                return `<div style="color:${color}; font-weight:700; font-size:12px;">${v}<span style="font-size:9px; font-weight:400; margin-left:2px;">Unit</span></div>`;
             } else {
-                // Style Diagonal (Modern Flex)
+                // Style Diagonal (Modern Flex dengan Satuan Terbaca)
                 let kg = (v * BJ).toFixed(1);
-                return `<div style="display:inline-flex; align-items:center; gap:2px; font-family:sans-serif;">` +
-                         `<span style="font-size:10px; color:#3b82f6; font-weight:700;">${v}</span>` +
-                         `<span style="color:#cbd5e1; font-size:10px; font-weight:light;">/</span>` +
-                         `<span style="font-size:10px; color:#1e293b; font-weight:900;">${kg}</span>` +
+                return `<div style="display:inline-flex; align-items:center; line-height:1.1;">` +
+                         `<div style="display:flex; flex-direction:column; align-items:flex-end;">` +
+                            `<span style="font-size:10px; color:#2563eb; font-weight:700;">${v}<span style="font-size:8px; font-weight:400;">Lt</span></span>` +
+                         `</div>` +
+                         `<span style="color:#cbd5e1; font-size:14px; margin:0 2px; font-weight:300;">/</span>` +
+                         `<div style="display:flex; flex-direction:column; align-items:flex-start;">` +
+                            `<span style="font-size:10px; color:#1e293b; font-weight:800;">${kg}<span style="font-size:8px; font-weight:400;">Kg</span></span>` +
+                         `</div>` +
                        `</div>`;
             }
         };
 
         h += `<tr style="border-bottom: 1px solid #f1f5f9;">
-            <td class="sticky-col" style="font-weight:700; color:#334155; font-size:12px; background:#fff; border-right:2px solid #f8fafc;">${b}</td>
-            <td style="text-align:center; background:#fafafa;">${tampil(s.ak, 'normal', isCair)}</td>
+            <td class="sticky-col" style="font-weight:700; color:#334155; font-size:12px; background:#fff; border-right:2px solid #f8fafc; padding:10px 8px;">${b}</td>
+            
+            <td style="text-align:center; background:#fafafa;">${tampil(s.ak, isCair)}</td>
             <td style="text-align:center;">${tampil(s.ab)}</td>
-            <td style="text-align:center; background:#fafafa;">${tampil(s.ik, 'normal', isCair)}</td>
+            
+            <td style="text-align:center; background:#fafafa;">${tampil(s.ik, isCair)}</td>
             <td style="text-align:center;">${tampil(s.ib)}</td>
-            <td style="text-align:center; background:#fff1f2; color:#e11d48; font-weight:bold;">${tampil(s.rej)}</td>
-            <td style="text-align:center;">${tampil(s.rk, 'normal', isCair)}</td>
+            
+            <td style="text-align:center; background:#fff1f2; color:#e11d48;">${tampil(s.rej)}</td>
+            
+            <td style="text-align:center; background:#fafafa;">${tampil(s.rk, isCair)}</td>
+            
             <td style="text-align:center;">${tampil(s.jm)}</td>
             <td style="text-align:center;">${tampil(s.ju)}</td>
-            <td style="text-align:center; background:#fffbeb; color:#92400e; font-weight:800; border-left:1px solid #fef3c7;">${tampil(ktr, 'normal', isCair)}</td>
-            <td style="text-align:center; background:#f0fdf4; color:#166534; font-weight:800;">${tampil(rdy)}</td>
-            <td style="text-align:center; background:#2563eb; color:#ffffff; font-weight:900; box-shadow: inset 0 0 10px rgba(0,0,0,0.1);">${tampil(ktr+rdy, 'normal', isCair)}</td>
+            
+            <td style="text-align:center; background:#fffbeb; color:#92400e; border-left:1px solid #fef3c7;">${tampil(ktr, isCair)}</td>
+            <td style="text-align:center; background:#f0fdf4; color:#166534;">${tampil(rdy)}</td>
+            
+            <td style="text-align:center; background:#2563eb; color:#ffffff; font-weight:900;">
+                <div style="color:white !important;">${tampil(ktr+rdy, isCair)}</div>
+            </td>
         </tr>`;
     }); 
     target.innerHTML = h;
 }
+
 
         // ==========================================
         // 5. TAB AKTIVITAS LOGIC (CHAIN LOGIC)
