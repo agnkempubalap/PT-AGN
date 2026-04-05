@@ -602,8 +602,44 @@ db.ref('master_karyawan').on('value', snapshot => {
         function closeMod() { document.getElementById('modalUni').style.display='none'; }
         function addItem(p,id) { const v=document.getElementById(id).value; if(v) db.ref(p).push(v).then(()=>document.getElementById(id).value=""); }
         function removeItem(p,k) { if(confirm("Hapus?")) db.ref(`${p}/${k}`).remove().then(()=>closeMod()); }
-        function expEx(id,n) { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById(id)), n+'.xlsx'); }
-        function expPdf(id,n) { html2pdf().set({margin:5, filename:n+'.pdf', jsPDF:{orientation:'landscape'}}).from(document.getElementById(id)).save(); }
+        // 1. Fungsi Excel yang Lebih Stabil
+function expEx(id, n) {
+    try {
+        const table = document.getElementById(id);
+        if (!table) return alert("Tabel tidak ditemukan!");
+        
+        // Buat workbook baru setiap kali klik
+        const wb = XLSX.utils.table_to_book(table, { sheet: "Laporan" });
+        XLSX.writeFile(wb, n + '.xlsx');
+        
+        console.log("Excel Berhasil diunduh");
+    } catch (err) {
+        console.error("Gagal Ekspor Excel:", err);
+        alert("Gagal membuat Excel, coba lagi.");
+    }
+}
+
+// Fungsi PDF dengan Pembersihan Memori (html2pdf)
+function expPdf(id, n) {
+    const element = document.getElementById(id);
+    if (!element) return alert("Elemen tidak ditemukan!");
+
+    const opt = {
+        margin: 5,
+        filename: n + '.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+    };
+
+    // Gunakan promise agar prosesnya bersih setiap kali jalan
+    html2pdf().set(opt).from(element).save().then(() => {
+        console.log("PDF Berhasil dibuat");
+    }).catch(err => {
+        console.error("Gagal Ekspor PDF:", err);
+    });
+}
+
         function showLogs(t) {
             if (!D || !D[t]) return openMod("Riwayat", "<div style='padding:20px;text-align:center;'>Belum ada data.</div>");
             let l = Object.entries(D[t]).reverse().slice(0, 30);
