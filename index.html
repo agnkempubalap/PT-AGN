@@ -428,29 +428,26 @@
 
 <div class="card" style="margin-top: 15px; border: 1px solid #e2e8f0; background: white; padding: 10px;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-        <h3 style="margin:0; font-size: 14px; color: #475569;">📋 Laporan Aktivitas</h3>
-        <span style="font-size: 9px; color: #94a3b8; font-weight: bold;">LIVE UPDATE</span>
+        <h3 style="margin:0; font-size: 14px; color: #475569;">📋 Laporan Kerja</h3>
+        <input type="month" id="filterBulanAk" onchange="renderLogHarian()" 
+               style="font-size: 11px; padding: 4px; border-radius: 5px; border: 1px solid #ddd;">
     </div>
     
-    <div style="max-height: 250px; overflow-y: auto;">
-        <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+    <div style="max-height: 300px; overflow-y: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
             <thead style="position: sticky; top: 0; background: white; z-index: 1;">
                 <tr style="text-align: left; border-bottom: 2px solid #f1f5f9; color: #64748b;">
-                    <th style="padding: 5px;">JAM</th>
+                    <th style="padding: 5px;">TGL</th>
                     <th style="padding: 5px;">KARYAWAN</th>
                     <th style="padding: 5px;">PEKERJAAN</th>
                     <th style="padding: 5px; text-align: center;">QTY</th>
                 </tr>
             </thead>
-            <tbody id="listLogAktivitas">
-                </tbody>
+            <tbody id="listLogAktivitas"></tbody>
         </table>
     </div>
 </div>
 
-<div style="margin-top: 15px;">
-    <button class="btn" style="background: var(--d); width: 100%; font-weight: bold; padding: 12px;" onclick="genRekapKerja()">(PDF)</button>
-</div>
 
 
        <div id="tab-gaji" class="tab-content">
@@ -1083,28 +1080,34 @@ function toggleAksi() {
       
 // 2. RENDER AKTIVITAS 
 function renderLogHarian() {
-    // Kita ambil 15 data terakhir agar tabel tetap ringan di Android
-    db.ref('aktivitas').limitToLast(15).on('value', snapshot => {
+    const filter = document.getElementById('filterBulanAk').value; // format: 2026-04
+    
+    db.ref('aktivitas').on('value', snapshot => {
         const data = snapshot.val();
         const tbody = document.getElementById('listLogAktivitas');
-        
         if (!data) {
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:#94a3b8;">Belum ada aktivitas.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">Data Kosong</td></tr>';
             return;
         }
 
-        // Urutkan: Yang baru diinput muncul paling atas
-        const items = Object.values(data).reverse();
+        let items = Object.values(data).reverse();
+
+        // LOGIKA FILTER: Jika user pilih bulan, saring datanya
+        if (filter) {
+            items = items.filter(item => item.t && item.t.startsWith(filter));
+        } else {
+            // Jika tidak filter, batasi cuma 15 data terbaru agar HP tidak lemot
+            items = items.slice(0, 15);
+        }
 
         tbody.innerHTML = items.map(item => {
-            const namaKaryawan = item.p.join(", ");
-            // Tampilkan "PROSES" jika Qty 0
+            const tglShort = item.t ? item.t.split('-').reverse().slice(0,2).join('/') : '--/--';
             const qtyTampil = item.q === 0 ? '<b style="color:#f59e0b">PROSES</b>' : `<b>${item.q}</b>`;
 
             return `
                 <tr style="border-bottom: 1px solid #f8fafc;">
-                    <td style="padding: 8px 5px; color: #94a3b8; font-family: monospace;">${item.waktu || '--:--'}</td>
-                    <td style="padding: 8px 5px; font-weight: 600; color: #1e293b; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${namaKaryawan}</td>
+                    <td style="padding: 8px 5px; color: #64748b; font-weight: bold;">${tglShort}</td>
+                    <td style="padding: 8px 5px; font-weight: 600; color: #1e293b;">${item.p.join(", ")}</td>
                     <td style="padding: 8px 5px; color: #475569;">${item.j}</td>
                     <td style="padding: 8px 5px; text-align: center;">${qtyTampil}</td>
                 </tr>
@@ -1112,6 +1115,7 @@ function renderLogHarian() {
         }).join('');
     });
 }
+
 
 function renderCheckKaryawan() {
     const tgl = document.getElementById('akTgl').value;
