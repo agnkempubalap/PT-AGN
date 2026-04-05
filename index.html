@@ -317,36 +317,36 @@
     <h3>📥 Logistik & Penjualan <input type="date" id="stTgl"></h3>
     
     <div class="flex-row">
-        <select id="stBrg" onchange="toggleSatuan()"></select>
-        <input type="number" id="stQty" placeholder="Jumlah">
+        <select id="stBrg" onchange="toggleSatuan()" style="flex: 2;"></select>
+        <input type="number" id="stQty" placeholder="Jumlah" style="flex: 1;">
     </div>
 
     <div class="flex-row" style="gap: 8px;">
         <div id="boxSatuan" style="display:none; flex: 1;">
-            <select id="stSatuan" style="width: 100%; background: #fffbe6;">
+            <select id="stSatuan" style="width: 100%;">
                 <option value="Liter">Liter (Lt)</option>
-                <option value="Kilogram">Kilogram (Kg)</option>
+                <option value="Kilogram">Kg</option>
             </select>
         </div>
 
-        <select id="stAksi" onchange="toggleAksi()" style="flex: 1.5; background: #eff6ff; border: 1px solid var(--p); font-weight: 800;">
+        <select id="stAksi" onchange="toggleAksi()" style="flex: 1.5; font-weight: bold;">
             <option value="Masuk">Masuk</option>
             <option value="Rekondisi">Rekon</option>
             <option value="Jual">Jual</option>
         </select>
 
-        <div id="boxJual" style="display:none; flex: 1;">
-            <select id="stSubAksi" style="width: 100%; border: 2px solid var(--s); background: #f0fdf4;">
+        <div id="boxSubAksi" style="display:none; flex: 1;">
+            <select id="stSubAksi" style="width: 100%;">
                 <option value="Jual Mitra">Mitra</option>
                 <option value="Jual Umum">Umum</option>
             </select>
         </div>
     </div>
 
-    <div id="boxDetail" class="flex-row" style="display: none; margin-top: 8px;">
+    <div id="boxDetail" class="flex-row" style="display: none; margin-top: 8px; gap: 8px;">
         <select id="stKon" style="flex: 1;">
             <option value="Bekas">Kotor</option>
-            <option value="Baru">Rdy</option>
+            <option value="Baru">Ready</option>
         </select>
         <select id="stQC" style="flex: 1;">
             <option value="Accepted">Accepted</option>
@@ -354,11 +354,10 @@
         </select>
     </div>
 
-    <button class="btn" style="background:var(--s); color:white; margin-top: 10px; font-weight:bold;" onclick="saveSt()">
+    <button class="btn" style="background:var(--s); color:white; margin-top: 10px; font-weight:bold; width: 100%;" onclick="saveSt()">
         PROSES STOK & UPDATE
     </button>
 </div>
-
 
             <div class="card">
     <h3>📊 Laporan Stok <input type="month" id="fStok" onchange="autoRender()"></h3>
@@ -726,37 +725,34 @@ function saveL() {
 function saveSt() {
     const t = document.getElementById('stTgl').value;
     const b = document.getElementById('stBrg').value;
-    const q = parseInt(document.getElementById('stQty').value);
+    const q = parseFloat(document.getElementById('stQty').value); // Gunakan parseFloat untuk Liter
     const aksiUtama = document.getElementById('stAksi').value;
     
+    if(!b || !q) return alert("Barang atau Jumlah belum diisi!");
+
     // Ambil nilai akhir (Jika 'Jual', ambil dari stSubAksi)
     const akFinal = (aksiUtama === "Jual") 
                     ? document.getElementById('stSubAksi').value 
                     : aksiUtama;
 
     const isCair = b.toLowerCase().includes('minyak') || b.toLowerCase().includes('cair');
-    const boxDetail = document.getElementById('boxDetail');
-    const isVisibleDetail = (boxDetail && boxDetail.style.display === 'flex');
     
-    // Logika Status Otomatis
+    // Logika Status Otomatis & Detail
     let konFinal, qcFinal;
-    if (isCair && aksiUtama === "Masuk") {
-        konFinal = "Baru";
+    if (isCair) {
+        konFinal = "Baru"; // Cairan tidak ada bekas/kotor secara sistem
         qcFinal = "Accepted";
     } else {
-        konFinal = isVisibleDetail ? document.getElementById('stKon').value : 'Baru';
-        qcFinal = isVisibleDetail ? document.getElementById('stQC').value : 'Accepted';
+        konFinal = document.getElementById('stKon').value;
+        qcFinal = document.getElementById('stQC').value;
     }
 
-    const boxSat = document.getElementById('boxSatuan');
-    const satFinal = (boxSat && boxSat.style.display !== 'none') ? document.getElementById('stSatuan').value : '';
-
-    if(!q) return alert("Jumlah (Qty) belum diisi!");
+    const satFinal = isCair ? document.getElementById('stSatuan').value : 'Unit';
 
     db.ref('stok_logs').push({ 
         t, b, q, kon: konFinal, qc: qcFinal, ak: akFinal, sat: satFinal 
     }).then(() => {
-        // Logika Pencairan Upah Jerigen
+        // Logika Pencairan Upah Jerigen (Hanya jika Kempu Balap mengelola upah jerigen)
         if(akFinal.includes("Jual") && b.toLowerCase().includes("jerigen")) {
             let sisaJual = q;
             let logs = Object.entries(D.aktivitas || {})
@@ -776,9 +772,10 @@ function saveSt() {
         // --- RESET FORM ---
         document.getElementById('stQty').value = ""; 
         document.getElementById('stAksi').value = "Masuk"; 
-        toggleSatuan(); // Menutup kembali dropdown tambahan & reset rekon
+        toggleSatuan(); // Reset tampilan ke default
         
         alert("✅ Berhasil! Stok telah diperbarui."); 
+        if(typeof renderStok === 'function') renderStok(); // Refresh tabel jika fungsi tersedia
     });
 }
 
@@ -823,17 +820,13 @@ function renderStok() {
         let ktr = (s.ak + s.ik) - s.rk;
         let rdy = (s.ab + s.ib + s.rk) - (s.jm + s.ju);
 
-        // --- FUNGSI TAMPIL PREMIUM REVISI (SATUAN ANTI-HILANG) ---
         const tampil = (val, forceStrip = false) => {
             if (forceStrip) return `<span style="color:#e2e8f0; font-weight:normal;">-</span>`;
             const v = val || 0;
-            
             if (!isCair) {
-                // Style Unit (Tegas & Jelas)
                 let color = v > 0 ? '#334155' : '#cbd5e1';
                 return `<div style="color:${color}; font-weight:700; font-size:12px;">${v}<span style="font-size:9px; font-weight:400; margin-left:2px;">Unit</span></div>`;
             } else {
-                // Style Diagonal (Modern Flex dengan Satuan Terbaca)
                 let kg = (v * BJ).toFixed(1);
                 return `<div style="display:inline-flex; align-items:center; line-height:1.1;">` +
                          `<div style="display:flex; flex-direction:column; align-items:flex-end;">` +
@@ -849,23 +842,16 @@ function renderStok() {
 
         h += `<tr style="border-bottom: 1px solid #f1f5f9;">
             <td class="sticky-col" style="font-weight:700; color:#334155; font-size:12px; background:#fff; border-right:2px solid #f8fafc; padding:10px 8px;">${b}</td>
-            
             <td style="text-align:center; background:#fafafa;">${tampil(s.ak, isCair)}</td>
             <td style="text-align:center;">${tampil(s.ab)}</td>
-            
             <td style="text-align:center; background:#fafafa;">${tampil(s.ik, isCair)}</td>
             <td style="text-align:center;">${tampil(s.ib)}</td>
-            
-            <td style="text-align:center; background:#fff1f2; color:#e11d48;">${tampil(s.rej)}</td>
-            
+            <td style="text-align:center; background:#fff1f2; color:#e11d48;">${tampil(s.rej, isCair)}</td>
             <td style="text-align:center; background:#fafafa;">${tampil(s.rk, isCair)}</td>
-            
             <td style="text-align:center;">${tampil(s.jm)}</td>
             <td style="text-align:center;">${tampil(s.ju)}</td>
-            
             <td style="text-align:center; background:#fffbeb; color:#92400e; border-left:1px solid #fef3c7;">${tampil(ktr, isCair)}</td>
             <td style="text-align:center; background:#f0fdf4; color:#166534;">${tampil(rdy)}</td>
-            
             <td style="text-align:center; background:#2563eb; color:#ffffff; font-weight:900;">
                 <div style="color:white !important;">${tampil(ktr+rdy, isCair)}</div>
             </td>
@@ -885,41 +871,27 @@ function toggleSatuan() {
     const optRekon = aksiDropdown ? aksiDropdown.querySelector("option[value='Rekondisi']") : null;
 
     if (isCair) {
-        // Jika Minyak: Munculkan pilihan satuan, sembunyikan detail fisik (Kon/QC)
         if(boxSat) boxSat.style.display = 'flex';
         if(boxDet) boxDet.style.display = 'none';
         if(optRekon) optRekon.style.display = 'none';
-        
-        // Paksa pindah dari Rekondisi jika terpilih
         if(aksiDropdown && aksiDropdown.value === "Rekondisi") aksiDropdown.value = "Masuk";
     } else {
-        // Jika Unit (Kempu/Jerigen): Sembunyikan satuan, munculkan detail fisik
         if(boxSat) boxSat.style.display = 'none';
         if(boxDet) boxDet.style.display = 'flex';
         if(optRekon) optRekon.style.display = 'block';
     }
-    
-    // PENTING: Jalankan toggleAksi agar Sub-Aksi (Mitra/Umum) sinkron
     toggleAksi(); 
 }
 
-// 4. FUNGSI TOGGLE AKSI (toggleAksi) - Memunculkan Dropdown Mitra/Umum
+// 4. FUNGSI TOGGLE AKSI (toggleAksi)
 function toggleAksi() {
     const aksi = document.getElementById('stAksi').value;
-    const boxSub = document.getElementById('boxSubAksi'); // Ini ID pembungkus dropdown Mitra & Umum
+    const boxSub = document.getElementById('boxSubAksi'); // Sesuai ID di HTML Anda
 
     if (boxSub) {
-        if (aksi === "Jual") {
-            boxSub.style.display = 'flex'; // Menampilkan dropdown Mitra/Umum
-        } else {
-            boxSub.style.display = 'none'; // Menyembunyikan jika bukan 'Jual'
-        }
+        boxSub.style.display = (aksi === "Jual") ? 'flex' : 'none';
     }
 }
-
-// Tambahkan Event Listener (Pasang satu kali saja di aplikasi)
-document.getElementById('stBrg').addEventListener('change', toggleSatuan);
-document.getElementById('stAksi').addEventListener('change', toggleAksi);
 
 
         // ==========================================
