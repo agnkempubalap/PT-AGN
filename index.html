@@ -295,13 +295,28 @@
             <div class="card">
                 <h3>📊 Laporan Absen <input type="month" id="fM"></h3>
                 <div class="table-area" id="areaAbsen"><table><thead id="thA"></thead><tbody id="tbA"></tbody></table></div>
-                <div style="display: flex; flex-direction: row; gap: 5px; margin: 10px 0; width: 100%;">
-                    <button class="btn" style="background:var(--w); color:black; flex: 1; margin:0; padding: 10px 2px; min-width: 0;" onclick="openLiburMod()">⚙️ LIBUR</button>
-                    <button class="btn" style="background:var(--s); flex: 1; margin:0; padding: 10px 2px; min-width: 0;" onclick="expEx('areaAbsen','Absen')">EXCEL</button>
-                    <button class="btn" style="background:var(--d); flex: 1; margin:0; padding: 10px 2px; min-width: 0;" onclick="expPdf('areaAbsen','Absensi_Bulanan')">PDF</button>
-                </div>
-            </div>
-        </div>
+                <div class="flex-row" style="display: flex; flex-direction: row; gap: 8px; margin: 15px 0; justify-content: flex-start;">
+    
+    <button class="btn" 
+            style="background:var(--w); color:black; flex: 1; max-width: 120px; padding: 10px 5px; min-width: 80px;" 
+            onclick="openLiburMod()">
+        ⚙️ LIBUR
+    </button>
+    
+    <button class="btn" 
+            style="background:var(--s); flex: 1; max-width: 120px; padding: 10px 5px; min-width: 80px;" 
+            onclick="expEx('areaAbsen','Absen')">
+        EXCEL
+    </button>
+    
+    <button class="btn" 
+            style="background:var(--d); flex: 1; max-width: 120px; padding: 10px 5px; min-width: 80px;" 
+            onclick="expPdf('areaAbsen','Absensi_Bulanan')">
+        PDF
+    </button>
+</div>
+   </div>
+       </div>
 
         <div id="tab-stok" class="tab-content">
             <div class="card">
@@ -379,11 +394,18 @@
         </table>
     </div>
     
-    <div class="flex-row" style="margin-top: 10px;">
-        <button class="btn" style="background:var(--s);" onclick="expEx('areaStok','Stok')">EXCEL</button>
-        <button class="btn" style="background:var(--d);" onclick="expPdf('areaStok','Laporan_Stok')">PDF</button>
-        <button class="btn" style="background:#64748b;" onclick="showLogs('stok_logs')">LOG</button>
-    </div>
+    <div class="flex-row" style="display: flex; flex-direction: row; gap: 8px; margin: 15px 0; justify-content: flex-start;">
+    
+    <button class="btn" 
+            style="background:#166534; color:white; flex: 1; max-width: 120px; padding: 10px 5px; min-width: 80px;" 
+            onclick="exportStokExcel()">EXCEL
+    </button>
+    
+    <button class="btn" 
+            style="background:var(--d); color:white; flex: 1; max-width: 120px; padding: 10px 5px; min-width: 80px;" 
+            onclick="exportStokPDF()">PDF
+    </button>
+</div>
 </div>
 </div>
 
