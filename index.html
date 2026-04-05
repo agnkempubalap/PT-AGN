@@ -575,38 +575,49 @@
     const listK = document.getElementById('listK'), selK = document.getElementById('selK');
     const listB = document.getElementById('listB'), stBrg = document.getElementById('stBrg');
     
-    // 1. RENDER MASTER KARYAWAN (Update agar masuk ke Filter Rekap)
+    // 1. RENDER MASTER KARYAWAN (Update Sinkron dengan Filter Rekap & Styling)
 if (D.master_karyawan) {
     const K = Object.entries(D.master_karyawan);
     
     // Render untuk daftar di menu setting (dengan tombol x merah)
-    if (listK) {
+    if (typeof listK !== 'undefined' && listK) {
         listK.innerHTML = K.map(k => `
-            <span style="background:#fff; border:1px solid #ddd; padding:6px; border-radius:8px; font-size:11px">
-                ${k[1]} <b onclick="removeItem('master_karyawan','${k[0]}')" style="color:red; cursor:pointer">×</b>
+            <span style="background:#fff; border:1px solid #ddd; padding:6px; border-radius:8px; font-size:11px; display:inline-block; margin:2px;">
+                ${k[1]} <b onclick="removeItem('master_karyawan','${k[0]}')" style="color:red; cursor:pointer; margin-left:5px;">×</b>
             </span>`).join('');
     }
 
-    // Render untuk dropdown Absensi/Gaji
-    if (selK) {
+    // Render untuk dropdown Absensi/Gaji (selK)
+    if (typeof selK !== 'undefined' && selK) {
         selK.innerHTML = K.map(k => `<option value="${k[1]}">${k[1]}</option>`).join('');
     }
 
-    // --- TAMBAHAN PENTING UNTUK REKAP AKTIVITAS ---
+    // --- PERBAIKAN UNTUK FILTER REKAP AKTIVITAS ---
     const filterNama = document.getElementById('filterNamaAk');
     if (filterNama) {
-        // Simpan nilai yang sedang dipilih agar tidak reset ke Global saat data update
         const currentVal = filterNama.value; 
         
-        // Isi ulang dropdown, pastikan "Global" tetap di paling atas
-        filterNama.innerHTML = '<option value="">Global</option>' + 
-            K.map(k => `<option value="${k[1]}">${k[1]}</option>`).join('');
+        // Buat HTML Dropdown: Global pakai warna abu-abu (style inline)
+        let optionsHtml = '<option value="" style="color:#94a3b8">Global (Semua)</option>';
         
-        // Kembalikan pilihan user sebelumnya
-        filterNama.value = currentVal; 
+        // Tambahkan daftar nama karyawan
+        optionsHtml += K.sort((a, b) => a[1].localeCompare(b[1])).map(k => 
+            `<option value="${k[1]}" style="color:#1e293b">${k[1]}</option>`
+        ).join('');
+        
+        filterNama.innerHTML = optionsHtml;
+        
+        // Kembalikan pilihan user sebelumnya agar tidak lompat saat data update
+        filterNama.value = currentVal;
+
+        // LOGIKA WARNA: Atur warna teks dropdown berdasarkan pilihan saat ini
+        if (filterNama.value === "") {
+            filterNama.style.color = "#94a3b8"; // Warna bayangan (Abu-abu)
+        } else {
+            filterNama.style.color = "#1e293b"; // Warna isi (Hitam)
+        }
     }
 }
-
 
     // 2. RENDER MASTER BARANG (Untuk Tab Stok)
     if (D.master_barang) {
