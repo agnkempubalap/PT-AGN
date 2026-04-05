@@ -650,9 +650,9 @@ function renderAll() {
 
 
         function cellMod(d, k) {
-    let a = D.absensi?.[d]?.[k], aks = Object.values(D.aktivitas || {}).filter(x => x.t === d && x.p?.includes(k));
+    let a = D.absensi?.[d]?.[k];
     
-    // Sinkronisasi Warna
+    // Sinkronisasi Warna Status
     let bg = "#94a3b8", s = a?.j || "-";
     if (s === "Hadir") bg = "#22c55e";      
     else if (s === "Telat") bg = "#f97316";  
@@ -660,26 +660,29 @@ function renderAll() {
     else if (s === "Izin") bg = "#0ea5e9";   
     else if (s === "Alpa") bg = "#ef4444";   
 
-    let ket = a?.ket ? `<div style="margin-top:8px; padding:8px; background:#f1f5f9; border-radius:5px; font-size:11px; font-style:italic;">Ket: ${a.ket}</div>` : "";
+    // Keterangan Izin/Alpa jika ada
+    let ket = a?.ket ? `<div style="margin-top:8px; padding:8px; background:#f1f5f9; border-radius:5px; font-size:11px; font-style:italic; color:#334155;">Ket: ${a.ket}</div>` : "";
 
-    openMod(`Detail ${k} (${d})`, `
-        <div style="font-size:13px">
-            <p style="display:flex; align-items:center; gap:8px">
+    openMod(`Detail Absen: ${k}`, `
+        <div style="font-size:13px; color:#334155;">
+            <p style="margin-bottom:10px;"><b>Tanggal:</b> ${d}</p>
+            <p style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
                 <b>Status:</b> 
                 <span style="background:${bg} !important; color:white; padding:2px 10px; border-radius:10px; font-size:10px; font-weight:bold; text-transform:uppercase;">${s}</span>
             </p>
-            <p><b>Jam:</b> ${a?.jam || '-'} s/d ${a?.jamOut || '-'}</p>${ket}
-            <hr><b>Pekerjaan:</b>
-            <ul style="padding-left:15px; margin:5px 0">${aks.map(x => `<li>${x.j} (${x.q}) ${x.isCair ? '✅' : '⏳'}</li>`).join('') || '<li>-</li>'}</ul>
+            <p style="margin-bottom:5px;"><b>Jam Masuk:</b> ${a?.jam || '-'}</p>
+            <p style="margin-bottom:5px;"><b>Jam Pulang:</b> ${a?.jamOut || '-'}</p>
+            ${ket}
             
-            <button class="btn" style="background:#ef4444; width:100%; color:white; font-weight:bold; margin-top:10px;" 
-                onclick="if(confirm('Hapus absen ${k}?')){ db.ref('absensi/${d}/${k}').remove(); closeMod(); }">
-                🗑️ HAPUS ABSEN
-            </button>
+            <div style="margin-top:20px; border-top:1px solid #eee; pt:15px;">
+                <button class="btn" style="background:#ef4444; width:100%; color:white; font-weight:bold;" 
+                    onclick="if(confirm('Hapus data absen ${k} pada tanggal ${d}?')){ db.ref('absensi/${d}/${k}').remove(); closeMod(); }">
+                    🗑️ HAPUS ABSENSI
+                </button>
+            </div>
         </div>
     `);
 }
-
 
 
 function openLiburMod() {
