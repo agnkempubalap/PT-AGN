@@ -620,24 +620,25 @@ function expEx(id, n) {
 }
 
 // Fungsi PDF dengan Pembersihan Memori (html2pdf)
+function expEx(id, n) {
+    const table = document.getElementById(id);
+    if (!table) return alert("Tabel tidak ditemukan!");
+    const wb = XLSX.utils.table_to_book(table, { sheet: "Laporan" });
+    XLSX.writeFile(wb, n + '.xlsx');
+}
+
 function expPdf(id, n) {
     const element = document.getElementById(id);
     if (!element) return alert("Elemen tidak ditemukan!");
-
     const opt = {
         margin: 5,
         filename: n + '.pdf',
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, logging: false },
+        html2canvas: { scale: 2 },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
     };
-
-    // Gunakan promise agar prosesnya bersih setiap kali jalan
-    html2pdf().set(opt).from(element).save().then(() => {
-        console.log("PDF Berhasil dibuat");
-    }).catch(err => {
-        console.error("Gagal Ekspor PDF:", err);
-    });
+    // Jalankan ekspor
+    html2pdf().set(opt).from(element).save();
 }
 
         function showLogs(t) {
