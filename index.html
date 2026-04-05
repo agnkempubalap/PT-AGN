@@ -314,35 +314,41 @@
             </div>
 
     <div class="card">
-        <h3>📥 Logistik & Penjualan <input type="date" id="stTgl"></h3>
-        
-        <div class="flex-row">
-            <select id="stBrg" onchange="toggleSatuan()"></select>
-            <input type="number" id="stQty" placeholder="Jumlah">
-        </div>
+    <h3>📥 Logistik & Penjualan <input type="date" id="stTgl"></h3>
+    
+    <div class="flex-row">
+        <select id="stBrg" onchange="toggleSatuan()"></select>
+        <input type="number" id="stQty" placeholder="Jumlah">
+    </div>
 
-        <div id="boxSatuan" class="flex-row" style="display:none; margin-top: -5px; margin-bottom: 15px;">
-            <select id="stSatuan">
-                <option value="Liter">Liter (Lt)</option>
-                <option value="Kilogram">Kilogram (Kg)</option>
-            </select>
-        </div>
+    <div id="boxSatuan" class="flex-row" style="display:none; margin-top: -5px; margin-bottom: 10px;">
+        <select id="stSatuan">
+            <option value="Liter">Liter (Lt)</option>
+            <option value="Kilogram">Kilogram (Kg)</option>
+        </select>
+    </div>
 
-        <div class="flex-row">
-            <select id="stKon"><option value="Bekas">Kotor</option><option value="Baru">Rdy</option></select>
-            <select id="stQC"><option value="Accepted">Accepted</option><option value="Reject">Reject</option></select>
-        </div>
+    <div class="flex-row">
+        <select id="stAksi" style="flex: 1.5; background: #eff6ff; border: 1px solid var(--p); font-weight: 800;">
+            <option value="Masuk">Masuk</option>
+            <option value="Rekondisi">Rekon</option>
+            <option value="Jual Mitra">Mitra</option>
+            <option value="Jual Umum">Umum</option>
+        </select>
+
+        <select id="stKon" style="flex: 1;">
+            <option value="Bekas">Kotor</option>
+            <option value="Baru">Rdy</option>
+        </select>
         
-        <div class="flex-row">
-            <select id="stAksi">
-                <option value="Masuk">Masuk</option>
-                <option value="Rekondisi">Rekon</option>
-                <option value="Jual Mitra">Jual Mitra</option>
-                <option value="Jual Umum">Jual Umum</option>
-            </select>
-        </div>
-        <button class="btn" style="background:var(--p)" onclick="saveSt()">PROSES STOK & CAIRKAN UPAH</button>
-    </div
+        <select id="stQC" style="flex: 1;">
+            <option value="Accepted">Accepted</option>
+            <option value="Reject">Reject</option>
+        </select>
+    </div>
+
+    <button class="btn" style="background:var(--p); margin-top: 10px;" onclick="saveSt()">PROSES STOK & CAIRKAN UPAH</button>
+</div>
 
             <div class="card">
     <h3>📊 Laporan Stok <input type="month" id="fStok" onchange="autoRender()"></h3>
