@@ -991,60 +991,71 @@ function toggleAksi() {
         // ==========================================
         // 5. TAB AKTIVITAS LOGIC (CHAIN LOGIC)
         // ==========================================
+// 1. SAVE AKTIVITAS 
  function saveAk() {
     const tgl = document.getElementById('akTgl').value;
+    const kat = document.getElementById('akKat').value;
     const j = document.getElementById('akJenis').value; 
     const qRaw = document.getElementById('akQty').value;
-    const q = parseInt(qRaw) || 0;
+    const q = parseInt(qRaw) || 0; 
     const p = Array.from(document.querySelectorAll('.chk-k:checked')).map(c => c.value);
 
-    // 1. Validasi Dasar
-    if (!tgl || !j || p.length === 0) return alert("Lengkapi Tanggal, Aktivitas, dan Karyawan!");
+    // 1. Validasi Input Wajib
+    if (!tgl) return alert("Pilih Tanggal!");
+    if (!kat || !j) return alert("Pilih Kategori & Detail Aktivitas!");
+    if (p.length === 0) return alert("Pilih minimal 1 Karyawan!");
 
-    // 2. LOGIKA STOK (Mencegah input jika barang kurang)
-    // Kita asumsikan data stok ada di D.stok (misal: D.stok.kempu_mentah)
-    if (j === "Rekondisi Kempu") {
-        const stokSekarang = D.stok?.kempu_mentah || 0;
-        if (q > stokSekarang) return alert("Gagal! Stok Kempu Mentah tidak cukup (Sisa: " + stokSekarang + ")");
-    } else if (j === "Rekondisi Jerigen 18L") {
-        const stokSekarang = D.stok?.jeri18_mentah || 0;
-        if (q > stokSekarang) return alert("Gagal! Stok Jerigen 18L Mentah tidak cukup");
-    }
+    // 2. LOGIKA PENGECEKAN STOK (Hanya untuk Barang Fisik)
+    // Kita buat daftar aktivitas yang butuh cek stok
+    const butuhStok = ["Rekondisi Kempu", "Rekondisi Jerigen 18L", "Rekondisi Jerigen 5L"];
 
-    // 3. LOGIKA QTY 0
-    // Aktivitas yang WAJIB ada jumlahnya (Produksi)
-    const wajibIsi = ["Rekondisi Kempu", "Rekondisi Jerigen 18L", "Rekondisi Jerigen 5L"];
-    if (wajibIsi.includes(j) && q <= 0) {
-        return alert("Untuk Rekondisi, jumlah (Qty) tidak boleh 0!");
-    }
+    if (butuhStok.includes(j)) {
+        let stokMentah = 0;
+        let namaBarang = "";
 
-    // 4. Proteksi Absensi
+        if (j === "Rekondisi Kempu") {
+            stokMentah = D.stok?.kempu_mentah || 0;
+            namaBarang = "Kempu Mentah";
+        } else if (j === "Rekondisi Jerigen 18L") {
+            stokMentah = D.stok?.jeri18_mentah || 0;
+            namaBarang = "Jerigen 18L Mentah";
+        } else if (j === "Rekondisi Jerigen 5L") {
+            stokMentah = D.stok?.jeri5_mentah || 0;
+            namaBarang = "Jerigen 5L Mentah";
+        }
+
+        // Jalankan Validasi
+        if (stokMentah <= 0) {
+            return alert(`Gagal! Stok ${namaBarang} Kosong (0). Tidak bisa melakukan aktivitas ini.`);
+        }
+        if (q > stokMentah) {
+            return alert(`Gagal! Stok ${namaBarang} tidak cukup (Sisa: ${stokMentah})`);
+        }
+    } 
+    // Jika tidak termasuk dalam 'butuhStok' (seperti Pasang Pangkalan), 
+    // sistem akan melewati pengecekan ini dan langsung lanjut ke simpan.
+
+    // 3. Proteksi Absensi
     let belumAbsen = p.filter(k => !D.absensi?.[tgl]?.[k] || !['Hadir','Telat','Lembur'].includes(D.absensi[tgl][k].j));
     if (belumAbsen.length > 0) return alert("Karyawan belum absen: " + belumAbsen.join(", "));
 
-    const cairAwal = !j.toLowerCase().includes("jerigen"); 
-
-    // 5. Simpan ke Firebase
+    // 4. Simpan ke Firebase
     db.ref('aktivitas').push({ 
         t: tgl, 
         j: j, 
-        q: q, // Angka 0 akan tetap tersimpan di sini
+        q: q, 
         p: p, 
-        isCair: cairAwal 
+        isCair: !j.toLowerCase().includes("jerigen") 
     }).then(() => {
-        // Update Stok di Firebase (Jika itu rekondisi, potong stok mentahnya)
-        if (j === "Rekondisi Kempu") {
-            db.ref('stok/kempu_mentah').transaction(s => (s || 0) - q);
-        }
-
-        // RESET FORM
+        // RESET FORM & WARNA PLACEHOLDER
         document.getElementById('akQty').value = ""; 
         document.getElementById('akKat').value = ""; 
-        document.getElementById('akJenis').innerHTML = '<option value="" disabled selected hidden>Pilih Detail...</option>';
-        document.getElementById('akJenis').style.color = '#94a3b8';
-        document.querySelectorAll('.chk-k').forEach(c => c.checked = false); 
+        const detail = document.getElementById('akJenis');
+        detail.innerHTML = '<option value="" disabled selected hidden>Pilih Detail...</option>';
+        detail.style.color = '#94a3b8'; 
         
-        alert("✅ Berhasil menyimpan: " + j + (q === 0 ? " (Tanpa Qty)" : " Qty: " + q));
+        document.querySelectorAll('.chk-k').forEach(c => c.checked = false); 
+        alert(`✅ Berhasil! Aktivitas '${j}' telah tersimpan.`);
     });
 }
 
