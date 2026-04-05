@@ -806,16 +806,24 @@ function renderStok() {
     const target = document.getElementById('tbStok');
     if(!target || !D) return; 
 
-    const B_arr = D.master_barang ? Object.values(D.master_barang) : [];
+    // Mengambil data barang sebagai Entries agar kita punya KEY/ID Firebase-nya
+    const B_entries = D.master_barang ? Object.entries(D.master_barang) : [];
     let h = "";
     const BJ = 0.9; 
 
-    if (B_arr.length === 0) {
+    if (B_entries.length === 0) {
         target.innerHTML = "<tr><td colspan='12' style='padding:20px; color:#94a3b8;'>Data Barang Belum Ada</td></tr>";
         return;
     }
 
-    B_arr.forEach(b => {
+    B_entries.forEach(entry => {
+        const key = entry[0]; // ID barang di firebase
+        const dataBrg = entry[1];
+        
+        // Mendukung format lama (string) atau baru (object {n: nama, m: min})
+        const b = dataBrg.n || dataBrg; 
+        const limitMin = dataBrg.m || 0; // Default 0 jika belum diset
+
         let s = { ak:0, ab:0, ik:0, ib:0, rej:0, rk:0, jm:0, ju:0 };
         const isCair = b.toLowerCase().includes('minyak') || b.toLowerCase().includes('cair');
 
@@ -838,54 +846,69 @@ function renderStok() {
             });
         }
 
-        let ktrRaw = (s.ak + s.ik) - s.rk;
-        let ktr = ktrRaw < 0 ? 0 : ktrRaw; 
+        let ktr = Math.max(0, (s.ak + s.ik) - s.rk);
         let rdy = (s.ab + s.ib + s.rk) - (s.jm + s.ju);
+        let totalStok = ktr + rdy;
+
+        // --- LOGIKA PERINGATAN STOK MINIMUM ---
+        const isKritis = totalStok <= limitMin;
+        const rowBg = isKritis ? "background:#fee2e2;" : "background:#fff;"; // Merah muda jika kritis
+        const warningIcon = isKritis ? "<span style='color:#ef4444;'>⚠️</span> " : "";
 
         const tampil = (val, forceStrip = false, isTotalCol = false) => {
-            if (forceStrip) return `<span style="color:#e2e8f0; font-weight:normal;">-</span>`;
+            if (forceStrip) return `<span style="color:#e2e8f0;">-</span>`;
             const v = val || 0;
-            
-            const colorLt = isTotalCol ? '#ffffff' : '#2563eb';
-            const colorKg = isTotalCol ? '#ffffff' : '#1e293b';
-            const colorUnit = isTotalCol ? '#ffffff' : (v > 0 ? '#334155' : '#cbd5e1');
-            const slashColor = isTotalCol ? 'rgba(255,255,255,0.4)' : '#cbd5e1';
-
             if (!isCair) {
-                return `<div style="color:${colorUnit}; font-weight:700; font-size:12px;">${v}<span style="font-size:9px; font-weight:400; margin-left:2px; opacity:0.8;">Unit</span></div>`;
+                return `<div style="font-weight:700; font-size:11px;">${v}</div>`;
             } else {
                 let kg = (v * BJ).toFixed(1);
-                return `<div style="display:inline-flex; align-items:center; line-height:1.1;">` +
-                         `<div style="display:flex; flex-direction:column; align-items:flex-end;">` +
-                            `<span style="font-size:10px; color:${colorLt}; font-weight:700;">${v}<span style="font-size:8px; font-weight:400;">Lt</span></span>` +
-                         `</div>` +
-                         `<span style="color:${slashColor}; font-size:14px; margin:0 2px; font-weight:300;">/</span>` +
-                         `<div style="display:flex; flex-direction:column; align-items:flex-start;">` +
-                            `<span style="font-size:10px; color:${colorKg}; font-weight:800;">${kg}<span style="font-size:8px; font-weight:400;">Kg</span></span>` +
-                         `</div>` +
-                       `</div>`;
+                return `<div style="font-size:10px;"><b>${v}</b><br><small>${kg}kg</small></div>`;
             }
         };
 
-        h += `<tr style="border-bottom: 1px solid #f1f5f9;">
-            <td class="sticky-col" style="font-weight:700; color:#334155; font-size:12px; background:#fff; border-right:2px solid #f8fafc; padding:10px 8px;">${b}</td>
-            <td style="text-align:center; background:#fafafa;">${tampil(s.ak, isCair)}</td>
+        h += `<tr style="${rowBg} border-bottom: 1px solid #f1f5f9;">
+            <td class="sticky-col" 
+                onclick="editLimit('${key}', '${b}', ${limitMin})"
+                style="font-weight:700; color:#334155; font-size:11px; cursor:pointer; text-decoration:underline; background:inherit; padding:10px 8px;">
+                ${warningIcon}${b} <br>
+                <small style="font-weight:400; color:#64748b;">Min: ${limitMin}</small>
+            </td>
+            <td style="text-align:center;">${tampil(s.ak, isCair)}</td>
             <td style="text-align:center;">${tampil(s.ab)}</td>
-            <td style="text-align:center; background:#fafafa;">${tampil(s.ik, isCair)}</td>
+            <td style="text-align:center;">${tampil(s.ik, isCair)}</td>
             <td style="text-align:center;">${tampil(s.ib)}</td>
-            <td style="text-align:center; background:#fff1f2; color:#e11d48;">${tampil(s.rej, isCair)}</td>
-            <td style="text-align:center; background:#fafafa;">${tampil(s.rk, isCair)}</td>
+            <td style="text-align:center; color:#e11d48;">${tampil(s.rej, isCair)}</td>
+            <td style="text-align:center;">${tampil(s.rk, isCair)}</td>
             <td style="text-align:center;">${tampil(s.jm)}</td>
             <td style="text-align:center;">${tampil(s.ju)}</td>
-            <td style="text-align:center; background:#fffbeb; color:#92400e; border-left:1px solid #fef3c7;">${tampil(ktr, isCair)}</td>
-            <td style="text-align:center; background:#f0fdf4; color:#166534;">${tampil(rdy)}</td>
-            <td style="text-align:center; background:#2563eb; color:#ffffff !important; font-weight:900;">
-                ${tampil(ktr+rdy, false, true)}
+            <td style="text-align:center; font-weight:bold; color:#92400e;">${tampil(ktr, isCair)}</td>
+            <td style="text-align:center; font-weight:bold; color:#166534;">${tampil(rdy)}</td>
+            <td style="text-align:center; background:#2563eb; color:#fff !important; font-weight:900;">
+                ${tampil(totalStok, false, true)}
             </td>
         </tr>`;
     }); 
     target.innerHTML = h;
 }
+
+// 2. FUNGSI BATAS MINIMUM
+function editLimit(key, nama, limitSekarang) {
+    const baru = prompt(`Atur Batas Minimum Stok untuk ${nama}:`, limitSekarang);
+    if (baru === null || baru === "") return;
+
+    const angkaBaru = parseInt(baru);
+    if (isNaN(angkaBaru)) return alert("Masukkan angka yang valid!");
+
+    // Pastikan database master_barang menyimpan objek, bukan string
+    db.ref('master_barang/' + key).update({
+        n: nama,
+        m: angkaBaru
+    }).then(() => {
+        alert("✅ Batas minimum " + nama + " diubah ke " + angkaBaru);
+        // Laporan akan otomatis terupdate jika firebase .on('value') aktif
+    });
+}
+
 
 // 3. FUNGSI TOGGLE SATUAN & DETAIL
 function toggleSatuan() {
