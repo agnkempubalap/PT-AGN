@@ -875,58 +875,51 @@ function renderStok() {
 }
 
 // 3. FUNGSI TOGGLE SATUAN & DETAIL (toggleSatuan)
-// Fokus: Mengatur munculnya pilihan Liter/Kg dan menyembunyikan Rekondisi untuk barang cair
 function toggleSatuan() {
     const b = document.getElementById('stBrg').value;
     const isCair = b.toLowerCase().includes('minyak') || b.toLowerCase().includes('cair');
     
-    const boxSat = document.getElementById('boxSatuan'); // Wrapper dropdown Liter/Kg
-    const boxDet = document.getElementById('boxDetail'); // Wrapper dropdown Kon & QC
-    const optRekon = document.querySelector("#stAksi option[value='Rekondisi']");
+    const boxSat = document.getElementById('boxSatuan'); 
+    const boxDet = document.getElementById('boxDetail'); 
     const aksiDropdown = document.getElementById('stAksi');
+    const optRekon = aksiDropdown ? aksiDropdown.querySelector("option[value='Rekondisi']") : null;
 
     if (isCair) {
         // Jika Minyak: Munculkan pilihan satuan, sembunyikan detail fisik (Kon/QC)
         if(boxSat) boxSat.style.display = 'flex';
         if(boxDet) boxDet.style.display = 'none';
-        
-        // Sembunyikan opsi Rekondisi (Minyak tidak ada rekondisi fisik)
         if(optRekon) optRekon.style.display = 'none';
         
-        // Jika sedang terpilih Rekondisi, paksa pindah ke 'Masuk'
-        if(aksiDropdown && aksiDropdown.value === "Rekondisi") {
-            aksiDropdown.value = "Masuk";
-        }
+        // Paksa pindah dari Rekondisi jika terpilih
+        if(aksiDropdown && aksiDropdown.value === "Rekondisi") aksiDropdown.value = "Masuk";
     } else {
         // Jika Unit (Kempu/Jerigen): Sembunyikan satuan, munculkan detail fisik
         if(boxSat) boxSat.style.display = 'none';
         if(boxDet) boxDet.style.display = 'flex';
-        
-        // Munculkan kembali opsi Rekondisi
         if(optRekon) optRekon.style.display = 'block';
     }
     
-    // Reset tampilan Sub-Aksi Jual setiap ganti barang
+    // PENTING: Jalankan toggleAksi agar Sub-Aksi (Mitra/Umum) sinkron
     toggleAksi(); 
 }
 
-// 4. FUNGSI TOGGLE AKSI (toggleAksi)
-// Fokus: Munculkan dropdown Mitra/Umum hanya jika Aksi Utama adalah 'Jual'
+// 4. FUNGSI TOGGLE AKSI (toggleAksi) - Memunculkan Dropdown Mitra/Umum
 function toggleAksi() {
     const aksi = document.getElementById('stAksi').value;
-    const boxSub = document.getElementById('boxSubAksi'); // Wrapper dropdown Jual Mitra/Umum
+    const boxSub = document.getElementById('boxSubAksi'); // Ini ID pembungkus dropdown Mitra & Umum
 
-    if (aksi === "Jual") {
-        if(boxSub) boxSub.style.display = 'flex';
-    } else {
-        if(boxSub) boxSub.style.display = 'none';
+    if (boxSub) {
+        if (aksi === "Jual") {
+            boxSub.style.display = 'flex'; // Menampilkan dropdown Mitra/Umum
+        } else {
+            boxSub.style.display = 'none'; // Menyembunyikan jika bukan 'Jual'
+        }
     }
 }
 
-// Tambahkan Event Listener agar fungsi berjalan otomatis saat input berubah
+// Tambahkan Event Listener (Pasang satu kali saja di aplikasi)
 document.getElementById('stBrg').addEventListener('change', toggleSatuan);
 document.getElementById('stAksi').addEventListener('change', toggleAksi);
-
 
 
         // ==========================================
