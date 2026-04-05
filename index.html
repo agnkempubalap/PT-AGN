@@ -824,84 +824,52 @@ function renderStok() {
         let ktr = (s.ak + s.ik) - s.rk;
         let rdy = (s.ab + s.ib + s.rk) - (s.jm + s.ju);
 
-        // --- FUNGSI TAMPIL DIAGONAL ---
-        const tampil = (val) => {
+        // --- FUNGSI TAMPIL STACK DIAGONAL (PECAHAN) ---
+        const tampil = (val, forceStrip = false) => {
+            // Jika kolom dipaksa strip (untuk kotor/rekon minyak)
+            if (forceStrip) return `<span style="color:#ccc;">-</span>`;
+            
             const v = val || 0;
             if (!isCair) {
                 return `<span style="font-size:12px;">${v} Unit</span>`;
             } else {
                 let kg = (v * BJ).toFixed(1);
-                // Format: 500/450.0 (Tanpa Unit agar tidak penuh)
-                // Warna abu untuk Lt, Hitam Tebal untuk Kg
-                return `<div style="font-size:11px; white-space:nowrap;">` +
-                       `<span style="color:#777;">${v}</span>` +
-                       `<span style="color:#ccc; margin:0 2px;">/</span>` +
-                       `<span style="font-weight:bold; color:#333;">${kg}</span>` +
+                return `<div style="font-size:12px; line-height:1; display:inline-block; vertical-align:middle;">` +
+                       `<span style="position:relative; font-size:10px; color:#666;">` +
+                       `<sup style="font-size:8px; margin-right:-1px;">${v}</sup>` +
+                       `<span style="font-size:12px; color:#ccc; vertical-align:middle;">/</span>` +
+                       `<sub style="font-size:8px; font-weight:bold; color:#333; margin-left:-1px;">${kg}</sub>` +
+                       `</span>` +
                        `</div>`;
             }
         };
 
-        h += `<tr style="font-size:12px;">
-            <td class="sticky-col" style="font-weight:600; color:#333;">${b}</td>
-            <td style="text-align:center;">${tampil(s.ak)}</td>
+        h += `<tr style="font-size:12px; border-bottom:1px solid #eee;">
+            <td class="sticky-col" style="font-weight:600; color:#333; font-size:12px;">${b}</td>
+            
+            <td style="text-align:center;">${tampil(s.ak, isCair)}</td>
+            
             <td style="text-align:center;">${tampil(s.ab)}</td>
-            <td style="text-align:center;">${tampil(s.ik)}</td>
+            
+            <td style="text-align:center;">${tampil(s.ik, isCair)}</td>
+            
             <td style="text-align:center;">${tampil(s.ib)}</td>
             <td style="text-align:center; color:var(--d); font-weight:bold;">${tampil(s.rej)}</td>
-            <td style="text-align:center;">${tampil(s.rk)}</td>
+            
+            <td style="text-align:center;">${tampil(s.rk, isCair)}</td>
+            
             <td style="text-align:center;">${tampil(s.jm)}</td>
             <td style="text-align:center;">${tampil(s.ju)}</td>
-            <td style="text-align:center; background:#fef3c7;">${tampil(ktr)}</td>
+            
+            <td style="text-align:center; background:#fef3c7;">${tampil(ktr, isCair)}</td>
+            
             <td style="text-align:center; background:#dcfce7;">${tampil(rdy)}</td>
-            <td style="text-align:center; background:var(--p); color:white;">${tampil(ktr+rdy)}</td>
+            <td style="text-align:center; background:var(--p); color:white;">${tampil(ktr+rdy, isCair)}</td>
         </tr>`;
     }); 
     
     target.innerHTML = h;
 }
-
-
-// 3. LOGIKA INTERAKSI (Toggle Satuan & Aksi)
-function toggleSatuan() {
-    const brgEl = document.getElementById('stBrg');
-    const boxSat = document.getElementById('boxSatuan');
-    const selAksi = document.getElementById('stAksi');
-    if(!brgEl || !boxSat || !selAksi) return;
-
-    const isCair = brgEl.value.toLowerCase().includes('minyak') || brgEl.value.toLowerCase().includes('cair');
-
-    if (isCair) {
-        boxSat.style.display = 'block'; 
-        // Sembunyikan Opsi Rekon untuk Minyak
-        for (let opt of selAksi.options) {
-            if (opt.value === "Rekondisi") opt.style.display = 'none';
-        }
-        if (selAksi.value === "Rekondisi") selAksi.value = "Masuk";
-    } else {
-        boxSat.style.display = 'none';
-        // Tampilkan Opsi Rekon untuk Barang Fisik
-        for (let opt of selAksi.options) {
-            if (opt.value === "Rekondisi") opt.style.display = 'block';
-        }
-    }
-    toggleAksi(); 
-}
-
-function toggleAksi() {
-    const aksi = document.getElementById('stAksi').value;
-    const brg = document.getElementById('stBrg').value.toLowerCase();
-    const boxDetail = document.getElementById('boxDetail');
-    const boxJual = document.getElementById('boxJual');
-    if (!boxDetail || !boxJual) return;
-
-    const isCair = brg.includes('minyak') || brg.includes('cair');
-
-    // Detail Kotor/QC muncul jika 'Masuk' & bukan minyak
-    boxDetail.style.display = (aksi === "Masuk" && !isCair) ? 'flex' : 'none';
-    // Box Jual muncul jika aksi = Jual
-    boxJual.style.display = (aksi === "Jual") ? 'block' : 'none';
-}
-
 
         // ==========================================
         // 5. TAB AKTIVITAS LOGIC (CHAIN LOGIC)
