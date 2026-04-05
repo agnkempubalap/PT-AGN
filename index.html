@@ -354,8 +354,10 @@
         </select>
     </div>
 
-    <button class="btn" style="background:var(--p); margin-top: 10px;" onclick="saveSt()">PROSES STOK</button>
-</div>
+    <button class="btn" style="background:#22c55e; color:white; margin-top: 10px; font-weight:bold;" onclick="saveSt()">
+    PROSES STOK & UPDATE
+</button>
+
             <div class="card">
     <h3>📊 Laporan Stok <input type="month" id="fStok" onchange="autoRender()"></h3>
     
@@ -716,26 +718,25 @@ function saveL() {
 // ==========================================
         // 4. TAB STOK LOGIC
         // ==========================================
-// 1. FUNGSI SIMPAN STOK (saveSt)
+/* --- SECTION: LOGIKA TAB STOK --- */
+
+// 1. FUNGSI SIMPAN STOK (saveSt) - Update: Warna Sukses & Reset Form
 function saveSt() {
     const t = document.getElementById('stTgl').value;
     const b = document.getElementById('stBrg').value;
     const q = parseInt(document.getElementById('stQty').value);
     const aksiUtama = document.getElementById('stAksi').value;
     
-    // Tentukan aksi akhir (Jika pilih 'Jual', ambil nilai dari dropdown Mitra/Umum)
+    // Tentukan aksi akhir (Sub-Aksi Jual)
     const akFinal = (aksiUtama === "Jual") 
                     ? document.getElementById('stSubAksi').value 
                     : aksiUtama;
 
-    // Deteksi barang cair
     const isCair = b.toLowerCase().includes('minyak') || b.toLowerCase().includes('cair');
-    
-    // Check visibilitas boxDetail (Kotor/QC)
     const boxDetail = document.getElementById('boxDetail');
     const isVisibleDetail = (boxDetail && boxDetail.style.display === 'flex');
     
-    // LOGIKA FINAL STATUS (Bypass untuk barang cair masuk)
+    // Logika Status Final
     let konFinal, qcFinal;
     if (isCair && aksiUtama === "Masuk") {
         konFinal = "Baru";
@@ -745,7 +746,6 @@ function saveSt() {
         qcFinal = isVisibleDetail ? document.getElementById('stQC').value : 'Accepted';
     }
 
-    // Ambil Satuan (Liter/Kg) jika boxSatuan aktif
     const boxSat = document.getElementById('boxSatuan');
     const satFinal = (boxSat && boxSat.style.display !== 'none') 
                      ? document.getElementById('stSatuan').value 
@@ -753,7 +753,6 @@ function saveSt() {
 
     if(!q) return alert("Jumlah (Qty) belum diisi!");
 
-    // Simpan ke Firebase
     db.ref('stok_logs').push({ 
         t, b, q, 
         kon: konFinal, 
@@ -761,7 +760,7 @@ function saveSt() {
         ak: akFinal, 
         sat: satFinal 
     }).then(() => {
-        // Logika Pencairan Upah (Gunakan akFinal untuk cek "Jual Mitra/Umum")
+        // Logika Upah Jerigen
         if(akFinal.includes("Jual") && b.toLowerCase().includes("jerigen")) {
             let sisaJual = q;
             let logs = Object.entries(D.aktivitas || {})
@@ -778,8 +777,12 @@ function saveSt() {
             });
         }
         
+        // --- RESET FORM SETELAH BERHASIL (HIJAU) ---
         document.getElementById('stQty').value = ""; 
-        alert("Stok Berhasil Diperbarui!");
+        document.getElementById('stAksi').value = "Masuk"; // Reset ke Masuk
+        toggleSatuan(); // Pemicu agar boxJual dan boxDetail tertutup kembali
+        
+        alert("✅ Berhasil! Stok telah diperbarui."); 
     });
 }
 
@@ -841,23 +844,18 @@ function toggleSatuan() {
     const isCair = brg.includes('minyak') || brg.includes('cair');
 
     if (isCair) {
-        boxSat.style.display = 'block'; // Tampilkan box Satuan sejajar dengan Aksi
-        
-        // Sembunyikan opsi Rekondisi
+        boxSat.style.display = 'block'; 
         for (let opt of selAksi.options) {
             if (opt.value === "Rekondisi") opt.style.display = 'none';
         }
         if (selAksi.value === "Rekondisi") selAksi.value = "Masuk";
-        
     } else {
         boxSat.style.display = 'none';
-        // Tampilkan kembali opsi Rekondisi
         for (let opt of selAksi.options) {
             if (opt.value === "Rekondisi") opt.style.display = 'block';
         }
     }
-    
-    toggleAksi(); // Sinkronkan sisa elemen
+    toggleAksi(); 
 }
 
 // 4. LOGIKA TOGGLE AKSI (Detail Masuk & Sub-Aksi Jual)
@@ -877,7 +875,6 @@ function toggleAksi() {
     // Tampilkan dropdown Mitra/Umum HANYA jika aksi 'Jual'
     boxJual.style.display = (aksi === "Jual") ? 'block' : 'none';
 }
-
 
         // ==========================================
         // 5. TAB AKTIVITAS LOGIC (CHAIN LOGIC)
