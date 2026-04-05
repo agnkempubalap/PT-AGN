@@ -1042,6 +1042,7 @@ function toggleAksi() {
         // 5. TAB AKTIVITAS LOGIC (CHAIN LOGIC)
         // ==========================================
 function saveAk() {
+    // Mengambil tanggal dari input yang ada di dalam h3
     const tgl = document.getElementById('akTgl').value;
     const kat = document.getElementById('akKat').value;
     const j = document.getElementById('akJenis').value; 
@@ -1049,10 +1050,12 @@ function saveAk() {
     const q = parseInt(qRaw) || 0; 
     const p = Array.from(document.querySelectorAll('.chk-k:checked')).map(c => c.value);
 
+    // 1. Validasi
     if (!tgl) return alert("Pilih Tanggal!");
     if (!kat || !j) return alert("Pilih Kategori & Detail Aktivitas!");
     if (p.length === 0) return alert("Pilih minimal 1 Karyawan!");
 
+    // 2. Cek Stok Mentah (Sesuai permintaan: Barang tidak ada = Aktivitas Gagal)
     const butuhStok = ["Rekondisi Kempu", "Rekondisi Jerigen 18L", "Rekondisi Jerigen 5L"];
     if (butuhStok.includes(j)) {
         let stokMentah = 0;
@@ -1060,47 +1063,47 @@ function saveAk() {
         else if (j === "Rekondisi Jerigen 18L") stokMentah = D.stok?.jeri18_mentah || 0;
         else if (j === "Rekondisi Jerigen 5L") stokMentah = D.stok?.jeri5_mentah || 0;
 
-        if (stokMentah <= 0) return alert(`Gagal! Stok Kosong (0).`);
-        if (q > stokMentah) return alert(`Gagal! Stok tidak cukup (Sisa: ${stokMentah})`);
+        if (stokMentah <= 0) return alert(`Gagal! Stok Barang Mentah Kosong (0).`);
+        if (q > 0 && q > stokMentah) return alert(`Gagal! Stok tidak cukup (Sisa: ${stokMentah})`);
     }
 
+    // 3. Cek Absensi
     let belumAbsen = p.filter(k => !D.absensi?.[tgl]?.[k] || !['Hadir','Telat','Lembur'].includes(D.absensi[tgl][k].j));
     if (belumAbsen.length > 0) return alert("Karyawan belum absen: " + belumAbsen.join(", "));
 
-    // SIMPAN KE FIREBASE
+    // 4. Kirim ke Firebase
     db.ref('aktivitas').push({ 
         t: tgl, 
         j: j, 
         q: q, 
         p: p, 
         isCair: !j.toLowerCase().includes("jerigen"),
-        // TAMBAHKAN WAKTU DI SINI
         waktu: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
     }).then(() => {
+        // Reset Form
         document.getElementById('akQty').value = ""; 
         document.getElementById('akKat').value = ""; 
-        const detail = document.getElementById('akJenis');
-        detail.innerHTML = '<option value="" disabled selected hidden>Pilih Detail...</option>';
-        detail.style.color = '#94a3b8'; 
+        document.getElementById('akJenis').innerHTML = '<option value="" disabled selected hidden>Pilih Detail...</option>';
         document.querySelectorAll('.chk-k').forEach(c => c.checked = false); 
-        alert(`✅ Berhasil Tersimpan!`);
         
-        // PANGGIL RENDER AGAR TABEL UPDATE
-        renderLogHarian();
+        alert(`✅ Berhasil! Aktivitas '${j}' tercatat.`);
+        renderLogHarian(); // Update tabel di bawah
     });
 }
+
 
 
       
 // 2. RENDER AKTIVITAS 
 function renderLogHarian() {
-    // GANTI: Ambil dari filterTglAk (yang sudah sinkron dengan akTgl)
+    // Ambil tanggal dari input h3 di bagian Laporan Kerja
     const tglFilter = document.getElementById('filterTglAk')?.value;
+    const tbody = document.getElementById('listLogAktivitas');
     
+    if (!tbody) return;
+
     db.ref('aktivitas').on('value', snapshot => {
         const data = snapshot.val();
-        const tbody = document.getElementById('listLogAktivitas');
-        if (!tbody) return;
         if (!data) {
             tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">Data Kosong</td></tr>';
             return;
@@ -1108,35 +1111,26 @@ function renderLogHarian() {
 
         let items = Object.values(data).reverse();
 
-        // FILTER: Gunakan filter tanggal harian, bukan bulan lagi
+        // Filter berdasarkan tanggal yang dipilih di h3
         if (tglFilter) {
             items = items.filter(item => item.t === tglFilter);
         } else {
-            items = items.slice(0, 15);
-        }
-
-        if (items.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:15px; color:#94a3b8;">Tidak ada aktivitas di tanggal ini.</td></tr>';
-            return;
+            items = items.slice(0, 15); // Jika tgl kosong, tampilkan 15 terbaru
         }
 
         tbody.innerHTML = items.map(item => {
-            // Kita pakai Jam saja karena kolom Tanggal sudah ada di filter atas
-            const jamTampil = item.waktu || '--:--';
             const qtyTampil = item.q === 0 ? '<b style="color:#f59e0b">PROSES</b>' : `<b>${item.q}</b>`;
-
             return `
                 <tr style="border-bottom: 1px solid #f8fafc;">
-                    <td style="padding: 8px 5px; color: #94a3b8; font-family: monospace;">${jamTampil}</td>
-                    <td style="padding: 8px 5px; font-weight: 600; color: #1e293b;">${item.p.join(", ")}</td>
-                    <td style="padding: 8px 5px; color: #475569;">${item.j}</td>
-                    <td style="padding: 8px 5px; text-align: center;">${qtyTampil}</td>
+                    <td style="padding: 10px 5px; color: #94a3b8; font-family: monospace;">${item.waktu || '--:--'}</td>
+                    <td style="padding: 10px 5px; font-weight: 600;">${item.p.join(", ")}</td>
+                    <td style="padding: 10px 5px;">${item.j}</td>
+                    <td style="padding: 10px 5px; text-align: center;">${qtyTampil}</td>
                 </tr>
             `;
         }).join('');
     });
 }
-
 
 
 function renderCheckKaryawan() {
