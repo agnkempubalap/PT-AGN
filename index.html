@@ -453,7 +453,6 @@
 </div>
 </div>
 
-
        <div id="tab-gaji" class="tab-content">
     <div class="card" style="border-top: 5px solid #64748b; background: #f8fafc;">
         <h3 style="color:#1e293b">🛒 Input Belanja / Nota <input type="date" id="blTgl"></h3>
@@ -567,13 +566,28 @@
     const listK = document.getElementById('listK'), selK = document.getElementById('selK');
     const listB = document.getElementById('listB'), stBrg = document.getElementById('stBrg');
     
-    // 1. RENDER MASTER KARYAWAN (Versi Anti-Hilang & Sinkron Global)
-if (window.D && D.master_karyawan) {
+    // 1. RENDER MASTER KARYAWAN (Versi Super Kuat - Anti Kosong)
+function updateSemuaDropdownKaryawan() {
+    // Pastikan data D dan master_karyawan sudah ada
+    if (!window.D || !D.master_karyawan) return;
+
     const K = Object.entries(D.master_karyawan);
-    // Sortir data berdasarkan nama (A-Z) agar rapi
     const sortedK = [...K].sort((a, b) => a[1].localeCompare(b[1]));
 
-    // --- A. RENDER DI MENU SETTING (DENGAN TOMBOL X) ---
+    // --- A. Dropdown Filter Rekap Aktivitas ---
+    const filterNama = document.getElementById('filterNamaAk');
+    if (filterNama) {
+        const simpanPilihan = filterNama.value; // Biar tidak reset
+        
+        let html = '<option value="" style="color:#94a3b8">Global (Semua)</option>';
+        html += sortedK.map(k => `<option value="${k[1]}" style="color:#1e293b">${k[1]}</option>`).join('');
+        
+        filterNama.innerHTML = html;
+        filterNama.value = simpanPilihan; // Kembalikan pilihan user
+        filterNama.style.color = filterNama.value === "" ? "#94a3b8" : "#1e293b";
+    }
+
+    // --- B. Daftar di Menu Setting ---
     const elListK = document.getElementById('listKaryawan'); 
     if (elListK) {
         elListK.innerHTML = sortedK.map(k => `
@@ -582,34 +596,26 @@ if (window.D && D.master_karyawan) {
             </span>`).join('');
     }
 
-    // --- B. RENDER DROPDOWN ABSENSI / GAJI ---
+    // --- C. Dropdown Absensi / Gaji ---
     const elSelK = document.getElementById('selKaryawan');
     if (elSelK) {
         elSelK.innerHTML = sortedK.map(k => `<option value="${k[1]}">${k[1]}</option>`).join('');
     }
-
-    // --- C. RENDER FILTER REKAP AKTIVITAS (YANG TADI SERING HILANG) ---
-    const filterNama = document.getElementById('filterNamaAk');
-    if (filterNama) {
-        // 1. Simpan pilihan user sekarang supaya tidak reset ke Global otomatis
-        const simpanPilihan = filterNama.value; 
-        
-        // 2. Susun ulang isinya
-        let optionsHtml = '<option value="" style="color:#94a3b8">Global (Semua)</option>';
-        optionsHtml += sortedK.map(k => 
-            `<option value="${k[1]}" style="color:#1e293b">${k[1]}</option>`
-        ).join('');
-        
-        // 3. Pasang isinya ke elemen
-        filterNama.innerHTML = optionsHtml;
-        
-        // 4. Kembalikan pilihan user (Slamet/dkk) atau default ke Global jika kosong
-        filterNama.value = simpanPilihan || "";
-
-        // 5. Atur warna teks (Abu-abu jika Global, Hitam jika Nama Orang)
-        filterNama.style.color = filterNama.value === "" ? "#94a3b8" : "#1e293b";
-    }
 }
+
+// PANGGIL FUNGSI INI DI DALAM LISTENER FIREBASE ANDA
+db.ref('master_karyawan').on('value', snapshot => {
+    // Pastikan data disimpan ke variabel D dulu
+    if (!window.D) window.D = {};
+    D.master_karyawan = snapshot.val();
+    
+    // Jalankan fungsi pengisi dropdown
+    updateSemuaDropdownKaryawan();
+    
+    // Jalankan juga render log agar sinkron
+    if (typeof renderLogHarian === 'function') renderLogHarian();
+});
+
 
     // 2. RENDER MASTER BARANG (Untuk Tab Stok)
     if (D.master_barang) {
