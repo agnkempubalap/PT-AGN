@@ -790,7 +790,7 @@ function renderStok() {
 
     const B_arr = D.master_barang ? Object.values(D.master_barang) : [];
     let h = "";
-    const BJ = 0.9; // Massa Jenis Minyak Curah Baru
+    const BJ = 0.9; 
 
     if (B_arr.length === 0) {
         target.innerHTML = "<tr><td colspan='12'>Data Barang Belum Ada</td></tr>";
@@ -799,10 +799,8 @@ function renderStok() {
 
     B_arr.forEach(b => {
         let s = { ak:0, ab:0, ik:0, ib:0, rej:0, rk:0, jm:0, ju:0 };
-        // Deteksi Barang Cair
         const isCair = b.toLowerCase().includes('minyak') || b.toLowerCase().includes('cair');
 
-        // ... [Logika Looping stok_logs tetap sama seperti sebelumnya] ...
         if (D.stok_logs) {
             Object.values(D.stok_logs).forEach(l => {
                 if(l.b !== b) return;
@@ -826,38 +824,42 @@ function renderStok() {
         let ktr = (s.ak + s.ik) - s.rk;
         let rdy = (s.ab + s.ib + s.rk) - (s.jm + s.ju);
 
-        // --- FUNGSI TAMPIL YANG SUDAH DIPERBAIKI (STANDAR & RAMPING) ---
+        // --- FUNGSI TAMPIL DIAGONAL ---
         const tampil = (val) => {
-            // Gunakan angka 0 jika data kosong
             const v = val || 0;
-            
             if (!isCair) {
-                // Tampilan Benda Padat (Sama seperti baris Kempu)
-                return `<div style="text-align:center;">${v} Unit</div>`;
+                return `<span style="font-size:12px;">${v} Unit</span>`;
             } else {
-                // Tampilan Benda Cair (Ramping & Seiras)
                 let kg = (v * BJ).toFixed(1);
-                // Font-weight standar untuk 'Lt', font-weight bold untuk 'Kg'
-                return `<div style="line-height:1.2; text-align:center; font-size:13px; font-weight:normal;">` + 
-                       `<span style="color:#777;">${v} Lt</span><br>` + 
-                       `<span style="font-weight:bold; color:#333;">${kg} Kg</span>` + 
+                // Format: 500/450.0 (Tanpa Unit agar tidak penuh)
+                // Warna abu untuk Lt, Hitam Tebal untuk Kg
+                return `<div style="font-size:11px; white-space:nowrap;">` +
+                       `<span style="color:#777;">${v}</span>` +
+                       `<span style="color:#ccc; margin:0 2px;">/</span>` +
+                       `<span style="font-weight:bold; color:#333;">${kg}</span>` +
                        `</div>`;
             }
         };
 
-        // --- TR & NAMA BARANG DENGAN GAYA STANDAR ---
-        h += `<tr style="font-weight:normal; font-size:13px;"> <td class="sticky-col" style="color:#333;">${b}</td> <td>${tampil(s.ak)}</td><td>${tampil(s.ab)}</td>
-            <td>${tampil(s.ik)}</td><td>${tampil(s.ib)}</td>
-            <td style="color:var(--d); font-weight:bold">${tampil(s.rej)}</td>
-            <td>${tampil(s.rk)}</td><td>${tampil(s.jm)}</td><td>${tampil(s.ju)}</td>
-            <td style="background:#fef3c7;">${tampil(ktr)}</td>
-            <td style="background:#dcfce7;">${tampil(rdy)}</td>
-            <td style="background:var(--p); color:white; font-weight:bold">${tampil(ktr+rdy)}</td>
+        h += `<tr style="font-size:12px;">
+            <td class="sticky-col" style="font-weight:600; color:#333;">${b}</td>
+            <td style="text-align:center;">${tampil(s.ak)}</td>
+            <td style="text-align:center;">${tampil(s.ab)}</td>
+            <td style="text-align:center;">${tampil(s.ik)}</td>
+            <td style="text-align:center;">${tampil(s.ib)}</td>
+            <td style="text-align:center; color:var(--d); font-weight:bold;">${tampil(s.rej)}</td>
+            <td style="text-align:center;">${tampil(s.rk)}</td>
+            <td style="text-align:center;">${tampil(s.jm)}</td>
+            <td style="text-align:center;">${tampil(s.ju)}</td>
+            <td style="text-align:center; background:#fef3c7;">${tampil(ktr)}</td>
+            <td style="text-align:center; background:#dcfce7;">${tampil(rdy)}</td>
+            <td style="text-align:center; background:var(--p); color:white;">${tampil(ktr+rdy)}</td>
         </tr>`;
     }); 
     
     target.innerHTML = h;
 }
+
 
 // 3. LOGIKA INTERAKSI (Toggle Satuan & Aksi)
 function toggleSatuan() {
