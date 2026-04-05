@@ -387,45 +387,24 @@
         </div> 
         
                  <div id="tab-aktivitas" class="tab-content">
-    <div class="card" style="border-top: 5px solid var(--d)">
-        <h3>🛠️ Input Borongan <input type="date" id="akTgl" onchange="renderCheckKaryawan()"></h3>
+    
+    <div class="card" style="box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border-radius:12px; border:1px solid #e2e8f0; background:white;">
+        <h3 style="color:#1e293b; display:flex; align-items:center; gap:8px;">🛠️ Input Aktivitas <input type="date" id="akTgl" onchange="renderCheckKaryawan()" style="padding:5px 8px; border-radius:6px; border:1px solid #ddd; font-size:12px;"></h3>
         
         <label style="font-size:11px; font-weight:bold; color:#64748b; margin-bottom:5px; display:block;">Pilih Karyawan:</label>
         <div id="akKaryawan" class="check-grid" style="max-height:150px; overflow-y:auto; border:1px solid #eee; padding:8px; border-radius:8px; margin-bottom:15px; background:#fafafa;">
-        </div>
+            </div>
 
         <div class="flex-row" style="gap:8px; margin-bottom:10px;">
             <div style="flex:1">
                 <label style="font-size:11px; color:#64748b;">Kategori:</label>
-                <select id="akKat" onchange="updateSubAktivitas()" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;">
+                <select id="akKat" onchange="updateSubAktivitas()" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; background:white; font-size:13px;">
                     <option value="">-- Pilih --</option>
                     <option value="Rekondisi">Rekondisi</option>
                     <option value="Minyak">Logistik Minyak</option>
                     <option value="Barang">Logistik Barang</option>
-                    <option value="Pemasangan">Pemasangan</option>
-                </select>
-            </div>
-            <div style="flex:1">
-                <label style="font-size:11px; color:#64748b;">Detail:</label>
-                <select id="akJenis" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;">
-                    <option value="">-- Kategori Dulu --</option>
-                </select>
-            </div>
-        </div>
+                    <option value="Pemasangan">
 
-        <div style="margin-bottom:15px;">
-            <label style="font-size:11px; color:#64748b;">Jumlah (Qty):</label>
-            <input type="number" id="akQty" placeholder="0" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;">
-        </div>
-
-        <button class="btn" style="background:var(--p); width:100%; padding:12px; font-weight:bold;" onclick="saveAk()">SIMPAN KERJA</button>
-    </div>
-
-    <div class="flex-row" style="display: flex; gap: 8px; margin: 15px 0;">
-        <button class="btn" style="background:var(--w); color:black; flex: 1;" onclick="showLogs('aktivitas')">⚙️ LOG KERJA</button>
-        <button class="btn" style="background:#0ea5e9; color:white; flex: 1;" onclick="genRekapKerja()">PDF REKAP</button>
-    </div>
-</div>
 
         <div id="tab-gaji" class="tab-content">
     
@@ -988,24 +967,20 @@ function toggleAksi() {
         // ==========================================
         // 5. TAB AKTIVITAS LOGIC (CHAIN LOGIC)
         // ==========================================
- // 1. SAVE AKTIVITAS 
-function saveAk() {
-    // 1. Ambil data dari elemen input
+ function saveAk() {
     const tgl = document.getElementById('akTgl').value;
-    const j = document.getElementById('akJenis').value; // Mengambil dari Dropdown
-    const qRaw = document.getElementById('akQty').value;
-    const q = parseInt(qRaw) || 0;
-    
-    // Mengambil semua karyawan yang dicentang
+    const kat = document.getElementById('akKat').value;
+    const j = document.getElementById('akJenis').value; 
+    const q = parseInt(document.getElementById('akQty').value) || 0;
     const p = Array.from(document.querySelectorAll('.chk-k:checked')).map(c => c.value);
 
-    // 2. Validasi Dasar (Cek apakah ada yang kosong)
+    // 1. Validasi Dasar
     if (!tgl) return alert("Pilih Tanggal terlebih dahulu!");
-    if (!j) return alert("Pilih Jenis Aktivitas dari daftar!");
+    if (!kat || !j) return alert("Pilih Kategori dan Detail Aktivitas!");
     if (p.length === 0) return alert("Pilih minimal 1 Karyawan!");
-    if (q <= 0) return alert("Jumlah (Qty) harus lebih dari 0!");
+    if (q <= 0) return alert("Jumlah (Qty) harus diisi!");
 
-    // 3. Proteksi Absensi (Pastikan karyawan sudah absen MASUK)
+    // 2. Proteksi Absensi
     let belumAbsen = p.filter(k => {
         const dataAbsen = D.absensi?.[tgl]?.[k];
         return !dataAbsen || !['Hadir', 'Telat', 'Lembur'].includes(dataAbsen.j);
@@ -1015,51 +990,69 @@ function saveAk() {
         return alert("Gagal! Karyawan berikut belum absen masuk hari ini:\n" + belumAbsen.join(", "));
     }
 
-    // 4. Logika Cair Otomatis (Pending jika ada kata 'Jerigen')
+    // 3. Logika Cair Otomatis
     const cairAwal = !j.toLowerCase().includes("jerigen"); 
 
-    // 5. Simpan ke Firebase
-    db.ref('aktivitas').push({ 
-        t: tgl, 
-        j: j, 
-        q: q, 
-        p: p, 
-        isCair: cairAwal 
-    }).then(() => {
-        // --- RESET FORM SETELAH BERHASIL ---
+    // 4. Simpan ke Firebase
+    db.ref('aktivitas').push({ t: tgl, j: j, q: q, p: p, isCair: cairAwal }).then(() => {
+        // RESET FORM
         document.getElementById('akQty').value = ""; 
-        document.getElementById('akJenis').value = ""; // Reset Dropdown ke "-- Pilih --"
-        
-        // Uncheck semua checkbox karyawan
+        document.getElementById('akKat').value = ""; 
+        document.getElementById('akJenis').innerHTML = '<option value="">-- Kategori Dulu --</option>';
         document.querySelectorAll('.chk-k').forEach(c => c.checked = false); 
         
-        alert("✅ Berhasil! Kerja '" + j + "' telah tersimpan.");
-        
-        // Jika ada fungsi render laporan, jalankan di sini
+        alert("✅ Kerja '" + j + "' Berhasil Disimpan!");
         if(typeof renderLaporanAktivitas === 'function') renderLaporanAktivitas();
-    }).catch((err) => {
-        alert("Terjadi kesalahan: " + err.message);
     });
-}      
-
-
+}
+      
+// 2. RENDER AKTIVITAS 
 function renderCheckKaryawan() {
-            const tgl = document.getElementById('akTgl').value;
-            const K = Object.values(D.master_karyawan || {});
-            document.getElementById('akKaryawan').innerHTML = K.map(k => {
-                const a = D.absensi?.[tgl]?.[k];
-                const sudahAbsen = a && ['Hadir', 'Telat', 'Lembur'].includes(a.j);
-                return `<label class="check-item" style="${sudahAbsen?'':'opacity:0.3; background:#eee'}">
-                    <input type="checkbox" class="chk-k" value="${k}" ${sudahAbsen?'':'disabled'}> 
-                    <span style="font-weight:${sudahAbsen?'700':'400'}">${k} ${sudahAbsen?'':'(X)'}</span>
-                </label>`;
-            }).join('');
-        }
+    const tgl = document.getElementById('akTgl').value;
+    if(!tgl) return;
+    const K = Object.values(D.master_karyawan || {});
+    
+    document.getElementById('akKaryawan').innerHTML = K.map(k => {
+        const a = D.absensi?.[tgl]?.[k];
+        const sudahAbsen = a && ['Hadir', 'Telat', 'Lembur'].includes(a.j);
+        
+        return `<label class="check-item" style="display:flex; align-items:center; gap:10px; padding:8px; border-bottom:1px solid #f1f5f9; ${sudahAbsen ? '' : 'opacity:0.3; background:#f8fafc'}">
+            <input type="checkbox" class="chk-k" value="${k}" ${sudahAbsen ? '' : 'disabled'}> 
+            <span style="font-weight:${sudahAbsen ? '700' : '400'}; font-size:13px;">${k} ${sudahAbsen ? '' : '(X)'}</span>
+        </label>`;
+    }).join('');
+}
+
+function updateSubAktivitas() {
+    const kat = document.getElementById('akKat').value;
+    const sub = document.getElementById('akJenis');
+    
+    // Kelompok 9 Aktivitas sesuai instruksi Anda
+    const pilihan = {
+        "Rekondisi": ["Rekondisi Kempu", "Rekondisi Jerigen 18L", "Rekondisi Jerigen 5L"],
+        "Minyak": ["Ambil Minyak", "Kirim Minyak"],
+        "Barang": ["Muat Barang", "Bongkar Barang"],
+        "Pemasangan": ["Pasang Pangkalan", "Pasang Agen"]
+    };
+
+    // Kosongkan detail dulu
+    sub.innerHTML = '';
+
+    if (kat && pilihan[kat]) {
+        // Isi detail berdasarkan kategori
+        sub.innerHTML = pilihan[kat].map(p => `<option value="${p}">${p}</option>`).join('');
+    } else {
+        sub.innerHTML = '<option value="">-- Kategori Dulu --</option>';
+    }
+}
 
         
+        
 
-
-        async function saveBl() { 
+        // ==========================================
+        // 6. TAB GAJI LOGIC
+        // ==========================================
+ async function saveBl() { 
             const t=document.getElementById('blTgl').value, n=document.getElementById('blNama').value, rp=parseInt(document.getElementById('blRp').value), file=document.getElementById('blImg').files[0]; 
             let img=""; 
             if(file){ 
@@ -1067,12 +1060,9 @@ function renderCheckKaryawan() {
                 c.width=400; c.height=i.height/i.width*400; ctx.drawImage(i,0,0,400,c.height); img=c.toDataURL('image/jpeg',0.6); 
             } 
             if(n&&rp) db.ref('belanja').push({ t, n, rp, img }).then(()=>{ alert("Nota!"); }); 
-        }
+        }       
 
-        // ==========================================
-        // 6. TAB GAJI LOGIC
-        // ==========================================
-        function renderGaji() {
+function renderGaji() {
             const fM = document.getElementById('fUang').value, T = D.tarif||DEF_TARIF, K = Object.values(D.master_karyawan||{});
             let tG=0, tN=0; Object.values(D.belanja||{}).forEach(b => { if(b.t?.slice(0,7)===fM) tN+=b.rp; });
             let h = `<table><tr><th class="sticky-col">NAMA</th><th>BORONG CAIR</th><th><span style="color:#f97316">PENDING</span></th><th>BONUS</th><th>KASBON</th><th>NETT</th><th>SLIP</th></tr>`;
