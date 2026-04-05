@@ -874,6 +874,60 @@ function renderStok() {
     target.innerHTML = h;
 }
 
+// 3. FUNGSI TOGGLE SATUAN & DETAIL (toggleSatuan)
+// Fokus: Mengatur munculnya pilihan Liter/Kg dan menyembunyikan Rekondisi untuk barang cair
+function toggleSatuan() {
+    const b = document.getElementById('stBrg').value;
+    const isCair = b.toLowerCase().includes('minyak') || b.toLowerCase().includes('cair');
+    
+    const boxSat = document.getElementById('boxSatuan'); // Wrapper dropdown Liter/Kg
+    const boxDet = document.getElementById('boxDetail'); // Wrapper dropdown Kon & QC
+    const optRekon = document.querySelector("#stAksi option[value='Rekondisi']");
+    const aksiDropdown = document.getElementById('stAksi');
+
+    if (isCair) {
+        // Jika Minyak: Munculkan pilihan satuan, sembunyikan detail fisik (Kon/QC)
+        if(boxSat) boxSat.style.display = 'flex';
+        if(boxDet) boxDet.style.display = 'none';
+        
+        // Sembunyikan opsi Rekondisi (Minyak tidak ada rekondisi fisik)
+        if(optRekon) optRekon.style.display = 'none';
+        
+        // Jika sedang terpilih Rekondisi, paksa pindah ke 'Masuk'
+        if(aksiDropdown && aksiDropdown.value === "Rekondisi") {
+            aksiDropdown.value = "Masuk";
+        }
+    } else {
+        // Jika Unit (Kempu/Jerigen): Sembunyikan satuan, munculkan detail fisik
+        if(boxSat) boxSat.style.display = 'none';
+        if(boxDet) boxDet.style.display = 'flex';
+        
+        // Munculkan kembali opsi Rekondisi
+        if(optRekon) optRekon.style.display = 'block';
+    }
+    
+    // Reset tampilan Sub-Aksi Jual setiap ganti barang
+    toggleAksi(); 
+}
+
+// 4. FUNGSI TOGGLE AKSI (toggleAksi)
+// Fokus: Munculkan dropdown Mitra/Umum hanya jika Aksi Utama adalah 'Jual'
+function toggleAksi() {
+    const aksi = document.getElementById('stAksi').value;
+    const boxSub = document.getElementById('boxSubAksi'); // Wrapper dropdown Jual Mitra/Umum
+
+    if (aksi === "Jual") {
+        if(boxSub) boxSub.style.display = 'flex';
+    } else {
+        if(boxSub) boxSub.style.display = 'none';
+    }
+}
+
+// Tambahkan Event Listener agar fungsi berjalan otomatis saat input berubah
+document.getElementById('stBrg').addEventListener('change', toggleSatuan);
+document.getElementById('stAksi').addEventListener('change', toggleAksi);
+
+
 
         // ==========================================
         // 5. TAB AKTIVITAS LOGIC (CHAIN LOGIC)
