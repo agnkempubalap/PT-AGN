@@ -866,33 +866,50 @@ function toggleSatuan() {
     const isCair = b.toLowerCase().includes('minyak') || b.toLowerCase().includes('cair');
     
     const boxSat = document.getElementById('boxSatuan'); 
-    const boxDet = document.getElementById('boxDetail'); 
     const aksiDropdown = document.getElementById('stAksi');
     const optRekon = aksiDropdown ? aksiDropdown.querySelector("option[value='Rekondisi']") : null;
 
     if (isCair) {
+        // Jika Minyak: Munculkan pilihan satuan
         if(boxSat) boxSat.style.display = 'flex';
-        if(boxDet) boxDet.style.display = 'none';
         if(optRekon) optRekon.style.display = 'none';
+        
+        // Paksa pindah dari Rekondisi jika terpilih
         if(aksiDropdown && aksiDropdown.value === "Rekondisi") aksiDropdown.value = "Masuk";
     } else {
+        // Jika Unit (Kempu/Jerigen): Sembunyikan satuan
         if(boxSat) boxSat.style.display = 'none';
-        if(boxDet) boxDet.style.display = 'flex';
         if(optRekon) optRekon.style.display = 'block';
     }
+    
+    // Jalankan toggleAksi untuk mengatur boxDetail & boxSubAksi secara bersamaan
     toggleAksi(); 
 }
 
-// 4. FUNGSI TOGGLE AKSI (toggleAksi)
+// 4. FUNGSI TOGGLE AKSI (toggleAksi) - Mengatur Sub-Aksi Jual & Box Detail
 function toggleAksi() {
+    const b = document.getElementById('stBrg').value;
     const aksi = document.getElementById('stAksi').value;
-    const boxSub = document.getElementById('boxSubAksi'); // Sesuai ID di HTML Anda
+    const isCair = b.toLowerCase().includes('minyak') || b.toLowerCase().includes('cair');
+    
+    const boxSub = document.getElementById('boxSubAksi'); 
+    const boxDet = document.getElementById('boxDetail'); 
 
+    // Logika Box Sub-Aksi (Mitra/Umum)
     if (boxSub) {
         boxSub.style.display = (aksi === "Jual") ? 'flex' : 'none';
     }
-}
 
+    // Logika Box Detail (Ready/Accepted)
+    // HANYA muncul jika: Aksi adalah 'Masuk' DAN Barang BUKAN Cair
+    if (boxDet) {
+        if (aksi === "Masuk" && !isCair) {
+            boxDet.style.display = 'flex';
+        } else {
+            boxDet.style.display = 'none';
+        }
+    }
+}
 
         // ==========================================
         // 5. TAB AKTIVITAS LOGIC (CHAIN LOGIC)
