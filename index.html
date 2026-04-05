@@ -321,37 +321,35 @@
         <input type="number" id="stQty" placeholder="Jumlah">
     </div>
 
-    <div id="boxSatuan" class="flex-row" style="display:none; margin-top: -5px; margin-bottom: 10px;">
-        <select id="stSatuan">
-            <option value="Liter">Liter (Lt)</option>
-            <option value="Kilogram">Kilogram (Kg)</option>
-        </select>
-    </div>
+    <div class="flex-row" style="gap: 8px;">
+        <div id="boxSatuan" style="display:none; flex: 1;">
+            <select id="stSatuan" style="width: 100%; background: #fffbe6;">
+                <option value="Liter">Liter (Lt)</option>
+                <option value="Kilogram">Kg</option>
+            </select>
+        </div>
 
-    <div class="flex-row">
-        <select id="stAksi" onchange="toggleAksi()" style="flex: 1.2; background: #eff6ff; border: 1px solid var(--p); font-weight: 800;">
+        <select id="stAksi" onchange="toggleAksi()" style="flex: 1.5; background: #eff6ff; border: 1px solid var(--p); font-weight: 800;">
             <option value="Masuk">Masuk</option>
             <option value="Rekondisi">Rekon</option>
             <option value="Jual Mitra">Mitra</option>
             <option value="Jual Umum">Umum</option>
         </select>
-
-        <div id="boxDetail" style="display: flex; flex: 2; gap: 8px;">
-            <select id="stKon" style="flex: 1;">
-                <option value="Bekas">Kotor</option>
-                <option value="Baru">Rdy</option>
-            </select>
-            
-            <select id="stQC" style="flex: 1;">
-                <option value="Accepted">Accepted</option>
-                <option value="Reject">Reject</option>
-            </select>
-        </div>
     </div>
 
-    <button class="btn" style="background:var(--p); margin-top: 10px;" onclick="saveSt()">PROSES STOK & CAIRKAN UPAH</button>
-</div>
+    <div id="boxDetail" class="flex-row" style="display: none; margin-top: 8px;">
+        <select id="stKon" style="flex: 1;">
+            <option value="Bekas">Kotor</option>
+            <option value="Baru">Rdy</option>
+        </select>
+        <select id="stQC" style="flex: 1;">
+            <option value="Accepted">Accepted</option>
+            <option value="Reject">Reject</option>
+        </select>
+    </div>
 
+    <button class="btn" style="background:var(--p); margin-top: 10px;" onclick="saveSt()">PROSES STOK</button>
+</div>
             <div class="card">
     <h3>📊 Laporan Stok <input type="month" id="fStok" onchange="autoRender()"></h3>
     
@@ -828,26 +826,36 @@ function toggleSatuan() {
     const brg = document.getElementById('stBrg').value.toLowerCase();
     const boxSat = document.getElementById('boxSatuan');
     const selAksi = document.getElementById('stAksi');
+    
     if(!boxSat || !selAksi) return;
 
+    // Cek apakah barang mengandung kata "Minyak" atau "Cair"
     const isCair = brg.includes('minyak') || brg.includes('cair');
 
     if (isCair) {
-        boxSat.style.display = 'flex'; 
-        // Sembunyikan Rekondisi
+        // 1. Tampilkan box satuan (Akan sejajar dengan Aksi karena flex-row)
+        boxSat.style.display = 'block'; 
+        
+        // 2. Sembunyikan opsi "Rekondisi" karena minyak tidak bisa direkon
         for (let opt of selAksi.options) {
             if (opt.value === "Rekondisi") opt.style.display = 'none';
         }
+        
+        // 3. Jika kursor tidak sengaja di "Rekondisi", paksa ke "Masuk"
         if (selAksi.value === "Rekondisi") selAksi.value = "Masuk";
+        
     } else {
+        // 1. Sembunyikan box satuan (Aksi akan otomatis melebar memenuhi baris)
         boxSat.style.display = 'none';
-        // Tampilkan Rekondisi
+        
+        // 2. Tampilkan kembali opsi "Rekondisi" untuk barang fisik (IBC/Tangki)
         for (let opt of selAksi.options) {
             if (opt.value === "Rekondisi") opt.style.display = 'block';
         }
     }
     
-    // PENTING: Panggil toggleAksi agar boxDetail ikut sinkron
+    // PENTING: Panggil toggleAksi agar baris Detail (Kotor/QC) ikut sinkron
+    // Jika barang cair, toggleAksi akan otomatis menyembunyikan detail Masuk.
     toggleAksi();
 }
 
