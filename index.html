@@ -268,224 +268,159 @@
 
     <div class="container">
         <div id="tab-absen" class="tab-content active">
-            <div class="card">
-                <h3>👥 Master Karyawan</h3> 
-                <div style="display: flex; gap: 5px; margin-top: 10px;">
-                    <input type="text" id="inK" placeholder="Nama..." style="flex: 3; height: 35px;"> 
-                    <button class="btn" style="background:var(--p); flex: 1; margin:0; height: 35px;" onclick="addItem('master_karyawan', 'inK')">ADD</button>
-                </div>
-                <div id="listK" style="display:flex; flex-wrap:wrap; gap:5px; margin-top:10px"></div>
-            </div>
+    <div class="card">
+        <h3>👥 Master Karyawan</h3>
+        <div style="display: flex; gap: 5px; margin-top: 10px;">
+            <input type="text" id="inK" placeholder="Nama..." style="flex: 3; height: 35px;">
+            <button class="btn" style="background:var(--p); flex: 1; margin:0; height: 35px;" onclick="addItem('master_karyawan', 'inK')">ADD</button>
+        </div>
+        <div id="listK" style="display:flex; flex-wrap:wrap; gap:5px; margin-top:10px"></div>
+    </div>
 
-            <div class="card">
-                <h3>📅 Input Absensi <input type="date" id="absTgl"></h3>
-                <div class="flex-row">
-                    <select id="selK"></select>
-                    <select id="absJenis" onchange="toggleIzin()">
-                        <option value="Hadir">Masuk</option>
-                        <option value="Pulang">Pulang</option>
-                        <option value="Izin">Izin</option>
-                        <option value="Alpa">Alpa</option>
-                    </select>
-                </div>
-                <div id="boxIzin" style="display:none; margin-bottom:10px"><input type="text" id="absKet" placeholder="Keterangan Izin..."></div>
-                <button class="btn" style="background:var(--s)" onclick="saveAbs()">SIMPAN ABSEN</button>
-            </div>
+    <div class="card">
+        <h3>📅 Input Absensi <input type="date" id="absTgl"></h3>
+        <div class="flex-row">
+            <select id="selK"></select>
+            <select id="absJenis" onchange="toggleIzin()">
+                <option value="Hadir">Masuk</option>
+                <option value="Pulang">Pulang</option>
+                <option value="Izin">Izin</option>
+                <option value="Alpa">Alpa</option>
+            </select>
+        </div>
+        <div id="boxIzin" style="display:none; margin-bottom:10px"><input type="text" id="absKet" placeholder="Keterangan Izin..."></div>
+        <button class="btn" style="background:var(--s)" onclick="saveAbs()">SIMPAN ABSEN</button>
+    </div>
 
-            <div class="card">
-                <h3>📊 Laporan Absen <input type="month" id="fM"></h3>
-                <div class="table-area" id="areaAbsen"><table><thead id="thA"></thead><tbody id="tbA"></tbody></table></div>
-                <div class="flex-row" style="display: flex; flex-direction: row; gap: 8px; margin: 15px 0; justify-content: flex-start;">
-    
-    <button class="btn" 
-            style="background:var(--w); color:black; flex: 1; max-width: 120px; padding: 10px 5px; min-width: 80px;" 
-            onclick="openLiburMod()">
-        ⚙️ LIBUR
-    </button>
-    
-    <button class="btn" 
-            style="background:var(--s); flex: 1; max-width: 120px; padding: 10px 5px; min-width: 80px;" 
-            onclick="expEx('areaAbsen','Absen')">
-        EXCEL
-    </button>
-    
-    <button class="btn" 
-            style="background:var(--d); flex: 1; max-width: 120px; padding: 10px 5px; min-width: 80px;" 
-            onclick="expPdf('areaAbsen','Absensi_Bulanan')">
-        PDF
-    </button>
+    <div class="card">
+        <h3>📊 Laporan Absen <input type="month" id="fM" onchange="renderAbs()"></h3>
+        <div class="table-area" id="areaAbsen">
+            <table>
+                <thead id="thA"></thead>
+                <tbody id="tbA"></tbody>
+            </table>
+        </div>
+        <div class="flex-row" style="display: flex; gap: 8px; margin: 15px 0;">
+            <button class="btn" style="background:var(--w); color:black; flex: 1;" onclick="openLiburMod()">⚙️ LIBUR</button>
+            <button class="btn" style="background:var(--s); flex: 1;" onclick="expEx('areaAbsen','Absen_Bulanan')">EXCEL</button>
+            <button class="btn" style="background:var(--d); flex: 1;" onclick="expPdf('areaAbsen','Absen_Bulanan')">PDF</button>
+        </div>
+    </div>
 </div>
-   </div>
-       </div>
 
-                <div id="tab-stok" class="tab-content">
-            <div class="card">
-                <h3>📦 Master Barang</h3>
-                <div style="display: flex; gap: 5px; margin-bottom: 10px;">
-                    <input type="text" id="inB" placeholder="Barang..." style="flex: 3; height: 35px;">
-                    <button class="btn" style="background:var(--p); flex: 1; margin:0; height: 35px;" onclick="addItem('master_barang', 'inB')">ADD</button>
-                </div>
-                <div id="listB" style="display:flex; flex-wrap:wrap; gap:5px"></div>
-            </div>
+<div id="tab-stok" class="tab-content">
+    <div class="card">
+        <h3>📦 Master Barang</h3>
+        <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+            <input type="text" id="inB" placeholder="Barang..." style="flex: 3; height: 35px;">
+            <button class="btn" style="background:var(--p); flex: 1; margin:0; height: 35px;" onclick="addItem('master_barang', 'inB')">ADD</button>
+        </div>
+        <div id="listB" style="display:flex; flex-wrap:wrap; gap:5px"></div>
+    </div>
 
-            <div class="card">
-                <h3>📥 Logistik & Penjualan <input type="date" id="stTgl"></h3>
-                <div class="flex-row">
-                    <select id="stBrg" onchange="toggleSatuan()" style="flex: 2;"></select>
-                    <input type="number" id="stQty" placeholder="Jumlah" style="flex: 1;">
-                </div>
-                <div class="flex-row" style="gap: 8px;">
-                    <div id="boxSatuan" style="display:none; flex: 1;">
-                        <select id="stSatuan" style="width: 100%;">
-                            <option value="Liter">Liter (Lt)</option>
-                            <option value="Kilogram">Kilogram (Kg)</option>
-                        </select>
-                    </div>
-                    <select id="stAksi" onchange="toggleAksi()" style="flex: 1.5; font-weight: bold;">
-                        <option value="Masuk">Masuk</option>
-                        <option value="Rekondisi">Rekon</option>
-                        <option value="Jual">Jual</option>
-                    </select>
-                    <div id="boxSubAksi" style="display:none; flex: 1;">
-                        <select id="stSubAksi" style="width: 100%;">
-                            <option value="Jual Mitra">Mitra</option>
-                            <option value="Jual Umum">Umum</option>
-                        </select>
-                    </div>
-                </div>
-                <div id="boxDetail" class="flex-row" style="display: none; margin-top: 8px; gap: 8px;">
-                    <select id="stKon" style="flex: 1;"><option value="Bekas">Kotor</option><option value="Baru">Ready</option></select>
-                    <select id="stQC" style="flex: 1;"><option value="Accepted">Accepted</option><option value="Reject">Reject</option></select>
-                </div>
-                <div style="margin-top: 15px;">
-                    <button class="btn" style="background:var(--s)" onclick="saveSt()">PROSES STOK & UPDATE</button>
-                </div>
+    <div class="card">
+        <h3>📥 Logistik & Penjualan <input type="date" id="stTgl"></h3>
+        <div class="flex-row">
+            <select id="stBrg" onchange="toggleSatuan()" style="flex: 2;"></select>
+            <input type="number" id="stQty" placeholder="Jumlah" style="flex: 1;">
+        </div>
+        <div class="flex-row" style="gap: 8px;">
+            <div id="boxSatuan" style="display:none; flex: 1;">
+                <select id="stSatuan"><option value="Liter">Liter (Lt)</option><option value="Kilogram">Kg</option></select>
             </div>
+            <select id="stAksi" onchange="toggleAksi()" style="flex: 1.5; font-weight: bold;">
+                <option value="Masuk">Masuk</option>
+                <option value="Rekondisi">Rekon</option>
+                <option value="Jual">Jual</option>
+            </select>
+            <div id="boxSubAksi" style="display:none; flex: 1;">
+                <select id="stSubAksi"><option value="Jual Mitra">Mitra</option><option value="Jual Umum">Umum</option></select>
+            </div>
+        </div>
+        <button class="btn" style="background:var(--s); margin-top:15px;" onclick="saveSt()">PROSES STOK</button>
+    </div>
 
-            <div class="card">
-                <h3>📊 Laporan Stok <input type="month" id="fStok" onchange="autoRender()"></h3>
-                <div class="table-area" id="areaStok">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th class="sticky-col">BRG</th>
-                                <th>AWAL KTR</th><th>AWAL RDY</th><th>IN KTR</th><th>IN RDY</th>
-                                <th style="color:var(--d)">REJ</th><th>REKON</th><th>MITRA</th><th>UMUM</th>
-                                <th style="background:#fef3c7">STOK KTR</th><th style="background:#dcfce7">STOK RDY</th>
-                                <th style="background:var(--p); color:white">TOTAL</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tbStok"></tbody>
-                    </table>
-                </div>
-                <div class="flex-row" style="display: flex; gap: 8px; margin: 15px 0;">
-                    <button class="btn" style="background:var(--w); color:black; flex: 1; max-width: 120px;" onclick="showLogs('stok_logs')">⚙️ LOG</button>
-                    <button class="btn" style="background:var(--s); flex: 1; max-width: 120px;" onclick="expEx('tbStok','Stok')">EXCEL</button>
-                    <button class="btn" style="background:var(--d); flex: 1; max-width: 120px;" onclick="expPdf('tbStok','Stok')">PDF</button>
-                </div>
-            </div>
-        </div> 
-        
-            <div id="tab-aktivitas" class="tab-content">
+    <div class="card">
+        <h3>📊 Laporan Stok <input type="month" id="fStok" onchange="autoRender()"></h3>
+        <div class="table-area" id="areaStok">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="sticky-col">BRG</th>
+                        <th>AWAL KTR</th><th>AWAL RDY</th><th>IN KTR</th><th>IN RDY</th>
+                        <th>REJ</th><th>REKON</th><th>MITRA</th><th>UMUM</th>
+                        <th style="background:#fef3c7">STOK KTR</th><th style="background:#dcfce7">STOK RDY</th>
+                    </tr>
+                </thead>
+                <tbody id="tbStok"></tbody>
+            </table>
+        </div>
+        <div class="flex-row" style="display: flex; gap: 8px; margin: 15px 0;">
+            <button class="btn" style="background:var(--w); color:black; flex: 1;" onclick="showLogs('stok_logs')">⚙️ LOG</button>
+            <button class="btn" style="background:var(--s); flex: 1;" onclick="expEx('areaStok','Laporan_Stok')">EXCEL</button>
+            <button class="btn" style="background:var(--d); flex: 1;" onclick="expPdf('areaStok','Laporan_Stok')">PDF</button>
+        </div>
+    </div>
+</div>
+
+<div id="tab-aktivitas" class="tab-content">
     <div class="card">
         <h3>🛠️ Input Aktivitas <input type="date" id="akTgl" onchange="renderCheckKaryawan()"></h3>
-        
         <label style="font-size:11px; font-weight:bold; color:#64748b; margin-bottom:5px; display:block;">Pilih Karyawan:</label>
-        <div id="akKaryawan" class="check-grid" style="max-height:150px; overflow-y:auto; border:1px solid #eee; padding:8px; border-radius:8px; margin-bottom:15px; background:#fafafa;">
-            </div>
-
-        <div class="flex-row" style="gap:8px; margin-bottom:10px; display: flex;">
-            <div style="flex:1">
-                <label style="font-size:11px; color:#64748b;">Kategori:</label>
-                <select id="akKat" onchange="updateSubAktivitas(); this.style.color='#1e293b'" 
-                    style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; background:white; font-size:13px; color:#94a3b8; outline:none;">
-                    <option value="" disabled selected hidden>Pilih Kategori...</option>
-                    <option value="Rekondisi">Rekondisi</option>
-                    <option value="Minyak">Logistik Minyak</option>
-                    <option value="Barang">Logistik Barang</option>
-                    <option value="Pemasangan">Pemasangan</option>
-                </select>
-            </div>
-
-            <div style="flex:1">
-                <label style="font-size:11px; color:#64748b;">Detail:</label>
-                <select id="akJenis" onchange="this.style.color='#1e293b'"
-                    style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; background:white; font-size:13px; color:#94a3b8; outline:none;">
-                    <option value="" disabled selected hidden>Pilih Detail...</option>
-                </select>
-            </div>
+        <div id="akKaryawan" class="check-grid" style="max-height:150px; overflow-y:auto; border:1px solid #eee; padding:8px; border-radius:8px; margin-bottom:15px; background:#fafafa;"></div>
+        
+        <div class="flex-row" style="gap:8px; display: flex;">
+            <select id="akKat" onchange="updateSubAktivitas()" style="flex:1">
+                <option value="" disabled selected>Kategori...</option>
+                <option value="Rekondisi">Rekondisi</option>
+                <option value="Minyak">Minyak</option>
+                <option value="Barang">Barang</option>
+            </select>
+            <select id="akJenis" style="flex:1"><option value="" disabled selected>Detail...</option></select>
         </div>
-
-        <div style="margin-bottom:15px;">
-            <label style="font-size:11px; color:#64748b;">Jumlah (Qty):</label>
-            <input type="number" id="akQty" placeholder="0" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; font-size:13px;">
-        </div>
-
-        <button class="btn" style="background:var(--p); width:100%; padding:12px; font-weight:bold;" onclick="saveAk()">SIMPAN KERJA</button>
+        <input type="number" id="akQty" placeholder="Jumlah (Qty)" style="width:100%; margin:10px 0;">
+        <button class="btn" style="background:var(--p); width:100%;" onclick="saveAk()">SIMPAN KERJA</button>
     </div>
 
     <div class="card" style="margin-top: 15px;">
         <h3>📋 Rekap Aktivitas <input type="date" id="filterTglAk" onchange="renderLogHarian()"></h3>
-        
-        <div style="margin-bottom: 15px; margin-top: 10px;">
-            <label style="font-size: 11px; font-weight: bold; color: #64748b; margin-bottom: 5px; display: block;">Filter Karyawan:</label>
-            <select id="filterNamaAk" onchange="renderLogHarian(); this.style.color = (this.value === '' ? '#94a3b8' : '#1e293b')" 
-                style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; background: white; font-size: 13px; color: #94a3b8; outline: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-                <option value="">Global (Semua)</option>
-            </select>
-        </div>
-        
+        <select id="filterNamaAk" onchange="renderLogHarian()" style="width:100%; margin:10px 0;">
+            <option value="">Global (Semua)</option>
+        </select>
         <div id="statsAktivitas"></div>
-
-        <div style="max-height: 400px; overflow-y: auto;">
-            <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
-                <thead style="position: sticky; top: 0; background: white; z-index: 1;">
-                    <tr style="text-align: left; border-bottom: 2px solid #f1f5f9; color: #64748b;">
-                        <th style="padding: 8px 5px;">INFO</th>
-                        <th style="padding: 8px 5px;">PEKERJAAN</th>
-                        <th style="padding: 8px 5px; text-align: center;">QTY</th>
-                        <th style="padding: 8px 5px; width: 30px;"></th>
-                    </tr>
+        <div class="table-area" id="areaRekapAk">
+            <table style="width:100%; font-size:11px;">
+                <thead>
+                    <tr style="background:#f8fafc"><th>INFO</th><th>PEKERJAAN</th><th>QTY</th><th></th></tr>
                 </thead>
-                <tbody id="listLogAktivitas">
-                    </tbody>
+                <tbody id="listLogAktivitas"></tbody>
             </table>
         </div>
+        <div class="flex-row" style="display: flex; gap: 8px; margin-top: 10px;">
+            <button class="btn" style="background:var(--s); flex: 1;" onclick="expEx('areaRekapAk','Rekap_Kerja')">EXCEL</button>
+            <button class="btn" style="background:var(--d); flex: 1;" onclick="expPdf('areaRekapAk','Rekap_Kerja')">PDF</button>
+        </div>
     </div>
 </div>
 
-       <div id="tab-gaji" class="tab-content">
-    <div class="card" style="border-top: 5px solid #64748b; background: #f8fafc;">
-        <h3 style="color:#1e293b">🛒 Input Belanja / Nota <input type="date" id="blTgl"></h3>
-        <div class="flex-row" style="gap:8px; margin-bottom: 10px;">
-            <input type="text" id="blNama" placeholder="Nama Item / Keperluan" style="flex:2; padding:10px; border-radius:8px; border:1px solid #ddd;">
-            <input type="number" id="blRp" placeholder="Total Rp" style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd;">
+<div id="tab-gaji" class="tab-content">
+    <div class="card">
+        <h3>💰 Perhitungan Gaji <input type="month" id="fGaji" onchange="renderGaji()"></h3>
+        <div class="table-area" id="areaGaji">
+            <table style="width:100%">
+                <thead>
+                    <tr style="background:#f1f5f9">
+                        <th>NAMA</th><th>HADIR</th><th>BORONGAN</th><th>TOTAL</th>
+                    </tr>
+                </thead>
+                <tbody id="tbGaji"></tbody>
+            </table>
         </div>
-        <div class="flex-row" style="gap:8px;">
-            <button class="btn" style="background:#64748b; color:white; flex:2; font-weight:bold;" onclick="saveBl()">SIMPAN NOTA</button>
-            <button class="btn" style="background:var(--w); color:black; flex:1; font-size:11px;" onclick="showNotaLogs()">📂 RIWAYAT</button>
-        </div>
-    </div>
-
-    <div class="card" style="background:var(--p); color:white; margin-top: 15px;">
-        <h3>💰 Ringkasan Gaji <input type="month" id="fUang"></h3>
-        <div class="flex-row">
-            <div>TOTAL GAJI: <b id="gTotal">0</b></div>
-            <div>TOTAL NOTA: <b id="nTotal">0</b></div>
+        <div class="flex-row" style="display: flex; gap: 8px; margin-top: 15px;">
+            <button class="btn" style="background:var(--s); flex: 1;" onclick="expEx('areaGaji','Gaji_Karyawan')">EXCEL</button>
+            <button class="btn" style="background:var(--d); flex: 1;" onclick="expPdf('areaGaji','Gaji_Karyawan')">PDF</button>
         </div>
     </div>
-
-    <div class="flex-row" style="display: flex; gap: 8px; margin: 15px 0;">
-        <button class="btn" style="background:var(--w); color:black; flex: 1;" onclick="editTarif()">⚙️ TARIF</button>
-        <button class="btn" style="background:var(--s); color:white; flex: 1;" onclick="openModKB()">💸 KASBON</button>
-    </div>
-
-    <div id="areaGaji" class="table-area" style="background:white; border-radius:10px;"></div>
-
-    <div style="margin-top: 15px;">
-        <button class="btn" style="background:var(--d); width: 100%; font-weight:bold;" onclick="expPdf('areaGaji','Gaji')">📥 DOWNLOAD LAPORAN GAJI (PDF)</button>
-    </div>
-</div>
 </div>
         
 
