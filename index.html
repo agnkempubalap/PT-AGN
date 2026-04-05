@@ -517,16 +517,29 @@
         function expEx(id,n) { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById(id)), n+'.xlsx'); }
         function expPdf(id,n) { html2pdf().set({margin:5, filename:n+'.pdf', jsPDF:{orientation:'landscape'}}).from(document.getElementById(id)).save(); }
         function showLogs(t) {
-    if (!D || !D[t]) return openMod("Riwayat", "<div style='padding:20px;text-align:center;'>Belum ada data.</div>");
+    // 1. Cek apakah data D ada, jika tidak ada jangan teruskan (agar tidak blank)
+    if (!D || !D[t]) {
+        return openMod("Riwayat", "<div style='padding:20px;text-align:center;color:black;'>Belum ada data riwayat.</div>");
+    }
+
+    // 2. Ambil data dan balik urutannya (terbaru di atas)
     let l = Object.entries(D[t]).reverse().slice(0, 30);
-    let h = l.map(x => {
+
+    // 3. Susun HTML tanpa menggunakan backtick (agar aman dari error baris baru)
+    let h = l.map(function(x) {
         const i = x[1];
+        // Jika ada i.b berarti Stok, jika tidak berarti Aktivitas/Absen
         const d = i.b ? i.b + " (" + i.q + " " + (i.sat||'') + ") - " + (i.ak||'') : (i.j||'Kerja') + " (" + i.q + ")";
-        return "<div style='font-size:11px;padding:8px 5px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;color:black;'><span><b>["+(i.t||'-')+"]</b> "+d+"</span><b onclick=\"removeItem('"+t+"','"+x[0]+"')\" style='color:red;cursor:pointer;padding:0 10px;'>×</b></div>";
+        
+        return "<div style='font-size:11px;padding:8px 5px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;color:black;'>" +
+               "<span><b style='color:#64748b;'>[" + (i.t||'-') + "]</b> " + d + "</span>" +
+               "<b onclick=\"removeItem('" + t + "','" + x[0] + "')\" style='color:red;cursor:pointer;padding:0 10px;font-size:16px;'>×</b>" +
+               "</div>";
     }).join('');
+
+    // 4. Tampilkan ke modal
     openMod("Riwayat Aktivitas", h);
 }
-
 
 
         // ==========================================
