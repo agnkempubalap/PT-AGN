@@ -826,7 +826,7 @@ function renderStok() {
         let ktr = (s.ak + s.ik) - s.rk;
         let rdy = (s.ab + s.ib + s.rk) - (s.jm + s.ju);
 
-        // --- FUNGSI TAMPIL YANG SUDAH DIPERBAIKI ---
+        // --- FUNGSI TAMPIL YANG SUDAH DIPERBAIKI (STANDAR & RAMPING) ---
         const tampil = (val) => {
             // Gunakan angka 0 jika data kosong
             const v = val || 0;
@@ -837,22 +837,21 @@ function renderStok() {
             } else {
                 // Tampilan Benda Cair (Ramping & Seiras)
                 let kg = (v * BJ).toFixed(1);
-                // Aturline-height dan margin agar rapi
-                return `<div style="line-height:1.2; text-align:center; font-size:13px; padding: 2px 0;">` + 
+                // Font-weight standar untuk 'Lt', font-weight bold untuk 'Kg'
+                return `<div style="line-height:1.2; text-align:center; font-size:13px; font-weight:normal;">` + 
                        `<span style="color:#777;">${v} Lt</span><br>` + 
                        `<span style="font-weight:bold; color:#333;">${kg} Kg</span>` + 
                        `</div>`;
             }
         };
 
-        h += `<tr>
-            <td class="sticky-col" style="font-weight:bold; font-size:13px;">${b}</td>
-            <td>${tampil(s.ak)}</td><td>${tampil(s.ab)}</td>
+        // --- TR & NAMA BARANG DENGAN GAYA STANDAR ---
+        h += `<tr style="font-weight:normal; font-size:13px;"> <td class="sticky-col" style="color:#333;">${b}</td> <td>${tampil(s.ak)}</td><td>${tampil(s.ab)}</td>
             <td>${tampil(s.ik)}</td><td>${tampil(s.ib)}</td>
             <td style="color:var(--d); font-weight:bold">${tampil(s.rej)}</td>
             <td>${tampil(s.rk)}</td><td>${tampil(s.jm)}</td><td>${tampil(s.ju)}</td>
-            <td style="background:#fef3c7; font-weight:bold">${tampil(ktr)}</td>
-            <td style="background:#dcfce7; font-weight:bold">${tampil(rdy)}</td>
+            <td style="background:#fef3c7;">${tampil(ktr)}</td>
+            <td style="background:#dcfce7;">${tampil(rdy)}</td>
             <td style="background:var(--p); color:white; font-weight:bold">${tampil(ktr+rdy)}</td>
         </tr>`;
     }); 
