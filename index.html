@@ -435,61 +435,63 @@
         const DEF_TARIF = { "Rekondisi Kempu":100000, "Rekondisi jerigen 18L":2000, "Rekondisi jerigen 5L":1000, "muat barang":600000, "bongkar barang":600000, "kirim minyak":150000, "pasang pangkalan":500000, "pasang agen":700000 };
 
         window.onload = () => {
-    // Ambil tanggal hari ini (Format: YYYY-MM-DD)
+    // Ambil tanggal hari ini
     const t = new Date().toISOString().split('T')[0];
     
-    // 1. SET TANGGAL HARIAN & PASANG LISTENER SINKRONISASI
+    // 1. SET TANGGAL HARIAN & SINKRONISASI (Input vs Laporan)
     const idsHarian = ['absTgl', 'stTgl', 'akTgl', 'blTgl', 'filterTglAk'];
     idsHarian.forEach(id => { 
         const el = document.getElementById(id);
         if(el) {
-            el.value = t; // Set ke hari ini
+            el.value = t;
 
-            // KHUSUS: Jika akTgl (Input) diganti, filterTglAk (Laporan) harus ikut
-            if(id === 'akTgl') {
-                el.addEventListener('change', () => {
-                    const tglBaru = el.value;
+            // Logika Sinkronisasi: Input & Laporan Aktivitas harus kompak
+            el.addEventListener('change', () => {
+                if(id === 'akTgl') {
                     const fLog = document.getElementById('filterTglAk');
-                    if(fLog) {
-                        fLog.value = tglBaru;
-                        renderLogHarian(); // Langsung update tabel laporan
-                    }
-                    // Jika Anda punya fungsi render karyawan, panggil juga di sini
-                    if(typeof renderCheckKaryawan === 'function') renderCheckKaryawan();
-                });
-            }
+                    if(fLog) fLog.value = el.value;
+                }
+                
+                // Setiap ada perubahan tanggal harian, refresh data terkait
+                if(typeof renderLogHarian === 'function') renderLogHarian();
+                if(typeof renderCheckKaryawan === 'function') renderCheckKaryawan();
+            });
         }
     });
 
-    // 2. SET INPUT BULANAN (Laporan Gaji / Stok)
-    ['fM', 'fUang', 'fStok'].forEach(id => { 
+    // 2. SET INPUT BULANAN (Ditambah fGaji agar otomatis)
+    const idsBulan = ['fM', 'fUang', 'fStok', 'fGaji'];
+    idsBulan.forEach(id => { 
         const el = document.getElementById(id);
-        if(el) el.value = t.slice(0, 7); // Format: YYYY-MM
+        if(el) {
+            el.value = t.slice(0, 7); // Set ke YYYY-MM
+            
+            // Pasang listener: Ganti bulan = Auto Render Laporan
+            el.onchange = () => {
+                if(typeof autoRender === 'function') autoRender();
+                if(id === 'fGaji' && typeof renderGaji === 'function') renderGaji();
+                if(id === 'fM' && typeof renderAbs === 'function') renderAbs();
+            };
+        }
     });
 
     // 3. LISTENER REAL-TIME FIREBASE (UTAMA)
     db.ref('/').on('value', s => { 
-        D = s.val() || {}; 
+        // Pastikan D disimpan ke window agar fungsi di file lain bisa baca
+        window.D = s.val() || {}; 
+        
+        // Update Nama-nama Karyawan di semua dropdown
+        if(typeof updateSemuaDropdownKaryawan === 'function') updateSemuaDropdownKaryawan();
         
         // Jalankan fungsi-fungsi render utama
         if(typeof initUI === 'function') initUI(); 
         if(typeof autoRender === 'function') autoRender(); 
         
-        // Pastikan tabel laporan aktivitas terbaru muncul saat aplikasi dibuka
-        renderLogHarian(); 
-    });
-
-    // 4. PASANG EVENT LISTENER UNTUK FILTER BULANAN LAINNYA
-    const idsBulan = ['fM', 'fUang', 'fStok'];
-    idsBulan.forEach(id => {
-        const el = document.getElementById(id);
-        if(el) {
-            el.onchange = () => {
-                if(typeof autoRender === 'function') autoRender();
-            };
-        }
+        // Pastikan data aktivitas muncul saat aplikasi pertama buka
+        if(typeof renderLogHarian === 'function') renderLogHarian(); 
     });
 };
+
 
 
         // ==========================================
