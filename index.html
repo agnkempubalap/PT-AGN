@@ -396,19 +396,24 @@
     
     <div class="flex-row" style="display: flex; flex-direction: row; gap: 8px; margin: 15px 0; justify-content: flex-start;">
     
+    <div class="flex-row" style="display: flex; flex-direction: row; gap: 8px; margin: 15px 0; justify-content: flex-start;">
+    
     <button class="btn" 
-            style="background:#475569; color:white; flex: 1; max-width: 120px; padding: 10px 5px; min-width: 80px;" 
-            onclick="showStokLog()">LOG
+            style="background:var(--w); color:black; flex: 1; max-width: 120px; padding: 10px 5px; min-width: 80px;" 
+            onclick="showLogs('stok_logs')">
+        ⚙️ LOG
     </button>
     
     <button class="btn" 
-            style="background:#166534; color:white; flex: 1; max-width: 120px; padding: 10px 5px; min-width: 80px;" 
-            onclick="exportStokExcel()">EXCEL
+            style="background:var(--s); flex: 1; max-width: 120px; padding: 10px 5px; min-width: 80px;" 
+            onclick="expEx('tbStok','Laporan_Stok')">
+        EXCEL
     </button>
     
     <button class="btn" 
-            style="background:#991b1b; color:white; flex: 1; max-width: 120px; padding: 10px 5px; min-width: 80px;" 
-            onclick="exportStokPDF()">PDF
+            style="background:var(--d); flex: 1; max-width: 120px; padding: 10px 5px; min-width: 80px;" 
+            onclick="expPdf('tbStok','Laporan_Stok_Bulanan')">
+        PDF
     </button>
 </div>
 </div>
@@ -558,7 +563,27 @@
         function removeItem(p,k) { if(confirm("Hapus?")) db.ref(`${p}/${k}`).remove().then(()=>closeMod()); }
         function expEx(id,n) { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById(id)), n+'.xlsx'); }
         function expPdf(id,n) { html2pdf().set({margin:5, filename:n+'.pdf', jsPDF:{orientation:'landscape'}}).from(document.getElementById(id)).save(); }
-        function showLogs(t) { let l=Object.entries(D[t]||{}).reverse().slice(0,30); openMod("Log", l.map(x=>`<div style="font-size:10px;padding:5px;border-bottom:1px solid #eee"><span>[${x[1].t}] ${x[1].b||x[1].j} (${x[1].q})</span> <b onclick="removeItem('${t}','${x[0]}')" style="color:red; cursor:pointer">×</b></div>`).join('')); }
+        function showLogs(t) { 
+    // Mengambil 30 data terbaru
+    let l = Object.entries(D[t] || {}).reverse().slice(0, 30); 
+    
+    let htmlContent = l.map(x => {
+        const item = x[1];
+        // Logika untuk menampilkan deskripsi yang lebih jelas
+        // Jika stok: Tampilkan Barang + Jumlah + Aksi (Masuk/Jual)
+        // Jika absen: Tampilkan Nama + Jam
+        const deskripsi = item.b ? `${item.b} (${item.q} ${item.sat||''}) - ${item.ak||''}` : `${item.j} (${item.q})`;
+        
+        return `
+        <div style="font-size:11px; padding:8px 5px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
+            <span><b style="color:#64748b;">[${item.t}]</b> ${deskripsi}</span> 
+            <b onclick="removeItem('${t}','${x[0]}')" style="color:red; cursor:pointer; font-size:16px; padding:0 5px;">×</b>
+        </div>`;
+    }).join('');
+
+    openMod("Riwayat Aktivitas", htmlContent || "<div style='padding:20px; color:#94a3b8; text-align:center;'>Belum ada riwayat</div>"); 
+}
+
 
         // ==========================================
         // 3. TAB ABSEN LOGIC
