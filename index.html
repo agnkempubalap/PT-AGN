@@ -386,10 +386,11 @@
             </div>
         </div> 
         
-                 <div id="tab-aktivitas" class="tab-content">
-    
+            <div id="tab-aktivitas" class="tab-content">
     <div class="card" style="box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border-radius:12px; border:1px solid #e2e8f0; background:white;">
-        <h3 style="color:#1e293b; display:flex; align-items:center; gap:8px;">🛠️ Input Aktivitas <input type="date" id="akTgl" onchange="renderCheckKaryawan()" style="padding:5px 8px; border-radius:6px; border:1px solid #ddd; font-size:12px;"></h3>
+        <h3 style="color:#1e293b; display:flex; align-items:center; gap:8px;">🛠️ Input Aktivitas 
+            <input type="date" id="akTgl" onchange="renderCheckKaryawan()" style="padding:5px 8px; border-radius:6px; border:1px solid #ddd; font-size:12px;">
+        </h3>
         
         <label style="font-size:11px; font-weight:bold; color:#64748b; margin-bottom:5px; display:block;">Pilih Karyawan:</label>
         <div id="akKaryawan" class="check-grid" style="max-height:150px; overflow-y:auto; border:1px solid #eee; padding:8px; border-radius:8px; margin-bottom:15px; background:#fafafa;">
@@ -403,11 +404,32 @@
                     <option value="Rekondisi">Rekondisi</option>
                     <option value="Minyak">Logistik Minyak</option>
                     <option value="Barang">Logistik Barang</option>
-                    <option value="Pemasangan">
+                    <option value="Pemasangan">Pemasangan</option>
+                </select>
+            </div>
+            <div style="flex:1">
+                <label style="font-size:11px; color:#64748b;">Detail:</label>
+                <select id="akJenis" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; background:white; font-size:13px;">
+                    <option value="">-- Kategori Dulu --</option>
+                </select>
+            </div>
+        </div>
 
+        <div style="margin-bottom:15px;">
+            <label style="font-size:11px; color:#64748b;">Jumlah (Qty):</label>
+            <input type="number" id="akQty" placeholder="0" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; font-size:13px;">
+        </div>
 
-        <div id="tab-gaji" class="tab-content">
-    
+        <button class="btn" style="background:var(--p); width:100%; padding:12px; font-weight:bold;" onclick="saveAk()">SIMPAN KERJA</button>
+    </div>
+
+    <div class="flex-row" style="display: flex; gap: 8px; margin: 15px 0;">
+        <button class="btn" style="background:var(--w); color:black; flex: 1;" onclick="showLogs('aktivitas')">⚙️ LOG KERJA</button>
+        <button class="btn" style="background:#0ea5e9; color:white; flex: 1;" onclick="genRekapKerja()">PDF REKAP</button>
+    </div>
+</div> 
+
+       <div id="tab-gaji" class="tab-content">
     <div class="card" style="border-top: 5px solid #64748b; background: #f8fafc;">
         <h3 style="color:#1e293b">🛒 Input Belanja / Nota <input type="date" id="blTgl"></h3>
         <div class="flex-row" style="gap:8px; margin-bottom: 10px;">
@@ -433,8 +455,7 @@
         <button class="btn" style="background:var(--s); color:white; flex: 1;" onclick="openModKB()">💸 KASBON</button>
     </div>
 
-    <div id="areaGaji" class="table-area" style="background:white; border-radius:10px;">
-        </div>
+    <div id="areaGaji" class="table-area" style="background:white; border-radius:10px;"></div>
 
     <div style="margin-top: 15px;">
         <button class="btn" style="background:var(--d); width: 100%; font-weight:bold;" onclick="expPdf('areaGaji','Gaji')">📥 DOWNLOAD LAPORAN GAJI (PDF)</button>
