@@ -428,18 +428,8 @@
             </div>
         </div> 
     </div>
-        function showLogs(t) {
-            if (!D || !D[t]) return openMod("Riwayat", "<div style='padding:20px;text-align:center;'>Belum ada data.</div>");
-            let l = Object.entries(D[t]).reverse().slice(0, 30);
-            let h = l.map(x => {
-                const i = x[1];
-                const d = i.b ? i.b + " (" + i.q + " " + (i.sat||'') + ") - " + (i.ak||'') : (i.j||'Kerja') + " (" + i.q + ")";
-                return "<div style='font-size:11px;padding:8px 5px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;color:black;'><span><b>["+(i.t||'-')+"]</b> "+d+"</span><b onclick=\"removeItem('"+t+"','"+x[0]+"')\" style='color:red;cursor:pointer;padding:0 10px;'>×</b></div>";
-            }).join('');
-            openMod("Riwayat Aktivitas", h);
-        }
+        
 
-  
   <script>
         // ==========================================
         // 1. KONEKTIVITAS (FIREBASE INIT)
@@ -545,8 +535,6 @@
             }).join('');
             openMod("Riwayat Aktivitas", h);
         }
-
-</script>
 
 
         // ==========================================
