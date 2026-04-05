@@ -435,60 +435,72 @@
         const DEF_TARIF = { "Rekondisi Kempu":100000, "Rekondisi jerigen 18L":2000, "Rekondisi jerigen 5L":1000, "muat barang":600000, "bongkar barang":600000, "kirim minyak":150000, "pasang pangkalan":500000, "pasang agen":700000 };
 
         window.onload = () => {
-    // Ambil tanggal hari ini
+    // 1. AMBIL TANGGAL HARI INI
     const t = new Date().toISOString().split('T')[0];
+    const blnIni = t.slice(0, 7); // Format: YYYY-MM
     
-    // 1. SET TANGGAL HARIAN & SINKRONISASI (Input vs Laporan)
+    // 2. SET TANGGAL HARIAN & SINKRONISASI AKTIVITAS
+    // IDs: Absen, Stok, Aktivitas, Uang, Filter Laporan
     const idsHarian = ['absTgl', 'stTgl', 'akTgl', 'blTgl', 'filterTglAk'];
     idsHarian.forEach(id => { 
         const el = document.getElementById(id);
         if(el) {
-            el.value = t;
+            el.value = t; 
 
-            // Logika Sinkronisasi: Input & Laporan Aktivitas harus kompak
+            // Listener Perubahan Tanggal
             el.addEventListener('change', () => {
+                // Jika input aktivitas diganti, laporan aktivitas harus ikut
                 if(id === 'akTgl') {
                     const fLog = document.getElementById('filterTglAk');
                     if(fLog) fLog.value = el.value;
                 }
                 
-                // Setiap ada perubahan tanggal harian, refresh data terkait
+                // Refresh data harian yang relevan
                 if(typeof renderLogHarian === 'function') renderLogHarian();
                 if(typeof renderCheckKaryawan === 'function') renderCheckKaryawan();
             });
         }
     });
 
-    // 2. SET INPUT BULANAN (Ditambah fGaji agar otomatis)
+    // 3. SET INPUT BULANAN (Absen, Stok, Uang, Gaji)
+    // Ditambahkan 'fGaji' agar laporan gaji otomatis bulan ini
     const idsBulan = ['fM', 'fUang', 'fStok', 'fGaji'];
     idsBulan.forEach(id => { 
         const el = document.getElementById(id);
         if(el) {
-            el.value = t.slice(0, 7); // Set ke YYYY-MM
-            
-            // Pasang listener: Ganti bulan = Auto Render Laporan
+            el.value = blnIni; 
+
+            // Ganti Bulan = Auto Refresh Tabel Terkait
             el.onchange = () => {
-                if(typeof autoRender === 'function') autoRender();
-                if(id === 'fGaji' && typeof renderGaji === 'function') renderGaji();
-                if(id === 'fM' && typeof renderAbs === 'function') renderAbs();
+                if(typeof autoRender === 'function') autoRender(); // Untuk Stok
+                if(id === 'fM' && typeof renderAbs === 'function') renderAbs(); // Untuk Absen
+                if(id === 'fGaji' && typeof renderGaji === 'function') renderGaji(); // Untuk Gaji
             };
         }
     });
 
-    // 3. LISTENER REAL-TIME FIREBASE (UTAMA)
-    db.ref('/').on('value', s => { 
-        // Pastikan D disimpan ke window agar fungsi di file lain bisa baca
-        window.D = s.val() || {}; 
+    // 4. LISTENER REAL-TIME FIREBASE (SINKRONISASI DATA UTAMA)
+    db.ref('/').on('value', snapshot => { 
+        // Simpan ke window.D agar bisa diakses semua fungsi render
+        window.D = snapshot.val() || {}; 
         
-        // Update Nama-nama Karyawan di semua dropdown
-        if(typeof updateSemuaDropdownKaryawan === 'function') updateSemuaDropdownKaryawan();
+        // A. Update Master Karyawan (Dropdown & List)
+        if(typeof updateSemuaDropdownKaryawan === 'function') {
+            updateSemuaDropdownKaryawan();
+        }
         
-        // Jalankan fungsi-fungsi render utama
+        // B. Jalankan Render UI Dasar
         if(typeof initUI === 'function') initUI(); 
-        if(typeof autoRender === 'function') autoRender(); 
         
-        // Pastikan data aktivitas muncul saat aplikasi pertama buka
-        if(typeof renderLogHarian === 'function') renderLogHarian(); 
+        // C. Render Tabel Laporan (Stok, Aktivitas, Absen)
+        if(typeof autoRender === 'function') autoRender(); 
+        if(typeof renderLogHarian === 'function') renderLogHarian();
+        if(typeof renderAbs === 'function') renderAbs();
+        
+        // D. Khusus Tab Gaji (Jika Sedang Dibuka)
+        if(typeof renderGaji === 'function') renderGaji();
+
+        console.log("Data Firebase Updated & Rendered");
     });
 };
 
