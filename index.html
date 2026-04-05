@@ -387,28 +387,53 @@
         </div> 
         
                  <div id="tab-aktivitas" class="tab-content">
-            <div class="card" style="border-top: 5px solid var(--d)">
-                <h3>🛠️ Input Borongan <input type="date" id="akTgl" onchange="renderCheckKaryawan()"></h3>
-                <div id="akKaryawan" class="check-grid"></div>
-                <input type="number" id="akQty" placeholder="Jumlah Output" style="margin-bottom:10px">
-                <button class="btn" style="background:var(--p); width:100%" onclick="saveAk()">SIMPAN KERJA</button>
-            </div>
-            
-            <div class="card">
-                <h3>🛒 Input Belanja / Nota <input type="date" id="blTgl"></h3>
-                <div class="flex-row">
-                    <input type="text" id="blNama" placeholder="Item">
-                    <input type="number" id="blRp" placeholder="Rp">
-                </div>
-                <button class="btn" style="background:var(--d); width:100%" onclick="saveBl()">SIMPAN NOTA</button>
+    <div class="card" style="border-top: 5px solid var(--d)">
+        <h3>🛠️ Input Borongan <input type="date" id="akTgl" onchange="renderCheckKaryawan()"></h3>
+        
+        <label style="font-size:11px; font-weight:bold; color:#64748b; margin-bottom:5px; display:block;">Pilih Karyawan:</label>
+        <div id="akKaryawan" class="check-grid" style="max-height:150px; overflow-y:auto; border:1px solid #eee; padding:8px; border-radius:8px; margin-bottom:15px; background:#fafafa;">
             </div>
 
-            <div class="flex-row" style="display: flex; gap: 8px; margin: 15px 0;">
-                <button class="btn" style="background:var(--w); color:black; flex: 1; max-width: 120px;" onclick="showLogs('aktivitas')">⚙️ LOG</button>
-                <button class="btn" style="background:#64748b; color:white; flex: 1; max-width: 120px;" onclick="showNotaLogs()">NOTA</button>
-                <button class="btn" style="background:#0ea5e9; color:white; flex: 1; max-width: 120px;" onclick="genRekapKerja()">PDF</button>
-            </div>
-        </div> 
+        <div style="margin-bottom:10px;">
+            <label style="font-size:11px; color:#64748b;">Jenis Aktivitas:</label>
+            <select id="akJenis" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; background:white; font-size:13px;">
+                <option value="">-- Pilih Pekerjaan --</option>
+                <option value="Rekondisi Kempu">1. Rekondisi Kempu</option>
+                <option value="Rekondisi Jerigen 18L">2. Rekondisi Jerigen 18L</option>
+                <option value="Rekondisi Jerigen 5L">3. Rekondisi Jerigen 5L</option>
+                <option value="Ambil Minyak">4. Ambil Minyak</option>
+                <option value="Kirim Minyak">5. Kirim Minyak</option>
+                <option value="Muat Barang">6. Muat Barang</option>
+                <option value="Bongkar Barang">7. Bongkar Barang</option>
+                <option value="Pasang Pangkalan">8. Pasang Pangkalan</option>
+                <option value="Pasang Agen">9. Pasang Agen</option>
+            </select>
+        </div>
+
+        <div style="margin-bottom:15px;">
+            <label style="font-size:11px; color:#64748b;">Jumlah (Qty):</label>
+            <input type="number" id="akQty" placeholder="Masukkan angka" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;">
+        </div>
+
+        <button class="btn" style="background:var(--p); width:100%; padding:12px; font-weight:bold;" onclick="saveAk()">SIMPAN KERJA</button>
+    </div>
+    
+    <div class="card">
+        <h3>🛒 Input Belanja / Nota <input type="date" id="blTgl"></h3>
+        <div class="flex-row" style="gap:8px;">
+            <input type="text" id="blNama" placeholder="Nama Item" style="flex:2; padding:10px;">
+            <input type="number" id="blRp" placeholder="Rp" style="flex:1; padding:10px;">
+        </div>
+        <button class="btn" style="background:var(--d); width:100%; margin-top:10px;" onclick="saveBl()">SIMPAN NOTA</button>
+    </div>
+
+    <div class="flex-row" style="display: flex; gap: 8px; margin: 15px 0;">
+        <button class="btn" style="background:var(--w); color:black; flex: 1;" onclick="showLogs('aktivitas')">⚙️ LOG</button>
+        <button class="btn" style="background:#64748b; color:white; flex: 1;" onclick="showNotaLogs()">NOTA</button>
+        <button class="btn" style="background:#0ea5e9; color:white; flex: 1;" onclick="genRekapKerja()">PDF</button>
+    </div>
+</div>
+
 
         <div id="tab-gaji" class="tab-content">
             <div class="card" style="background:var(--p); color:white">
@@ -954,7 +979,62 @@ function toggleAksi() {
         // ==========================================
         // 5. TAB AKTIVITAS LOGIC (CHAIN LOGIC)
         // ==========================================
-        function renderCheckKaryawan() {
+ // 1. SAVE AKTIVITAS 
+function saveAk() {
+    // 1. Ambil data dari elemen input
+    const tgl = document.getElementById('akTgl').value;
+    const j = document.getElementById('akJenis').value; // Mengambil dari Dropdown
+    const qRaw = document.getElementById('akQty').value;
+    const q = parseInt(qRaw) || 0;
+    
+    // Mengambil semua karyawan yang dicentang
+    const p = Array.from(document.querySelectorAll('.chk-k:checked')).map(c => c.value);
+
+    // 2. Validasi Dasar (Cek apakah ada yang kosong)
+    if (!tgl) return alert("Pilih Tanggal terlebih dahulu!");
+    if (!j) return alert("Pilih Jenis Aktivitas dari daftar!");
+    if (p.length === 0) return alert("Pilih minimal 1 Karyawan!");
+    if (q <= 0) return alert("Jumlah (Qty) harus lebih dari 0!");
+
+    // 3. Proteksi Absensi (Pastikan karyawan sudah absen MASUK)
+    let belumAbsen = p.filter(k => {
+        const dataAbsen = D.absensi?.[tgl]?.[k];
+        return !dataAbsen || !['Hadir', 'Telat', 'Lembur'].includes(dataAbsen.j);
+    });
+
+    if (belumAbsen.length > 0) {
+        return alert("Gagal! Karyawan berikut belum absen masuk hari ini:\n" + belumAbsen.join(", "));
+    }
+
+    // 4. Logika Cair Otomatis (Pending jika ada kata 'Jerigen')
+    const cairAwal = !j.toLowerCase().includes("jerigen"); 
+
+    // 5. Simpan ke Firebase
+    db.ref('aktivitas').push({ 
+        t: tgl, 
+        j: j, 
+        q: q, 
+        p: p, 
+        isCair: cairAwal 
+    }).then(() => {
+        // --- RESET FORM SETELAH BERHASIL ---
+        document.getElementById('akQty').value = ""; 
+        document.getElementById('akJenis').value = ""; // Reset Dropdown ke "-- Pilih --"
+        
+        // Uncheck semua checkbox karyawan
+        document.querySelectorAll('.chk-k').forEach(c => c.checked = false); 
+        
+        alert("✅ Berhasil! Kerja '" + j + "' telah tersimpan.");
+        
+        // Jika ada fungsi render laporan, jalankan di sini
+        if(typeof renderLaporanAktivitas === 'function') renderLaporanAktivitas();
+    }).catch((err) => {
+        alert("Terjadi kesalahan: " + err.message);
+    });
+}      
+
+
+function renderCheckKaryawan() {
             const tgl = document.getElementById('akTgl').value;
             const K = Object.values(D.master_karyawan || {});
             document.getElementById('akKaryawan').innerHTML = K.map(k => {
@@ -967,16 +1047,8 @@ function toggleAksi() {
             }).join('');
         }
 
-        function saveAk() {
-            const tgl=document.getElementById('akTgl').value, q=parseInt(document.getElementById('akQty').value)||0, p=Array.from(document.querySelectorAll('.chk-k:checked')).map(c=>c.value), j=document.getElementById('akJenis').value;
-            if(!p.length || q<=0) return alert("Pilih Karyawan & Isi Qty!");
-            let ilegal = p.filter(k => !D.absensi?.[tgl]?.[k] || !['Hadir','Telat','Lembur'].includes(D.absensi[tgl][k].j));
-            if(ilegal.length) return alert("Ada Karyawan belum absen!");
-            const cairAwal = !j.toLowerCase().includes("jerigen"); 
-            db.ref('aktivitas').push({ t:tgl, j, q, p, isCair: cairAwal }).then(()=>{
-                document.getElementById('akQty').value=""; document.querySelectorAll('.chk-k').forEach(c=>c.checked=false); alert("Kerja Tersimpan!");
-            });
-        }
+        
+
 
         async function saveBl() { 
             const t=document.getElementById('blTgl').value, n=document.getElementById('blNama').value, rp=parseInt(document.getElementById('blRp').value), file=document.getElementById('blImg').files[0]; 
