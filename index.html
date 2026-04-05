@@ -567,44 +567,46 @@
     const listK = document.getElementById('listK'), selK = document.getElementById('selK');
     const listB = document.getElementById('listB'), stBrg = document.getElementById('stBrg');
     
-    // 1. RENDER MASTER KARYAWAN (Update Sinkron & Rapi)
+    // 1. RENDER MASTER KARYAWAN (Versi Anti-Hilang & Sinkron Global)
 if (window.D && D.master_karyawan) {
     const K = Object.entries(D.master_karyawan);
-    // Sortir data berdasarkan nama (A-Z) agar rapi di semua dropdown
+    // Sortir data berdasarkan nama (A-Z) agar rapi
     const sortedK = [...K].sort((a, b) => a[1].localeCompare(b[1]));
 
-    // --- RENDER DAFTAR DI MENU SETTING (DENGAN TOMBOL X) ---
-    if (typeof listK !== 'undefined' && listK) {
-        listK.innerHTML = sortedK.map(k => `
+    // --- A. RENDER DI MENU SETTING (DENGAN TOMBOL X) ---
+    const elListK = document.getElementById('listKaryawan'); 
+    if (elListK) {
+        elListK.innerHTML = sortedK.map(k => `
             <span style="background:#fff; border:1px solid #ddd; padding:6px; border-radius:8px; font-size:11px; display:inline-block; margin:2px;">
                 ${k[1]} <b onclick="removeItem('master_karyawan','${k[0]}')" style="color:red; cursor:pointer; margin-left:5px;">×</b>
             </span>`).join('');
     }
 
-    // --- RENDER DROPDOWN STANDAR (ABSENSI / GAJI) ---
-    if (typeof selK !== 'undefined' && selK) {
-        selK.innerHTML = sortedK.map(k => `<option value="${k[1]}">${k[1]}</option>`).join('');
+    // --- B. RENDER DROPDOWN ABSENSI / GAJI ---
+    const elSelK = document.getElementById('selKaryawan');
+    if (elSelK) {
+        elSelK.innerHTML = sortedK.map(k => `<option value="${k[1]}">${k[1]}</option>`).join('');
     }
 
-    // --- RENDER FILTER REKAP AKTIVITAS (DENGAN GAYA BAYANGAN) ---
+    // --- C. RENDER FILTER REKAP AKTIVITAS (YANG TADI SERING HILANG) ---
     const filterNama = document.getElementById('filterNamaAk');
     if (filterNama) {
-        const currentVal = filterNama.value; 
+        // 1. Simpan pilihan user sekarang supaya tidak reset ke Global otomatis
+        const simpanPilihan = filterNama.value; 
         
-        // Header pakai warna abu-abu (Placeholder)
+        // 2. Susun ulang isinya
         let optionsHtml = '<option value="" style="color:#94a3b8">Global (Semua)</option>';
-        
-        // Tambahkan daftar nama dari Master Karyawan
         optionsHtml += sortedK.map(k => 
             `<option value="${k[1]}" style="color:#1e293b">${k[1]}</option>`
         ).join('');
         
+        // 3. Pasang isinya ke elemen
         filterNama.innerHTML = optionsHtml;
         
-        // Kembalikan pilihan user sebelumnya agar tidak reset saat ada data update
-        filterNama.value = currentVal;
+        // 4. Kembalikan pilihan user (Slamet/dkk) atau default ke Global jika kosong
+        filterNama.value = simpanPilihan || "";
 
-        // Atur warna teks: Abu-abu jika Global, Hitam jika sudah pilih nama
+        // 5. Atur warna teks (Abu-abu jika Global, Hitam jika Nama Orang)
         filterNama.style.color = filterNama.value === "" ? "#94a3b8" : "#1e293b";
     }
 }
