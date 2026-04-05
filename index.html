@@ -824,9 +824,8 @@ function renderStok() {
         let ktr = (s.ak + s.ik) - s.rk;
         let rdy = (s.ab + s.ib + s.rk) - (s.jm + s.ju);
 
-        // --- FUNGSI TAMPIL STACK DIAGONAL (PECAHAN) ---
+        // --- FUNGSI TAMPIL DIAGONAL DENGAN SATUAN LT/KG ---
         const tampil = (val, forceStrip = false) => {
-            // Jika kolom dipaksa strip (untuk kotor/rekon minyak)
             if (forceStrip) return `<span style="color:#ccc;">-</span>`;
             
             const v = val || 0;
@@ -834,42 +833,38 @@ function renderStok() {
                 return `<span style="font-size:12px;">${v} Unit</span>`;
             } else {
                 let kg = (v * BJ).toFixed(1);
-                return `<div style="font-size:12px; line-height:1; display:inline-block; vertical-align:middle;">` +
-                       `<span style="position:relative; font-size:10px; color:#666;">` +
-                       `<sup style="font-size:8px; margin-right:-1px;">${v}</sup>` +
-                       `<span style="font-size:12px; color:#ccc; vertical-align:middle;">/</span>` +
-                       `<sub style="font-size:8px; font-weight:bold; color:#333; margin-left:-1px;">${kg}</sub>` +
-                       `</span>` +
+                // Menggunakan kombinasi span dan line-height untuk efek diagonal yang kokoh
+                return `<div style="display:inline-flex; align-items:center; justify-content:center; line-height:1; font-family:sans-serif;">` +
+                         `<div style="display:flex; flex-direction:column; align-items:flex-end;">` +
+                            `<span style="font-size:9px; color:#666;">${v}<small>Lt</small></span>` +
+                         `</div>` +
+                         `<span style="font-size:14px; color:#ccc; margin:0 1px; transform:rotate(15deg);">/</span>` +
+                         `<div style="display:flex; flex-direction:column; align-items:flex-start;">` +
+                            `<span style="font-size:9px; font-weight:bold; color:#333;">${kg}<small>Kg</small></span>` +
+                         `</div>` +
                        `</div>`;
             }
         };
 
         h += `<tr style="font-size:12px; border-bottom:1px solid #eee;">
             <td class="sticky-col" style="font-weight:600; color:#333; font-size:12px;">${b}</td>
-            
             <td style="text-align:center;">${tampil(s.ak, isCair)}</td>
-            
             <td style="text-align:center;">${tampil(s.ab)}</td>
-            
             <td style="text-align:center;">${tampil(s.ik, isCair)}</td>
-            
             <td style="text-align:center;">${tampil(s.ib)}</td>
             <td style="text-align:center; color:var(--d); font-weight:bold;">${tampil(s.rej)}</td>
-            
             <td style="text-align:center;">${tampil(s.rk, isCair)}</td>
-            
             <td style="text-align:center;">${tampil(s.jm)}</td>
             <td style="text-align:center;">${tampil(s.ju)}</td>
-            
             <td style="text-align:center; background:#fef3c7;">${tampil(ktr, isCair)}</td>
-            
             <td style="text-align:center; background:#dcfce7;">${tampil(rdy)}</td>
-            <td style="text-align:center; background:var(--p); color:white;">${tampil(ktr+rdy, isCair)}</td>
+            <td style="text-align:center; background:var(--p); color:white; font-weight:bold;">${tampil(ktr+rdy, isCair)}</td>
         </tr>`;
     }); 
     
     target.innerHTML = h;
 }
+
 
         // ==========================================
         // 5. TAB AKTIVITAS LOGIC (CHAIN LOGIC)
