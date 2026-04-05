@@ -419,52 +419,39 @@
    </div>
      </div>
 
-        <div id="tab-aktivitas" class="tab-content">
-            <div class="card" style="border-top: 5px solid var(--d)">
-                <h3>🛠️ Input Borongan <input type="date" id="akTgl" onchange="renderCheckKaryawan()"></h3>
-                <p style="font-size: 10px; margin-bottom: 10px; color: var(--d)">*Hanya karyawan yang sudah absen masuk yang muncul di daftar.</p>
-                <div class="flex-row">
-                    <select id="akJenis">
-                        <option value="Rekondisi Kempu">Rekon Kempu</option>
-                        <option value="Rekondisi jerigen 18L">Rekon 18L (Cair Pas Jual)</option>
-                        <option value="Rekondisi jerigen 5L">Rekon 5L (Cair Pas Jual)</option>
-                        <option value="muat barang">Muat</option>
-                        <option value="bongkar barang">Bongkar</option>
-                        <option value="kirim minyak">Kirim Minyak</option>
-                        <option value="pasang pangkalan">Pasang Pangkalan</option>
-                        <option value="pasang agen">Pasang Agen</option>
-                    </select>
-                </div>
-                <div id="akKaryawan" class="check-grid"></div>
-                <input type="number" id="akQty" placeholder="Jumlah Output" style="margin-bottom:10px">
-                <button class="btn" style="background:var(--p)" onclick="saveAk()">SIMPAN KERJA</button>
-            </div>
+        <div class="flex-row" style="display: flex; gap: 8px; margin: 15px 0; justify-content: flex-start;">
+    <button class="btn" 
+            style="background:var(--w); color:black; flex: 1; max-width: 120px; padding: 10px 5px; min-width: 80px;" 
+            onclick="showLogs('aktivitas')">
+        ⚙️ LOG
+    </button>
+    <button class="btn" 
+            style="background:#64748b; color:white; flex: 1; max-width: 120px; padding: 10px 5px; min-width: 80px;" 
+            onclick="showNotaLogs()">
+        NOTA
+    </button>
+    <button class="btn" 
+            style="background:#0ea5e9; color:white; flex: 1; max-width: 120px; padding: 10px 5px; min-width: 80px;" 
+            onclick="genRekapKerja()">
+        PDF
+    </button>
+</div>
+</div>
 
-            <div class="card">
-                <h3>🛒 Input Belanja / Nota <input type="date" id="blTgl"></h3>
-                <div class="flex-row"><input type="text" id="blNama" placeholder="Nama Item"><input type="number" id="blRp" placeholder="Rp"></div>
-                <div class="flex-row"><input type="file" id="blImg" accept="image/*"></div>
-                <button class="btn" style="background:var(--d)" onclick="saveBl()">SIMPAN NOTA</button>
-            </div>
-            <div class="flex-row">
-                <button class="btn" style="background:#64748b" onclick="showLogs('aktivitas')">LOG KERJA</button>
-                <button class="btn" style="background:var(--w); color:black" onclick="showNotaLogs()">REKAP NOTA</button>
-                <button class="btn" style="background:#0ea5e9" onclick="genRekapKerja()">REKAP KERJA PDF</button>
-            </div>
-        </div>
+        <div class="flex-row" style="display: flex; gap: 8px; margin: 15px 0; justify-content: flex-start;">
+    <button class="btn" style="background:var(--w); color:black; flex: 1; max-width: 150px;" onclick="editTarif()">⚙️ TARIF</button>
+    <button class="btn" style="background:var(--s); flex: 1; max-width: 150px;" onclick="openModKB()">💰 KASBON</button>
+</div>
 
-        <div id="tab-gaji" class="tab-content">
-            <div class="card" style="background:var(--p); color:white">
-                <h3>💰 Ringkasan Gaji <input type="month" id="fUang"></h3>
-                <div class="flex-row"><div>TOTAL GAJI CAIR: <b id="gTotal">0</b></div><div>TOTAL BELANJA: <b id="nTotal">0</b></div></div>
-            </div>
-            <div class="flex-row">
-                <button class="btn" style="background:var(--w); color:black" onclick="editTarif()">⚙️ ATUR TARIF</button>
-                <button class="btn" style="background:var(--s)" onclick="openModKB()">💰 KASBON / BONUS</button>
-            </div>
-            <div id="areaGaji" class="table-area"></div>
-            <button class="btn" style="background:var(--d)" onclick="expPdf('areaGaji','Rekap_Gaji_Karyawan')">DOWNLOAD PDF GAJI</button>
-        </div>
+<div id="areaGaji" class="table-area"></div>
+
+<div style="margin-top: 15px;">
+    <button class="btn" 
+            style="background:var(--d); width: auto; min-width: 200px; padding: 10px 24px;" 
+            onclick="expPdf('areaGaji','Rekap_Gaji_Karyawan')">
+        📥 DOWNLOAD PDF GAJI
+    </button>
+</div>
     </div>
 
 
@@ -563,27 +550,18 @@
         function removeItem(p,k) { if(confirm("Hapus?")) db.ref(`${p}/${k}`).remove().then(()=>closeMod()); }
         function expEx(id,n) { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById(id)), n+'.xlsx'); }
         function expPdf(id,n) { html2pdf().set({margin:5, filename:n+'.pdf', jsPDF:{orientation:'landscape'}}).from(document.getElementById(id)).save(); }
-        function showLogs(t) { 
-    // Pastikan D ada dan t adalah key yang valid
+        // 1. Letakkan showLogs di sini (Pastikan huruf 'f' kecil)
+function showLogs(t) { 
     if (!D) return;
-    
-    // Mengambil 30 data terbaru
     let l = Object.entries(D[t] || {}).reverse().slice(0, 30); 
-    
     let htmlContent = l.map(x => {
         const item = x[1];
-        // Deskripsi otomatis: Jika ada item.b (barang) berarti stok, jika tidak berarti aktivitas/absen
-        const deskripsi = item.b 
-            ? `${item.b} (${item.q} ${item.sat||''}) - ${item.ak||''}` 
-            : `${item.j} (${item.q})`;
-        
-        return `
-        <div style="font-size:11px; padding:8px 5px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
+        const deskripsi = item.b ? `${item.b} (${item.q} ${item.sat||''}) - ${item.ak||''}` : `${item.j} (${item.q})`;
+        return `<div style="font-size:11px; padding:8px 5px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
             <span><b style="color:#64748b;">[${item.t || '-'}]</b> ${deskripsi}</span> 
             <b onclick="removeItem('${t}','${x[0]}')" style="color:red; cursor:pointer; font-size:16px; padding:0 5px;">×</b>
         </div>`;
     }).join('');
-
     openMod("Riwayat Aktivitas", htmlContent || "<div style='padding:20px; color:#94a3b8; text-align:center;'>Belum ada riwayat</div>"); 
 }
 
