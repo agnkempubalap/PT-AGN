@@ -329,22 +329,24 @@
     </div>
 
     <div class="flex-row">
-        <select id="stAksi" style="flex: 1.5; background: #eff6ff; border: 1px solid var(--p); font-weight: 800;">
+        <select id="stAksi" onchange="toggleAksi()" style="flex: 1.2; background: #eff6ff; border: 1px solid var(--p); font-weight: 800;">
             <option value="Masuk">Masuk</option>
             <option value="Rekondisi">Rekon</option>
             <option value="Jual Mitra">Mitra</option>
             <option value="Jual Umum">Umum</option>
         </select>
 
-        <select id="stKon" style="flex: 1;">
-            <option value="Bekas">Kotor</option>
-            <option value="Baru">Rdy</option>
-        </select>
-        
-        <select id="stQC" style="flex: 1;">
-            <option value="Accepted">Accepted</option>
-            <option value="Reject">Reject</option>
-        </select>
+        <div id="boxDetail" style="display: flex; flex: 2; gap: 8px;">
+            <select id="stKon" style="flex: 1;">
+                <option value="Bekas">Kotor</option>
+                <option value="Baru">Rdy</option>
+            </select>
+            
+            <select id="stQC" style="flex: 1;">
+                <option value="Accepted">Accepted</option>
+                <option value="Reject">Reject</option>
+            </select>
+        </div>
     </div>
 
     <button class="btn" style="background:var(--p); margin-top: 10px;" onclick="saveSt()">PROSES STOK & CAIRKAN UPAH</button>
@@ -472,7 +474,7 @@
     const listK = document.getElementById('listK'), selK = document.getElementById('selK');
     const listB = document.getElementById('listB'), stBrg = document.getElementById('stBrg');
     
-    // 1. Render Master Karyawan
+    // 1. RENDER MASTER KARYAWAN (Untuk Absen & Gaji)
     if (D.master_karyawan) {
         const K = Object.entries(D.master_karyawan);
         if (listK) {
@@ -486,7 +488,7 @@
         }
     }
 
-    // 2. Render Master Barang (Tambahan Baru)
+    // 2. RENDER MASTER BARANG (Untuk Tab Stok)
     if (D.master_barang) {
         const B = Object.entries(D.master_barang);
         if (listB) {
@@ -495,18 +497,24 @@
                     ${b[1]} <b onclick="removeItem('master_barang','${b[0]}')" style="color:red; cursor:pointer">×</b>
                 </span>`).join('');
         }
+        // Mengisi dropdown pilihan barang di form input stok
         if (stBrg) {
             stBrg.innerHTML = B.map(b => `<option value="${b[1]}">${b[1]}</option>`).join('');
         }
     }
 
-    // 3. Pemicu Otomatis untuk Satuan (PENTING)
-    // Ini agar saat aplikasi dibuka, box satuan langsung menyesuaikan
+    // 3. PEMICU OTOMATIS (SINKRONISASI FORM STOK)
+    // Menjalankan pengecekan Liter/Kg berdasarkan barang pertama yang muncul
     if (typeof toggleSatuan === "function") {
         toggleSatuan();
     }
-}
 
+    // Menjalankan pengecekan tampil/sembunyi kolom detail (Kotor/QC) saat startup
+    // Agar jika defaultnya "Masuk", kolom detail langsung terlihat rapi
+    if (typeof toggleAksi === "function") {
+        toggleAksi();
+    }
+}
 
         function openMod(t,h) { document.getElementById('modTitle').innerText=t; document.getElementById('modContent').innerHTML=h; document.getElementById('modalUni').style.display='flex'; }
         function closeMod() { document.getElementById('modalUni').style.display='none'; }
@@ -709,23 +717,35 @@ function saveL() {
     const b = document.getElementById('stBrg').value;
     const q = parseInt(document.getElementById('stQty').value);
     const ak = document.getElementById('stAksi').value;
-    const kon = document.getElementById('stKon').value;
     
-    // Logika tambahan untuk Satuan
-    const boxSat = document.getElementById('boxSatuan');
-    const sat = (boxSat && boxSat.style.display === 'flex') 
-                ? document.getElementById('stSatuan').value 
-                : '';
+    // 1. Logika Ambil Detail (Kondisi & QC)
+    // Jika boxDetail disembunyikan (bukan aksi 'Masuk'), kita beri nilai default
+    const boxDetail = document.getElementById('boxDetail');
+    const isMasuk = (boxDetail && boxDetail.style.display === 'flex');
+    
+    const konFinal = isMasuk ? document.getElementById('stKon').value : 'Baru';
+    const qcFinal = isMasuk ? document.getElementById('stQC').value : 'Accepted';
 
+    // 2. Logika Ambil Satuan (Liter/Kg)
+    const boxSat = document.getElementById('boxSatuan');
+    const satFinal = (boxSat && boxSat.style.display === 'flex') 
+                     ? document.getElementById('stSatuan').value 
+                     : '';
+
+    // Validasi input jumlah
     if(!q) return alert("Qty Kosong!");
 
-    const qcFinal = (ak === "Masuk") ? document.getElementById('stQC').value : "Accepted";
-
-    // Kirim data ke Firebase termasuk property 'sat' (satuan)
+    // 3. Kirim data ke Firebase
     db.ref('stok_logs').push({ 
-        t, b, q, kon, qc: qcFinal, ak, sat 
+        t, 
+        b, 
+        q, 
+        kon: konFinal, 
+        qc: qcFinal, 
+        ak: ak, 
+        sat: satFinal 
     }).then(() => {
-        // Logika pencairan upah otomatis (Jerigen)
+        // 4. Logika Pencairan Upah Otomatis (Khusus Jerigen)
         if(ak.includes("Jual") && b.toLowerCase().includes("jerigen")) {
             let sisaJual = q;
             let logs = Object.entries(D.aktivitas || {})
@@ -742,10 +762,12 @@ function saveL() {
             });
         }
         
+        // Reset input dan beri notifikasi
         document.getElementById('stQty').value = ""; 
         alert("Stok & Satuan Terupdate!");
     });
 }
+
 
         function renderStok() {
     // Gunakan filter bulan khusus stok (fStok)
@@ -802,6 +824,7 @@ function saveL() {
     document.getElementById('tbStok').innerHTML = h;
 }
 
+// SATUAN
 function toggleSatuan() {
     const brg = document.getElementById('stBrg').value.toLowerCase();
     const box = document.getElementById('boxSatuan');
@@ -814,6 +837,24 @@ function toggleSatuan() {
         box.style.display = 'none';
     }
 }
+
+// AKSI
+
+function toggleAksi() {
+    const aksi = document.getElementById('stAksi').value;
+    const box = document.getElementById('boxDetail');
+    
+    // Jika tidak ditemukan di HTML, berhenti agar tidak error
+    if (!box) return;
+
+    // Logika: Hanya muncul jika aksi adalah "Masuk"
+    if (aksi === "Masuk") {
+        box.style.display = 'flex';
+    } else {
+        box.style.display = 'none';
+    }
+}
+
 
         // ==========================================
         // 5. TAB AKTIVITAS LOGIC (CHAIN LOGIC)
