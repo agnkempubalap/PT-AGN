@@ -325,7 +325,7 @@
         <div id="boxSatuan" style="display:none; flex: 1;">
             <select id="stSatuan" style="width: 100%; background: #fffbe6;">
                 <option value="Liter">Liter (Lt)</option>
-                <option value="Kilogram">Kg</option>
+                <option value="Kilogram">Kilogram (Kg)</option>
             </select>
         </div>
 
@@ -824,15 +824,26 @@ function renderStok() {
         let ktr = (s.ak + s.ik) - s.rk;
         let rdy = (s.ab + s.ib + s.rk) - (s.jm + s.ju);
 
+        // --- FUNGSI TAMPIL BARU (ATAS BAWAH & NO DASH) ---
         const tampil = (val) => {
-            if (!val || val === 0) return "-";
-            if (!isCair) return val + " Unit";
-            let kg = (val * BJ).toFixed(1);
-            return val + " Lt / " + kg + " Kg";
+            // Jika nilai kosong atau undefined, anggap 0
+            const v = val || 0;
+            
+            if (!isCair) {
+                // Tampilan Benda Padat (Unit)
+                return `<div style="text-align:center;">${v} Unit</div>`;
+            } else {
+                // Tampilan Benda Cair (Lt di atas, Kg di bawah)
+                let kg = (v * BJ).toFixed(1);
+                return `<div style="line-height:1.1; text-align:center; font-size:12px;">` + 
+                       `<span style="color:#666;">${v} Lt</span><br>` + 
+                       `<b>${kg} Kg</b>` + 
+                       `</div>`;
+            }
         };
 
         h += `<tr>
-            <td class="sticky-col">${b}</td>
+            <td class="sticky-col" style="font-weight:bold;">${b}</td>
             <td>${tampil(s.ak)}</td><td>${tampil(s.ab)}</td>
             <td>${tampil(s.ik)}</td><td>${tampil(s.ib)}</td>
             <td style="color:var(--d); font-weight:bold">${tampil(s.rej)}</td>
@@ -842,8 +853,10 @@ function renderStok() {
             <td style="background:var(--p); color:white; font-weight:bold">${tampil(ktr+rdy)}</td>
         </tr>`;
     }); 
+    
     target.innerHTML = h;
 }
+
 
 // 3. LOGIKA INTERAKSI (Toggle Satuan & Aksi)
 function toggleSatuan() {
