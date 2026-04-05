@@ -787,7 +787,7 @@ function renderStok() {
 
     const B_arr = D.master_barang ? Object.values(D.master_barang) : [];
     let h = "";
-    const BJ = 0.9; 
+    const BJ = 0.9; // Massa jenis minyak
 
     if (B_arr.length === 0) {
         target.innerHTML = "<tr><td colspan='12' style='padding:20px; color:#94a3b8;'>Data Barang Belum Ada</td></tr>";
@@ -798,15 +798,19 @@ function renderStok() {
         let s = { ak:0, ab:0, ik:0, ib:0, rej:0, rk:0, jm:0, ju:0 };
         const isCair = b.toLowerCase().includes('minyak') || b.toLowerCase().includes('cair');
 
+        // --- LOGIKA PERHITUNGAN DATA ---
         if (D.stok_logs) {
             Object.values(D.stok_logs).forEach(l => {
                 if(l.b !== b) return;
                 let tglLog = l.t ? l.t.slice(0,7) : "";
+                
+                // Stok Awal (Bulan-bulan sebelumnya)
                 if(tglLog < filterBulan) { 
                     if(l.ak === "Masuk") (l.kon === "Bekas") ? s.ak += l.q : s.ab += l.q; 
                     else if(l.ak === "Rekondisi") { s.ak -= l.q; s.ab += l.q; } 
                     else if(l.ak.includes("Jual")) s.ab -= l.q; 
                 }
+                // Aktivitas Bulan Berjalan
                 else if(tglLog === filterBulan) { 
                     if(l.ak === "Masuk") (l.kon === "Bekas") ? s.ik += l.q : s.ib += l.q; 
                     else if(l.ak === "Rekondisi") s.rk += l.q; 
@@ -820,27 +824,36 @@ function renderStok() {
         let ktr = (s.ak + s.ik) - s.rk;
         let rdy = (s.ab + s.ib + s.rk) - (s.jm + s.ju);
 
-        // Fungsi Tampil (formatCell internal)
-        const tampil = (val, forceStrip = false) => {
+        // --- INTERNAL HELPER: TAMPIL (Dengan Perbaikan Warna Putih) ---
+        const tampil = (val, forceStrip = false, isTotalCol = false) => {
             if (forceStrip) return `<span style="color:#e2e8f0; font-weight:normal;">-</span>`;
             const v = val || 0;
+            
+            // Atur warna teks berdasarkan posisi kolom
+            const colorLt = isTotalCol ? '#ffffff' : '#2563eb';
+            const colorKg = isTotalCol ? '#ffffff' : '#1e293b';
+            const colorUnit = isTotalCol ? '#ffffff' : (v > 0 ? '#334155' : '#cbd5e1');
+            const slashColor = isTotalCol ? 'rgba(255,255,255,0.4)' : '#cbd5e1';
+
             if (!isCair) {
-                let color = v > 0 ? '#334155' : '#cbd5e1';
-                return `<div style="color:${color}; font-weight:700; font-size:12px;">${v}<span style="font-size:9px; font-weight:400; margin-left:2px;">Unit</span></div>`;
+                // Tampilan Barang Unit
+                return `<div style="color:${colorUnit}; font-weight:700; font-size:12px;">${v}<span style="font-size:9px; font-weight:400; margin-left:2px; opacity:0.8;">Unit</span></div>`;
             } else {
+                // Tampilan Barang Cair (Diagonal Lt/Kg)
                 let kg = (v * BJ).toFixed(1);
                 return `<div style="display:inline-flex; align-items:center; line-height:1.1;">` +
                          `<div style="display:flex; flex-direction:column; align-items:flex-end;">` +
-                            `<span style="font-size:10px; color:#2563eb; font-weight:700;">${v}<span style="font-size:8px; font-weight:400;">Lt</span></span>` +
+                            `<span style="font-size:10px; color:${colorLt}; font-weight:700;">${v}<span style="font-size:8px; font-weight:400;">Lt</span></span>` +
                          `</div>` +
-                         `<span style="color:#cbd5e1; font-size:14px; margin:0 2px; font-weight:300;">/</span>` +
+                         `<span style="color:${slashColor}; font-size:14px; margin:0 2px; font-weight:300;">/</span>` +
                          `<div style="display:flex; flex-direction:column; align-items:flex-start;">` +
-                            `<span style="font-size:10px; color:#1e293b; font-weight:800;">${kg}<span style="font-size:8px; font-weight:400;">Kg</span></span>` +
+                            `<span style="font-size:10px; color:${colorKg}; font-weight:800;">${kg}<span style="font-size:8px; font-weight:400;">Kg</span></span>` +
                          `</div>` +
                        `</div>`;
             }
         };
 
+        // --- PENYUSUNAN BARIS TABEL ---
         h += `<tr style="border-bottom: 1px solid #f1f5f9;">
             <td class="sticky-col" style="font-weight:700; color:#334155; font-size:12px; background:#fff; border-right:2px solid #f8fafc; padding:10px 8px;">${b}</td>
             
@@ -860,14 +873,13 @@ function renderStok() {
             <td style="text-align:center; background:#fffbeb; color:#92400e; border-left:1px solid #fef3c7;">${tampil(ktr, isCair)}</td>
             <td style="text-align:center; background:#f0fdf4; color:#166534;">${tampil(rdy)}</td>
             
-            <td style="text-align:center; background:#2563eb; color:#ffffff; font-weight:900;">
-                <div style="color:white !important;">${tampil(ktr+rdy)}</div>
+            <td style="text-align:center; background:#2563eb; color:#ffffff !important; font-weight:900;">
+                ${tampil(ktr+rdy, false, true)}
             </td>
         </tr>`;
     }); 
     target.innerHTML = h;
 }
-
 
 // 3. FUNGSI TOGGLE SATUAN & DETAIL (toggleSatuan)
 function toggleSatuan() {
