@@ -566,19 +566,38 @@
     const listK = document.getElementById('listK'), selK = document.getElementById('selK');
     const listB = document.getElementById('listB'), stBrg = document.getElementById('stBrg');
     
-    // 1. RENDER MASTER KARYAWAN (Untuk Absen & Gaji)
-    if (D.master_karyawan) {
-        const K = Object.entries(D.master_karyawan);
-        if (listK) {
-            listK.innerHTML = K.map(k => `
-                <span style="background:#fff; border:1px solid #ddd; padding:6px; border-radius:8px; font-size:11px">
-                    ${k[1]} <b onclick="removeItem('master_karyawan','${k[0]}')" style="color:red; cursor:pointer">×</b>
-                </span>`).join('');
-        }
-        if (selK) {
-            selK.innerHTML = K.map(k => `<option value="${k[1]}">${k[1]}</option>`).join('');
-        }
+    // 1. RENDER MASTER KARYAWAN (Update agar masuk ke Filter Rekap)
+if (D.master_karyawan) {
+    const K = Object.entries(D.master_karyawan);
+    
+    // Render untuk daftar di menu setting (dengan tombol x merah)
+    if (listK) {
+        listK.innerHTML = K.map(k => `
+            <span style="background:#fff; border:1px solid #ddd; padding:6px; border-radius:8px; font-size:11px">
+                ${k[1]} <b onclick="removeItem('master_karyawan','${k[0]}')" style="color:red; cursor:pointer">×</b>
+            </span>`).join('');
     }
+
+    // Render untuk dropdown Absensi/Gaji
+    if (selK) {
+        selK.innerHTML = K.map(k => `<option value="${k[1]}">${k[1]}</option>`).join('');
+    }
+
+    // --- TAMBAHAN PENTING UNTUK REKAP AKTIVITAS ---
+    const filterNama = document.getElementById('filterNamaAk');
+    if (filterNama) {
+        // Simpan nilai yang sedang dipilih agar tidak reset ke Global saat data update
+        const currentVal = filterNama.value; 
+        
+        // Isi ulang dropdown, pastikan "Global" tetap di paling atas
+        filterNama.innerHTML = '<option value="">Global</option>' + 
+            K.map(k => `<option value="${k[1]}">${k[1]}</option>`).join('');
+        
+        // Kembalikan pilihan user sebelumnya
+        filterNama.value = currentVal; 
+    }
+}
+
 
     // 2. RENDER MASTER BARANG (Untuk Tab Stok)
     if (D.master_barang) {
@@ -1102,17 +1121,22 @@ function renderLogHarian() {
     const tglPilihan = document.getElementById('filterTglAk')?.value;
     const tbody = document.getElementById('listLogAktivitas');
     const statsArea = document.getElementById('statsAktivitas');
+    const selectKaryawan = document.getElementById('filterNamaAk');
     
     if (!tbody) return;
 
-    // OTOMATIS: Isi daftar nama karyawan ke dropdown filter jika masih kosong
-    const selectKaryawan = document.getElementById('filterNamaAk');
-    if (selectKaryawan && selectKaryawan.options.length <= 1 && window.D && D.master_karyawan) {
-        Object.values(D.master_karyawan).sort().forEach(k => {
-            let opt = document.createElement('option');
-            opt.value = k; opt.innerText = k;
-            selectKaryawan.appendChild(opt);
-        });
+    // --- 1. LOGIKA PENGISIAN DROPDOWN (DIPERBAIKI) ---
+    // Kita isi dropdown setiap kali fungsi dipanggil jika data Master sudah ada
+    if (selectKaryawan && window.D && D.master_karyawan) {
+        const listK = Object.values(D.master_karyawan).sort();
+        // Hanya isi jika jumlah option masih 1 (artinya cuma ada 'Global')
+        if (selectKaryawan.options.length <= 1) {
+            listK.forEach(k => {
+                let opt = document.createElement('option');
+                opt.value = k; opt.innerText = k;
+                selectKaryawan.appendChild(opt);
+            });
+        }
     }
 
     db.ref('aktivitas').on('value', snapshot => {
@@ -1126,25 +1150,25 @@ function renderLogHarian() {
         const allItems = Object.keys(data).map(key => ({ id: key, ...data[key] }));
         const bulanIni = tglPilihan ? tglPilihan.slice(0, 7) : "";
 
-        // --- 1. LOGIKA FILTER & RINGKASAN ---
+        // --- 2. LOGIKA FILTER & RINGKASAN ---
         let items = [];
         let totalQty = 0;
         let judulStats = "";
 
         if (namaPilihan === "") { 
-            // MODE GLOBAL: Lihat semua aktivitas pada TANGGAL yang dipilih
+            // MODE GLOBAL: Lihat per Hari
             items = allItems.filter(item => item.t === tglPilihan).reverse();
             totalQty = items.reduce((sum, i) => sum + (parseInt(i.q) || 0), 0);
-            judulStats = `Total Kerja Gudang (Hari Ini)`;
+            judulStats = `Gudang Hari Ini (${tglPilihan.split('-').reverse().join('/')})`;
         } else {
-            // MODE KARYAWAN: Lihat rekap SEBULAN untuk orang tersebut
-            items = allItems.filter(item => item.t.startsWith(bulanIni) && item.p.includes(namaPilihan))
+            // MODE KARYAWAN: Rekap Bulanan
+            items = allItems.filter(item => item.t && item.t.startsWith(bulanIni) && item.p.includes(namaPilihan))
                              .sort((a,b) => b.t.localeCompare(a.t));
             totalQty = items.reduce((sum, i) => sum + (parseInt(i.q) || 0), 0);
-            judulStats = `Total Kerja ${namaPilihan} (${bulanIni})`;
+            judulStats = `Rekap ${namaPilihan} (Bulan ${bulanIni})`;
         }
 
-        // --- 2. TAMPILKAN RINGKASAN (Ide Tampilan Mini Dashboard) ---
+        // --- 3. DASHBOARD RINGKASAN ---
         if (statsArea) {
             statsArea.innerHTML = `
                 <div style="background:linear-gradient(to right, #f8fafc, #eff6ff); padding:12px; border-radius:10px; border:1px solid #dbeafe; display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
@@ -1153,45 +1177,56 @@ function renderLogHarian() {
                         <div style="font-size:18px; font-weight:800; color:#1e40af;">${totalQty} <span style="font-size:12px; font-weight:normal;">Qty</span></div>
                     </div>
                     <div style="text-align:right;">
-                        <div style="font-size:10px; color:#64748b;">Frekuensi</div>
-                        <div style="font-size:14px; font-weight:700; color:#1e40af;">${items.length}x Kerja</div>
+                        <div style="font-size:10px; color:#64748b;">Aktivitas</div>
+                        <div style="font-size:14px; font-weight:700; color:#1e40af;">${items.length}x</div>
                     </div>
                 </div>
             `;
         }
 
-        // --- 3. TAMPILKAN TABEL ---
+        // --- 4. RENDER TABEL ---
         if (items.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:15px; color:#94a3b8;">Tidak ada data ditemukan.</td></tr>';
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:#94a3b8;">Tidak ada data ${namaPilihan || 'Global'}</td></tr>`;
             return;
         }
 
         tbody.innerHTML = items.map(item => {
             const tglIndo = item.t ? item.t.split('-').reverse().slice(0,2).join('/') : '--/--';
             const qtyTampil = item.q === 0 ? '<b style="color:#f59e0b">PROS</b>' : `<b>${item.q}</b>`;
-            
-            // Info kolom pertama: Jika global munculkan JAM, jika karyawan munculkan TGL
             const infoUtama = namaPilihan === "" ? (item.waktu || '--:--') : tglIndo;
+
+            // Buat daftar nama jadi link yang bisa diklik untuk filter cepat
+            const daftarNama = item.p.map(n => 
+                `<span onclick="filterCepat('${n}')" style="color:#3b82f6; cursor:pointer;">${n}</span>`
+            ).join(", ");
 
             return `
                 <tr style="border-bottom: 1px solid #f8fafc;">
                     <td style="padding: 10px 5px; color: #94a3b8; font-family: monospace; font-size:10px;">${infoUtama}</td>
                     <td style="padding: 10px 5px; color: #1e293b;">
                         <div style="font-weight:600;">${item.j}</div>
-                        <div style="font-size:9px; color:#94a3b8;">
-                            ${namaPilihan === "" ? item.p.join(", ") : "Tim: " + item.p.join(", ")}
-                        </div>
+                        <div style="font-size:9px; color:#94a3b8;">${namaPilihan === "" ? daftarNama : "Bersama: " + item.p.join(", ")}</div>
                     </td>
                     <td style="padding: 10px 5px; text-align: center;">${qtyTampil}</td>
                     <td style="padding: 10px 5px; text-align: center;">
                         <span onclick="hapusAk('${item.id}', '${item.j}')" 
-                              style="color:#ef4444; font-size:18px; cursor:pointer; font-weight:bold;">×</span>
+                              style="color:#ef4444; font-size:20px; cursor:pointer; font-weight:bold;">×</span>
                     </td>
                 </tr>
             `;
         }).join('');
     });
 }
+
+// FUNGSI BARU: Klik nama di tabel langsung filter bulanan orang itu
+function filterCepat(nama) {
+    const sel = document.getElementById('filterNamaAk');
+    if(sel) {
+        sel.value = nama;
+        renderLogHarian();
+    }
+}
+
 
 
 function renderCheckKaryawan() {
