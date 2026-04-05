@@ -845,7 +845,11 @@ function renderStok() {
             <td>${fmt(s.rk)}</td><td>${fmt(s.jm)}</td><td>${fmt(s.ju)}</td>
             <td style="background:#fef3c7; font-weight:bold">${fmt(ktr)}</td>
             <td style="background:#dcfce7; font-weight:bold">${fmt(rdy)}</td>
-            <td style="background:var(--p); color:
+            <td style="background:var(--p); color:white; font-weight:bold">${fmt(ktr+rdy)}</td>
+        </tr>`;
+    }); 
+    document.getElementById('tbStok').innerHTML = h;
+}
 
 
 // 3. LOGIKA TOGGLE SATUAN & FILTER
