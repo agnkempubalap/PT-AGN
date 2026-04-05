@@ -36,6 +36,39 @@
         .modal-box { background: white; width: 100%; max-width: 600px; border-radius: 15px; padding: 15px; max-height: 85vh; overflow-y: auto; }
         .check-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
         .check-item { display: flex; align-items: center; gap: 8px; background: #f8fafc; padding: 10px; border-radius: 10px; border: 1px solid #eee; cursor: pointer; }
+
+/* CSS KHUSUS UNTUK HEADER KARTU SEJAJAR */
+.card h3 { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 12px; 
+    font-size: 13px; 
+    color: var(--p); 
+    border-left: 4px solid var(--p); 
+    padding-left: 10px; 
+    font-weight: 800; 
+}
+
+/* Memastikan input di dalam h3 tampil rapi */
+.card h3 input {
+    width: 115px !important;
+    height: 30px !important;
+    font-size: 11px;
+    margin: 0;
+    padding: 0 5px;
+    background: #fff;
+    border: 1px solid var(--b);
+    border-radius: 8px;
+}
+
+/* Perbaikan flex untuk input agar padat */
+.flex-row { 
+    display: flex; 
+    gap: 8px; 
+    margin-bottom: 8px; 
+}
+
     </style>
 </head>
 <body>
@@ -80,40 +113,77 @@
         </div>
 
         <div id="tab-stok" class="tab-content">
-            <div class="card">
-    <h3>📦 Master Barang</h3>
-    
-    <div style="display: flex; gap: 5px; margin-bottom: 10px;">
-        <input type="text" id="inB" placeholder="Barang..." style="flex: 3; height: 35px;">
-        <button class="btn" style="background:var(--p); flex: 1; margin:0; height: 35px;" onclick="addItem('master_barang', 'inB')">ADD</button>
-    </div>
-    
-    <div id="listB" style="display:flex; flex-wrap:wrap; gap:5px"></div>
-</div>
-
-
-            <div class="card">
-                <h3>📥 Logistik & Penjualan</h3>
-                <div class="flex-row"><input type="date" id="stTgl"><select id="stBrg"></select></div>
-                <div class="flex-row"><input type="number" id="stQty" placeholder="Jumlah"><select id="stKon"><option value="Bekas">Kotor</option><option value="Baru">Rdy</option></select></div>
-                <div class="flex-row">
-                    <select id="stQC"><option value="Accepted">Accepted</option><option value="Reject">Reject</option></select>
-                    <select id="stAksi">
-                        <option value="Masuk">Masuk</option>
-                        <option value="Rekondisi">Rekon</option>
-                        <option value="Jual Mitra">Jual Mitra</option>
-                        <option value="Jual Umum">Jual Umum</option>
-                    </select>
-                </div>
-                <button class="btn" style="background:var(--p)" onclick="saveSt()">PROSES STOK & CAIRKAN UPAH</button>
-            </div>
-            <div class="table-area" id="areaStok"><table><thead><tr><th class="sticky-col">BRG</th><th>AWAL KTR</th><th>AWAL RDY</th><th>IN KTR</th><th>IN RDY</th><th style="color:var(--d)">REJ</th><th>REKON</th><th>MITRA</th><th>UMUM</th><th style="background:#fef3c7">STOK KTR</th><th style="background:#dcfce7">STOK RDY</th><th style="background:var(--p); color:white">TOTAL</th></tr></thead><tbody id="tbStok"></tbody></table></div>
-            <div class="flex-row">
-                <button class="btn" style="background:var(--s)" onclick="expEx('areaStok','Stok')">EXCEL</button>
-                <button class="btn" style="background:var(--d)" onclick="expPdf('areaStok','Laporan_Stok')">PDF</button>
-                <button class="btn" style="background:#64748b" onclick="showLogs('stok_logs')">LOG</button>
-            </div>
+    <div class="card">
+        <h3>📦 Master Barang</h3>
+        <div style="display: flex; gap: 5px;">
+            <input type="text" id="inB" placeholder="Barang..." style="flex: 3; height: 35px;">
+            <button class="btn" style="background:var(--p); flex: 1; margin:0; height: 35px;" onclick="addItem('master_barang', 'inB')">ADD</button>
         </div>
+        <div id="listB" style="display:flex; flex-wrap:wrap; gap:5px; margin-top:10px"></div>
+    </div>
+
+    <div class="card">
+        <h3>
+            <span>📥 Logistik & Penjualan</span>
+            <input type="date" id="stTgl">
+        </h3>
+        
+        <div class="flex-row">
+            <select id="stBrg" style="flex: 2;"></select>
+            <input type="number" id="stQty" placeholder="Jumlah" style="flex: 1;">
+        </div>
+        
+        <div class="flex-row">
+            <select id="stKon">
+                <option value="Bekas">Kotor</option>
+                <option value="Baru">Rdy</option>
+            </select>
+            <select id="stQC">
+                <option value="Accepted">Accepted</option>
+                <option value="Reject">Reject</option>
+            </select>
+        </div>
+        
+        <div class="flex-row">
+            <select id="stAksi">
+                <option value="Masuk">Masuk</option>
+                <option value="Rekondisi">Rekon</option>
+                <option value="Jual Mitra">Jual Mitra</option>
+                <option value="Jual Umum">Jual Umum</option>
+            </select>
+        </div>
+        
+        <button class="btn" style="background:var(--p); margin-top: 5px;" onclick="saveSt()">PROSES STOK & CAIRKAN UPAH</button>
+    </div>
+
+    <div class="table-area" id="areaStok">
+        <table>
+            <thead>
+                <tr>
+                    <th class="sticky-col">BRG</th>
+                    <th>AWAL KTR</th>
+                    <th>AWAL RDY</th>
+                    <th>IN KTR</th>
+                    <th>IN RDY</th>
+                    <th style="color:var(--d)">REJ</th>
+                    <th>REKON</th>
+                    <th>MITRA</th>
+                    <th>UMUM</th>
+                    <th style="background:#fef3c7">STOK KTR</th>
+                    <th style="background:#dcfce7">STOK RDY</th>
+                    <th style="background:var(--p); color:white">TOTAL</th>
+                </tr>
+            </thead>
+            <tbody id="tbStok"></tbody>
+        </table>
+    </div>
+
+    <div class="flex-row" style="margin-top:10px">
+        <button class="btn" style="background:var(--s)" onclick="expEx('areaStok','Stok')">EXCEL</button>
+        <button class="btn" style="background:var(--d)" onclick="expPdf('areaStok','Laporan_Stok')">PDF</button>
+        <button class="btn" style="background:#64748b" onclick="showLogs('stok_logs')">LOG</button>
+    </div>
+</div>
 
         <div id="tab-aktivitas" class="tab-content">
             <div class="card" style="border-top: 5px solid var(--d)">
@@ -171,13 +241,22 @@
         const DEF_TARIF = { "Rekondisi Kempu":100000, "Rekondisi jerigen 18L":2000, "Rekondisi jerigen 5L":1000, "muat barang":600000, "bongkar barang":600000, "kirim minyak":150000, "pasang pangkalan":500000, "pasang agen":700000 };
 
         window.onload = () => {
-            const t = new Date().toISOString().split('T')[0];
-            ['absTgl','stTgl','akTgl','blTgl'].forEach(i => { if(document.getElementById(i)) document.getElementById(i).value = t });
-            ['fM','fUang'].forEach(i => { if(document.getElementById(i)) document.getElementById(i).value = t.slice(0, 7) });
-            db.ref('/').on('value', s => { D = s.val() || {}; initUI(); autoRender(); });
-            document.getElementById('fM').onchange = autoRender;
-            document.getElementById('fUang').onchange = autoRender;
-        };
+    // 1. Ambil Tanggal Hari Ini (Real-time)
+    const t = new Date().toISOString().split('T')[0];
+    
+    // 2. Set Nilai Input Otomatis
+    if(document.getElementById('stTgl')) document.getElementById('stTgl').value = t;
+    if(document.getElementById('absTgl')) document.getElementById('absTgl').value = t;
+    if(document.getElementById('fM')) document.getElementById('fM').value = t.slice(0, 7);
+    if(document.getElementById('fUang')) document.getElementById('fUang').value = t.slice(0, 7);
+
+    // 3. Sisanya adalah fungsi Firebase & Render yang sudah ada
+    db.ref('/').on('value', s => { 
+        D = s.val() || {}; 
+        initUI(); 
+        autoRender(); 
+    });
+};
 
         // ==========================================
         // 2. GLOBAL UTILITIES (NAV, MODAL, EXPORT)
