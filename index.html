@@ -782,33 +782,29 @@ function saveSt() {
     });
 }
 
-// 2. FUNGSI LAPORAN STOK (renderStok) - VERSI KONVERSI OTOMATIS
 function renderStok() {
     const filterBulan = document.getElementById('fStok').value;
+    if(!D.stok_logs || !D.master_barang) return; // Pengaman jika data kosong
+
     const B_arr = Object.values(D.master_barang || {});
     let h = "";
-    
-    // Konstanta Massa Jenis Minyak Curah Baru (0.9 kg/Lt)
-    const BJ = 0.9; 
+    const BJ = 0.9; // Massa Jenis Minyak Curah
 
     B_arr.forEach(b => {
         let s = { ak:0, ab:0, ik:0, ib:0, rej:0, rk:0, jm:0, ju:0 };
-        
-        // Deteksi apakah barang cair berdasarkan nama
         const isCair = b.toLowerCase().includes('minyak') || b.toLowerCase().includes('cair');
 
         Object.values(D.stok_logs || {}).forEach(l => {
             if(l.b !== b) return;
             let tglLog = l.t ? l.t.slice(0,7) : "";
 
-            // Logika perhitungan saldo bulan lalu & bulan berjalan
             if(tglLog < filterBulan) { 
-                if(l.ak === "Masuk") l.kon === "Bekas" ? s.ak += l.q : s.ab += l.q; 
+                if(l.ak === "Masuk") (l.kon === "Bekas") ? s.ak += l.q : s.ab += l.q; 
                 else if(l.ak === "Rekondisi") { s.ak -= l.q; s.ab += l.q; } 
                 else if(l.ak.includes("Jual")) s.ab -= l.q; 
             }
             else if(tglLog === filterBulan) { 
-                if(l.ak === "Masuk") l.kon === "Bekas" ? s.ik += l.q : s.ib += l.q; 
+                if(l.ak === "Masuk") (l.kon === "Bekas") ? s.ik += l.q : s.ib += l.q; 
                 else if(l.ak === "Rekondisi") s.rk += l.q; 
                 else if(l.ak === "Jual Mitra") s.jm += l.q; 
                 else if(l.ak === "Jual Umum") s.ju += l.q; 
@@ -816,41 +812,36 @@ function renderStok() {
             }
         });
 
-        // Hitung Saldo Akhir Kotor & Ready
         let ktr = (s.ak + s.ik) - s.rk;
         let rdy = (s.ab + s.ib + s.rk) - (s.jm + s.ju);
 
-        // FUNGSI HELPER: Format tampilan angka & satuan
-        const fmt = (val) => {
-            if (val === 0) return "-"; // Biar tabel tidak penuh angka 0
+        // Fungsi Format didalam Loop agar isCair terbaca tepat
+        const tampil = (val) => {
+            if (val === 0) return "-";
+            if (!isCair) return val + " Unit";
             
-            if (!isCair) {
-                // Untuk IBC/Tangki/Jerigen
-                return `${val} Unit`;
-            } else {
-                // Untuk Minyak (Asumsi input q dalam Liter)
-                let kg = (val * BJ).toFixed(1);
-                return `<div style="line-height:1.2">
-                            <span style="font-size:0.8em; color:#666;">${val} Lt</span><br>
-                            <span style="font-weight:bold;">${kg} Kg</span>
-                        </div>`;
-            }
+            // Format untuk Minyak (Liter & Kg)
+            let kg = (val * BJ).toFixed(1);
+            return `<div style="font-size:11px; line-height:1">` + 
+                   `<span style="color:#666">${val} Lt</span><br>` +
+                   `<b>${kg} Kg</b></div>`;
         };
 
         h += `<tr>
             <td class="sticky-col">${b}</td>
-            <td>${fmt(s.ak)}</td><td>${fmt(s.ab)}</td>
-            <td>${fmt(s.ik)}</td><td>${fmt(s.ib)}</td>
-            <td style="color:var(--d); font-weight:bold">${fmt(s.rej)}</td>
-            <td>${fmt(s.rk)}</td><td>${fmt(s.jm)}</td><td>${fmt(s.ju)}</td>
-            <td style="background:#fef3c7; font-weight:bold">${fmt(ktr)}</td>
-            <td style="background:#dcfce7; font-weight:bold">${fmt(rdy)}</td>
-            <td style="background:var(--p); color:white; font-weight:bold">${fmt(ktr+rdy)}</td>
+            <td>${tampil(s.ak)}</td><td>${tampil(s.ab)}</td>
+            <td>${tampil(s.ik)}</td><td>${tampil(s.ib)}</td>
+            <td style="color:var(--d); font-weight:bold">${tampil(s.rej)}</td>
+            <td>${tampil(s.rk)}</td><td>${tampil(s.jm)}</td><td>${tampil(s.ju)}</td>
+            <td style="background:#fef3c7; font-weight:bold">${tampil(ktr)}</td>
+            <td style="background:#dcfce7; font-weight:bold">${tampil(rdy)}</td>
+            <td style="background:var(--p); color:white; font-weight:bold">${tampil(ktr+rdy)}</td>
         </tr>`;
     }); 
-    document.getElementById('tbStok').innerHTML = h;
+    
+    const target = document.getElementById('tbStok');
+    if(target) target.innerHTML = h;
 }
-
 
 // 3. LOGIKA TOGGLE SATUAN & FILTER
 function toggleSatuan() {
