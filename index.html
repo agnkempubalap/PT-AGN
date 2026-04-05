@@ -712,40 +712,40 @@ function saveL() {
 // ==========================================
         // 4. TAB STOK LOGIC
         // ==========================================
-        function saveSt() {
+        /* --- SECTION: LOGIKA TAB STOK --- */
+
+// 1. FUNGSI SIMPAN STOK (saveSt)
+function saveSt() {
     const t = document.getElementById('stTgl').value;
     const b = document.getElementById('stBrg').value;
     const q = parseInt(document.getElementById('stQty').value);
     const ak = document.getElementById('stAksi').value;
     
-    // 1. Logika Ambil Detail (Kondisi & QC)
-    // Jika boxDetail disembunyikan (bukan aksi 'Masuk'), kita beri nilai default
+    // Check apakah elemen detail (Kotor/QC) sedang tampil
     const boxDetail = document.getElementById('boxDetail');
-    const isMasuk = (boxDetail && boxDetail.style.display === 'flex');
+    const isVisibleDetail = (boxDetail && boxDetail.style.display === 'flex');
     
-    const konFinal = isMasuk ? document.getElementById('stKon').value : 'Baru';
-    const qcFinal = isMasuk ? document.getElementById('stQC').value : 'Accepted';
+    // Ambil nilai atau gunakan default jika disembunyikan
+    const konFinal = isVisibleDetail ? document.getElementById('stKon').value : 'Baru';
+    const qcFinal = isVisibleDetail ? document.getElementById('stQC').value : 'Accepted';
 
-    // 2. Logika Ambil Satuan (Liter/Kg)
+    // Ambil Satuan (Liter/Kg) jika tampil
     const boxSat = document.getElementById('boxSatuan');
     const satFinal = (boxSat && boxSat.style.display === 'flex') 
                      ? document.getElementById('stSatuan').value 
                      : '';
 
-    // Validasi input jumlah
-    if(!q) return alert("Qty Kosong!");
+    if(!q) return alert("Jumlah (Qty) belum diisi!");
 
-    // 3. Kirim data ke Firebase
+    // Simpan ke Firebase
     db.ref('stok_logs').push({ 
-        t, 
-        b, 
-        q, 
+        t, b, q, 
         kon: konFinal, 
         qc: qcFinal, 
         ak: ak, 
         sat: satFinal 
     }).then(() => {
-        // 4. Logika Pencairan Upah Otomatis (Khusus Jerigen)
+        // Logika Pencairan Upah Otomatis (Khusus Jerigen)
         if(ak.includes("Jual") && b.toLowerCase().includes("jerigen")) {
             let sisaJual = q;
             let logs = Object.entries(D.aktivitas || {})
@@ -762,38 +762,38 @@ function saveL() {
             });
         }
         
-        // Reset input dan beri notifikasi
         document.getElementById('stQty').value = ""; 
-        alert("Stok & Satuan Terupdate!");
+        alert("Stok & Satuan Berhasil Diperbarui!");
     });
 }
 
-
-        function renderStok() {
-    // Gunakan filter bulan khusus stok (fStok)
+// 2. FUNGSI LAPORAN STOK (renderStok)
+function renderStok() {
     const filterBulan = document.getElementById('fStok').value;
     const B_arr = Object.values(D.master_barang || {});
     let h = "";
 
     B_arr.forEach(b => {
         let s = { ak:0, ab:0, ik:0, ib:0, rej:0, rk:0, jm:0, ju:0 };
-        let unit = ""; // Untuk menyimpan simbol satuan (Lt/Kg) jika ada
+        let unit = ""; 
 
         Object.values(D.stok_logs || {}).forEach(l => {
             if(l.b !== b) return;
             
-            // Tangkap satuan dari data terakhir yang ditemukan untuk barang ini
-            if(l.sat) unit = l.sat === "Liter" ? " Lt" : " Kg";
+            // Ambil satuan dari data log (Lt atau Kg)
+            if(l.sat) {
+                unit = l.sat === "Liter" ? " Lt" : " Kg";
+            }
 
             let tglLog = l.t ? l.t.slice(0,7) : "";
 
-            // Saldo Awal (Data sebelum bulan yang dipilih)
+            // Saldo Awal (Sebelum bulan filter)
             if(tglLog < filterBulan) { 
                 if(l.ak === "Masuk") l.kon === "Bekas" ? s.ak += l.q : s.ab += l.q; 
                 else if(l.ak === "Rekondisi") { s.ak -= l.q; s.ab += l.q; } 
                 else if(l.ak.includes("Jual")) s.ab -= l.q; 
             }
-            // Data Bulan Berjalan
+            // Data Bulan Ini
             else if(tglLog === filterBulan) { 
                 if(l.ak === "Masuk") l.kon === "Bekas" ? s.ik += l.q : s.ib += l.q; 
                 else if(l.ak === "Rekondisi") s.rk += l.q; 
@@ -824,35 +824,46 @@ function saveL() {
     document.getElementById('tbStok').innerHTML = h;
 }
 
-// SATUAN
+// 3. LOGIKA TOGGLE SATUAN & FILTER AKSI (toggleSatuan)
 function toggleSatuan() {
     const brg = document.getElementById('stBrg').value.toLowerCase();
-    const box = document.getElementById('boxSatuan');
-    if(!box) return;
+    const boxSat = document.getElementById('boxSatuan');
+    const selAksi = document.getElementById('stAksi');
+    if(!boxSat || !selAksi) return;
 
-    
-    if (brg.includes('minyak') || brg.includes('cair')) {
-        box.style.display = 'flex';
+    // Cek apakah barang mengandung kata Minyak atau Cair
+    const isCair = brg.includes('minyak') || brg.includes('cair');
+
+    if (isCair) {
+        boxSat.style.display = 'flex'; // Tampilkan Lt/Kg
+        
+        // SEMBUNYIKAN opsi Rekondisi karena barang cair tidak bisa direkon
+        for (let opt of selAksi.options) {
+            if (opt.value === "Rekondisi") opt.style.display = 'none';
+        }
+        // Jika kursor sedang di Rekon, paksa pindah ke "Masuk"
+        if (selAksi.value === "Rekondisi") selAksi.value = "Masuk";
     } else {
-        box.style.display = 'none';
+        boxSat.style.display = 'none';
+        
+        // TAMPILKAN kembali opsi Rekondisi untuk barang fisik/tangki
+        for (let opt of selAksi.options) {
+            if (opt.value === "Rekondisi") opt.style.display = 'block';
+        }
     }
+    
+    // Pastikan kolom detail (Kotor/QC) juga dicek ulang
+    toggleAksi();
 }
 
-// AKSI
-
+// 4. LOGIKA TOGGLE AKSI MASUK/JUAL (toggleAksi)
 function toggleAksi() {
     const aksi = document.getElementById('stAksi').value;
-    const box = document.getElementById('boxDetail');
-    
-    // Jika tidak ditemukan di HTML, berhenti agar tidak error
-    if (!box) return;
+    const boxDetail = document.getElementById('boxDetail');
+    if (!boxDetail) return;
 
-    // Logika: Hanya muncul jika aksi adalah "Masuk"
-    if (aksi === "Masuk") {
-        box.style.display = 'flex';
-    } else {
-        box.style.display = 'none';
-    }
+    // Tampilkan kolom detail hanya jika memilih "Masuk"
+    boxDetail.style.display = (aksi === "Masuk") ? 'flex' : 'none';
 }
 
 
