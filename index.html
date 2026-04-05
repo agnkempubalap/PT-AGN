@@ -438,7 +438,7 @@
     const t = new Date().toISOString().split('T')[0];
     const blnIni = t.slice(0, 7); 
     
-    // 1. SET INPUT TANGGAL
+    // 1. SET TANGGAL (HARIAN)
     const idsHarian = ['absTgl', 'stTgl', 'akTgl', 'blTgl', 'filterTglAk'];
     idsHarian.forEach(id => { 
         const el = document.getElementById(id);
@@ -449,44 +449,46 @@
                     const fLog = document.getElementById('filterTglAk');
                     if(fLog) fLog.value = el.value;
                 }
+                // Refresh laporan harian saat tanggal ganti
                 if(typeof renderLogHarian === 'function') renderLogHarian();
             });
         }
     });
 
-    // 2. SET INPUT BULANAN
+    // 2. SET TANGGAL (BULANAN)
     const idsBulan = ['fM', 'fUang', 'fStok', 'fGaji'];
     idsBulan.forEach(id => { 
         const el = document.getElementById(id);
         if(el) {
             el.value = blnIni; 
             el.onchange = () => {
+                // Jalankan autoRender milik Bos agar Stok & Gaji update
                 if(typeof autoRender === 'function') autoRender();
                 if(id === 'fM' && typeof renderAbs === 'function') renderAbs();
-                if(id === 'fGaji' && typeof renderGaji === 'function') renderGaji();
             };
         }
     });
 
-    // 3. SATU LISTENER UNTUK SEMUA (FIREBASE)
+    // 3. LISTENER FIREBASE (KEMBALIKAN SEMUA DATA)
     db.ref('/').on('value', snapshot => { 
-        // Simpan data ke variabel global D agar semua fungsi bisa baca
-        window.D = snapshot.val() || {}; 
-        
-        // Jalankan Update UI & Render secara berurutan
-        updateSemuaDropdownKaryawan(); 
-        initUI(); 
-        
-        // Panggil semua fungsi render tabel
+        // Simpan data ke D agar bisa dibaca autoRender()
+        D = snapshot.val() || {}; 
+        window.D = D; // Jaga-jaga buat library PDF
+
+        // A. Update Master (Nama Karyawan & Barang)
+        if(typeof updateSemuaDropdownKaryawan === 'function') updateSemuaDropdownKaryawan();
+        if(typeof initUI === 'function') initUI(); 
+
+        // B. Jalankan Fungsi Render Utama Bos
         if(typeof autoRender === 'function') autoRender(); 
+        
+        // C. Jalankan Laporan Tambahan
         if(typeof renderLogHarian === 'function') renderLogHarian();
         if(typeof renderAbs === 'function') renderAbs();
-        if(typeof renderGaji === 'function') renderGaji();
-
-        console.log("Kempu Balap: Data Synchronized!");
+        
+        console.log("Data Kempu Balap Siap!");
     });
 };
-
 
 
         // ==========================================
