@@ -393,31 +393,31 @@
     </div>
 
     <div class="card" style="margin-top: 15px;">
-        <h3>📊 Monitoring Kerja 
-            <div style="display:flex; gap:5px;">
-                <select id="filterNamaAk" onchange="renderLogHarian()" style="font-size:11px; border-radius:8px; padding:0 5px; border:1px solid #ddd; width:90px;">
-                    <option value="">Global</option>
-                </select>
-                <input type="date" id="filterTglAk" onchange="renderLogHarian()">
-            </div>
-        </h3>
-        
-        <div id="statsAktivitas" style="margin-bottom:15px;"></div>
-
-        <div style="max-height: 400px; overflow-y: auto;">
-            <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
-                <thead style="position: sticky; top: 0; background: white; z-index: 1;">
-                    <tr style="text-align: left; border-bottom: 2px solid #f1f5f9; color: #64748b;">
-                        <th style="padding: 8px 5px;">INFO</th>
-                        <th style="padding: 8px 5px;">PEKERJAAN</th>
-                        <th style="padding: 8px 5px; text-align: center;">QTY</th>
-                        <th style="padding: 8px 5px; width: 20px;"></th>
-                    </tr>
-                </thead>
-                <tbody id="listLogAktivitas"></tbody>
-            </table>
+    <h3>📋 Rekap Aktivitas 
+        <div style="display:flex; gap:5px;">
+            <select id="filterNamaAk" onchange="renderLogHarian()" style="font-size:11px; border-radius:8px; padding:0 5px; border:1px solid #ddd; width:90px;">
+                <option value="">Global</option>
+            </select>
+            <input type="date" id="filterTglAk" onchange="renderLogHarian()">
         </div>
+    </h3>
+    
+    <div id="statsAktivitas"></div>
+
+    <div style="max-height: 400px; overflow-y: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+            <thead style="position: sticky; top: 0; background: white; z-index: 1;">
+                <tr style="text-align: left; border-bottom: 2px solid #f1f5f9; color: #64748b;">
+                    <th style="padding: 8px 5px;">INFO</th>
+                    <th style="padding: 8px 5px;">PEKERJAAN</th>
+                    <th style="padding: 8px 5px; text-align: center;">QTY</th>
+                    <th style="padding: 8px 5px; width: 30px;"></th>
+                </tr>
+            </thead>
+            <tbody id="listLogAktivitas"></tbody>
+        </table>
     </div>
+</div>
 </div>
 
 
