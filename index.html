@@ -820,6 +820,7 @@ function renderStok() {
         let ktr = (s.ak + s.ik) - s.rk;
         let rdy = (s.ab + s.ib + s.rk) - (s.jm + s.ju);
 
+        // Fungsi Tampil (formatCell internal)
         const tampil = (val, forceStrip = false) => {
             if (forceStrip) return `<span style="color:#e2e8f0; font-weight:normal;">-</span>`;
             const v = val || 0;
@@ -842,23 +843,31 @@ function renderStok() {
 
         h += `<tr style="border-bottom: 1px solid #f1f5f9;">
             <td class="sticky-col" style="font-weight:700; color:#334155; font-size:12px; background:#fff; border-right:2px solid #f8fafc; padding:10px 8px;">${b}</td>
+            
             <td style="text-align:center; background:#fafafa;">${tampil(s.ak, isCair)}</td>
             <td style="text-align:center;">${tampil(s.ab)}</td>
+            
             <td style="text-align:center; background:#fafafa;">${tampil(s.ik, isCair)}</td>
             <td style="text-align:center;">${tampil(s.ib)}</td>
+            
             <td style="text-align:center; background:#fff1f2; color:#e11d48;">${tampil(s.rej, isCair)}</td>
+            
             <td style="text-align:center; background:#fafafa;">${tampil(s.rk, isCair)}</td>
+            
             <td style="text-align:center;">${tampil(s.jm)}</td>
             <td style="text-align:center;">${tampil(s.ju)}</td>
+            
             <td style="text-align:center; background:#fffbeb; color:#92400e; border-left:1px solid #fef3c7;">${tampil(ktr, isCair)}</td>
             <td style="text-align:center; background:#f0fdf4; color:#166534;">${tampil(rdy)}</td>
+            
             <td style="text-align:center; background:#2563eb; color:#ffffff; font-weight:900;">
-                <div style="color:white !important;">${tampil(ktr+rdy, isCair)}</div>
+                <div style="color:white !important;">${tampil(ktr+rdy)}</div>
             </td>
         </tr>`;
     }); 
     target.innerHTML = h;
 }
+
 
 // 3. FUNGSI TOGGLE SATUAN & DETAIL (toggleSatuan)
 function toggleSatuan() {
