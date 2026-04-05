@@ -601,43 +601,45 @@ db.ref('master_karyawan').on('value', snapshot => {
         function closeMod() { document.getElementById('modalUni').style.display='none'; }
         function addItem(p,id) { const v=document.getElementById(id).value; if(v) db.ref(p).push(v).then(()=>document.getElementById(id).value=""); }
         function removeItem(p,k) { if(confirm("Hapus?")) db.ref(`${p}/${k}`).remove().then(()=>closeMod()); }
-        // 1. Fungsi Excel yang Lebih Stabil
+        // --- 1. FUNGSI EXCEL (Bisa diklik berkali-kali) ---
 function expEx(id, n) {
     try {
         const table = document.getElementById(id);
-        if (!table) return alert("Tabel tidak ditemukan!");
-        
-        // Buat workbook baru setiap kali klik
-        const wb = XLSX.utils.table_to_book(table, { sheet: "Laporan" });
-        XLSX.writeFile(wb, n + '.xlsx');
-        
-        console.log("Excel Berhasil diunduh");
-    } catch (err) {
-        console.error("Gagal Ekspor Excel:", err);
-        alert("Gagal membuat Excel, coba lagi.");
+        if (!table) return alert("Tabel " + id + " tidak ditemukan!");
+
+        // Gunakan timeout sedikit agar browser Android tidak kaget
+        setTimeout(() => {
+            const wb = XLSX.utils.table_to_book(table, { sheet: "Laporan" });
+            XLSX.writeFile(wb, n + '.xlsx');
+            console.log("Excel sukses!");
+        }, 100);
+    } catch (e) {
+        console.error(e);
+        alert("Gagal Excel: " + e.message);
     }
 }
 
-// Fungsi PDF dengan Pembersihan Memori (html2pdf)
-function expEx(id, n) {
-    const table = document.getElementById(id);
-    if (!table) return alert("Tabel tidak ditemukan!");
-    const wb = XLSX.utils.table_to_book(table, { sheet: "Laporan" });
-    XLSX.writeFile(wb, n + '.xlsx');
-}
-
+// --- 2. FUNGSI PDF (Pembersihan Memori Otomatis) ---
 function expPdf(id, n) {
     const element = document.getElementById(id);
-    if (!element) return alert("Elemen tidak ditemukan!");
+    if (!element) return alert("Elemen " + id + " tidak ditemukan!");
+
     const opt = {
         margin: 5,
         filename: n + '.pdf',
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
+        html2canvas: { scale: 2, useCORS: true },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
     };
-    // Jalankan ekspor
-    html2pdf().set(opt).from(element).save();
+
+    // PENTING: Menggunakan html2pdf().from().set().save() dengan .then()
+    // agar setelah selesai, library melepaskan memori (Clean Up)
+    html2pdf().set(opt).from(element).save().then(() => {
+        console.log("PDF Sukses, siap untuk klik berikutnya!");
+    }).catch(err => {
+        console.error("PDF Error: ", err);
+        alert("Gagal PDF, silakan coba lagi.");
+    });
 }
 
         function showLogs(t) {
