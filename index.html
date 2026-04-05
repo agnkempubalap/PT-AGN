@@ -24,34 +24,54 @@
     justify-content: space-between !important; 
     align-items: center; 
     margin-bottom: 15px; 
-    font-size: 13px; 
-    color: var(--p); 
     border-left: 4px solid var(--p); 
     padding-left: 10px; 
-    font-weight: 800; 
 }
 
-.card h3 input {
-    width: 115px !important;
-    height: 30px !important;
-    font-size: 11px;
-    margin: 0;
-    padding: 0 5px;
+.card h3 span { 
+    font-size: 13px; 
+    font-weight: 800; 
+    color: var(--p); 
+}
+
+.card h3 input { 
+    width: 115px !important; 
+    height: 30px !important; 
+    font-size: 11px !important; 
+    margin: 0; 
+    padding: 0 5px; 
+    border: 1px solid var(--b); 
+    border-radius: 8px; 
     background: #fff;
-    border: 1px solid var(--b);
-    border-radius: 8px;
 }
 
 .flex-row { 
     display: flex; 
     gap: 12px; 
     margin-bottom: 12px; 
-    width: 100%;
+    width: 100%; 
+    align-items: center; 
+}
+
+.flex-row select, .flex-row input { 
+    flex: 1; 
+    min-width: 0; 
+    height: 42px; 
+    border-radius: 10px; 
+    border: 1px solid var(--b); 
+    padding: 0 10px; 
+    font-size: 13px; 
+    background: #f8fafc;
+}
+
+.flex-row .flex-2 { 
+    flex: 2; 
 }
 
 .flex-row .btn { 
     flex: 1; 
     margin: 0; 
+    height: 42px;
 }
 
 input, select { 
