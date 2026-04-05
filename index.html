@@ -389,67 +389,36 @@
             <div id="tab-aktivitas" class="tab-content">
     <div class="card">
         <h3>🛠️ Input Aktivitas <input type="date" id="akTgl" onchange="renderCheckKaryawan()"></h3>
-        
-        <label style="font-size:11px; font-weight:bold; color:#64748b; margin-bottom:5px; display:block;">Pilih Karyawan:</label>
-        <div id="akKaryawan" class="check-grid" style="max-height:150px; overflow-y:auto; border:1px solid #eee; padding:8px; border-radius:8px; margin-bottom:15px; background:#fafafa;">
-            </div>
-
-        <div class="flex-row" style="gap:8px; margin-bottom:10px;">
-            <div style="flex:1">
-                <label style="font-size:11px; color:#64748b;">Kategori:</label>
-                <select id="akKat" onchange="updateSubAktivitas(); this.style.color='#1e293b'" 
-                    style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; background:white; font-size:13px; color:#94a3b8; outline:none;">
-                    <option value="" disabled selected hidden>Pilih Kategori...</option>
-                    <option value="Rekondisi">Rekondisi</option>
-                    <option value="Minyak">Logistik Minyak</option>
-                    <option value="Barang">Logistik Barang</option>
-                    <option value="Pemasangan">Pemasangan</option>
-                </select>
-            </div>
-
-            <div style="flex:1">
-                <label style="font-size:11px; color:#64748b;">Detail:</label>
-                <select id="akJenis" onchange="this.style.color='#1e293b'"
-                    style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; background:white; font-size:13px; color:#94a3b8; outline:none;">
-                    <option value="" disabled selected hidden>Pilih Detail...</option>
-                </select>
-            </div>
-        </div>
-
-        <div style="margin-bottom:15px;">
-            <label style="font-size:11px; color:#64748b;">Jumlah (Qty):</label>
-            <input type="number" id="akQty" placeholder="0" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; font-size:13px;">
-        </div>
-
         <button class="btn" style="background:var(--p); width:100%; padding:12px; font-weight:bold;" onclick="saveAk()">SIMPAN KERJA</button>
     </div>
 
     <div class="card" style="margin-top: 15px;">
-        <h3>📋 Laporan Kerja <input type="date" id="filterTglAk" onchange="renderLogHarian()"></h3>
+        <h3>📊 Monitoring Kerja 
+            <div style="display:flex; gap:5px;">
+                <select id="filterNamaAk" onchange="renderLogHarian()" style="font-size:11px; border-radius:8px; padding:0 5px; border:1px solid #ddd; width:90px;">
+                    <option value="">Global</option>
+                </select>
+                <input type="date" id="filterTglAk" onchange="renderLogHarian()">
+            </div>
+        </h3>
         
-        <div style="max-height: 300px; overflow-y: auto; margin-top: 10px;">
+        <div id="statsAktivitas" style="margin-bottom:15px;"></div>
+
+        <div style="max-height: 400px; overflow-y: auto;">
             <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
                 <thead style="position: sticky; top: 0; background: white; z-index: 1;">
-                    <thead style="position: sticky; top: 0; background: white; z-index: 1;">
-    <tr style="text-align: left; border-bottom: 2px solid #f1f5f9; color: #64748b;">
-        <th style="padding: 8px 5px;">JAM</th>
-        <th style="padding: 8px 5px;">KARYAWAN</th>
-        <th style="padding: 8px 5px;">PEKERJAAN</th>
-        <th style="padding: 8px 5px; text-align: center;">QTY</th>
-        <th style="padding: 8px 5px; width: 30px;"></th> </tr>
-</thead>
-                <tbody id="listLogAktivitas">
-                    </tbody>
+                    <tr style="text-align: left; border-bottom: 2px solid #f1f5f9; color: #64748b;">
+                        <th style="padding: 8px 5px;">INFO</th>
+                        <th style="padding: 8px 5px;">PEKERJAAN</th>
+                        <th style="padding: 8px 5px; text-align: center;">QTY</th>
+                        <th style="padding: 8px 5px; width: 20px;"></th>
+                    </tr>
+                </thead>
+                <tbody id="listLogAktivitas"></tbody>
             </table>
-        </div>
-
-        <div style="margin-top: 15px;">
-            <button class="btn" style="background:var(--d); width: 100%; font-weight: bold;" onclick="genRekapKerja()">PDF</button>
         </div>
     </div>
 </div>
-
-
 
 
        <div id="tab-gaji" class="tab-content">
@@ -1097,47 +1066,94 @@ function saveAk() {
       
 // 2. RENDER AKTIVITAS 
 function renderLogHarian() {
-    const tglFilter = document.getElementById('filterTglAk')?.value;
+    const namaPilihan = document.getElementById('filterNamaAk')?.value || "";
+    const tglPilihan = document.getElementById('filterTglAk')?.value;
     const tbody = document.getElementById('listLogAktivitas');
+    const statsArea = document.getElementById('statsAktivitas');
     
     if (!tbody) return;
+
+    // OTOMATIS: Isi daftar nama karyawan ke dropdown filter jika masih kosong
+    const selectKaryawan = document.getElementById('filterNamaAk');
+    if (selectKaryawan && selectKaryawan.options.length <= 1 && window.D && D.master_karyawan) {
+        Object.values(D.master_karyawan).sort().forEach(k => {
+            let opt = document.createElement('option');
+            opt.value = k; opt.innerText = k;
+            selectKaryawan.appendChild(opt);
+        });
+    }
 
     db.ref('aktivitas').on('value', snapshot => {
         const data = snapshot.val();
         if (!data) {
-            // Ubah colspan ke 5 karena kita tambah kolom silang
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#94a3b8;">Data Kosong</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">Data Kosong</td></tr>';
+            if(statsArea) statsArea.innerHTML = '';
             return;
         }
 
-        // Ambil ID unik (Key) dan datanya
-        let items = Object.keys(data).map(key => ({ id: key, ...data[key] })).reverse();
+        const allItems = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+        const bulanIni = tglPilihan ? tglPilihan.slice(0, 7) : "";
 
-        if (tglFilter) {
-            items = items.filter(item => item.t === tglFilter);
+        // --- 1. LOGIKA FILTER & RINGKASAN ---
+        let items = [];
+        let totalQty = 0;
+        let judulStats = "";
+
+        if (namaPilihan === "") { 
+            // MODE GLOBAL: Lihat semua aktivitas pada TANGGAL yang dipilih
+            items = allItems.filter(item => item.t === tglPilihan).reverse();
+            totalQty = items.reduce((sum, i) => sum + (parseInt(i.q) || 0), 0);
+            judulStats = `Total Kerja Gudang (Hari Ini)`;
         } else {
-            items = items.slice(0, 15);
+            // MODE KARYAWAN: Lihat rekap SEBULAN untuk orang tersebut
+            items = allItems.filter(item => item.t.startsWith(bulanIni) && item.p.includes(namaPilihan))
+                             .sort((a,b) => b.t.localeCompare(a.t));
+            totalQty = items.reduce((sum, i) => sum + (parseInt(i.q) || 0), 0);
+            judulStats = `Total Kerja ${namaPilihan} (${bulanIni})`;
         }
 
+        // --- 2. TAMPILKAN RINGKASAN (Ide Tampilan Mini Dashboard) ---
+        if (statsArea) {
+            statsArea.innerHTML = `
+                <div style="background:linear-gradient(to right, #f8fafc, #eff6ff); padding:12px; border-radius:10px; border:1px solid #dbeafe; display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <div>
+                        <div style="font-size:10px; color:#64748b; font-weight:bold; text-transform:uppercase;">${judulStats}</div>
+                        <div style="font-size:18px; font-weight:800; color:#1e40af;">${totalQty} <span style="font-size:12px; font-weight:normal;">Qty</span></div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-size:10px; color:#64748b;">Frekuensi</div>
+                        <div style="font-size:14px; font-weight:700; color:#1e40af;">${items.length}x Kerja</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- 3. TAMPILKAN TABEL ---
         if (items.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:15px; color:#94a3b8;">Tidak ada aktivitas.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:15px; color:#94a3b8;">Tidak ada data ditemukan.</td></tr>';
             return;
         }
 
         tbody.innerHTML = items.map(item => {
+            const tglIndo = item.t ? item.t.split('-').reverse().slice(0,2).join('/') : '--/--';
             const qtyTampil = item.q === 0 ? '<b style="color:#f59e0b">PROS</b>' : `<b>${item.q}</b>`;
             
+            // Info kolom pertama: Jika global munculkan JAM, jika karyawan munculkan TGL
+            const infoUtama = namaPilihan === "" ? (item.waktu || '--:--') : tglIndo;
+
             return `
                 <tr style="border-bottom: 1px solid #f8fafc;">
-                    <td style="padding: 10px 5px; color: #94a3b8; font-family: monospace;">${item.waktu || '--:--'}</td>
-                    <td style="padding: 10px 5px; font-weight: 600; color: #1e293b;">${item.p.join(", ")}</td>
-                    <td style="padding: 10px 5px; color: #475569;">${item.j}</td>
+                    <td style="padding: 10px 5px; color: #94a3b8; font-family: monospace; font-size:10px;">${infoUtama}</td>
+                    <td style="padding: 10px 5px; color: #1e293b;">
+                        <div style="font-weight:600;">${item.j}</div>
+                        <div style="font-size:9px; color:#94a3b8;">
+                            ${namaPilihan === "" ? item.p.join(", ") : "Tim: " + item.p.join(", ")}
+                        </div>
+                    </td>
                     <td style="padding: 10px 5px; text-align: center;">${qtyTampil}</td>
                     <td style="padding: 10px 5px; text-align: center;">
                         <span onclick="hapusAk('${item.id}', '${item.j}')" 
-                              style="color:#ef4444; font-size:20px; cursor:pointer; font-weight:bold; display:block; line-height:1;">
-                              ×
-                        </span>
+                              style="color:#ef4444; font-size:18px; cursor:pointer; font-weight:bold;">×</span>
                     </td>
                 </tr>
             `;
@@ -1192,8 +1208,53 @@ function hapusAk(id, nama) {
     }
 }
 
-        
-        
+function genRekapKerja() {
+    const tglPilihan = document.getElementById('filterTglAk').value; // Contoh: 2026-04-05
+    if (!tglPilihan) return alert("Pilih tanggal atau bulan terlebih dahulu!");
+
+    const bulanTujuan = tglPilihan.slice(0, 7); // Mengambil "2026-04"
+    const namaBulan = new Date(tglPilihan).toLocaleString('id-ID', { month: 'long', year: 'numeric' });
+
+    db.ref('aktivitas').once('value', snapshot => {
+        const data = snapshot.val();
+        if (!data) return alert("Tidak ada data untuk bulan ini.");
+
+        // Filter data yang tahun & bulannya sama
+        const items = Object.values(data).filter(item => item.t && item.t.startsWith(bulanTujuan));
+
+        if (items.length === 0) return alert("Data aktivitas bulan ini kosong.");
+
+        // LOGIKA PDF (Menggunakan jsPDF atau library yang Anda pakai)
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        doc.setFontSize(16);
+        doc.text(`LAPORAN AKTIVITAS: ${namaBulan}`, 14, 20);
+        doc.setFontSize(10);
+        doc.text(`Brand: Kempu Balap`, 14, 28);
+
+        // Header Tabel PDF
+        const headers = [["Tanggal", "Jam", "Karyawan", "Pekerjaan", "Qty"]];
+        const rows = items.sort((a,b) => a.t.localeCompare(b.t)).map(item => [
+            item.t.split('-').reverse().join('/'),
+            item.waktu || '-',
+            item.p.join(", "),
+            item.j,
+            item.q
+        ]);
+
+        doc.autoTable({
+            head: headers,
+            body: rows,
+            startY: 35,
+            theme: 'grid',
+            headStyles: { fillColor: [30, 41, 59] } // Warna biru tua sesuai tema app
+        });
+
+        doc.save(`Laporan_Kerja_${bulanTujuan}.pdf`);
+    });
+}
+       
 
         // ==========================================
         // 6. TAB GAJI LOGIC
