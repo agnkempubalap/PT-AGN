@@ -435,11 +435,10 @@
         const DEF_TARIF = { "Rekondisi Kempu":100000, "Rekondisi jerigen 18L":2000, "Rekondisi jerigen 5L":1000, "muat barang":600000, "bongkar barang":600000, "kirim minyak":150000, "pasang pangkalan":500000, "pasang agen":700000 };
 
         window.onload = () => {
-    // 1. AMBIL TANGGAL HARI INI
     const t = new Date().toISOString().split('T')[0];
     const blnIni = t.slice(0, 7); 
     
-    // 2. SET SEMUA INPUT TANGGAL (Harian)
+    // 1. SET INPUT TANGGAL
     const idsHarian = ['absTgl', 'stTgl', 'akTgl', 'blTgl', 'filterTglAk'];
     idsHarian.forEach(id => { 
         const el = document.getElementById(id);
@@ -455,7 +454,7 @@
         }
     });
 
-    // 3. SET SEMUA INPUT BULANAN
+    // 2. SET INPUT BULANAN
     const idsBulan = ['fM', 'fUang', 'fStok', 'fGaji'];
     idsBulan.forEach(id => { 
         const el = document.getElementById(id);
@@ -469,26 +468,25 @@
         }
     });
 
-    // 4. LISTENER FIREBASE (Kunci Perbaikan)
+    // 3. SATU LISTENER UNTUK SEMUA (FIREBASE)
     db.ref('/').on('value', snapshot => { 
-        // Simpan ke variabel D (Tanpa window agar fungsi lama tetap bisa baca)
-        D = snapshot.val() || {}; 
+        // Simpan data ke variabel global D agar semua fungsi bisa baca
+        window.D = snapshot.val() || {}; 
         
-        // Panggil pengisi nama-nama di dropdown
-        if(typeof updateSemuaDropdownKaryawan === 'function') {
-            updateSemuaDropdownKaryawan();
-        }
+        // Jalankan Update UI & Render secara berurutan
+        updateSemuaDropdownKaryawan(); 
+        initUI(); 
         
-        // JALANKAN SEMUA RENDER (Agar data muncul di layar)
-        if(typeof initUI === 'function') initUI(); 
-        if(typeof autoRender === 'function') autoRender(); // Stok
-        if(typeof renderLogHarian === 'function') renderLogHarian(); // Kerja
-        if(typeof renderAbs === 'function') renderAbs(); // Absen
-        if(typeof renderGaji === 'function') renderGaji(); // Gaji
+        // Panggil semua fungsi render tabel
+        if(typeof autoRender === 'function') autoRender(); 
+        if(typeof renderLogHarian === 'function') renderLogHarian();
+        if(typeof renderAbs === 'function') renderAbs();
+        if(typeof renderGaji === 'function') renderGaji();
 
-        console.log("Data Berhasil Dimuat");
+        console.log("Kempu Balap: Data Synchronized!");
     });
 };
+
 
 
         // ==========================================
@@ -601,46 +599,49 @@ db.ref('master_karyawan').on('value', snapshot => {
         function closeMod() { document.getElementById('modalUni').style.display='none'; }
         function addItem(p,id) { const v=document.getElementById(id).value; if(v) db.ref(p).push(v).then(()=>document.getElementById(id).value=""); }
         function removeItem(p,k) { if(confirm("Hapus?")) db.ref(`${p}/${k}`).remove().then(()=>closeMod()); }
-        // --- 1. FUNGSI EXCEL (Bisa diklik berkali-kali) ---
+     
+   // --- 1. FUNGSI EXCEL STABLE ---
 function expEx(id, n) {
     try {
         const table = document.getElementById(id);
-        if (!table) return alert("Tabel " + id + " tidak ditemukan!");
+        if (!table) return alert("Tabel tidak ditemukan!");
 
-        // Gunakan timeout sedikit agar browser Android tidak kaget
-        setTimeout(() => {
-            const wb = XLSX.utils.table_to_book(table, { sheet: "Laporan" });
-            XLSX.writeFile(wb, n + '.xlsx');
-            console.log("Excel sukses!");
-        }, 100);
+        // Buat file Excel secara instan
+        const wb = XLSX.utils.table_to_book(table, { sheet: "Laporan" });
+        XLSX.writeFile(wb, n + '.xlsx');
+        
+        // Beri log agar kita tahu proses selesai
+        console.log("Excel: Klik Terdeteksi");
     } catch (e) {
-        console.error(e);
         alert("Gagal Excel: " + e.message);
     }
 }
 
-// --- 2. FUNGSI PDF (Pembersihan Memori Otomatis) ---
+// --- 2. FUNGSI PDF STABLE (PEMBERSIHAN TOTAL) ---
 function expPdf(id, n) {
     const element = document.getElementById(id);
-    if (!element) return alert("Elemen " + id + " tidak ditemukan!");
+    if (!element) return alert("Elemen tidak ditemukan!");
 
     const opt = {
         margin: 5,
         filename: n + '.pdf',
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
     };
 
-    // PENTING: Menggunakan html2pdf().from().set().save() dengan .then()
-    // agar setelah selesai, library melepaskan memori (Clean Up)
-    html2pdf().set(opt).from(element).save().then(() => {
-        console.log("PDF Sukses, siap untuk klik berikutnya!");
+    // Jalankan worker secara mandiri agar tidak mengunci browser
+    const doc = html2pdf().set(opt).from(element);
+    
+    doc.save().then(() => {
+        console.log("PDF Berhasil diunduh");
+        // Paksa browser melepaskan objek yang baru dibuat
+        doc.set({ margin: 5 }); 
     }).catch(err => {
-        console.error("PDF Error: ", err);
-        alert("Gagal PDF, silakan coba lagi.");
+        alert("PDF Error, coba refresh sebentar.");
     });
 }
+
 
         function showLogs(t) {
             if (!D || !D[t]) return openMod("Riwayat", "<div style='padding:20px;text-align:center;'>Belum ada data.</div>");
