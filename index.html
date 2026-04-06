@@ -613,24 +613,54 @@ db.ref('master_karyawan').on('value', snapshot => {
     try {
         const table = document.getElementById(id);
         if (!table) return alert("Tabel tidak ditemukan!");
-        const wb = XLSX.utils.table_to_book(table, { sheet: "Laporan" });
-        XLSX.writeFile(wb, n + ".xlsx");
-    } catch (e) { alert("Gagal Excel: " + e.message); }
+        
+        // Buat workbook
+        const wb = XLSX.utils.table_to_book(table, { sheet: "Sheet1" });
+        
+        // Paksa download
+        XLSX.writeFile(wb, n + "_" + new Date().getTime() + ".xlsx");
+        
+        console.log("Excel berhasil diekspor");
+    } catch (e) {
+        alert("Gagal ekspor Excel: " + e.message);
+        console.error(e);
+    }
 }
+
 
 function expPdf(id, n) {
     const element = document.getElementById(id);
     if (!element) return alert("Elemen tidak ditemukan!");
+
     const opt = {
-        margin: 5, filename: n + '.pdf', image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
+        margin: [10, 5, 10, 5], // top, left, bottom, right
+        filename: n + '_' + new Date().getTime() + '.pdf',
+        image: { type: 'jpeg', quality: 0.95 },
+        html2canvas: { 
+            scale: 2, 
+            useCORS: true, 
+            letterRendering: true 
+        },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
     };
-    // Menggunakan .save() yang mengembalikan Promise agar tombol 'reset'
+
+    // Tombol dimatikan sementara agar tidak diklik dua kali saat proses
+    const btn = event.target;
+    btn.disabled = true;
+    btn.innerText = "PROSES...";
+
     html2pdf().set(opt).from(element).save().then(() => {
-        console.log("PDF Berhasil");
-    }).catch(err => alert("PDF Error: " + err));
+        // MENGAKTIFKAN KEMBALI TOMBOL setelah selesai
+        btn.disabled = false;
+        btn.innerText = "PDF";
+        console.log("PDF Berhasil didownload");
+    }).catch(err => {
+        alert("Error PDF: " + err);
+        btn.disabled = false;
+        btn.innerText = "PDF";
+    });
 }
+
 
 
         function showLogs(t) {
