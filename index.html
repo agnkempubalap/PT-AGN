@@ -438,57 +438,36 @@
     const t = new Date().toISOString().split('T')[0];
     const blnIni = t.slice(0, 7); 
     
-    // 1. SET TANGGAL (HARIAN)
-    const idsHarian = ['absTgl', 'stTgl', 'akTgl', 'blTgl', 'filterTglAk'];
-    idsHarian.forEach(id => { 
+    // SET TANGGAL OTOMATIS
+    ['absTgl', 'stTgl', 'akTgl', 'blTgl', 'filterTglAk'].forEach(id => { 
         const el = document.getElementById(id);
-        if(el) {
-            el.value = t; 
-            el.addEventListener('change', () => {
-                if(id === 'akTgl') {
-                    const fLog = document.getElementById('filterTglAk');
-                    if(fLog) fLog.value = el.value;
-                }
-                // Refresh laporan harian saat tanggal ganti
-                if(typeof renderLogHarian === 'function') renderLogHarian();
-            });
-        }
+        if(el) el.value = t;
+    });
+    ['fM', 'fUang', 'fStok', 'fGaji'].forEach(id => { 
+        const el = document.getElementById(id);
+        if(el) el.value = blnIni; 
     });
 
-    // 2. SET TANGGAL (BULANAN)
-    const idsBulan = ['fM', 'fUang', 'fStok', 'fGaji'];
-    idsBulan.forEach(id => { 
-        const el = document.getElementById(id);
-        if(el) {
-            el.value = blnIni; 
-            el.onchange = () => {
-                // Jalankan autoRender milik Bos agar Stok & Gaji update
-                if(typeof autoRender === 'function') autoRender();
-                if(id === 'fM' && typeof renderAbs === 'function') renderAbs();
-            };
-        }
-    });
-
-    // 3. LISTENER FIREBASE (KEMBALIKAN SEMUA DATA)
+    // LISTENER FIREBASE UTAMA
     db.ref('/').on('value', snapshot => { 
-        // Simpan data ke D agar bisa dibaca autoRender()
-        D = snapshot.val() || {}; 
-        window.D = D; // Jaga-jaga buat library PDF
+        // 1. Isi variabel D (Pakai window agar semua fungsi lama bisa baca)
+        window.D = snapshot.val() || {}; 
+        D = window.D; 
 
-        // A. Update Master (Nama Karyawan & Barang)
+        // 2. Jalankan fungsi-fungsi UI Bos
         if(typeof updateSemuaDropdownKaryawan === 'function') updateSemuaDropdownKaryawan();
         if(typeof initUI === 'function') initUI(); 
 
-        // B. Jalankan Fungsi Render Utama Bos
+        // 3. PANGGIL SEMUA RENDER LAMA BOS (Agar data muncul lagi)
         if(typeof autoRender === 'function') autoRender(); 
-        
-        // C. Jalankan Laporan Tambahan
         if(typeof renderLogHarian === 'function') renderLogHarian();
         if(typeof renderAbs === 'function') renderAbs();
+        if(typeof renderGaji === 'function') renderGaji(); // Gaji Bos panggil di sini
         
-        console.log("Data Kempu Balap Siap!");
+        console.log("Kempu Balap: Data & Laporan Kembali Normal");
     });
 };
+
 
 
         // ==========================================
@@ -602,66 +581,30 @@ db.ref('master_karyawan').on('value', snapshot => {
         function addItem(p,id) { const v=document.getElementById(id).value; if(v) db.ref(p).push(v).then(()=>document.getElementById(id).value=""); }
         function removeItem(p,k) { if(confirm("Hapus?")) db.ref(`${p}/${k}`).remove().then(()=>closeMod()); }
      
-   // --- FUNGSI EXCEL ANTI-MACET (FOR ANDROID) ---
+   // EXCEL: Pakai timeout agar Android tidak macet
 function expEx(id, n) {
-    try {
-        const table = document.getElementById(id);
-        if (!table) return alert("Tabel tidak ditemukan!");
-
-        // 1. Buat Workbook
+    const table = document.getElementById(id);
+    if (!table) return alert("Tabel tidak ditemukan!");
+    setTimeout(() => {
         const wb = XLSX.utils.table_to_book(table, { sheet: "Laporan" });
-        
-        // 2. Konversi ke Binary agar HP tidak bingung
-        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
-        
-        function s2ab(s) {
-            const buf = new ArrayBuffer(s.length);
-            const view = new Uint8Array(buf);
-            for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
-            return buf;
-        }
-
-        // 3. Pemicu Download Manual (Cara ini bisa diklik berkali-kali)
-        const blob = new Blob([s2ab(wbout)], { type: "application/octet-stream" });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = n + ".xlsx";
-        document.body.appendChild(a);
-        a.click();
-        
-        // 4. Bersihkan Jejak
-        setTimeout(() => {
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
-        }, 300);
-        
-        console.log("Excel Berhasil");
-    } catch (e) {
-        alert("Gagal Excel: " + e.message);
-    }
+        XLSX.writeFile(wb, n + '.xlsx');
+    }, 200); 
 }
 
-// --- FUNGSI PDF ANTI-MACET (FOR ANDROID) ---
+// PDF: Tambahkan .then() agar library siap untuk klik kedua
 function expPdf(id, n) {
     const element = document.getElementById(id);
     if (!element) return alert("Elemen tidak ditemukan!");
-
     const opt = {
         margin: 5,
         filename: n + '.pdf',
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, logging: false },
+        html2canvas: { scale: 2, useCORS: true },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
     };
-
-    // Gunakan pemicu baru setiap kali klik
-    html2pdf().set(opt).from(element).toPdf().get('pdf').save().then(() => {
-        console.log("PDF Berhasil");
-        // Reset library agar siap untuk klik kedua
-    }).catch(err => {
-        console.error(err);
-        alert("Gagal PDF, coba ulangi.");
+    // .save().then() memastikan proses selesai bersih
+    html2pdf().set(opt).from(element).save().then(() => {
+        console.log("Download selesai, tombol siap diklik lagi!");
     });
 }
 
