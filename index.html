@@ -438,36 +438,32 @@
     const t = new Date().toISOString().split('T')[0];
     const blnIni = t.slice(0, 7); 
     
-    // SET TANGGAL OTOMATIS
+    // Set Tanggal Otomatis (Jangan diubah bagian ini)
     ['absTgl', 'stTgl', 'akTgl', 'blTgl', 'filterTglAk'].forEach(id => { 
-        const el = document.getElementById(id);
-        if(el) el.value = t;
+        if(document.getElementById(id)) document.getElementById(id).value = t;
     });
     ['fM', 'fUang', 'fStok', 'fGaji'].forEach(id => { 
-        const el = document.getElementById(id);
-        if(el) el.value = blnIni; 
+        if(document.getElementById(id)) document.getElementById(id).value = blnIni; 
     });
 
-    // LISTENER FIREBASE UTAMA
+    // SATU-SATUNYA LISTENER FIREBASE (Paling Stabil)
     db.ref('/').on('value', snapshot => { 
-        // 1. Isi variabel D (Pakai window agar semua fungsi lama bisa baca)
         window.D = snapshot.val() || {}; 
-        D = window.D; 
+        D = window.D; // Sinkronkan variabel global
 
-        // 2. Jalankan fungsi-fungsi UI Bos
+        // Jalankan Update UI & Render secara berurutan
         if(typeof updateSemuaDropdownKaryawan === 'function') updateSemuaDropdownKaryawan();
         if(typeof initUI === 'function') initUI(); 
-
-        // 3. PANGGIL SEMUA RENDER LAMA BOS (Agar data muncul lagi)
+        
+        // Render semua tabel laporan
         if(typeof autoRender === 'function') autoRender(); 
         if(typeof renderLogHarian === 'function') renderLogHarian();
         if(typeof renderAbs === 'function') renderAbs();
-        if(typeof renderGaji === 'function') renderGaji(); // Gaji Bos panggil di sini
+        if(typeof renderGaji === 'function') renderGaji();
         
-        console.log("Kempu Balap: Data & Laporan Kembali Normal");
+        console.log("Data Kempu Balap Updated!");
     });
 };
-
 
 
         // ==========================================
@@ -581,32 +577,46 @@ db.ref('master_karyawan').on('value', snapshot => {
         function addItem(p,id) { const v=document.getElementById(id).value; if(v) db.ref(p).push(v).then(()=>document.getElementById(id).value=""); }
         function removeItem(p,k) { if(confirm("Hapus?")) db.ref(`${p}/${k}`).remove().then(()=>closeMod()); }
      
-   // EXCEL: Pakai timeout agar Android tidak macet
+   // EXCEL: Pakai Blob agar Chrome Android tidak memblokir klik kedua
 function expEx(id, n) {
-    const table = document.getElementById(id);
-    if (!table) return alert("Tabel tidak ditemukan!");
-    setTimeout(() => {
+    try {
+        const table = document.getElementById(id);
+        if (!table) return alert("Tabel tidak ditemukan!");
         const wb = XLSX.utils.table_to_book(table, { sheet: "Laporan" });
-        XLSX.writeFile(wb, n + '.xlsx');
-    }, 200); 
+        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
+        
+        function s2ab(s) {
+            const buf = new ArrayBuffer(s.length);
+            const view = new Uint8Array(buf);
+            for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+            return buf;
+        }
+
+        const blob = new Blob([s2ab(wbout)], { type: "application/octet-stream" });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url; a.download = n + ".xlsx";
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => { document.body.removeChild(a); window.URL.revokeObjectURL(url); }, 500);
+    } catch (e) { alert("Gagal Excel: " + e.message); }
 }
 
-// PDF: Tambahkan .then() agar library siap untuk klik kedua
+// PDF: Gunakan Worker Baru setiap kali klik
 function expPdf(id, n) {
     const element = document.getElementById(id);
     if (!element) return alert("Elemen tidak ditemukan!");
     const opt = {
-        margin: 5,
-        filename: n + '.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
+        margin: 5, filename: n + '.pdf', image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
     };
-    // .save().then() memastikan proses selesai bersih
+    // Menggunakan pemicu worker segar agar tidak 'nyangkut' di memori Android
     html2pdf().set(opt).from(element).save().then(() => {
-        console.log("Download selesai, tombol siap diklik lagi!");
+        console.log("PDF Berhasil");
     });
 }
+
 
 
         function showLogs(t) {
