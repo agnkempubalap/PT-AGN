@@ -435,31 +435,36 @@
         const DEF_TARIF = { "Rekondisi Kempu":100000, "Rekondisi jerigen 18L":2000, "Rekondisi jerigen 5L":1000, "muat barang":600000, "bongkar barang":600000, "kirim minyak":150000, "pasang pangkalan":500000, "pasang agen":700000 };
 
         window.onload = () => {
+    // 1. SET TANGGAL HARI INI KE SEMUA INPUT
     const t = new Date().toISOString().split('T')[0];
     const blnIni = t.slice(0, 7); 
     
-    // Set Tanggal (Tetap seperti punya Bos)
-    ['absTgl', 'stTgl', 'akTgl', 'blTgl', 'filterTglAk'].forEach(id => { 
-        if(document.getElementById(id)) document.getElementById(id).value = t;
-    });
-    ['fM', 'fUang', 'fStok', 'fGaji'].forEach(id => { 
-        if(document.getElementById(id)) document.getElementById(id).value = blnIni; 
+    const idsHarian = ['absTgl', 'stTgl', 'akTgl', 'filterTglAk'];
+    idsHarian.forEach(id => { 
+        const el = document.getElementById(id);
+        if(el) el.value = t;
     });
 
-    // PERBAIKAN: Gunakan satu listener utama untuk isi variabel D
+    const idsBulan = ['fM', 'fStok', 'fGaji'];
+    idsBulan.forEach(id => { 
+        const el = document.getElementById(id);
+        if(el) el.value = blnIni; 
+    });
+
+    // 2. LISTENER FIREBASE
     db.ref('/').on('value', snapshot => { 
         window.D = snapshot.val() || {}; 
-        D = window.D; // Pastikan D global terisi agar renderStok/renderGaji tidak kosong
+        D = window.D; 
 
         if(typeof updateSemuaDropdownKaryawan === 'function') updateSemuaDropdownKaryawan();
         if(typeof initUI === 'function') initUI(); 
         
-        // Pemicu agar tabel langsung muncul isinya
         autoRender(); 
-        if(typeof renderLogHarian === 'function') renderLogHarian();
-        if(typeof renderAbs === 'function') renderAbs();
+        // Paksa render absen agar tabel muncul di awal
+        if(typeof renderAll === 'function') renderAll();
     });
 };
+
 
 
 
@@ -605,23 +610,7 @@ db.ref('master_karyawan').on('value', snapshot => {
         const table = document.getElementById(id);
         if (!table) return alert("Tabel tidak ditemukan!");
         const wb = XLSX.utils.table_to_book(table, { sheet: "Laporan" });
-        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
-        
-        function s2ab(s) {
-            const buf = new ArrayBuffer(s.length);
-            const view = new Uint8Array(buf);
-            for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
-            return buf;
-        }
-
-        const blob = new Blob([s2ab(wbout)], { type: "application/octet-stream" });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url; a.download = n + ".xlsx";
-        document.body.appendChild(a);
-        a.click();
-        // Hapus jejak setelah download agar memori bersih
-        setTimeout(() => { document.body.removeChild(a); window.URL.revokeObjectURL(url); }, 500);
+        XLSX.writeFile(wb, n + ".xlsx");
     } catch (e) { alert("Gagal Excel: " + e.message); }
 }
 
@@ -633,11 +622,12 @@ function expPdf(id, n) {
         html2canvas: { scale: 2, useCORS: true },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
     };
-    // .save().then() memastikan library siap untuk klik berikutnya
+    // Menggunakan .save() yang mengembalikan Promise agar tombol 'reset'
     html2pdf().set(opt).from(element).save().then(() => {
-        console.log("PDF Sukses");
-    });
+        console.log("PDF Berhasil");
+    }).catch(err => alert("PDF Error: " + err));
 }
+
 
         function showLogs(t) {
             if (!D || !D[t]) return openMod("Riwayat", "<div style='padding:20px;text-align:center;'>Belum ada data.</div>");
@@ -1343,23 +1333,49 @@ function genRekapKerja() {
         }       
 
 function renderGaji() {
-            const fM = document.getElementById('fUang').value, T = D.tarif||DEF_TARIF, K = Object.values(D.master_karyawan||{});
-            let tG=0, tN=0; Object.values(D.belanja||{}).forEach(b => { if(b.t?.slice(0,7)===fM) tN+=b.rp; });
-            let h = `<table><tr><th class="sticky-col">NAMA</th><th>BORONG CAIR</th><th><span style="color:#f97316">PENDING</span></th><th>BONUS</th><th>KASBON</th><th>NETT</th><th>SLIP</th></tr>`;
-            K.forEach(k => {
-                let brCair=0, brPend=0, bo=0, ka=0;
-                Object.values(D.aktivitas||{}).forEach(a => {
-                    if(a.t?.slice(0,7)===fM && a.p?.includes(k)) {
-                        let upah = (T[a.j]||0)*a.q/(a.j.includes("pasang")?1:a.p.length);
-                        if(a.isCair) brCair += upah; else brPend += upah;
-                    }
-                });
-                Object.values(D.kasbon_bonus||{}).forEach(kb => { if(kb.n===k && kb.t===fM) kb.tipe==="Bonus"?bo+=kb.rp:ka+=kb.rp; });
-                let nett = (brCair+bo)-ka; tG+=nett;
-                h += `<tr><td class="sticky-col">${k}</td><td>${Math.round(brCair).toLocaleString()}</td><td style="color:#f97316">${Math.round(brPend).toLocaleString()}</td><td>${bo.toLocaleString()}</td><td>${ka.toLocaleString()}</td><td style="font-weight:800">Rp ${Math.round(nett).toLocaleString()}</td><td><button class="btn" style="padding:5px;font-size:9px" onclick="genSlip('${k}')">SLIP</button></td></tr>`;
+    const fM = document.getElementById('fGaji').value; 
+    const target = document.getElementById('tbGaji');
+    if (!target || !window.D) return;
+
+    const T = D.tarif || DEF_TARIF;
+    const K = D.master_karyawan ? Object.values(D.master_karyawan) : [];
+    
+    let html = "";
+    K.forEach(k => {
+        let brCair = 0, tHadir = 0;
+        
+        // Hitung Kehadiran dari database absen
+        if (D.absensi) {
+            Object.keys(D.absensi).forEach(tgl => {
+                if (tgl.startsWith(fM) && D.absensi[tgl][k]) {
+                    const status = D.absensi[tgl][k].j;
+                    if (['Hadir', 'Telat', 'Lembur'].includes(status)) tHadir++;
+                }
             });
-            document.getElementById('gTotal').innerText = "Rp "+Math.round(tG).toLocaleString(); document.getElementById('nTotal').innerText = "Rp "+tN.toLocaleString(); document.getElementById('areaGaji').innerHTML = h+"</table>";
         }
+
+        // Hitung Borongan yang sudah Cair
+        if (D.aktivitas) {
+            Object.values(D.aktivitas).forEach(a => {
+                if (a.t?.startsWith(fM) && a.p?.includes(k) && a.isCair) {
+                    let upah = (T[a.j] || 0) * (a.q || 0) / (a.j.includes("pasang") ? 1 : a.p.length);
+                    brCair += upah;
+                }
+            });
+        }
+
+        let total = brCair; // Bos bisa tambah kasbon/bonus di sini nanti
+        html += `<tr>
+            <td class="sticky-col">${k}</td>
+            <td>${tHadir} Hari</td>
+            <td>Rp ${Math.round(brCair).toLocaleString()}</td>
+            <td style="font-weight:800; color:var(--p)">Rp ${Math.round(total).toLocaleString()}</td>
+        </tr>`;
+    });
+    
+    target.innerHTML = html || "<tr><td colspan='4'>Data tidak ditemukan</td></tr>";
+}
+
 
         function genSlip(n) { 
             const fM=document.getElementById('fUang').value, T=D.tarif||DEF_TARIF; 
