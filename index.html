@@ -602,24 +602,47 @@ db.ref('master_karyawan').on('value', snapshot => {
         function addItem(p,id) { const v=document.getElementById(id).value; if(v) db.ref(p).push(v).then(()=>document.getElementById(id).value=""); }
         function removeItem(p,k) { if(confirm("Hapus?")) db.ref(`${p}/${k}`).remove().then(()=>closeMod()); }
      
-   // --- 1. FUNGSI EXCEL STABLE ---
+   // --- FUNGSI EXCEL ANTI-MACET (FOR ANDROID) ---
 function expEx(id, n) {
     try {
         const table = document.getElementById(id);
         if (!table) return alert("Tabel tidak ditemukan!");
 
-        // Buat file Excel secara instan
+        // 1. Buat Workbook
         const wb = XLSX.utils.table_to_book(table, { sheet: "Laporan" });
-        XLSX.writeFile(wb, n + '.xlsx');
         
-        // Beri log agar kita tahu proses selesai
-        console.log("Excel: Klik Terdeteksi");
+        // 2. Konversi ke Binary agar HP tidak bingung
+        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
+        
+        function s2ab(s) {
+            const buf = new ArrayBuffer(s.length);
+            const view = new Uint8Array(buf);
+            for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+            return buf;
+        }
+
+        // 3. Pemicu Download Manual (Cara ini bisa diklik berkali-kali)
+        const blob = new Blob([s2ab(wbout)], { type: "application/octet-stream" });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = n + ".xlsx";
+        document.body.appendChild(a);
+        a.click();
+        
+        // 4. Bersihkan Jejak
+        setTimeout(() => {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }, 300);
+        
+        console.log("Excel Berhasil");
     } catch (e) {
         alert("Gagal Excel: " + e.message);
     }
 }
 
-// --- 2. FUNGSI PDF STABLE (PEMBERSIHAN TOTAL) ---
+// --- FUNGSI PDF ANTI-MACET (FOR ANDROID) ---
 function expPdf(id, n) {
     const element = document.getElementById(id);
     if (!element) return alert("Elemen tidak ditemukan!");
@@ -632,15 +655,13 @@ function expPdf(id, n) {
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
     };
 
-    // Jalankan worker secara mandiri agar tidak mengunci browser
-    const doc = html2pdf().set(opt).from(element);
-    
-    doc.save().then(() => {
-        console.log("PDF Berhasil diunduh");
-        // Paksa browser melepaskan objek yang baru dibuat
-        doc.set({ margin: 5 }); 
+    // Gunakan pemicu baru setiap kali klik
+    html2pdf().set(opt).from(element).toPdf().get('pdf').save().then(() => {
+        console.log("PDF Berhasil");
+        // Reset library agar siap untuk klik kedua
     }).catch(err => {
-        alert("PDF Error, coba refresh sebentar.");
+        console.error(err);
+        alert("Gagal PDF, coba ulangi.");
     });
 }
 
