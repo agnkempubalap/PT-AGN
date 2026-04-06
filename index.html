@@ -613,17 +613,20 @@ db.ref('master_karyawan').on('value', snapshot => {
     try {
         const table = document.getElementById(id);
         if (!table) return alert("Tabel tidak ditemukan!");
-        
-        // Buat workbook
+
+        // Buat salinan workbook
         const wb = XLSX.utils.table_to_book(table, { sheet: "Sheet1" });
         
-        // Paksa download
-        XLSX.writeFile(wb, n + "_" + new Date().getTime() + ".xlsx");
+        // Buat nama file unik dengan detik agar tidak diblokir Android
+        const time = new Date().getTime();
+        const fileName = `${n}_${time}.xlsx`;
+
+        // Proses tulis file
+        XLSX.writeFile(wb, fileName);
         
-        console.log("Excel berhasil diekspor");
+        console.log("Excel Berhasil");
     } catch (e) {
-        alert("Gagal ekspor Excel: " + e.message);
-        console.error(e);
+        alert("Gagal Excel: " + e.message);
     }
 }
 
@@ -632,35 +635,32 @@ function expPdf(id, n) {
     const element = document.getElementById(id);
     if (!element) return alert("Elemen tidak ditemukan!");
 
+    // Kasih tanda loading di tombol biar user tahu proses jalan
+    const btn = event.target;
+    const originalText = btn.innerText;
+    btn.disabled = true;
+    btn.innerText = "Sabar...";
+
     const opt = {
-        margin: [10, 5, 10, 5], // top, left, bottom, right
-        filename: n + '_' + new Date().getTime() + '.pdf',
-        image: { type: 'jpeg', quality: 0.95 },
-        html2canvas: { 
-            scale: 2, 
-            useCORS: true, 
-            letterRendering: true 
-        },
+        margin: 5,
+        filename: `${n}_${new Date().getTime()}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
     };
 
-    // Tombol dimatikan sementara agar tidak diklik dua kali saat proses
-    const btn = event.target;
-    btn.disabled = true;
-    btn.innerText = "PROSES...";
-
-    html2pdf().set(opt).from(element).save().then(() => {
-        // MENGAKTIFKAN KEMBALI TOMBOL setelah selesai
+    // Eksekusi dengan pembersihan memori (Worker)
+    html2pdf().set(opt).from(element).toPdf().get('pdf').save().then(() => {
+        // RESET TOTAL: Kembalikan tombol agar bisa diklik lagi tanpa refresh
         btn.disabled = false;
-        btn.innerText = "PDF";
-        console.log("PDF Berhasil didownload");
+        btn.innerText = originalText;
+        console.log("PDF Selesai & Reset");
     }).catch(err => {
-        alert("Error PDF: " + err);
+        alert("Error: " + err);
         btn.disabled = false;
-        btn.innerText = "PDF";
+        btn.innerText = originalText;
     });
 }
-
 
 
         function showLogs(t) {
