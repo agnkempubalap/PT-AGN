@@ -466,8 +466,17 @@
         // ==========================================
         // 2. GLOBAL UTILITIES (NAV, MODAL, EXPORT)
         // ==========================================
-        function autoRender() { renderAll(); renderStok(); renderGaji(); renderCheckKaryawan(); }
-        function tab(id) { document.querySelectorAll('.tab-content, .nav-btn').forEach(e => e.classList.remove('active')); document.getElementById('tab-'+id).classList.add('active'); document.getElementById('nav-'+id).classList.add('active'); autoRender(); }
+        function autoRender() { 
+    // Pastikan variabel D sudah ada isinya sebelum render
+    if (!window.D) return; 
+
+    // Jalankan semua fungsi render milik Bos
+    if (typeof renderAll === 'function') renderAll(); 
+    if (typeof renderStok === 'function') renderStok(); 
+    if (typeof renderGaji === 'function') renderGaji(); 
+    if (typeof renderCheckKaryawan === 'function') renderCheckKaryawan(); 
+}
+
         
         function initUI() {
     const listK = document.getElementById('listK'), selK = document.getElementById('selK');
