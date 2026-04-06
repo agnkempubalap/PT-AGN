@@ -438,7 +438,7 @@
     const t = new Date().toISOString().split('T')[0];
     const blnIni = t.slice(0, 7); 
     
-    // Set Tanggal Otomatis (Jangan diubah bagian ini)
+    // Set Tanggal (Tetap seperti punya Bos)
     ['absTgl', 'stTgl', 'akTgl', 'blTgl', 'filterTglAk'].forEach(id => { 
         if(document.getElementById(id)) document.getElementById(id).value = t;
     });
@@ -446,24 +446,21 @@
         if(document.getElementById(id)) document.getElementById(id).value = blnIni; 
     });
 
-    // SATU-SATUNYA LISTENER FIREBASE (Paling Stabil)
+    // PERBAIKAN: Gunakan satu listener utama untuk isi variabel D
     db.ref('/').on('value', snapshot => { 
         window.D = snapshot.val() || {}; 
-        D = window.D; // Sinkronkan variabel global
+        D = window.D; // Pastikan D global terisi agar renderStok/renderGaji tidak kosong
 
-        // Jalankan Update UI & Render secara berurutan
         if(typeof updateSemuaDropdownKaryawan === 'function') updateSemuaDropdownKaryawan();
         if(typeof initUI === 'function') initUI(); 
         
-        // Render semua tabel laporan
-        if(typeof autoRender === 'function') autoRender(); 
+        // Pemicu agar tabel langsung muncul isinya
+        autoRender(); 
         if(typeof renderLogHarian === 'function') renderLogHarian();
         if(typeof renderAbs === 'function') renderAbs();
-        if(typeof renderGaji === 'function') renderGaji();
-        
-        console.log("Data Kempu Balap Updated!");
     });
 };
+
 
 
         // ==========================================
@@ -577,8 +574,7 @@ db.ref('master_karyawan').on('value', snapshot => {
         function addItem(p,id) { const v=document.getElementById(id).value; if(v) db.ref(p).push(v).then(()=>document.getElementById(id).value=""); }
         function removeItem(p,k) { if(confirm("Hapus?")) db.ref(`${p}/${k}`).remove().then(()=>closeMod()); }
      
-   // EXCEL: Pakai Blob agar Chrome Android tidak memblokir klik kedua
-function expEx(id, n) {
+   function expEx(id, n) {
     try {
         const table = document.getElementById(id);
         if (!table) return alert("Tabel tidak ditemukan!");
@@ -598,11 +594,11 @@ function expEx(id, n) {
         a.href = url; a.download = n + ".xlsx";
         document.body.appendChild(a);
         a.click();
+        // Hapus jejak setelah download agar memori bersih
         setTimeout(() => { document.body.removeChild(a); window.URL.revokeObjectURL(url); }, 500);
     } catch (e) { alert("Gagal Excel: " + e.message); }
 }
 
-// PDF: Gunakan Worker Baru setiap kali klik
 function expPdf(id, n) {
     const element = document.getElementById(id);
     if (!element) return alert("Elemen tidak ditemukan!");
@@ -611,13 +607,11 @@ function expPdf(id, n) {
         html2canvas: { scale: 2, useCORS: true },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
     };
-    // Menggunakan pemicu worker segar agar tidak 'nyangkut' di memori Android
+    // .save().then() memastikan library siap untuk klik berikutnya
     html2pdf().set(opt).from(element).save().then(() => {
-        console.log("PDF Berhasil");
+        console.log("PDF Sukses");
     });
 }
-
-
 
         function showLogs(t) {
             if (!D || !D[t]) return openMod("Riwayat", "<div style='padding:20px;text-align:center;'>Belum ada data.</div>");
