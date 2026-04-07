@@ -612,71 +612,64 @@ db.ref('master_karyawan').on('value', snapshot => {
    function expEx(id, n) {
     try {
         const table = document.getElementById(id);
+        if (!table) return alert("Tabel tidak ada!");
+
+        // Buat file dalam format array buffer
         const wb = XLSX.utils.table_to_book(table, { sheet: "Sheet1" });
-        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
-
-        function s2ab(s) {
-            const buf = new ArrayBuffer(s.length);
-            const view = new Uint8Array(buf);
-            for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
-            return buf;
-        }
-
-        const blob = new Blob([s2ab(wbout)], { type: "application/octet-stream" });
+        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+        
+        // Simpan file
+        const blob = new Blob([wbout], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         
         a.href = url;
-        a.download = n + "_" + new Date().getTime() + ".xlsx";
+        a.download = n + "_" + Math.floor(Math.random() * 1000) + ".xlsx";
         document.body.appendChild(a);
-        a.click(); // Klik manual via kode
+        a.click();
         
-        // Bersihkan memori agar bisa diklik lagi
+        // RESET & CLEANUP
         setTimeout(() => {
-            document.body.removeChild(a);
             window.URL.revokeObjectURL(url);
-        }, 100);
-    } catch (e) { alert("Gagal: " + e.message); }
+            document.body.removeChild(a);
+        }, 500);
+    } catch (e) {
+        alert("Gagal Excel: " + e.message);
+    }
 }
-
 
 
 function expPdf(id, n) {
     const element = document.getElementById(id);
     const btn = event.target;
-    btn.innerText = "...";
+    
+    // Efek visual tombol biar tidak diklik berkali-kali saat proses
+    const txtAsli = btn.innerText;
+    btn.innerText = "WAIT...";
     btn.disabled = true;
 
     const opt = {
         margin: 5,
-        filename: n + "_" + new Date().getTime() + ".pdf",
+        filename: n + "_" + Math.floor(Math.random() * 1000) + ".pdf",
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
     };
 
-    // Kita pakai output 'blob' lalu pancing dengan link manual
-    html2pdf().set(opt).from(element).outputPdf('blob').then((blob) => {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = opt.filename;
-        document.body.appendChild(a);
-        a.click();
-
-        // RESET TOTAL
-        setTimeout(() => {
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
-            btn.innerText = "PDF";
-            btn.disabled = false;
-        }, 500);
+    // MENGGUNAKAN WORKER MANUAL (Anti-Macet)
+    const worker = html2pdf().set(opt).from(element).toPdf().get('pdf');
+    
+    worker.save().then(() => {
+        // RESET TOTAL setelah berhasil download
+        btn.innerText = txtAsli;
+        btn.disabled = false;
+        console.log("PDF Berhasil");
     }).catch(err => {
-        alert(err);
+        alert("Error PDF: " + err);
+        btn.innerText = txtAsli;
         btn.disabled = false;
     });
 }
-
 
         function showLogs(t) {
             if (!D || !D[t]) return openMod("Riwayat", "<div style='padding:20px;text-align:center;'>Belum ada data.</div>");
